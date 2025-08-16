@@ -1,1 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solutions - Opsis Suite</title>
+    <meta name="description" content="Modular enterprise solutions for warehouse, HR, time tracking, and financial management">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #1d1d1f;
+        }
+
+        /* KEYFRAMES */
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            25% { background-position: 100% 50%; }
+            50% { background-position: 100% 100%; }
+            75% { background-position: 0% 100%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes winkEye {
+            0%, 88% { transform: scaleY(1); }
+            90% { transform: scaleY(0.1); }
+            92% { transform: scaleY(1); }
+            94% { transform: scaleY(0.1); }
+            96% { transform: scaleY(1); }
+            100% { transform: scaleY(1); }
+        }
+
+        @keyframes fadeInUp {
+            0% { 
+                opacity: 0; 
+                transform: translateY(30px); 
+            }
+            100% { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        /* FADE IN ANIMATIONS */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* NOTIFICATION */
+        .notification {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(32, 201, 151, 0.3);
+            transform: translateY(-100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
+
+        .notification.show {
+            transform: translateY(0) !important;
+            opacity: 1 !important;
+        }
+
+        /* NAVIGATION */
+        .nav-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            width: 100%;
+            padding: 8px 0;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            width: 100%;
+        }
+
+        .nav-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            width: 100%;
+        }
+
+        /* LOGO */
+        .logo-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            transition: transform 0.2s ease;
+        }
+
+        .logo-container {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            padding: 2px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3, #54a0ff, #5f27cd, #00d2d3, #ff9f43, #10ac84, #ee5a6f, #ff6b6b);
+            background-size: 400% 400%;
+            animation: gradientShift 4s ease-in-out infinite;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #495057, #6c757d);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            fontSize: 16px;
+            color: white;
+            font-weight: 300;
+            box-shadow: 0 2px 8px rgba(73, 80, 87, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-icon::after {
+            content: '◉';
+            animation: winkEye 6s ease-in-out infinite;
+        }
+
+        .logo-text {
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #495057, #6c757d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            user-select: none;
+        }
+
+        /* NAVIGATION LINKS */
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .nav-link {
+            color: #495057;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link.active {
+            color: #20c997;
+            font-weight: 600;
+        }
+
+        .nav-link:hover {
+            color: #20c997;
+            background: rgba(32, 201, 151, 0.08);
+        }
+
+        /* CTA BUTTON */
+        .nav-cta {
+            background: linear-gradient(135deg, #495057, #6c757d);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .nav-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(73, 80, 87, 0.3);
+        }
+
+        /* MOBILE MENU */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #495057;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        /* HERO SECTION */
+        .hero-section {
+            padding: 4rem 2rem 3rem;
+            text-align: center;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-container {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #1d1d1f, #495057);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -2px;
+            line-height: 1.1;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: #6c757d;
+            margin-bottom: 2rem;
+            font-weight: 400;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-breadcrumb {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .hero-breadcrumb a {
+            color: #20c997;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .hero-breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        /* SOLUTIONS GRID */
+        .solutions-section {
+            padding: 4rem 2rem;
+            background: white;
+        }
+
+        .section-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: #6c757d;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .solutions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2.5rem;
+            margin-bottom: 4rem;
+        }
+
+        .solution-card {
+            background: linear-gradient(135deg, #f8f9fa, #ffffff);
+            border: 1px solid rgba(210, 210, 215, 0.3);
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            text-align: left;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .solution-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            border-radius: 24px 24px 0 0;
+        }
+
+        .solution-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
+            background: white;
+        }
+
+        .solution-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .solution-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+        }
+
+        .solution-title-group {
+            flex: 1;
+        }
+
+        .solution-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 0.5rem;
+        }
+
+        .solution-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .solution-description {
+            color: #6c757d;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        .solution-features {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .solution-features li {
+            color: #495057;
+            margin-bottom: 0.75rem;
+            padding-left: 1.5rem;
+            position: relative;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .solution-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .solution-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(210, 210, 215, 0.3);
+        }
+
+        .solution-pricing {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #1d1d1f;
+        }
+
+        .solution-cta {
+            padding: 0.5rem 1.25rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* Module-specific styles */
+        .warehouse-module {
+            --module-color: #20c997;
+        }
+
+        .warehouse-module::before { background: #20c997; }
+        .warehouse-module .solution-icon { background: linear-gradient(135deg, #20c997, #17a2b8); }
+        .warehouse-module .solution-features li::before { color: #20c997; }
+        .warehouse-module .solution-status { background: rgba(32, 201, 151, 0.1); color: #20c997; }
+        .warehouse-module .solution-cta { background: #20c997; color: white; }
+        .warehouse-module .solution-cta:hover { background: #17a2b8; transform: translateY(-2px); }
+
+        .hr-module {
+            --module-color: #6610f2;
+        }
+
+        .hr-module::before { background: #6610f2; }
+        .hr-module .solution-icon { background: linear-gradient(135deg, #6610f2, #d63384); }
+        .hr-module .solution-features li::before { color: #6610f2; }
+        .hr-module .solution-status { background: rgba(255, 149, 0, 0.1); color: #ff9500; }
+        .hr-module .solution-cta { background: transparent; color: #6610f2; border: 2px solid #6610f2; }
+        .hr-module .solution-cta:hover { background: #6610f2; color: white; transform: translateY(-2px); }
+
+        .timesync-module {
+            --module-color: #fd7e14;
+        }
+
+        .timesync-module::before { background: #fd7e14; }
+        .timesync-module .solution-icon { background: linear-gradient(135deg, #fd7e14, #dc3545); }
+        .timesync-module .solution-features li::before { color: #fd7e14; }
+        .timesync-module .solution-status { background: rgba(255, 149, 0, 0.1); color: #ff9500; }
+        .timesync-module .solution-cta { background: transparent; color: #fd7e14; border: 2px solid #fd7e14; }
+        .timesync-module .solution-cta:hover { background: #fd7e14; color: white; transform: translateY(-2px); }
+
+        .finance-module {
+            --module-color: #0dcaf0;
+        }
+
+        .finance-module::before { background: #0dcaf0; }
+        .finance-module .solution-icon { background: linear-gradient(135deg, #0dcaf0, #6f42c1); }
+        .finance-module .solution-features li::before { color: #0dcaf0; }
+        .finance-module .solution-status { background: rgba(255, 149, 0, 0.1); color: #ff9500; }
+        .finance-module .solution-cta { background: transparent; color: #0dcaf0; border: 2px solid #0dcaf0; }
+        .finance-module .solution-cta:hover { background: #0dcaf0; color: white; transform: translateY(-2px); }
+
+        /* INTEGRATION SECTION */
+        .integration-section {
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        }
+
+        .integration-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .integration-card {
+            background: white;
+            border: 1px solid rgba(210, 210, 215, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .integration-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .integration-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .integration-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 0.5rem;
+        }
+
+        .integration-description {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        /* CTA SECTION */
+        .cta-section {
+            padding: 4rem 2rem;
+            background: white;
+            text-align: center;
+        }
+
+        .cta-container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .cta-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 1rem;
+            letter-spacing: -1px;
+        }
+
+        .cta-subtitle {
+            font-size: 1.1rem;
+            color: #6c757d;
+            margin-bottom: 2rem;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-btn {
+            padding: 1rem 2rem;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            border: none;
+        }
+
+        .cta-btn.primary {
+            background: linear-gradient(135deg, #495057, #6c757d);
+            color: white;
+        }
+
+        .cta-btn.primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(73, 80, 87, 0.3);
+        }
+
+        .cta-btn.secondary {
+            background: transparent;
+            color: #495057;
+            border: 2px solid #495057;
+        }
+
+        .cta-btn.secondary:hover {
+            background: #495057;
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        /* FOOTER */
+        .footer {
+            background: #1d1d1f;
+            color: white;
+            padding: 3rem 0 2rem;
+            width: 100%;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            text-align: center;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #f8f9fa;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links a {
+            color: #adb5bd;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s ease;
+        }
+
+        .footer-links a:hover {
+            color: #20c997;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #495057;
+            padding-top: 1.5rem;
+            color: #adb5bd;
+            font-size: 0.85rem;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .hero-section {
+                padding: 3rem 1.5rem 2rem;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .solutions-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .solution-card {
+                padding: 2rem 1.5rem;
+            }
+
+            .solution-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+
+            .solution-footer {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: center;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .cta-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .cta-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVIGATION BAR -->
+    <nav class="nav-header">
+        <div class="nav-container">
+            <div class="nav-content">
+                <!-- Logo Section -->
+                <a href="../index.html" class="logo-link">
+                    <div class="logo-container">
+                        <div class="logo-icon"></div>
+                    </div>
+                    <div class="logo-text">Opsis Suite</div>
+                </a>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="../index.html" class="nav-link">Home</a>
+                    <a href="./solutions.html" class="nav-link active">Solutions</a>
+                    <a href="../pages/features.html" class="nav-link">Features</a>
+                    <a href="../pricing.html" class="nav-link">Pricing</a>
+                    <a href="../contact.html" class="nav-link">Contact</a>
+                </div>
+
+                <!-- CTA Button -->
+                <a href="../login.html" class="nav-cta">Access Workspace</a>
+                
+                <!-- Mobile Menu Toggle -->
+                <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">☰</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="hero-section">
+        <div class="hero-container">
+            <div class="hero-breadcrumb">
+                <a href="../index.html">Home</a>
+                <span>→</span>
+                <span>Solutions</span>
+            </div>
+            <h1 class="hero-title">Enterprise Solutions</h1>
+            <p class="hero-subtitle">
+                Modular platform solutions designed to scale with your business. Start with warehouse management 
+                and expand with additional modules as you grow.
+            </p>
+        </div>
+    </section>
+
+    <!-- SOLUTIONS SECTION -->
+    <section class="solutions-section">
+        <div class="section-container">
+            <div class="section-header">
+                <p class="section-subtitle">
+                    Each module is designed to work independently or as part of the complete Opsis Suite ecosystem
+                </p>
+            </div>
+            
+            <div class="solutions-grid">
+                <!-- Warehouse Module (Available Now) -->
+                <div class="solution-card warehouse-module fade-in" onclick="handleSolutionClick('Opsis Warehouse')">
+                    <div class="solution-header">
+                        <div class="solution-icon">📦</div>
+                        <div class="solution-title-group">
+                            <h3 class="solution-title">Opsis Warehouse</h3>
+                            <span class="solution-status">Available Now</span>
+                        </div>
+                    </div>
+                    <p class="solution-description">
+                        Complete warehouse and inventory management system with real-time equipment tracking, 
+                        intelligent approval workflows, and predictive maintenance scheduling.
+                    </p>
+                    <ul class="solution-features">
+                        <li>Real-time equipment tracking & location monitoring</li>
+                        <li>Intelligent approval workflows with role-based permissions</li>
+                        <li>Predictive maintenance scheduling and alerts</li>
+                        <li>Mobile-optimized interface for field workers</li>
+                        <li>Advanced reporting & analytics dashboard</li>
+                        <li>Project-based equipment assignment</li>
+                        <li>Automated inspection workflows</li>
+                        <li>Integration with existing systems</li>
+                    </ul>
+                    <div class="solution-footer">
+                        <div class="solution-pricing">Starting at $49/month</div>
+                        <a href="../pricing.html" class="solution-cta">Start Free Trial</a>
+                    </div>
+                </div>
+
+                <!-- HR Module (Q2 2025) -->
+                <div class="solution-card hr-module fade-in" onclick="handleSolutionClick('Opsis HR')">
+                    <div class="solution-header">
+                        <div class="solution-icon">👥</div>
+                        <div class="solution-title-group">
+                            <h3 class="solution-title">Opsis HR</h3>
+                            <span class="solution-status">Q2 2025</span>
+                        </div>
+                    </div>
+                    <p class="solution-description">
+                        Advanced human resources management with comprehensive employee tracking, performance analytics, 
+                        and seamless payroll integration designed for field teams and distributed workforces.
+                    </p>
+                    <ul class="solution-features">
+                        <li>Comprehensive employee database & profiles</li>
+                        <li>Performance analytics & review management</li>
+                        <li>Automated payroll integration & time tracking</li>
+                        <li>Training program management & certification tracking</li>
+                        <li>Compliance monitoring & documentation</li>
+                        <li>Employee self-service portal</li>
+                        <li>Benefits administration & enrollment</li>
+                        <li>Advanced workforce analytics</li>
+                    </ul>
+                    <div class="solution-footer">
+                        <div class="solution-pricing">Starting at $29/month</div>
+                        <a href="../contact.html" class="solution-cta">Get Notified</a>
+                    </div>
+                </div>
+
+                <!-- TimeSync Module (Q3 2025) -->
+                <div class="solution-card timesync-module fade-in" onclick="handleSolutionClick('Opsis TimeSync')">
+                    <div class="solution-header">
+                        <div class="solution-icon">⏱️</div>
+                        <div class="solution-title-group">
+                            <h3 class="solution-title">Opsis TimeSync</h3>
+                            <span class="solution-status">Q3 2025</span>
+                        </div>
+                    </div>
+                    <p class="solution-description">
+                        Precision time tracking and project management with GPS verification, automatic synchronization, 
+                        and comprehensive productivity insights for field operations.
+                    </p>
+                    <ul class="solution-features">
+                        <li>GPS-verified time tracking & location services</li>
+                        <li>Intelligent project time allocation & budgeting</li>
+                        <li>Real-time productivity analytics & insights</li>
+                        <li>Smart overtime management & alerts</li>
+                        <li>Mobile-first time clock with offline capability</li>
+                        <li>Automated timesheet generation & approval</li>
+                        <li>Project profitability tracking</li>
+                        <li>Resource optimization recommendations</li>
+                    </ul>
+                    <div class="solution-footer">
+                        <div class="solution-pricing">Starting at $19/month</div>
+                        <a href="../contact.html" class="solution-cta">Get Notified</a>
+                    </div>
+                </div>
+
+                <!-- Finance Module (Q4 2025) -->
+                <div class="solution-card finance-module fade-in" onclick="handleSolutionClick('Opsis Finance')">
+                    <div class="solution-header">
+                        <div class="solution-icon">💰</div>
+                        <div class="solution-title-group">
+                            <h3 class="solution-title">Opsis Finance</h3>
+                            <span class="solution-status">Q4 2025</span>
+                        </div>
+                    </div>
+                    <p class="solution-description">
+                        Comprehensive financial management with automated invoicing, intelligent expense tracking, 
+                        and seamless integration with leading accounting platforms.
+                    </p>
+                    <ul class="solution-features">
+                        <li>Automated invoice generation & payment processing</li>
+                        <li>Smart expense categorization & receipt scanning</li>
+                        <li>Advanced budget management & forecasting</li>
+                        <li>QuickBooks, Xero & SAP integration</li>
+                        <li>Real-time financial reporting & dashboards</li>
+                        <li>Tax preparation & compliance assistance</li>
+                        <li>Cash flow analysis & optimization</li>
+                        <li>Multi-currency support for global operations</li>
+                    </ul>
+                    <div class="solution-footer">
+                        <div class="solution-pricing">Starting at $39/month</div>
+                        <a href="../contact.html" class="solution-cta">Get Notified</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- INTEGRATION SECTION -->
+    <section class="integration-section">
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="hero-title" style="font-size: 2.5rem; margin-bottom: 1rem;">Seamless Integrations</h2>
+                <p class="section-subtitle">
+                    Connect Opsis Suite with your existing tools and workflows for maximum efficiency
+                </p>
+            </div>
+            
+            <div class="integration-grid">
+                <div class="integration-card">
+                    <div class="integration-icon">📊</div>
+                    <h4 class="integration-title">Business Intelligence</h4>
+                    <p class="integration-description">Power BI, Tableau, Google Analytics integration</p>
+                </div>
+                <div class="integration-card">
+                    <div class="integration-icon">💳</div>
+                    <h4 class="integration-title">Accounting</h4>
+                    <p class="integration-description">QuickBooks, Xero, SAP, NetSuite compatibility</p>
+                </div>
+                <div class="integration-card">
+                    <div class="integration-icon">📧</div>
+                    <h4 class="integration-title">Communication</h4>
+                    <p class="integration-description">Slack, Microsoft Teams, Email automation</p>
+                </div>
+                <div class="integration-card">
+                    <div class="integration-icon">☁️</div>
+                    <h4 class="integration-title">Cloud Storage</h4>
+                    <p class="integration-description">Google Drive, Dropbox, OneDrive sync</p>
+                </div>
+                <div class="integration-card">
+                    <div class="integration-icon">🔧</div>
+                    <h4 class="integration-title">API Access</h4>
+                    <p class="integration-description">RESTful API for custom integrations</p>
+                </div>
+                <div class="integration-card">
+                    <div class="integration-icon">🔒</div>
+                    <h4 class="integration-title">Security</h4>
+                    <p class="integration-description">SSO, Active Directory, LDAP support</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA SECTION -->
+    <section class="cta-section">
+        <div class="cta-container">
+            <h2 class="cta-title">Ready to Get Started?</h2>
+            <p class="cta-subtitle">
+                Start with Opsis Warehouse today and add additional modules as your business grows. 
+                30-day free trial, no credit card required.
+            </p>
+            <div class="cta-buttons">
+                <a href="../login.html" class="cta-btn primary">Start Free Trial</a>
+                <a href="../contact.html" class="cta-btn secondary">Schedule Demo</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Solutions</h4>
+                    <ul class="footer-links">
+                        <li><a href="./solutions.html">Warehouse Management</a></li>
+                        <li><a href="../contact.html">HR Management</a></li>
+                        <li><a href="../contact.html">Time Synchronization</a></li>
+                        <li><a href="../contact.html">Financial Management</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul class="footer-links">
+                        <li><a href="../about.html">About Us</a></li>
+                        <li><a href="../contact.html">Contact</a></li>
+                        <li><a href="../careers.html">Careers</a></li>
+                        <li><a href="../docs/README.md">Support</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Platform</h4>
+                    <ul class="footer-links">
+                        <li><a href="../pages/features.html">Features</a></li>
+                        <li><a href="../pricing.html">Pricing</a></li>
+                        <li><a href="../legal/security.html">Security</a></li>
+                        <li><a href="../login.html">Login</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <ul class="footer-links">
+                        <li><a href="../legal/privacy.html">Privacy Policy</a></li>
+                        <li><a href="../legal/terms.html">Terms of Service</a></li>
+                        <li><a href="../pages/api.html">API Documentation</a></li>
+                        <li><a href="../legal/compliance.html">Compliance</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Opsis Suite. All rights reserved. | Enterprise Management Platform v1.0.0</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- NOTIFICATION -->
+    <div id="notification" class="notification"></div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // OPSIS SOLUTIONS - MAIN APPLICATION
+        class OpsisSolutions {
+            constructor() {
+                this.init();
+                console.log('📦 Opsis Solutions - Page Loaded');
+            }
+
+            init() {
+                this.setupFadeInAnimations();
+                this.setupSolutionCards();
+                this.bindEvents();
+            }
+
+            // NOTIFICATION SYSTEM
+            showNotification(message, type = 'info') {
+                const notification = document.getElementById('notification');
+                if (notification) {
+                    notification.textContent = message;
+                    notification.className = 'notification ' + type;
+                    notification.classList.add('show');
+
+                    setTimeout(() => {
+                        notification.classList.remove('show');
+                    }, 3500);
+                }
+            }
+
+            // FADE IN ANIMATIONS
+            setupFadeInAnimations() {
+                const observerOptions = {
+                    threshold: 0.1,
+                    rootMargin: '0px 0px -50px 0px'
+                };
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                        }
+                    });
+                }, observerOptions);
+
+                document.querySelectorAll('.fade-in').forEach(el => {
+                    observer.observe(el);
+                });
+            }
+
+            // SOLUTION CARD INTERACTIONS
+            setupSolutionCards() {
+                const cards = document.querySelectorAll('.solution-card');
+                cards.forEach(card => {
+                    card.addEventListener('click', (e) => {
+                        // Don't trigger if clicking on CTA button
+                        if (e.target.classList.contains('solution-cta')) {
+                            return;
+                        }
+                        
+                        const title = card.querySelector('.solution-title').textContent;
+                        const status = card.querySelector('.solution-status').textContent;
+                        
+                        if (status === 'Available Now') {
+                            this.showNotification(`${title} is ready! Starting your free trial...`, 'info');
+                            setTimeout(() => {
+                                window.location.href = '../pricing.html';
+                            }, 2000);
+                        } else {
+                            this.showNotification(`${title} coming ${status}. Get notified when it's ready!`, 'info');
+                            setTimeout(() => {
+                                window.location.href = '../contact.html';
+                            }, 2000);
+                        }
+                    });
+                });
+            }
+
+            bindEvents() {
+                // Smooth scrolling for anchor links
+                document.querySelectorAll('a[href^="#"]').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const target = document.querySelector(link.getAttribute('href'));
+                        if (target) {
+                            target.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    });
+                });
+
+                // Handle navigation
+                document.querySelectorAll('a[href$=".html"]').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        const href = link.getAttribute('href');
+                        if (href.includes('contact.html') || href.includes('pricing.html') || href.includes('login.html')) {
+                            e.preventDefault();
+                            this.showNotification('Navigating...', 'info');
+                            setTimeout(() => {
+                                window.location.href = href;
+                            }, 500);
+                        }
+                    });
+                });
+            }
+        }
+
+        // GLOBAL FUNCTIONS
+        function handleSolutionClick(title) {
+            window.opsisSolutions.showNotification(`Learn more about ${title}`, 'info');
+        }
+
+        function toggleMobileMenu() {
+            const navLinks = document.querySelector('.nav-links');
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            
+            if (navLinks.style.display === 'flex') {
+                navLinks.style.display = 'none';
+                toggle.innerHTML = '☰';
+            } else {
+                navLinks.style.display = 'flex';
+                navLinks.style.flexDirection = 'column';
+                navLinks.style.position = 'absolute';
+                navLinks.style.top = '100%';
+                navLinks.style.left = '0';
+                navLinks.style.right = '0';
+                navLinks.style.background = 'rgba(255, 255, 255, 0.98)';
+                navLinks.style.backdropFilter = 'blur(10px)';
+                navLinks.style.padding = '1rem';
+                navLinks.style.borderTop = '1px solid rgba(0, 0, 0, 0.1)';
+                navLinks.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.1)';
+                toggle.innerHTML = '✕';
+            }
+        }
+
+        // INITIALIZE APP
+        document.addEventListener('DOMContentLoaded', () => {
+            window.opsisSolutions = new OpsisSolutions();
+        });
+
+        // PERFORMANCE MONITORING
+        window.addEventListener('load', () => {
+            const loadTime = performance.now();
+            console.log(`⚡ Solutions page loaded in ${Math.round(loadTime)}ms`);
+        });
+
+        // ERROR HANDLING
+        window.addEventListener('error', (e) => {
+            console.error('🚨 Solutions Error:', e.error);
+        });
+    </script>
+</body>
+</html>
