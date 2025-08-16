@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opsis Suite - Complete Enterprise Visibility</title>
+    <meta name="description" content="Enterprise Management Platform v1.0.0">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #1d1d1f;
+        }
+
+        /* KEYFRAMES */
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            25% { background-position: 100% 50%; }
+            50% { background-position: 100% 100%; }
+            75% { background-position: 0% 100%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes winkEye {
+            0%, 88% { transform: scaleY(1); }
+            90% { transform: scaleY(0.1); }
+            92% { transform: scaleY(1); }
+            94% { transform: scaleY(0.1); }
+            96% { transform: scaleY(1); }
+            100% { transform: scaleY(1); }
+        }
+
+        /* FADE IN ANIMATIONS */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* NOTIFICATION */
+        .notification {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(32, 201, 151, 0.3);
+            transform: translateY(-100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
+
+        .notification.show {
+            transform: translateY(0) !important;
+            opacity: 1 !important;
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            box-shadow: 0 4px 20px rgba(220, 53, 69, 0.3);
+        }
+
+        .notification.info {
+            background: linear-gradient(135deg, #0dcaf0, #0ea5e9);
+            box-shadow: 0 4px 20px rgba(13, 202, 240, 0.3);
+        }
+
+        /* SOLUTION CARDS */
+        .solution-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+
+        /* NAVIGATION */
+        .nav-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            width: 100%;
+            padding: 8px 0;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            width: 100%;
+        }
+
+        .nav-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            width: 100%;
+        }
+
+        /* LOGO */
+        .logo-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            transition: transform 0.2s ease;
+        }
+
+        .logo-container {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            padding: 2px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3, #54a0ff, #5f27cd, #00d2d3, #ff9f43, #10ac84, #ee5a6f, #ff6b6b);
+            background-size: 400% 400%;
+            animation: gradientShift 4s ease-in-out infinite;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #495057, #6c757d);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            fontSize: 16px;
+            color: white;
+            font-weight: 300;
+            box-shadow: 0 2px 8px rgba(73, 80, 87, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-icon::after {
+            content: '◉';
+            animation: winkEye 6s ease-in-out infinite;
+        }
+
+        .logo-text {
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #495057, #6c757d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            user-select: none;
+        }
+
+        /* NAVIGATION LINKS */
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .nav-link {
+            color: #495057;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link.active {
+            color: #20c997;
+            font-weight: 600;
+        }
+
+        .nav-link:hover {
+            color: #20c997;
+            background: rgba(32, 201, 151, 0.08);
+        }
+
+        /* CTA BUTTON */
+        .nav-cta {
+            background: linear-gradient(135deg, #495057, #6c757d);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .nav-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(73, 80, 87, 0.3);
+        }
+
+        /* MOBILE MENU */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #495057;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        /* HERO SECTION */
+        .hero-section {
+            padding: 5rem 2rem 4rem;
+            text-align: center;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-container {
+            max-width: 700px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #1d1d1f, #495057);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -2px;
+            line-height: 1.1;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+            color: #6c757d;
+            margin-bottom: 3rem;
+            font-weight: 400;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-cta {
+            margin-top: 2rem;
+        }
+
+        .hero-btn {
+            background: linear-gradient(135deg, #495057, #6c757d);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 0.5rem;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .hero-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(73, 80, 87, 0.3);
+        }
+
+        .hero-btn.secondary {
+            background: transparent;
+            color: #495057;
+            border: 2px solid #495057;
+        }
+
+        .hero-btn.secondary:hover {
+            background: #495057;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(73, 80, 87, 0.3);
+        }
+
+        /* SOLUTIONS SECTION */
+        .solutions-section {
+            padding: 3rem 2rem;
+            background: white;
+        }
+
+        .section-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 1rem;
+            letter-spacing: -1px;
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+            color: #6c757d;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .solutions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .solution-card {
+            background: linear-gradient(135deg, #f8f9fa, #ffffff);
+            border: 1px solid rgba(210, 210, 215, 0.3);
+            border-radius: 24px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .solution-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: white;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .warehouse-icon { background: #20c997; }
+        .timesync-icon { background: #0dcaf0; }
+        .hr-icon { background: #6610f2; }
+        .finance-icon { background: #fd7e14; }
+
+        .solution-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 1rem;
+        }
+
+        .solution-description {
+            color: #6c757d;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .solution-features {
+            list-style: none;
+            text-align: left;
+            margin: 0;
+            padding: 0;
+        }
+
+        .solution-features li {
+            color: #495057;
+            margin-bottom: 0.6rem;
+            padding-left: 1.5rem;
+            position: relative;
+            font-size: 0.95rem;
+        }
+
+        .solution-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .warehouse-features li::before { color: #20c997; }
+        .timesync-features li::before { color: #0dcaf0; }
+        .hr-features li::before { color: #6610f2; }
+        .finance-features li::before { color: #fd7e14; }
+
+        /* STATS SECTION */
+        .stats-section {
+            padding: 2rem 2rem;
+            background: linear-gradient(135deg, #495057, #6c757d);
+            color: white;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .stat-item {
+            padding: 1.5rem 1rem;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+        }
+
+        /* CTA SECTION */
+        .cta-section {
+            padding: 2rem 2rem;
+            background: #f8f9fa;
+            text-align: center;
+        }
+
+        .cta-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .cta-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 1.5rem;
+        }
+
+        .cta-subtitle {
+            font-size: 1.2rem;
+            color: #6c757d;
+            margin-bottom: 1.5rem;
+        }
+
+        /* FOOTER */
+        .footer {
+            background: #1d1d1f;
+            color: white;
+            padding: 4rem 0 2rem;
+            width: 100%;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            width: 100%;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-section h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #f8f9fa;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-links {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-links a {
+            color: #adb5bd;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s ease;
+        }
+
+        .footer-links a:hover {
+            color: #20c997;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #495057;
+            padding-top: 2rem;
+            text-align: center;
+        }
+
+        .footer-bottom p {
+            color: #adb5bd;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .hero-section {
+                padding: 4rem 1.5rem 3rem;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+                line-height: 1.2;
+                margin-bottom: 1rem;
+            }
+
+            .hero-subtitle {
+                font-size: 0.95rem;
+                margin-bottom: 1.5rem;
+                line-height: 1.5;
+            }
+
+            .hero-cta {
+                margin-top: 1rem;
+            }
+
+            .hero-btn {
+                display: block;
+                margin: 0.8rem auto;
+                padding: 1rem 2rem;
+                font-size: 1rem;
+                width: 100%;
+                max-width: 280px;
+            }
+
+            .solutions-section {
+                padding: 2.5rem 1.5rem;
+            }
+
+            .stats-section {
+                padding: 1.5rem 1.5rem;
+            }
+
+            .cta-section {
+                padding: 1.5rem 1.5rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .cta-title {
+                font-size: 2rem;
+            }
+
+            .section-header {
+                margin-bottom: 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 768px) and (max-width: 1199px) {
+            .hero-section {
+                padding: 5.5rem 2rem 3.5rem;
+            }
+
+            .solutions-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .hero-title {
+                font-size: 3.5rem;
+            }
+
+            .section-title {
+                font-size: 3rem;
+            }
+
+            .solutions-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVIGATION BAR -->
+    <nav class="nav-header">
+        <div class="nav-container">
+            <div class="nav-content">
+                <!-- Logo Section -->
+                <a href="/" class="logo-link">
+                    <div class="logo-container">
+                        <div class="logo-icon"></div>
+                    </div>
+                    <div class="logo-text">Opsis Suite</div>
+                </a>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="/" class="nav-link active">Home</a>
+                    <a href="/solutions" class="nav-link">Solutions</a>
+                    <a href="/features" class="nav-link">Features</a>
+                    <a href="/pricing" class="nav-link">Pricing</a>
+                    <a href="/contact" class="nav-link">Contact</a>
+                </div>
+
+                <!-- CTA Button -->
+                <a href="/login" class="nav-cta">Access Workspace</a>
+                
+                <!-- Mobile Menu Toggle -->
+                <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">☰</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="hero-section">
+        <div class="hero-container">
+            <h1 class="hero-title">Complete Enterprise Visibility</h1>
+            <p class="hero-subtitle">
+                Streamline operations, optimize workflows, and gain total control over your business with our integrated management platform.
+            </p>
+            <div class="hero-cta">
+                <a href="/login" class="hero-btn">Access Workspace</a>
+                <a href="/solutions" class="hero-btn secondary">Explore Solutions</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- SOLUTIONS SECTION -->
+    <section class="solutions-section" id="solutions">
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">Powerful Solutions for Modern Business</h2>
+                <p class="section-subtitle">Integrated modules designed to optimize every aspect of your operations</p>
+            </div>
+            <div class="solutions-grid">
+                <!-- Warehouse Card -->
+                <div class="solution-card fade-in" onclick="handleSolutionClick('Opsis Warehouse')">
+                    <div class="solution-icon warehouse-icon">📦</div>
+                    <h3 class="solution-title">Opsis Warehouse</h3>
+                    <p class="solution-description">
+                        Complete inventory management with real-time tracking and automated workflows.
+                    </p>
+                    <ul class="solution-features warehouse-features">
+                        <li>Real-time equipment tracking</li>
+                        <li>Automated request processing</li>
+                        <li>Mobile-optimized interface</li>
+                        <li>Advanced reporting & analytics</li>
+                        <li>Inspection workflows</li>
+                    </ul>
+                </div>
+
+                <!-- TimeSync Card -->
+                <div class="solution-card fade-in" onclick="handleSolutionClick('Opsis TimeSync')">
+                    <div class="solution-icon timesync-icon">⚡</div>
+                    <h3 class="solution-title">Opsis TimeSync</h3>
+                    <p class="solution-description">
+                        Employee scheduling and time synchronization management for optimal productivity.
+                    </p>
+                    <ul class="solution-features timesync-features">
+                        <li>Smart shift scheduling</li>
+                        <li>Mobile time tracking</li>
+                        <li>Project time allocation</li>
+                        <li>Overtime management</li>
+                        <li>Payroll integration ready</li>
+                    </ul>
+                </div>
+
+                <!-- HR Card -->
+                <div class="solution-card fade-in" onclick="handleSolutionClick('Opsis HR')">
+                    <div class="solution-icon hr-icon">👥</div>
+                    <h3 class="solution-title">Opsis HR</h3>
+                    <p class="solution-description">
+                        Comprehensive human resources management for growing organizations.
+                    </p>
+                    <ul class="solution-features hr-features">
+                        <li>Employee management</li>
+                        <li>Performance tracking</li>
+                        <li>Benefits administration</li>
+                        <li>Compliance monitoring</li>
+                        <li>Training management</li>
+                    </ul>
+                </div>
+
+                <!-- Finance Card -->
+                <div class="solution-card fade-in" onclick="handleSolutionClick('Opsis Finance')">
+                    <div class="solution-icon finance-icon">💰</div>
+                    <h3 class="solution-title">Opsis Finance</h3>
+                    <p class="solution-description">
+                        Financial tracking and budget control with advanced analytics capabilities.
+                    </p>
+                    <ul class="solution-features finance-features">
+                        <li>Budget management</li>
+                        <li>Expense tracking</li>
+                        <li>Financial reporting</li>
+                        <li>Cost analysis</li>
+                        <li>ROI optimization</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STATS SECTION -->
+    <section class="stats-section">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number">99.9%</div>
+                <div class="stat-label">System Uptime</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">500+</div>
+                <div class="stat-label">Companies Served</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">2.5M</div>
+                <div class="stat-label">Transactions</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">24/7</div>
+                <div class="stat-label">Support</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA SECTION -->
+    <section class="cta-section">
+        <div class="cta-container">
+            <h2 class="cta-title">Ready to Transform Your Operations?</h2>
+            <p class="cta-subtitle">
+                Join hundreds of companies already using Opsis to streamline their business operations.
+            </p>
+            <a href="/login" class="hero-btn">Access Workspace</a>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-grid">
+                <div>
+                    <h3>Solutions</h3>
+                    <ul class="footer-links">
+                        <li><a href="/solutions">Warehouse Management</a></li>
+                        <li><a href="/solutions">Time Synchronization</a></li>
+                        <li><a href="/solutions">Human Resources</a></li>
+                        <li><a href="/solutions">Financial Management</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Company</h3>
+                    <ul class="footer-links">
+                        <li><a href="/about">About Us</a></li>
+                        <li><a href="/contact">Contact</a></li>
+                        <li><a href="/careers">Careers</a></li>
+                        <li><a href="/support">Support</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Platform</h3>
+                    <ul class="footer-links">
+                        <li><a href="/features">Features</a></li>
+                        <li><a href="/pricing">Pricing</a></li>
+                        <li><a href="/security">Security</a></li>
+                        <li><a href="/login">Login</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Legal</h3>
+                    <ul class="footer-links">
+                        <li><a href="/privacy">Privacy Policy</a></li>
+                        <li><a href="/terms">Terms of Service</a></li>
+                        <li><a href="/doc">Documentation</a></li>
+                        <li><a href="/compliance">Compliance</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Opsis Suite. All rights reserved. | Enterprise Management Platform v1.0.0</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- NOTIFICATION -->
+    <div id="notification" class="notification"></div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // OPSIS SUITE - MAIN APPLICATION
+        class OpsisApp {
+            constructor() {
+                this.init();
+                console.log('🚀 Opsis Suite - Converted from Next.js to HTML');
+            }
+
+            init() {
+                this.setupFadeInAnimations();
+                this.setupSolutionCards();
+                this.bindEvents();
+            }
+
+            // SIMPLE NOTIFICATION SYSTEM
+            showNotification(message, type = 'info') {
+                const notification = document.getElementById('notification');
+                if (notification) {
+                    notification.textContent = message;
+                    notification.className = 'notification ' + type;
+                    notification.classList.add('show');
+
+                    setTimeout(() => {
+                        notification.classList.remove('show');
+                    }, 3000);
+                }
+            }
+
+            // FADE IN ANIMATIONS
+            setupFadeInAnimations() {
+                const observerOptions = {
+                    threshold: 0.1,
+                    rootMargin: '0px 0px -50px 0px'
+                };
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                        }
+                    });
+                }, observerOptions);
+
+                document.querySelectorAll('.fade-in').forEach(el => {
+                    observer.observe(el);
+                });
+            }
+
+            // SOLUTION CARD INTERACTIONS
+            setupSolutionCards() {
+                const cards = document.querySelectorAll('.solution-card');
+                cards.forEach(card => {
+                    card.addEventListener('click', (e) => {
+                        const title = card.querySelector('.solution-title').textContent;
+                        this.showNotification(`Learn more about ${title} in our Solutions page!`, 'info');
+                        
+                        setTimeout(() => {
+                            window.open('/solutions', '_top');
+                        }, 1500);
+                    });
+                });
+            }
+
+            bindEvents() {
+                // Smooth scrolling for navigation links
+                document.querySelectorAll('a[href^="/#"]').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const target = document.querySelector(link.getAttribute('href').substring(1));
+                        if (target) {
+                            target.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    });
+                });
+
+                // Handle external navigation
+                document.querySelectorAll('a[href^="/"]').forEach(link => {
+                    if (!link.getAttribute('href').startsWith('/#')) {
+                        link.addEventListener('click', (e) => {
+                            const href = link.getAttribute('href');
+                            if (href !== '/') {
+                                e.preventDefault();
+                                this.showNotification(`Navigating to ${href}...`, 'info');
+                                
+                                setTimeout(() => {
+                                    console.log(`Would navigate to: ${href}`);
+                                    // For GitHub Pages, you would implement actual routing here
+                                }, 300);
+                            }
+                        });
+                    }
+                });
+            }
+        }
+
+        // GLOBAL FUNCTIONS
+        function handleSolutionClick(title) {
+            window.opsisApp.showNotification(`Learn more about ${title} in our Solutions page!`, 'info');
+            
+            setTimeout(() => {
+                window.open('/solutions', '_top');
+            }, 1500);
+        }
+
+        function toggleMobileMenu() {
+            const navLinks = document.querySelector('.nav-links');
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            
+            if (navLinks.style.display === 'flex') {
+                navLinks.style.display = 'none';
+                toggle.innerHTML = '☰';
+            } else {
+                navLinks.style.display = 'flex';
+                navLinks.style.flexDirection = 'column';
+                navLinks.style.position = 'absolute';
+                navLinks.style.top = '100%';
+                navLinks.style.left = '0';
+                navLinks.style.right = '0';
+                navLinks.style.background = 'rgba(255, 255, 255, 0.98)';
+                navLinks.style.backdropFilter = 'blur(10px)';
+                navLinks.style.padding = '1rem';
+                navLinks.style.borderTop = '1px solid rgba(0, 0, 0, 0.1)';
+                navLinks.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.1)';
+                toggle.innerHTML = '✕';
+            }
+        }
+
+        // INITIALIZE APP
+        document.addEventListener('DOMContentLoaded', () => {
+            window.opsisApp = new OpsisApp();
+        });
+
+        // PERFORMANCE MONITORING
+        window.addEventListener('load', () => {
+            const loadTime = performance.now();
+            console.log(`⚡ Opsis Suite loaded in ${Math.round(loadTime)}ms`);
+        });
+
+        // ERROR HANDLING
+        window.addEventListener('error', (e) => {
+            console.error('🚨 Application Error:', e.error);
+        });
+    </script>
+</body>
+</html>
