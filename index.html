@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Opsis Suite - Complete Enterprise Visibility</title>
-    <meta name="description" content="Enterprise Management Platform v1.0.0">
+    <meta name="description" content="Enterprise Management Platform - Multi-tenant SaaS for warehouse, fleet, and field operations">
     
     <style>
         * {
@@ -35,6 +35,17 @@
             94% { transform: scaleY(0.1); }
             96% { transform: scaleY(1); }
             100% { transform: scaleY(1); }
+        }
+
+        @keyframes fadeInUp {
+            0% { 
+                opacity: 0; 
+                transform: translateY(30px); 
+            }
+            100% { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
         }
 
         /* FADE IN ANIMATIONS */
@@ -68,23 +79,6 @@
         .notification.show {
             transform: translateY(0) !important;
             opacity: 1 !important;
-        }
-
-        .notification.error {
-            background: linear-gradient(135deg, #dc3545, #c82333);
-            box-shadow: 0 4px 20px rgba(220, 53, 69, 0.3);
-        }
-
-        .notification.info {
-            background: linear-gradient(135deg, #0dcaf0, #0ea5e9);
-            box-shadow: 0 4px 20px rgba(13, 202, 240, 0.3);
-        }
-
-        /* SOLUTION CARDS */
-        .solution-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-            background: white;
         }
 
         /* NAVIGATION */
@@ -300,8 +294,8 @@
             box-shadow: 0 15px 40px rgba(73, 80, 87, 0.3);
         }
 
-        /* SOLUTIONS SECTION */
-        .solutions-section {
+        /* MODULES SECTION */
+        .modules-section {
             padding: 3rem 2rem;
             background: white;
         }
@@ -331,13 +325,15 @@
             margin: 0 auto;
         }
 
-        .solutions-grid {
+        .modules-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
         }
 
-        .solution-card {
+        .module-card {
             background: linear-gradient(135deg, #f8f9fa, #ffffff);
             border: 1px solid rgba(210, 210, 215, 0.3);
             border-radius: 24px;
@@ -349,7 +345,13 @@
             cursor: pointer;
         }
 
-        .solution-icon {
+        .module-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+
+        .module-icon {
             width: 80px;
             height: 80px;
             border-radius: 20px;
@@ -362,50 +364,23 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
 
-        .warehouse-icon { background: #20c997; }
-        .timesync-icon { background: #0dcaf0; }
-        .hr-icon { background: #6610f2; }
-        .finance-icon { background: #fd7e14; }
+        .warehouse-icon { background: linear-gradient(135deg, #20c997, #17a2b8); }
+        .timesync-icon { background: linear-gradient(135deg, #fd7e14, #dc3545); }
+        .hr-icon { background: linear-gradient(135deg, #6610f2, #d63384); }
+        .finance-icon { background: linear-gradient(135deg, #0dcaf0, #6f42c1); }
 
-        .solution-title {
+        .module-title {
             font-size: 1.5rem;
             font-weight: 700;
             color: #1d1d1f;
             margin-bottom: 1rem;
         }
 
-        .solution-description {
+        .module-description {
             color: #6c757d;
             margin-bottom: 1.5rem;
             line-height: 1.6;
         }
-
-        .solution-features {
-            list-style: none;
-            text-align: left;
-            margin: 0;
-            padding: 0;
-        }
-
-        .solution-features li {
-            color: #495057;
-            margin-bottom: 0.6rem;
-            padding-left: 1.5rem;
-            position: relative;
-            font-size: 0.95rem;
-        }
-
-        .solution-features li::before {
-            content: '✓';
-            position: absolute;
-            left: 0;
-            font-weight: bold;
-        }
-
-        .warehouse-features li::before { color: #20c997; }
-        .timesync-features li::before { color: #0dcaf0; }
-        .hr-features li::before { color: #6610f2; }
-        .finance-features li::before { color: #fd7e14; }
 
         /* STATS SECTION */
         .stats-section {
@@ -480,7 +455,7 @@
             width: 100%;
         }
 
-        .footer-grid {
+        .footer-content {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 2rem;
@@ -566,7 +541,7 @@
                 max-width: 280px;
             }
 
-            .solutions-section {
+            .modules-section {
                 padding: 2.5rem 1.5rem;
             }
 
@@ -593,6 +568,10 @@
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
+
+            .modules-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media (min-width: 768px) and (max-width: 1199px) {
@@ -600,7 +579,7 @@
                 padding: 5.5rem 2rem 3.5rem;
             }
 
-            .solutions-grid {
+            .modules-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
 
@@ -618,7 +597,7 @@
                 font-size: 3rem;
             }
 
-            .solutions-grid {
+            .modules-grid {
                 grid-template-columns: repeat(4, 1fr);
             }
 
@@ -644,14 +623,14 @@
                 <!-- Navigation Links -->
                 <div class="nav-links">
                     <a href="/" class="nav-link active">Home</a>
-                    <a href="/solutions" class="nav-link">Solutions</a>
-                    <a href="/features" class="nav-link">Features</a>
-                    <a href="/pricing" class="nav-link">Pricing</a>
-                    <a href="/contact" class="nav-link">Contact</a>
+                    <a href="/solutions.html" class="nav-link">Solutions</a>
+                    <a href="/pages/features.html" class="nav-link">Features</a>
+                    <a href="/pricing.html" class="nav-link">Pricing</a>
+                    <a href="/contact.html" class="nav-link">Contact</a>
                 </div>
 
                 <!-- CTA Button -->
-                <a href="/login" class="nav-cta">Access Workspace</a>
+                <a href="/login.html" class="nav-cta">Access Workspace</a>
                 
                 <!-- Mobile Menu Toggle -->
                 <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">☰</button>
@@ -667,82 +646,54 @@
                 Streamline operations, optimize workflows, and gain total control over your business with our integrated management platform.
             </p>
             <div class="hero-cta">
-                <a href="/login" class="hero-btn">Access Workspace</a>
-                <a href="/solutions" class="hero-btn secondary">Explore Solutions</a>
+                <a href="/login.html" class="hero-btn">Access Workspace</a>
+                <a href="/solutions.html" class="hero-btn secondary">Explore Solutions</a>
             </div>
         </div>
     </section>
 
-    <!-- SOLUTIONS SECTION -->
-    <section class="solutions-section" id="solutions">
+    <!-- MODULES SECTION (SIMPLE CARDS) -->
+    <section class="modules-section" id="solutions">
         <div class="section-container">
             <div class="section-header">
                 <h2 class="section-title">Powerful Solutions for Modern Business</h2>
                 <p class="section-subtitle">Integrated modules designed to optimize every aspect of your operations</p>
             </div>
-            <div class="solutions-grid">
+            <div class="modules-grid">
                 <!-- Warehouse Card -->
-                <div class="solution-card fade-in" onclick="handleSolutionClick('Opsis Warehouse')">
-                    <div class="solution-icon warehouse-icon">📦</div>
-                    <h3 class="solution-title">Opsis Warehouse</h3>
-                    <p class="solution-description">
+                <div class="module-card fade-in" onclick="handleModuleClick('Opsis Warehouse')">
+                    <div class="module-icon warehouse-icon">📦</div>
+                    <h3 class="module-title">Opsis Warehouse</h3>
+                    <p class="module-description">
                         Complete inventory management with real-time tracking and automated workflows.
                     </p>
-                    <ul class="solution-features warehouse-features">
-                        <li>Real-time equipment tracking</li>
-                        <li>Automated request processing</li>
-                        <li>Mobile-optimized interface</li>
-                        <li>Advanced reporting & analytics</li>
-                        <li>Inspection workflows</li>
-                    </ul>
                 </div>
 
                 <!-- TimeSync Card -->
-                <div class="solution-card fade-in" onclick="handleSolutionClick('Opsis TimeSync')">
-                    <div class="solution-icon timesync-icon">⚡</div>
-                    <h3 class="solution-title">Opsis TimeSync</h3>
-                    <p class="solution-description">
+                <div class="module-card fade-in" onclick="handleModuleClick('Opsis TimeSync')">
+                    <div class="module-icon timesync-icon">⚡</div>
+                    <h3 class="module-title">Opsis TimeSync</h3>
+                    <p class="module-description">
                         Employee scheduling and time synchronization management for optimal productivity.
                     </p>
-                    <ul class="solution-features timesync-features">
-                        <li>Smart shift scheduling</li>
-                        <li>Mobile time tracking</li>
-                        <li>Project time allocation</li>
-                        <li>Overtime management</li>
-                        <li>Payroll integration ready</li>
-                    </ul>
                 </div>
 
                 <!-- HR Card -->
-                <div class="solution-card fade-in" onclick="handleSolutionClick('Opsis HR')">
-                    <div class="solution-icon hr-icon">👥</div>
-                    <h3 class="solution-title">Opsis HR</h3>
-                    <p class="solution-description">
+                <div class="module-card fade-in" onclick="handleModuleClick('Opsis HR')">
+                    <div class="module-icon hr-icon">👥</div>
+                    <h3 class="module-title">Opsis HR</h3>
+                    <p class="module-description">
                         Comprehensive human resources management for growing organizations.
                     </p>
-                    <ul class="solution-features hr-features">
-                        <li>Employee management</li>
-                        <li>Performance tracking</li>
-                        <li>Benefits administration</li>
-                        <li>Compliance monitoring</li>
-                        <li>Training management</li>
-                    </ul>
                 </div>
 
                 <!-- Finance Card -->
-                <div class="solution-card fade-in" onclick="handleSolutionClick('Opsis Finance')">
-                    <div class="solution-icon finance-icon">💰</div>
-                    <h3 class="solution-title">Opsis Finance</h3>
-                    <p class="solution-description">
+                <div class="module-card fade-in" onclick="handleModuleClick('Opsis Finance')">
+                    <div class="module-icon finance-icon">💰</div>
+                    <h3 class="module-title">Opsis Finance</h3>
+                    <p class="module-description">
                         Financial tracking and budget control with advanced analytics capabilities.
                     </p>
-                    <ul class="solution-features finance-features">
-                        <li>Budget management</li>
-                        <li>Expense tracking</li>
-                        <li>Financial reporting</li>
-                        <li>Cost analysis</li>
-                        <li>ROI optimization</li>
-                    </ul>
                 </div>
             </div>
         </div>
@@ -777,48 +728,48 @@
             <p class="cta-subtitle">
                 Join hundreds of companies already using Opsis to streamline their business operations.
             </p>
-            <a href="/login" class="hero-btn">Access Workspace</a>
+            <a href="/login.html" class="hero-btn">Access Workspace</a>
         </div>
     </section>
 
     <!-- FOOTER -->
     <footer class="footer">
         <div class="footer-container">
-            <div class="footer-grid">
-                <div>
+            <div class="footer-content">
+                <div class="footer-section">
                     <h3>Solutions</h3>
                     <ul class="footer-links">
-                        <li><a href="/solutions">Warehouse Management</a></li>
-                        <li><a href="/solutions">Time Synchronization</a></li>
-                        <li><a href="/solutions">Human Resources</a></li>
-                        <li><a href="/solutions">Financial Management</a></li>
+                        <li><a href="/solutions.html">Warehouse Management</a></li>
+                        <li><a href="/solutions.html">Time Synchronization</a></li>
+                        <li><a href="/solutions.html">Human Resources</a></li>
+                        <li><a href="/solutions.html">Financial Management</a></li>
                     </ul>
                 </div>
-                <div>
+                <div class="footer-section">
                     <h3>Company</h3>
                     <ul class="footer-links">
-                        <li><a href="/about">About Us</a></li>
-                        <li><a href="/contact">Contact</a></li>
-                        <li><a href="/careers">Careers</a></li>
-                        <li><a href="/support">Support</a></li>
+                        <li><a href="/about.html">About Us</a></li>
+                        <li><a href="/contact.html">Contact</a></li>
+                        <li><a href="/careers.html">Careers</a></li>
+                        <li><a href="/docs/README.md">Support</a></li>
                     </ul>
                 </div>
-                <div>
+                <div class="footer-section">
                     <h3>Platform</h3>
                     <ul class="footer-links">
-                        <li><a href="/features">Features</a></li>
-                        <li><a href="/pricing">Pricing</a></li>
-                        <li><a href="/security">Security</a></li>
-                        <li><a href="/login">Login</a></li>
+                        <li><a href="/pages/features.html">Features</a></li>
+                        <li><a href="/pricing.html">Pricing</a></li>
+                        <li><a href="/legal/security.html">Security</a></li>
+                        <li><a href="/login.html">Login</a></li>
                     </ul>
                 </div>
-                <div>
+                <div class="footer-section">
                     <h3>Legal</h3>
                     <ul class="footer-links">
-                        <li><a href="/privacy">Privacy Policy</a></li>
-                        <li><a href="/terms">Terms of Service</a></li>
-                        <li><a href="/doc">Documentation</a></li>
-                        <li><a href="/compliance">Compliance</a></li>
+                        <li><a href="/legal/privacy.html">Privacy Policy</a></li>
+                        <li><a href="/legal/terms.html">Terms of Service</a></li>
+                        <li><a href="/pages/api.html">Documentation</a></li>
+                        <li><a href="/legal/compliance.html">Compliance</a></li>
                     </ul>
                 </div>
             </div>
@@ -833,20 +784,20 @@
 
     <!-- JAVASCRIPT -->
     <script>
-        // OPSIS SUITE - MAIN APPLICATION
-        class OpsisApp {
+        // OPSIS HOME - SIMPLIFIED VERSION
+        class OpsisHome {
             constructor() {
                 this.init();
-                console.log('🚀 Opsis Suite - Converted from Next.js to HTML');
+                console.log('🏠 Opsis Home - Simplified Landing');
             }
 
             init() {
                 this.setupFadeInAnimations();
-                this.setupSolutionCards();
+                this.setupModuleCards();
                 this.bindEvents();
             }
 
-            // SIMPLE NOTIFICATION SYSTEM
+            // NOTIFICATION SYSTEM
             showNotification(message, type = 'info') {
                 const notification = document.getElementById('notification');
                 if (notification) {
@@ -880,59 +831,55 @@
                 });
             }
 
-            // SOLUTION CARD INTERACTIONS
-            setupSolutionCards() {
-                const cards = document.querySelectorAll('.solution-card');
+            // MODULE CARD INTERACTIONS
+            setupModuleCards() {
+                const cards = document.querySelectorAll('.module-card');
                 cards.forEach(card => {
                     card.addEventListener('click', (e) => {
-                        const title = card.querySelector('.solution-title').textContent;
+                        const title = card.querySelector('.module-title').textContent;
                         this.showNotification(`Learn more about ${title} in our Solutions page!`, 'info');
                         
                         setTimeout(() => {
-                            window.open('/solutions', '_top');
+                            window.location.href = '/solutions.html';
                         }, 1500);
                     });
                 });
             }
 
             bindEvents() {
-                // Smooth scrolling for navigation links
-                document.querySelectorAll('a[href^="/#"]').forEach(link => {
+                // Smooth scrolling for anchor links
+                document.querySelectorAll('a[href^="#"]').forEach(link => {
                     link.addEventListener('click', (e) => {
                         e.preventDefault();
-                        const target = document.querySelector(link.getAttribute('href').substring(1));
+                        const target = document.querySelector(link.getAttribute('href'));
                         if (target) {
                             target.scrollIntoView({ behavior: 'smooth' });
                         }
                     });
                 });
 
-                // Handle external navigation
-                document.querySelectorAll('a[href^="/"]').forEach(link => {
-                    if (!link.getAttribute('href').startsWith('/#')) {
-                        link.addEventListener('click', (e) => {
-                            const href = link.getAttribute('href');
-                            if (href !== '/') {
-                                e.preventDefault();
-                                this.showNotification(`Navigating to ${href}...`, 'info');
-                                
-                                setTimeout(() => {
-                                    console.log(`Would navigate to: ${href}`);
-                                    // For GitHub Pages, you would implement actual routing here
-                                }, 300);
-                            }
-                        });
-                    }
+                // Handle navigation
+                document.querySelectorAll('a[href$=".html"]').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        const href = link.getAttribute('href');
+                        if (href.includes('contact.html') || href.includes('pricing.html') || href.includes('login.html')) {
+                            e.preventDefault();
+                            this.showNotification('Navigating...', 'info');
+                            setTimeout(() => {
+                                window.location.href = href;
+                            }, 500);
+                        }
+                    });
                 });
             }
         }
 
         // GLOBAL FUNCTIONS
-        function handleSolutionClick(title) {
-            window.opsisApp.showNotification(`Learn more about ${title} in our Solutions page!`, 'info');
+        function handleModuleClick(title) {
+            window.opsisHome.showNotification(`Learn more about ${title} in our Solutions page!`, 'info');
             
             setTimeout(() => {
-                window.open('/solutions', '_top');
+                window.location.href = '/solutions.html';
             }, 1500);
         }
 
@@ -961,18 +908,18 @@
 
         // INITIALIZE APP
         document.addEventListener('DOMContentLoaded', () => {
-            window.opsisApp = new OpsisApp();
+            window.opsisHome = new OpsisHome();
         });
 
         // PERFORMANCE MONITORING
         window.addEventListener('load', () => {
             const loadTime = performance.now();
-            console.log(`⚡ Opsis Suite loaded in ${Math.round(loadTime)}ms`);
+            console.log(`⚡ Home page loaded in ${Math.round(loadTime)}ms`);
         });
 
         // ERROR HANDLING
         window.addEventListener('error', (e) => {
-            console.error('🚨 Application Error:', e.error);
+            console.error('🚨 Home Error:', e.error);
         });
     </script>
 </body>
