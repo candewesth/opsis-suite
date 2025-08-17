@@ -1,1 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opsis Suite - API Documentation Coming Soon</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #1d1d1f;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
+        /* MAIN CONTAINER */
+        .built-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* ANIMATED BACKGROUND */
+        .built-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 70%, rgba(32, 201, 151, 0.1) 0%, transparent 30%), 
+                        radial-gradient(circle at 70% 30%, rgba(23, 162, 184, 0.1) 0%, transparent 30%),
+                        radial-gradient(circle at 50% 50%, rgba(102, 16, 242, 0.05) 0%, transparent 40%);
+            animation: rotateBackground 60s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes rotateBackground {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* API ICON */
+        .api-icon {
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+            border-radius: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            color: white;
+            margin: 0 auto 3rem;
+            box-shadow: 0 25px 80px rgba(32, 201, 151, 0.3);
+            animation: apiPulse 3s ease-in-out infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .api-icon::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+            animation: shimmer 4s ease-in-out infinite;
+        }
+
+        @keyframes apiPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        /* MAIN TITLE */
+        .built-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #1d1d1f, #495057);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -2px;
+            line-height: 1.1;
+            animation: titleSlideIn 1s ease-out 0.3s both;
+        }
+
+        @keyframes titleSlideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* SUBTITLE */
+        .built-subtitle {
+            font-size: 1.3rem;
+            color: #6c757d;
+            margin-bottom: 3rem;
+            font-weight: 400;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.5;
+            animation: subtitleSlideIn 1s ease-out 0.6s both;
+        }
+
+        @keyframes subtitleSlideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* PROGRESS SECTION */
+        .progress-section {
+            background: white;
+            border: 1px solid rgba(210, 210, 215, 0.3);
+            border-radius: 32px;
+            padding: 3rem 2.5rem;
+            margin: 3rem 0;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            animation: progressSlideIn 1s ease-out 0.9s both;
+        }
+
+        @keyframes progressSlideIn {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .progress-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 2rem;
+        }
+
+        .progress-bar-container {
+            background: #e9ecef;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+            border-radius: 6px;
+            width: 0%;
+            animation: progressFill 2s ease-out 1.2s forwards;
+            position: relative;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%);
+            animation: progressShine 2s ease-in-out infinite;
+        }
+
+        @keyframes progressFill {
+            to { width: 62%; }
+        }
+
+        @keyframes progressShine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-percentage {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #20c997;
+            margin-bottom: 1rem;
+        }
+
+        .progress-description {
+            color: #6c757d;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        /* API ENDPOINTS SECTION */
+        .api-endpoints {
+            margin: 3rem 0;
+            animation: endpointsSlideIn 1s ease-out 1.5s both;
+        }
+
+        @keyframes endpointsSlideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .endpoints-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 2rem;
+        }
+
+        .endpoints-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .endpoint-item {
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            border: 1px solid rgba(210, 210, 215, 0.3);
+            border-radius: 24px;
+            padding: 2rem 1.5rem;
+            text-align: left;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .endpoint-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--endpoint-gradient);
+            border-radius: 24px 24px 0 0;
+        }
+
+        .endpoint-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            background: white;
+        }
+
+        .endpoint-method {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .method-get { background: linear-gradient(135deg, #20c997, #17a2b8); }
+        .method-post { background: linear-gradient(135deg, #fd7e14, #f59e0b); }
+        .method-put { background: linear-gradient(135deg, #6610f2, #7c3aed); }
+        .method-delete { background: linear-gradient(135deg, #dc3545, #c53030); }
+
+        .endpoint-path {
+            font-family: 'SF Mono', Monaco, Inconsolata, 'Roboto Mono', Consolas, 'Courier New', monospace;
+            font-size: 0.9rem;
+            background: #f8f9fa;
+            padding: 0.5rem 0.8rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            color: #495057;
+            border-left: 4px solid var(--endpoint-color);
+        }
+
+        .endpoint-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 0.5rem;
+        }
+
+        .endpoint-description {
+            color: #6c757d;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .endpoint-status {
+            font-size: 0.8rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            background: rgba(108, 117, 125, 0.1);
+            display: inline-block;
+        }
+
+        /* ENDPOINT COLORS */
+        .endpoint-equipment { --endpoint-gradient: linear-gradient(135deg, #20c997, #17a2b8); --endpoint-color: #20c997; }
+        .endpoint-loans { --endpoint-gradient: linear-gradient(135deg, #fd7e14, #f59e0b); --endpoint-color: #fd7e14; }
+        .endpoint-users { --endpoint-gradient: linear-gradient(135deg, #6610f2, #7c3aed); --endpoint-color: #6610f2; }
+        .endpoint-maintenance { --endpoint-gradient: linear-gradient(135deg, #dc3545, #c53030); --endpoint-color: #dc3545; }
+        .endpoint-auth { --endpoint-gradient: linear-gradient(135deg, #495057, #6c757d); --endpoint-color: #495057; }
+        .endpoint-webhooks { --endpoint-gradient: linear-gradient(135deg, #0dcaf0, #0ea5e9); --endpoint-color: #0dcaf0; }
+
+        /* CODE PREVIEW SECTION */
+        .code-preview {
+            background: #1d1d1f;
+            border-radius: 24px;
+            padding: 2rem;
+            margin: 3rem 0;
+            text-align: left;
+            animation: codeSlideIn 1s ease-out 1.8s both;
+        }
+
+        @keyframes codeSlideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .code-title {
+            color: #20c997;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .code-block {
+            font-family: 'SF Mono', Monaco, Inconsolata, 'Roboto Mono', Consolas, 'Courier New', monospace;
+            background: #2d2d2f;
+            border-radius: 12px;
+            padding: 1.5rem;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .code-comment { color: #6c757d; }
+        .code-string { color: #20c997; }
+        .code-keyword { color: #fd7e14; }
+        .code-method { color: #0dcaf0; }
+
+        /* NOTIFICATION SECTION */
+        .notification-section {
+            background: linear-gradient(135deg, #495057, #6c757d);
+            border-radius: 32px;
+            padding: 3rem 2.5rem;
+            color: white;
+            margin: 3rem 0;
+            text-align: center;
+            animation: notificationSlideIn 1s ease-out 2.1s both;
+        }
+
+        @keyframes notificationSlideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .notification-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            display: block;
+            animation: notificationBounce 2s ease-in-out infinite;
+        }
+
+        @keyframes notificationBounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .notification-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .notification-description {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .notification-form {
+            display: flex;
+            gap: 1rem;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .notification-input {
+            flex: 1;
+            padding: 0.8rem 1.2rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .notification-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .notification-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .notification-button {
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .notification-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(32, 201, 151, 0.3);
+        }
+
+        /* HOME BUTTON */
+        .home-button {
+            background: linear-gradient(135deg, #1d1d1f, #495057);
+            color: white;
+            border: none;
+            padding: 1.2rem 3rem;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 2rem;
+            animation: homeButtonSlideIn 1s ease-out 2.4s both;
+        }
+
+        @keyframes homeButtonSlideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .home-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(29, 29, 31, 0.3);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            body { height: auto; padding: 2rem 0; }
+            .built-container { padding: 2rem 1.5rem; }
+            .built-title { font-size: 2.5rem; margin-bottom: 1rem; }
+            .built-subtitle { font-size: 1.1rem; margin-bottom: 2rem; }
+            .api-icon { width: 120px; height: 120px; font-size: 4rem; margin-bottom: 2rem; }
+            .progress-section { padding: 2rem 1.5rem; margin: 2rem 0; }
+            .endpoints-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+            .notification-section { padding: 2rem 1.5rem; margin: 2rem 0; }
+            .notification-form { flex-direction: column; }
+            .home-button { width: 100%; max-width: 300px; }
+            .code-block { font-size: 0.8rem; padding: 1rem; }
+        }
+
+        @media (min-width: 768px) and (max-width: 1199px) {
+            .endpoints-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (min-width: 1200px) {
+            .built-title { font-size: 4rem; }
+            .endpoints-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        /* LOADING ANIMATION */
+        .loading-dots {
+            display: inline-block;
+            position: relative;
+            width: 80px;
+            height: 20px;
+            margin-left: 10px;
+        }
+
+        .loading-dots div {
+            position: absolute;
+            top: 50%;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #20c997;
+            animation: loadingDots 1.2s linear infinite;
+            transform: translateY(-50%);
+        }
+
+        .loading-dots div:nth-child(1) { left: 8px; animation-delay: 0s; }
+        .loading-dots div:nth-child(2) { left: 32px; animation-delay: -0.4s; }
+        .loading-dots div:nth-child(3) { left: 56px; animation-delay: -0.8s; }
+
+        @keyframes loadingDots {
+            0%, 80%, 100% { transform: translateY(-50%) scale(0); }
+            40% { transform: translateY(-50%) scale(1); }
+        }
+
+        /* NOTIFICATION TOAST */
+        .notification {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(32, 201, 151, 0.3);
+            transform: translateY(-100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
+
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, #198754, #16a34a);
+            box-shadow: 0 4px 20px rgba(25, 135, 84, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="built-container">
+        <!-- API ICON -->
+        <div class="api-icon">
+            🔌
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <h1 class="built-title">API Documentation Coming Soon</h1>
+        <p class="built-subtitle">We're building a powerful REST API that will give developers programmatic access to all Opsis Suite warehouse management features. Build custom integrations, automate workflows, and extend your warehouse operations.</p>
+
+        <!-- PROGRESS SECTION -->
+        <div class="progress-section">
+            <h2 class="progress-title">API Development Progress</h2>
+            <div class="progress-bar-container">
+                <div class="progress-bar"></div>
+            </div>
+            <div class="progress-percentage">62% Complete</div>
+            <p class="progress-description">Our engineering team is developing RESTful endpoints for complete warehouse management automation. Core equipment and loan management APIs are currently in testing phase.</p>
+        </div>
+
+        <!-- API ENDPOINTS -->
+        <div class="api-endpoints">
+            <h2 class="endpoints-title">Planned API Endpoints</h2>
+            <div class="endpoints-grid">
+                <div class="endpoint-item endpoint-equipment">
+                    <span class="endpoint-method method-get">GET</span>
+                    <div class="endpoint-path">/api/v1/equipment</div>
+                    <div class="endpoint-name">Equipment Management</div>
+                    <div class="endpoint-description">Retrieve, create, and manage equipment inventory with real-time status tracking.</div>
+                    <div class="endpoint-status">In Testing</div>
+                </div>
+                
+                <div class="endpoint-item endpoint-loans">
+                    <span class="endpoint-method method-post">POST</span>
+                    <div class="endpoint-path">/api/v1/loans</div>
+                    <div class="endpoint-name">Loan Requests</div>
+                    <div class="endpoint-description">Create and manage equipment loan requests with approval workflows.</div>
+                    <div class="endpoint-status">In Testing</div>
+                </div>
+                
+                <div class="endpoint-item endpoint-users">
+                    <span class="endpoint-method method-get">GET</span>
+                    <div class="endpoint-path">/api/v1/users</div>
+                    <div class="endpoint-name">User Management</div>
+                    <div class="endpoint-description">Manage user roles, permissions, and access across warehouse operations.</div>
+                    <div class="endpoint-status">Development</div>
+                </div>
+                
+                <div class="endpoint-item endpoint-maintenance">
+                    <span class="endpoint-method method-put">PUT</span>
+                    <div class="endpoint-path">/api/v1/maintenance</div>
+                    <div class="endpoint-name">Maintenance Tracking</div>
+                    <div class="endpoint-description">Schedule and track equipment maintenance with automated alerts.</div>
+                    <div class="endpoint-status">Planning</div>
+                </div>
+                
+                <div class="endpoint-item endpoint-auth">
+                    <span class="endpoint-method method-post">POST</span>
+                    <div class="endpoint-path">/api/v1/auth</div>
+                    <div class="endpoint-name">Authentication</div>
+                    <div class="endpoint-description">Secure API access with JWT tokens and role-based permissions.</div>
+                    <div class="endpoint-status">Development</div>
+                </div>
+                
+                <div class="endpoint-item endpoint-webhooks">
+                    <span class="endpoint-method method-post">POST</span>
+                    <div class="endpoint-path">/api/v1/webhooks</div>
+                    <div class="endpoint-name">Webhooks</div>
+                    <div class="endpoint-description">Real-time notifications for equipment status changes and loan updates.</div>
+                    <div class="endpoint-status">Planning</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CODE PREVIEW -->
+        <div class="code-preview">
+            <div class="code-title">API Preview - Equipment Request</div>
+            <div class="code-block">
+<span class="code-comment">// Get available equipment</span>
+<span class="code-keyword">fetch</span>('<span class="code-string">https://api.opsis-suite.com/v1/equipment?status=available</span>', {
+  <span class="code-method">method</span>: '<span class="code-string">GET</span>',
+  <span class="code-method">headers</span>: {
+    '<span class="code-string">Authorization</span>': '<span class="code-string">Bearer YOUR_API_KEY</span>',
+    '<span class="code-string">Content-Type</span>': '<span class="code-string">application/json</span>'
+  }
+})
+.<span class="code-method">then</span>(response => response.<span class="code-method">json</span>())
+.<span class="code-method">then</span>(data => {
+  <span class="code-comment">// Process equipment data</span>
+  console.<span class="code-method">log</span>('<span class="code-string">Available equipment:</span>', data);
+});
+            </div>
+        </div>
+
+        <!-- NOTIFICATION SECTION -->
+        <div class="notification-section">
+            <span class="notification-icon">📬</span>
+            <h3 class="notification-title">Get API Access When Ready</h3>
+            <p class="notification-description">Be among the first developers to integrate with Opsis Suite API. We'll send you documentation, examples, and early access when available.</p>
+            <div class="notification-form">
+                <input type="email" class="notification-input" placeholder="Developer email" id="notifyEmail">
+                <button type="button" class="notification-button" onclick="subscribeToNotifications()">Join Waitlist</button>
+            </div>
+        </div>
+
+        <!-- HOME BUTTON -->
+        <a href="https://www.opsis-suite.com/" class="home-button" target="_top">
+            Return to Homepage
+        </a>
+    </div>
+
+    <!-- NOTIFICATION TOAST -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // NOTIFICATION SYSTEM
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            if (notification) {
+                notification.textContent = message;
+                notification.className = 'notification ' + (type || 'info');
+                notification.classList.add('show');
+
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 4000);
+            }
+        }
+
+        // SUBSCRIPTION FUNCTIONALITY
+        function subscribeToNotifications() {
+            const emailInput = document.getElementById('notifyEmail');
+            const email = emailInput.value.trim();
+            const button = document.querySelector('.notification-button');
+            
+            // Validate email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!email) {
+                showNotification('Please enter your email address', 'error');
+                return;
+            }
+            
+            if (!emailRegex.test(email)) {
+                showNotification('Please enter a valid email address', 'error');
+                return;
+            }
+
+            // Simulate subscription
+            button.disabled = true;
+            button.innerHTML = 'Subscribing<div class="loading-dots"><div></div><div></div><div></div></div>';
+            
+            setTimeout(() => {
+                showNotification('Successfully added to API waitlist! You\'ll get early access.', 'success');
+                emailInput.value = '';
+                button.disabled = false;
+                button.textContent = 'Join Waitlist';
+            }, 2000);
+        }
+
+        // ENDPOINT ITEM INTERACTIONS
+        function setupEndpointInteractions() {
+            const endpointItems = document.querySelectorAll('.endpoint-item');
+            endpointItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const endpointName = this.querySelector('.endpoint-name').textContent;
+                    const status = this.querySelector('.endpoint-status').textContent;
+                    const method = this.querySelector('.endpoint-method').textContent;
+                    
+                    showNotification(`${method} ${endpointName} is currently ${status.toLowerCase()}`, 'info');
+                });
+            });
+        }
+
+        // PROGRESS BAR ANIMATION TRIGGER
+        function triggerProgressAnimation() {
+            const progressBar = document.querySelector('.progress-bar');
+            const percentage = document.querySelector('.progress-percentage');
+            
+            if (progressBar && percentage) {
+                // Animate percentage counter
+                let currentPercentage = 0;
+                const targetPercentage = 62;
+                const duration = 2000;
+                const increment = targetPercentage / (duration / 16);
+                
+                const updatePercentage = () => {
+                    currentPercentage += increment;
+                    if (currentPercentage < targetPercentage) {
+                        percentage.textContent = Math.round(currentPercentage) + '% Complete';
+                        requestAnimationFrame(updatePercentage);
+                    } else {
+                        percentage.textContent = targetPercentage + '% Complete';
+                    }
+                };
+                
+                setTimeout(updatePercentage, 1200);
+            }
+        }
+
+        // AUTO HEIGHT COMMUNICATION WITH WIX
+        function reportHeightToWix() {
+            if (window.parent && window.parent !== window) {
+                try {
+                    const height = Math.max(
+                        document.body.scrollHeight,
+                        document.documentElement.scrollHeight,
+                        window.innerHeight
+                    );
+                    
+                    window.parent.postMessage({
+                        type: 'resize',
+                        height: height
+                    }, '*');
+                    
+                    console.log('📏 Height reported to Wix:', height + 'px');
+                } catch (e) {
+                    console.log('Height communication not available');
+                }
+            }
+        }
+
+        // ENTER KEY HANDLING
+        function setupKeyboardHandlers() {
+            const emailInput = document.getElementById('notifyEmail');
+            if (emailInput) {
+                emailInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        subscribeToNotifications();
+                    }
+                });
+            }
+        }
+
+        // HOME BUTTON INTERACTION
+        function setupHomeButton() {
+            const homeButton = document.querySelector('.home-button');
+            homeButton.addEventListener('click', function() {
+                showNotification('Returning to homepage...', 'info');
+            });
+        }
+
+        // INITIALIZATION
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔌 Opsis Suite API Documentation - Under Development');
+            console.log('✅ Development progress: 62%');
+            console.log('✅ Developer notifications ready');
+            console.log('✅ Premium API documentation preview');
+            
+            // Setup all features
+            setupEndpointInteractions();
+            triggerProgressAnimation();
+            setupKeyboardHandlers();
+            setupHomeButton();
+            
+            // Report height after animations
+            setTimeout(reportHeightToWix, 100);
+            setTimeout(reportHeightToWix, 3000); // After animations complete
+        });
+
+        // RESIZE HANDLER
+        window.addEventListener('resize', function() {
+            setTimeout(reportHeightToWix, 100);
+        });
+
+        // FINAL HEIGHT REPORT
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                reportHeightToWix();
+                const finalHeight = Math.max(
+                    document.body.scrollHeight,
+                    document.documentElement.scrollHeight,
+                    window.innerHeight
+                );
+                console.log('🎯 API PAGE HEIGHT: ' + finalHeight + 'px');
+                console.log('⚙️ Configure Wix HTML embed:');
+                console.log('   - Width: 100% (Stretch to fill)');
+                console.log('   - Height: ' + Math.max(finalHeight + 50, 1000) + 'px');
+                console.log('   - Responsive: ON');
+            }, 3500);
+        });
+
+        console.log('🚀 Opsis Suite API Documentation - Ready for Wix!');
+    </script>
+</body>
+</html>
