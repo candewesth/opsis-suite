@@ -1,1 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - Opsis Suite Admin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #1d1d1f;
+            min-height: 100vh;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        /* Premium Background Pattern */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(32, 201, 151, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(253, 126, 20, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 20% 80%, rgba(102, 16, 242, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(13, 202, 240, 0.1) 0%, transparent 50%);
+            animation: subtleFloat 40s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        @keyframes subtleFloat {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -25px) rotate(2deg); }
+            66% { transform: translate(-25px, 25px) rotate(-2deg); }
+        }
+
+        /* Header Premium */
+        .analytics-header {
+            background: linear-gradient(135deg, #495057, #6c757d);
+            color: white;
+            padding: 3rem 2rem;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .analytics-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .header-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: -2px;
+        }
+
+        .header-subtitle {
+            font-size: 1.4rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .header-nav {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-item {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 1rem 2rem;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            backdrop-filter: blur(20px);
+            text-decoration: none;
+            color: white;
+            font-weight: 600;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+
+        /* Main Container */
+        .analytics-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 5rem 2rem;
+        }
+
+        /* Dashboard Overview Cards */
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 5rem;
+        }
+
+        .overview-card {
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            border: 1px solid rgba(210, 210, 215, 0.3);
+            border-radius: 32px;
+            padding: 3rem 2.5rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            transition: all 0.4s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .overview-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: var(--card-gradient);
+            border-radius: 32px 32px 0 0;
+        }
+
+        .overview-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 25px 80px rgba(0,0,0,0.15);
+            background: white;
+        }
+
+        .overview-icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 28px;
+            background: var(--card-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin: 0 auto 2rem;
+            transition: all 0.3s ease;
+            color: white;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .overview-card:hover .overview-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .overview-number {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 0.5rem;
+        }
+
+        .overview-label {
+            font-size: 1.2rem;
+            color: #495057;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .overview-change {
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 16px;
+            display: inline-block;
+        }
+
+        .change-positive {
+            background: rgba(32, 201, 151, 0.1);
+            color: #20c997;
+        }
+
+        .change-negative {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+
+        .change-neutral {
+            background: rgba(108, 117, 125, 0.1);
+            color: #6c757d;
+        }
+
+        /* Analytics Sections */
+        .analytics-section {
+            margin-bottom: 5rem;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 3rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .section-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            background: var(--section-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: white;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            border: 1px solid rgba(210, 210, 215, 0.3);
+            border-radius: 32px;
+            padding: 3rem 2.5rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            transition: all 0.4s ease;
+            margin-bottom: 3rem;
+        }
+
+        .chart-container:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 80px rgba(0,0,0,0.12);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .chart-title {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: #1d1d1f;
+        }
+
+        .chart-controls {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .chart-control {
+            padding: 0.75rem 1.5rem;
+            border: 2px solid rgba(210, 210, 215, 0.3);
+            border-radius: 16px;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .chart-control:hover,
+        .chart-control.active {
+            border-color: #495057;
+            background: #495057;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Chart Placeholder */
+        .chart-placeholder {
+            height: 400px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 1.2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-placeholder::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(45deg, transparent 45%, rgba(255,255,255,0.5) 50%, transparent 55%),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 10px,
+                    rgba(0,0,0,0.03) 10px,
+                    rgba(0,0,0,0.03) 20px
+                );
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Data Table */
+        .data-table-container {
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            border: 1px solid rgba(210, 210, 215, 0.3);
+            border-radius: 32px;
+            padding: 3rem 2.5rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            transition: all 0.4s ease;
+            overflow: hidden;
+        }
+
+        .data-table-container:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 80px rgba(0,0,0,0.12);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 2rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 1.5rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(210, 210, 215, 0.3);
+        }
+
+        .data-table th {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            font-weight: 600;
+            color: #495057;
+            font-size: 1rem;
+        }
+
+        .data-table td {
+            color: #6c757d;
+            font-size: 0.95rem;
+        }
+
+        .data-table tr:hover {
+            background: rgba(32, 201, 151, 0.05);
+        }
+
+        .table-status {
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-active {
+            background: rgba(32, 201, 151, 0.1);
+            color: #20c997;
+        }
+
+        .status-trial {
+            background: rgba(253, 126, 20, 0.1);
+            color: #fd7e14;
+        }
+
+        .status-inactive {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 3rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background: var(--btn-gradient);
+            color: white;
+            border: none;
+            padding: 1.2rem 2.5rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.4s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+
+        /* Color Schemes */
+        .revenue-card { --card-gradient: linear-gradient(135deg, #20c997, #17a2b8); }
+        .companies-card { --card-gradient: linear-gradient(135deg, #6610f2, #d63384); }
+        .users-card { --card-gradient: linear-gradient(135deg, #fd7e14, #dc3545); }
+        .growth-card { --card-gradient: linear-gradient(135deg, #0dcaf0, #6f42c1); }
+
+        .revenue-section { --section-gradient: linear-gradient(135deg, #20c997, #17a2b8); }
+        .usage-section { --section-gradient: linear-gradient(135deg, #6610f2, #d63384); }
+        .performance-section { --section-gradient: linear-gradient(135deg, #fd7e14, #dc3545); }
+
+        .export-btn { --btn-gradient: linear-gradient(135deg, #20c997, #17a2b8); }
+        .refresh-btn { --btn-gradient: linear-gradient(135deg, #495057, #6c757d); }
+        .settings-btn { --btn-gradient: linear-gradient(135deg, #6610f2, #d63384); }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+            color: white;
+            padding: 1.5rem 2rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+            transform: translateX(400px);
+            transition: all 0.4s ease;
+            z-index: 1000;
+            max-width: 350px;
+            backdrop-filter: blur(20px);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+        }
+
+        .notification.warning {
+            background: linear-gradient(135deg, #fd7e14, #e55a14);
+        }
+
+        /* Loading Animation */
+        .loading-spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .analytics-container {
+                padding: 3rem 1.5rem;
+            }
+
+            .header-title {
+                font-size: 2.8rem;
+            }
+
+            .overview-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .chart-controls {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .action-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .data-table-container {
+                overflow-x: auto;
+            }
+
+            .data-table {
+                min-width: 600px;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1200px) {
+            .overview-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="analytics-header">
+        <div class="header-content">
+            <h1 class="header-title">Analytics Dashboard</h1>
+            <p class="header-subtitle">Comprehensive business intelligence and performance metrics for all Opsis Suite enterprises</p>
+            <div class="header-nav">
+                <a href="#overview" class="nav-item active" onclick="showSection('overview')">Overview</a>
+                <a href="#revenue" class="nav-item" onclick="showSection('revenue')">Revenue</a>
+                <a href="#usage" class="nav-item" onclick="showSection('usage')">Usage</a>
+                <a href="#performance" class="nav-item" onclick="showSection('performance')">Performance</a>
+                <a href="https://www.opsis-suite.com/admin" target="_top" class="nav-item">← Back to Admin</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Analytics Container -->
+    <div class="analytics-container">
+        <!-- Overview Cards -->
+        <div class="overview-grid">
+            <div class="overview-card revenue-card" onclick="handleCardClick('revenue')">
+                <div class="overview-icon">💰</div>
+                <div class="overview-number" id="totalRevenue">$0</div>
+                <div class="overview-label">Monthly Recurring Revenue</div>
+                <div class="overview-change change-positive">+23.5% from last month</div>
+            </div>
+
+            <div class="overview-card companies-card" onclick="handleCardClick('companies')">
+                <div class="overview-icon">🏢</div>
+                <div class="overview-number" id="totalCompanies">0</div>
+                <div class="overview-label">Active Companies</div>
+                <div class="overview-change change-positive">+12 new this month</div>
+            </div>
+
+            <div class="overview-card users-card" onclick="handleCardClick('users')">
+                <div class="overview-icon">👥</div>
+                <div class="overview-number" id="totalUsers">0</div>
+                <div class="overview-label">Total Users</div>
+                <div class="overview-change change-positive">+156 this month</div>
+            </div>
+
+            <div class="overview-card growth-card" onclick="handleCardClick('growth')">
+                <div class="overview-icon">📈</div>
+                <div class="overview-number">94.2%</div>
+                <div class="overview-label">System Uptime</div>
+                <div class="overview-change change-neutral">99.9% SLA Target</div>
+            </div>
+        </div>
+
+        <!-- Revenue Analytics Section -->
+        <div class="analytics-section" id="revenueSection">
+            <h2 class="section-title revenue-section">
+                <div class="section-icon">💰</div>
+                Revenue Analytics
+            </h2>
+
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">Monthly Revenue Trend</h3>
+                    <div class="chart-controls">
+                        <button class="chart-control active">Last 12 Months</button>
+                        <button class="chart-control">Last 6 Months</button>
+                        <button class="chart-control">Last 3 Months</button>
+                    </div>
+                </div>
+                <div class="chart-placeholder">
+                    📊 Revenue chart visualization would be here
+                    <br><small>Integration with Chart.js or similar charting library</small>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">Revenue by Plan Type</h3>
+                    <div class="chart-controls">
+                        <button class="chart-control active">Current Month</button>
+                        <button class="chart-control">Last Month</button>
+                        <button class="chart-control">Year to Date</button>
+                    </div>
+                </div>
+                <div class="chart-placeholder">
+                    🥧 Plan distribution pie chart would be here
+                    <br><small>Warehouse Basic, Pro, Suite Standard, Premium, Enterprise</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Usage Analytics Section -->
+        <div class="analytics-section" id="usageSection">
+            <h2 class="section-title usage-section">
+                <div class="section-icon">📊</div>
+                Usage Analytics
+            </h2>
+
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">Equipment Transactions per Month</h3>
+                    <div class="chart-controls">
+                        <button class="chart-control active">All Companies</button>
+                        <button class="chart-control">Top 10</button>
+                        <button class="chart-control">By Industry</button>
+                    </div>
+                </div>
+                <div class="chart-placeholder">
+                    📈 Equipment usage trends chart
+                    <br><small>Loans, returns, maintenance requests across all companies</small>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">Module Adoption Rates</h3>
+                </div>
+                <div class="chart-placeholder">
+                    📊 Module usage bar chart
+                    <br><small>Warehouse Core: 100% | HR: 45% | TimeSync: 23% | Finance: 12%</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Analytics Section -->
+        <div class="analytics-section" id="performanceSection">
+            <h2 class="section-title performance-section">
+                <div class="section-icon">⚡</div>
+                System Performance
+            </h2>
+
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">System Response Times</h3>
+                    <div class="chart-controls">
+                        <button class="chart-control active">Last 24 Hours</button>
+                        <button class="chart-control">Last 7 Days</button>
+                        <button class="chart-control">Last 30 Days</button>
+                    </div>
+                </div>
+                <div class="chart-placeholder">
+                    ⚡ Performance metrics chart
+                    <br><small>API response times, database queries, user interactions</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Companies Data Table -->
+        <div class="analytics-section">
+            <h2 class="section-title">
+                <div class="section-icon" style="background: linear-gradient(135deg, #0dcaf0, #6f42c1);">🏢</div>
+                Company Performance Summary
+            </h2>
+
+            <div class="data-table-container">
+                <h3 class="chart-title">Active Companies Overview</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Company Name</th>
+                            <th>Plan Type</th>
+                            <th>Monthly Revenue</th>
+                            <th>Users</th>
+                            <th>Equipment Items</th>
+                            <th>Last Activity</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>CVE San Diego</strong></td>
+                            <td>Warehouse Pro</td>
+                            <td>$149/month</td>
+                            <td>23 users</td>
+                            <td>1,247 items</td>
+                            <td>2 hours ago</td>
+                            <td><span class="table-status status-active">Active</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tech Corporation</strong></td>
+                            <td>Suite Standard</td>
+                            <td>$249/month</td>
+                            <td>45 users</td>
+                            <td>892 items</td>
+                            <td>1 day ago</td>
+                            <td><span class="table-status status-active">Active</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Construction LLC</strong></td>
+                            <td>Enterprise</td>
+                            <td>$999/month</td>
+                            <td>156 users</td>
+                            <td>3,421 items</td>
+                            <td>30 minutes ago</td>
+                            <td><span class="table-status status-active">Active</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Demo Industries</strong></td>
+                            <td>Trial</td>
+                            <td>$0/month</td>
+                            <td>8 users</td>
+                            <td>156 items</td>
+                            <td>1 week ago</td>
+                            <td><span class="table-status status-trial">Trial</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Beta Testing Co.</strong></td>
+                            <td>Warehouse Basic</td>
+                            <td>$49/month</td>
+                            <td>12 users</td>
+                            <td>324 items</td>
+                            <td>5 days ago</td>
+                            <td><span class="table-status status-inactive">Inactive</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="action-btn export-btn" onclick="handleAction('export')">
+                📊 Export Analytics Report
+            </button>
+            <button class="action-btn refresh-btn" onclick="handleAction('refresh')">
+                <span class="loading-spinner" id="refreshSpinner" style="display: none;"></span>
+                🔄 Refresh Data
+            </button>
+            <button class="action-btn settings-btn" onclick="handleAction('settings')">
+                ⚙️ Analytics Settings
+            </button>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // Initialize analytics data
+        function initializeAnalytics() {
+            // Animate revenue counter
+            animateCounter('totalRevenue', 14725, '$', '/month');
+            
+            // Animate companies counter  
+            animateCounter('totalCompanies', 47, '', ' companies');
+            
+            // Animate users counter
+            animateCounter('totalUsers', 1834, '', ' users');
+            
+            showNotification('Analytics dashboard loaded successfully', 'success');
+        }
+
+        // Animate counters
+        function animateCounter(elementId, target, prefix = '', suffix = '') {
+            const element = document.getElementById(elementId);
+            let current = 0;
+            const increment = target / 60;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    element.textContent = prefix + target.toLocaleString() + suffix;
+                    clearInterval(timer);
+                } else {
+                    element.textContent = prefix + Math.floor(current).toLocaleString() + suffix;
+                }
+            }, 30);
+        }
+
+        // Handle card clicks
+        function handleCardClick(type) {
+            const messages = {
+                'revenue': 'Loading detailed revenue analytics...',
+                'companies': 'Loading company performance details...',
+                'users': 'Loading user activity analytics...',
+                'growth': 'Loading system performance metrics...'
+            };
+            
+            showNotification(messages[type] || 'Loading analytics...', 'success');
+        }
+
+        // Handle section navigation
+        function showSection(sectionName) {
+            // Update active nav item
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show notification
+            const messages = {
+                'overview': 'Showing analytics overview',
+                'revenue': 'Loading revenue analytics section',
+                'usage': 'Loading usage analytics section',
+                'performance': 'Loading performance analytics section'
+            };
+            
+            showNotification(messages[sectionName] || 'Loading section...', 'success');
+        }
+
+        // Handle actions
+        function handleAction(action) {
+            const actionMessages = {
+                'export': 'Generating comprehensive analytics report...',
+                'refresh': 'Refreshing all analytics data...',
+                'settings': 'Opening analytics configuration panel...'
+            };
+            
+            if (action === 'refresh') {
+                const spinner = document.getElementById('refreshSpinner');
+                spinner.style.display = 'inline-block';
+                
+                setTimeout(() => {
+                    spinner.style.display = 'none';
+                    initializeAnalytics();
+                    showNotification('Analytics data refreshed successfully', 'success');
+                }, 2000);
+            } else {
+                showNotification(actionMessages[action] || `Processing ${action}...`, 'success');
+                
+                setTimeout(() => {
+                    window.open('https://www.opsis-suite.com/built', '_top');
+                }, 1500);
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            
+            notification.textContent = message;
+            notification.classList.remove('success', 'warning', 'error');
+            notification.classList.add(type);
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3500);
+        }
+
+        // Chart control interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click handlers to chart controls
+            document.querySelectorAll('.chart-control').forEach(control => {
+                control.addEventListener('click', function() {
+                    // Remove active class from siblings
+                    this.parentNode.querySelectorAll('.chart-control').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked control
+                    this.classList.add('active');
+                    
+                    showNotification(`Chart updated: ${this.textContent}`, 'success');
+                });
+            });
+
+            // Auto-height for Wix embeds
+            function updateHeight() {
+                const height = Math.max(
+                    document.body.scrollHeight,
+                    document.body.offsetHeight,
+                    document.documentElement.clientHeight,
+                    document.documentElement.scrollHeight,
+                    document.documentElement.offsetHeight
+                );
+                
+                if (window.parent && window.parent.postMessage) {
+                    window.parent.postMessage({
+                        type: 'setHeight',
+                        height: height + 50
+                    }, '*');
+                }
+            }
+
+            // Initialize
+            setTimeout(() => {
+                initializeAnalytics();
+                updateHeight();
+            }, 500);
+
+            // Update height on window resize
+            window.addEventListener('resize', updateHeight);
+            
+            console.log('📊 Opsis Suite Analytics Dashboard - Premium Loaded');
+            console.log('✅ Revenue tracking system ready');
+            console.log('✅ Company performance metrics initialized');
+            console.log('✅ Usage analytics dashboard active');
+            console.log('🎨 Premium design system applied');
+        });
+
+        console.log('🚀 Opsis Suite Analytics - Ready for Enterprise Intelligence!');
+    </script>
+</body>
+</html>
