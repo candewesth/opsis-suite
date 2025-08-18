@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Opsis Suite - API Documentation Coming Soon</title>
+    <title>API Documentation - Opsis Suite</title>
     <style>
         * {
             margin: 0;
@@ -24,43 +24,222 @@
             margin: 0;
             padding: 0;
             overflow-x: hidden;
-            height: 100vh;
+        }
+
+        /* KEYFRAMES */
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            25% { background-position: 100% 50%; }
+            50% { background-position: 100% 100%; }
+            75% { background-position: 0% 100%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes winkEye {
+            0%, 88% { transform: scaleY(1); }
+            90% { transform: scaleY(0.1); }
+            92% { transform: scaleY(1); }
+            94% { transform: scaleY(0.1); }
+            96% { transform: scaleY(1); }
+            100% { transform: scaleY(1); }
+        }
+
+        @keyframes subtleFloat {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -25px) rotate(2deg); }
+            66% { transform: translate(-25px, 25px) rotate(-2deg); }
+        }
+
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes apiPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        @keyframes progressFill {
+            to { width: 62%; }
+        }
+
+        @keyframes progressShine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        @keyframes notificationBounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        @keyframes loadingDots {
+            0%, 80%, 100% { transform: translateY(-50%) scale(0); }
+            40% { transform: translateY(-50%) scale(1); }
+        }
+
+        /* NAVIGATION */
+        .nav-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            width: 100%;
+            padding: 8px 0;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            width: 100%;
+        }
+
+        .nav-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            width: 100%;
+        }
+
+        .logo-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            transition: transform 0.2s ease;
+        }
+
+        .logo-container {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            padding: 2px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3, #54a0ff, #5f27cd, #00d2d3, #ff9f43, #10ac84, #ee5a6f, #ff6b6b);
+            background-size: 400% 400%;
+            animation: gradientShift 4s ease-in-out infinite;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #495057, #6c757d);
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
+            fontSize: 16px;
+            color: white;
+            font-weight: 300;
+            box-shadow: 0 2px 8px rgba(73, 80, 87, 0.2);
+            position: relative;
+            overflow: hidden;
         }
 
-        /* MAIN CONTAINER */
-        .built-container {
+        .logo-icon::after {
+            content: '◉';
+            animation: winkEye 6s ease-in-out infinite;
+        }
+
+        .logo-text {
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #495057, #6c757d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            user-select: none;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .nav-link {
+            color: #495057;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link.active {
+            color: #20c997;
+            font-weight: 600;
+        }
+
+        .nav-link:hover {
+            color: #20c997;
+            background: rgba(32, 201, 151, 0.08);
+        }
+
+        .nav-cta {
+            background: linear-gradient(135deg, #495057, #6c757d);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .nav-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(73, 80, 87, 0.3);
+        }
+
+        /* HERO SECTION */
+        .hero-section {
+            padding: 6rem 2rem 5rem;
+            text-align: center;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(32, 201, 151, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(253, 126, 20, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 20% 80%, rgba(102, 16, 242, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(13, 202, 240, 0.1) 0%, transparent 50%);
+            animation: subtleFloat 40s ease-in-out infinite;
+        }
+
+        .hero-container {
             max-width: 1000px;
             margin: 0 auto;
-            padding: 3rem 2rem;
-            text-align: center;
             position: relative;
             z-index: 10;
         }
 
-        /* ANIMATED BACKGROUND */
-        .built-container::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at 30% 70%, rgba(32, 201, 151, 0.1) 0%, transparent 30%), 
-                        radial-gradient(circle at 70% 30%, rgba(23, 162, 184, 0.1) 0%, transparent 30%),
-                        radial-gradient(circle at 50% 50%, rgba(102, 16, 242, 0.05) 0%, transparent 40%);
-            animation: rotateBackground 60s linear infinite;
-            z-index: -1;
-        }
-
-        @keyframes rotateBackground {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* API ICON */
         .api-icon {
             width: 150px;
             height: 150px;
@@ -89,89 +268,76 @@
             animation: shimmer 4s ease-in-out infinite;
         }
 
-        @keyframes apiPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        @keyframes shimmer {
-            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
-        }
-
-        /* MAIN TITLE */
-        .built-title {
-            font-size: 3.5rem;
+        .hero-title {
+            font-size: 4rem;
             font-weight: 800;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
             background: linear-gradient(135deg, #1d1d1f, #495057);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             letter-spacing: -2px;
             line-height: 1.1;
-            animation: titleSlideIn 1s ease-out 0.3s both;
+            animation: fadeInUp 1s ease-out 0.3s both;
         }
 
-        @keyframes titleSlideIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* SUBTITLE */
-        .built-subtitle {
-            font-size: 1.3rem;
+        .hero-subtitle {
+            font-size: 1.4rem;
             color: #6c757d;
-            margin-bottom: 3rem;
+            margin-bottom: 4rem;
             font-weight: 400;
             max-width: 800px;
             margin-left: auto;
             margin-right: auto;
             line-height: 1.5;
-            animation: subtitleSlideIn 1s ease-out 0.6s both;
+            animation: fadeInUp 1s ease-out 0.6s both;
         }
 
-        @keyframes subtitleSlideIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* MAIN CONTAINER */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
         }
 
         /* PROGRESS SECTION */
         .progress-section {
+            padding: 5rem 2rem;
             background: white;
+        }
+
+        .progress-card {
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
             border: 1px solid rgba(210, 210, 215, 0.3);
             border-radius: 32px;
             padding: 3rem 2.5rem;
-            margin: 3rem 0;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-            animation: progressSlideIn 1s ease-out 0.9s both;
-        }
-
-        @keyframes progressSlideIn {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
+            margin: 0 auto;
+            max-width: 800px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            animation: fadeInUp 1s ease-out 0.9s both;
         }
 
         .progress-title {
-            font-size: 1.8rem;
+            font-size: 2.2rem;
             font-weight: 700;
             color: #1d1d1f;
             margin-bottom: 2rem;
+            text-align: center;
         }
 
         .progress-bar-container {
             background: #e9ecef;
-            height: 12px;
-            border-radius: 6px;
+            height: 16px;
+            border-radius: 8px;
             overflow: hidden;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
             position: relative;
         }
 
         .progress-bar {
             height: 100%;
             background: linear-gradient(135deg, #20c997, #17a2b8);
-            border-radius: 6px;
+            border-radius: 8px;
             width: 0%;
             animation: progressFill 2s ease-out 1.2s forwards;
             position: relative;
@@ -188,61 +354,53 @@
             animation: progressShine 2s ease-in-out infinite;
         }
 
-        @keyframes progressFill {
-            to { width: 62%; }
-        }
-
-        @keyframes progressShine {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-
         .progress-percentage {
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             font-weight: 700;
             color: #20c997;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
         }
 
         .progress-description {
             color: #6c757d;
-            font-size: 1rem;
+            font-size: 1.1rem;
             line-height: 1.6;
+            text-align: center;
         }
 
         /* API ENDPOINTS SECTION */
-        .api-endpoints {
-            margin: 3rem 0;
-            animation: endpointsSlideIn 1s ease-out 1.5s both;
-        }
-
-        @keyframes endpointsSlideIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+        .endpoints-section {
+            padding: 5rem 2rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
         }
 
         .endpoints-title {
-            font-size: 2.2rem;
+            font-size: 2.8rem;
             font-weight: 700;
             color: #1d1d1f;
-            margin-bottom: 2rem;
+            margin-bottom: 4rem;
+            text-align: center;
+            animation: fadeInUp 1s ease-out 1.5s both;
         }
 
         .endpoints-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 3rem;
         }
 
         .endpoint-item {
             background: linear-gradient(135deg, #ffffff, #f8f9fa);
             border: 1px solid rgba(210, 210, 215, 0.3);
-            border-radius: 24px;
-            padding: 2rem 1.5rem;
+            border-radius: 32px;
+            padding: 3rem 2.5rem;
             text-align: left;
             transition: all 0.4s ease;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            cursor: pointer;
         }
 
         .endpoint-item::before {
@@ -251,25 +409,25 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 4px;
+            height: 6px;
             background: var(--endpoint-gradient);
-            border-radius: 24px 24px 0 0;
+            border-radius: 32px 32px 0 0;
         }
 
         .endpoint-item:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            transform: translateY(-15px);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
             background: white;
         }
 
         .endpoint-method {
             display: inline-block;
-            padding: 0.3rem 0.8rem;
-            border-radius: 8px;
+            padding: 0.4rem 1rem;
+            border-radius: 12px;
             font-size: 0.8rem;
             font-weight: 700;
             color: white;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -281,37 +439,38 @@
 
         .endpoint-path {
             font-family: 'SF Mono', Monaco, Inconsolata, 'Roboto Mono', Consolas, 'Courier New', monospace;
-            font-size: 0.9rem;
-            background: #f8f9fa;
-            padding: 0.5rem 0.8rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
+            font-size: 1rem;
+            background: rgba(248, 249, 250, 0.8);
+            padding: 0.8rem 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
             color: #495057;
             border-left: 4px solid var(--endpoint-color);
+            backdrop-filter: blur(10px);
         }
 
         .endpoint-name {
-            font-size: 1.1rem;
-            font-weight: 700;
+            font-size: 1.4rem;
+            font-weight: 800;
             color: #1d1d1f;
-            margin-bottom: 0.5rem;
+            margin-bottom: 1rem;
         }
 
         .endpoint-description {
             color: #6c757d;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            margin-bottom: 1rem;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
         }
 
         .endpoint-status {
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             color: #6c757d;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            font-weight: 600;
-            padding: 0.3rem 0.8rem;
-            border-radius: 12px;
+            font-weight: 700;
+            padding: 0.4rem 1rem;
+            border-radius: 16px;
             background: rgba(108, 117, 125, 0.1);
             display: inline-block;
         }
@@ -325,36 +484,38 @@
         .endpoint-webhooks { --endpoint-gradient: linear-gradient(135deg, #0dcaf0, #0ea5e9); --endpoint-color: #0dcaf0; }
 
         /* CODE PREVIEW SECTION */
-        .code-preview {
-            background: #1d1d1f;
-            border-radius: 24px;
-            padding: 2rem;
-            margin: 3rem 0;
-            text-align: left;
-            animation: codeSlideIn 1s ease-out 1.8s both;
+        .code-section {
+            padding: 5rem 2rem;
+            background: white;
         }
 
-        @keyframes codeSlideIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+        .code-preview {
+            background: #1d1d1f;
+            border-radius: 32px;
+            padding: 3rem 2.5rem;
+            margin: 0 auto;
+            max-width: 800px;
+            text-align: left;
+            animation: fadeInUp 1s ease-out 1.8s both;
+            box-shadow: 0 20px 60px rgba(29, 29, 31, 0.4);
         }
 
         .code-title {
             color: #20c997;
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             font-weight: 700;
-            margin-bottom: 1rem;
+            margin-bottom: 2rem;
             text-align: center;
         }
 
         .code-block {
             font-family: 'SF Mono', Monaco, Inconsolata, 'Roboto Mono', Consolas, 'Courier New', monospace;
             background: #2d2d2f;
-            border-radius: 12px;
-            padding: 1.5rem;
+            border-radius: 16px;
+            padding: 2rem;
             overflow-x: auto;
             font-size: 0.9rem;
-            line-height: 1.6;
+            line-height: 1.8;
         }
 
         .code-comment { color: #6c757d; }
@@ -364,58 +525,52 @@
 
         /* NOTIFICATION SECTION */
         .notification-section {
+            padding: 5rem 2rem;
             background: linear-gradient(135deg, #495057, #6c757d);
-            border-radius: 32px;
-            padding: 3rem 2.5rem;
             color: white;
-            margin: 3rem 0;
-            text-align: center;
-            animation: notificationSlideIn 1s ease-out 2.1s both;
+            position: relative;
         }
 
-        @keyframes notificationSlideIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+        .notification-container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+            animation: fadeInUp 1s ease-out 2.1s both;
         }
 
         .notification-icon {
-            font-size: 3rem;
-            margin-bottom: 1.5rem;
+            font-size: 4rem;
+            margin-bottom: 2rem;
             display: block;
             animation: notificationBounce 2s ease-in-out infinite;
         }
 
-        @keyframes notificationBounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-10px); }
-            60% { transform: translateY(-5px); }
-        }
-
         .notification-title {
-            font-size: 1.6rem;
+            font-size: 2.2rem;
             font-weight: 700;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
             color: white;
         }
 
         .notification-description {
             color: rgba(255, 255, 255, 0.9);
             line-height: 1.6;
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
+            font-size: 1.1rem;
         }
 
         .notification-form {
             display: flex;
-            gap: 1rem;
-            max-width: 400px;
+            gap: 1.5rem;
+            max-width: 500px;
             margin: 0 auto;
         }
 
         .notification-input {
             flex: 1;
-            padding: 0.8rem 1.2rem;
+            padding: 1rem 1.5rem;
             border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 12px;
+            border-radius: 16px;
             background: rgba(255, 255, 255, 0.1);
             color: white;
             font-size: 1rem;
@@ -436,8 +591,8 @@
             background: linear-gradient(135deg, #20c997, #17a2b8);
             color: white;
             border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: 12px;
+            padding: 1rem 2rem;
+            border-radius: 16px;
             font-size: 1rem;
             font-weight: 700;
             cursor: pointer;
@@ -451,6 +606,12 @@
         }
 
         /* HOME BUTTON */
+        .home-section {
+            padding: 3rem 2rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            text-align: center;
+        }
+
         .home-button {
             background: linear-gradient(135deg, #1d1d1f, #495057);
             color: white;
@@ -463,13 +624,7 @@
             transition: all 0.3s ease;
             text-decoration: none;
             display: inline-block;
-            margin-top: 2rem;
-            animation: homeButtonSlideIn 1s ease-out 2.4s both;
-        }
-
-        @keyframes homeButtonSlideIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            animation: fadeInUp 1s ease-out 2.4s both;
         }
 
         .home-button:hover {
@@ -477,28 +632,58 @@
             box-shadow: 0 15px 40px rgba(29, 29, 31, 0.3);
         }
 
-        /* RESPONSIVE */
-        @media (max-width: 768px) {
-            body { height: auto; padding: 2rem 0; }
-            .built-container { padding: 2rem 1.5rem; }
-            .built-title { font-size: 2.5rem; margin-bottom: 1rem; }
-            .built-subtitle { font-size: 1.1rem; margin-bottom: 2rem; }
-            .api-icon { width: 120px; height: 120px; font-size: 4rem; margin-bottom: 2rem; }
-            .progress-section { padding: 2rem 1.5rem; margin: 2rem 0; }
-            .endpoints-grid { grid-template-columns: 1fr; gap: 1.5rem; }
-            .notification-section { padding: 2rem 1.5rem; margin: 2rem 0; }
-            .notification-form { flex-direction: column; }
-            .home-button { width: 100%; max-width: 300px; }
-            .code-block { font-size: 0.8rem; padding: 1rem; }
+        /* FOOTER */
+        .footer {
+            background: #1d1d1f;
+            color: white;
+            padding: 3rem 0 2rem;
         }
 
-        @media (min-width: 768px) and (max-width: 1199px) {
-            .endpoints-grid { grid-template-columns: repeat(2, 1fr); }
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
         }
 
-        @media (min-width: 1200px) {
-            .built-title { font-size: 4rem; }
-            .endpoints-grid { grid-template-columns: repeat(3, 1fr); }
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #f8f9fa;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links a {
+            color: #adb5bd;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s ease;
+        }
+
+        .footer-links a:hover {
+            color: #20c997;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #495057;
+            padding-top: 1.5rem;
+            text-align: center;
+            color: #adb5bd;
+            font-size: 0.85rem;
         }
 
         /* LOADING ANIMATION */
@@ -525,11 +710,6 @@
         .loading-dots div:nth-child(2) { left: 32px; animation-delay: -0.4s; }
         .loading-dots div:nth-child(3) { left: 56px; animation-delay: -0.8s; }
 
-        @keyframes loadingDots {
-            0%, 80%, 100% { transform: translateY(-50%) scale(0); }
-            40% { transform: translateY(-50%) scale(1); }
-        }
-
         /* NOTIFICATION TOAST */
         .notification {
             position: fixed;
@@ -555,34 +735,183 @@
             background: linear-gradient(135deg, #198754, #16a34a);
             box-shadow: 0 4px 20px rgba(25, 135, 84, 0.3);
         }
+
+        .notification.error {
+            background: linear-gradient(135deg, #dc3545, #e11d48);
+            box-shadow: 0 4px 20px rgba(220, 53, 69, 0.3);
+        }
+
+        /* FADE IN ANIMATIONS */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero-section {
+                padding: 4rem 1.5rem 3rem;
+            }
+
+            .hero-title {
+                font-size: 2.8rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.2rem;
+                margin-bottom: 3rem;
+            }
+
+            .api-icon {
+                width: 120px;
+                height: 120px;
+                font-size: 4rem;
+                margin-bottom: 2rem;
+            }
+
+            .main-container {
+                padding: 0 1.5rem;
+            }
+
+            .progress-section {
+                padding: 4rem 1.5rem;
+            }
+
+            .progress-card {
+                padding: 2rem 1.5rem;
+            }
+
+            .endpoints-section {
+                padding: 4rem 1.5rem;
+            }
+
+            .endpoints-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .endpoint-item {
+                padding: 2rem 1.5rem;
+            }
+
+            .code-section {
+                padding: 4rem 1.5rem;
+            }
+
+            .code-preview {
+                padding: 2rem 1.5rem;
+            }
+
+            .notification-section {
+                padding: 4rem 1.5rem;
+            }
+
+            .notification-form {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .home-section {
+                padding: 3rem 1.5rem;
+            }
+
+            .home-button {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .code-block {
+                font-size: 0.8rem;
+                padding: 1.5rem;
+            }
+
+            .footer-content {
+                grid-template-columns: repeat(2, 1fr);
+                text-align: center;
+            }
+        }
+
+        @media (min-width: 768px) and (max-width: 1199px) {
+            .endpoints-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .hero-title {
+                font-size: 4.5rem;
+            }
+            .endpoints-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="built-container">
-        <!-- API ICON -->
-        <div class="api-icon">
-            🔌
-        </div>
+    <!-- NAVIGATION -->
+    <nav class="nav-header">
+        <div class="nav-container">
+            <div class="nav-content">
+                <a href="../index.html" class="logo-link">
+                    <div class="logo-container">
+                        <div class="logo-icon"></div>
+                    </div>
+                    <div class="logo-text">Opsis Suite</div>
+                </a>
 
-        <!-- MAIN CONTENT -->
-        <h1 class="built-title">API Documentation Coming Soon</h1>
-        <p class="built-subtitle">We're building a powerful REST API that will give developers programmatic access to all Opsis Suite warehouse management features. Build custom integrations, automate workflows, and extend your warehouse operations.</p>
+                <div class="nav-links">
+                    <a href="../index.html" class="nav-link">Home</a>
+                    <a href="../solutions.html" class="nav-link">Solutions</a>
+                    <a href="features.html" class="nav-link">Features</a>
+                    <a href="../pricing.html" class="nav-link">Pricing</a>
+                    <a href="../contact.html" class="nav-link">Contact</a>
+                </div>
 
-        <!-- PROGRESS SECTION -->
-        <div class="progress-section">
-            <h2 class="progress-title">API Development Progress</h2>
-            <div class="progress-bar-container">
-                <div class="progress-bar"></div>
+                <a href="../login.html" class="nav-cta">Access Workspace</a>
             </div>
-            <div class="progress-percentage">62% Complete</div>
-            <p class="progress-description">Our engineering team is developing RESTful endpoints for complete warehouse management automation. Core equipment and loan management APIs are currently in testing phase.</p>
         </div>
+    </nav>
 
-        <!-- API ENDPOINTS -->
-        <div class="api-endpoints">
+    <!-- HERO SECTION -->
+    <section class="hero-section">
+        <div class="hero-container">
+            <div class="api-icon">🔌</div>
+            <h1 class="hero-title">API Documentation Coming Soon</h1>
+            <p class="hero-subtitle">We're building a powerful REST API that will give developers programmatic access to all Opsis Suite warehouse management features. Build custom integrations, automate workflows, and extend your warehouse operations.</p>
+        </div>
+    </section>
+
+    <!-- PROGRESS SECTION -->
+    <section class="progress-section">
+        <div class="main-container">
+            <div class="progress-card">
+                <h2 class="progress-title">API Development Progress</h2>
+                <div class="progress-bar-container">
+                    <div class="progress-bar"></div>
+                </div>
+                <div class="progress-percentage">62% Complete</div>
+                <p class="progress-description">Our engineering team is developing RESTful endpoints for complete warehouse management automation. Core equipment and loan management APIs are currently in testing phase.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- API ENDPOINTS -->
+    <section class="endpoints-section">
+        <div class="main-container">
             <h2 class="endpoints-title">Planned API Endpoints</h2>
             <div class="endpoints-grid">
-                <div class="endpoint-item endpoint-equipment">
+                <div class="endpoint-item endpoint-equipment fade-in">
                     <span class="endpoint-method method-get">GET</span>
                     <div class="endpoint-path">/api/v1/equipment</div>
                     <div class="endpoint-name">Equipment Management</div>
@@ -590,7 +919,7 @@
                     <div class="endpoint-status">In Testing</div>
                 </div>
                 
-                <div class="endpoint-item endpoint-loans">
+                <div class="endpoint-item endpoint-loans fade-in">
                     <span class="endpoint-method method-post">POST</span>
                     <div class="endpoint-path">/api/v1/loans</div>
                     <div class="endpoint-name">Loan Requests</div>
@@ -598,7 +927,7 @@
                     <div class="endpoint-status">In Testing</div>
                 </div>
                 
-                <div class="endpoint-item endpoint-users">
+                <div class="endpoint-item endpoint-users fade-in">
                     <span class="endpoint-method method-get">GET</span>
                     <div class="endpoint-path">/api/v1/users</div>
                     <div class="endpoint-name">User Management</div>
@@ -606,7 +935,7 @@
                     <div class="endpoint-status">Development</div>
                 </div>
                 
-                <div class="endpoint-item endpoint-maintenance">
+                <div class="endpoint-item endpoint-maintenance fade-in">
                     <span class="endpoint-method method-put">PUT</span>
                     <div class="endpoint-path">/api/v1/maintenance</div>
                     <div class="endpoint-name">Maintenance Tracking</div>
@@ -614,7 +943,7 @@
                     <div class="endpoint-status">Planning</div>
                 </div>
                 
-                <div class="endpoint-item endpoint-auth">
+                <div class="endpoint-item endpoint-auth fade-in">
                     <span class="endpoint-method method-post">POST</span>
                     <div class="endpoint-path">/api/v1/auth</div>
                     <div class="endpoint-name">Authentication</div>
@@ -622,7 +951,7 @@
                     <div class="endpoint-status">Development</div>
                 </div>
                 
-                <div class="endpoint-item endpoint-webhooks">
+                <div class="endpoint-item endpoint-webhooks fade-in">
                     <span class="endpoint-method method-post">POST</span>
                     <div class="endpoint-path">/api/v1/webhooks</div>
                     <div class="endpoint-name">Webhooks</div>
@@ -631,11 +960,14 @@
                 </div>
             </div>
         </div>
+    </section>
 
-        <!-- CODE PREVIEW -->
-        <div class="code-preview">
-            <div class="code-title">API Preview - Equipment Request</div>
-            <div class="code-block">
+    <!-- CODE PREVIEW -->
+    <section class="code-section">
+        <div class="main-container">
+            <div class="code-preview">
+                <div class="code-title">API Preview - Equipment Request</div>
+                <div class="code-block">
 <span class="code-comment">// Get available equipment</span>
 <span class="code-keyword">fetch</span>('<span class="code-string">https://api.opsis-suite.com/v1/equipment?status=available</span>', {
   <span class="code-method">method</span>: '<span class="code-string">GET</span>',
@@ -649,11 +981,14 @@
   <span class="code-comment">// Process equipment data</span>
   console.<span class="code-method">log</span>('<span class="code-string">Available equipment:</span>', data);
 });
+                </div>
             </div>
         </div>
+    </section>
 
-        <!-- NOTIFICATION SECTION -->
-        <div class="notification-section">
+    <!-- NOTIFICATION SECTION -->
+    <section class="notification-section">
+        <div class="notification-container">
             <span class="notification-icon">📬</span>
             <h3 class="notification-title">Get API Access When Ready</h3>
             <p class="notification-description">Be among the first developers to integrate with Opsis Suite API. We'll send you documentation, examples, and early access when available.</p>
@@ -662,12 +997,59 @@
                 <button type="button" class="notification-button" onclick="subscribeToNotifications()">Join Waitlist</button>
             </div>
         </div>
+    </section>
 
-        <!-- HOME BUTTON -->
-        <a href="https://www.opsis-suite.com/" class="home-button" target="_top">
-            Return to Homepage
-        </a>
-    </div>
+    <!-- HOME BUTTON -->
+    <section class="home-section">
+        <a href="../index.html" class="home-button">Return to Homepage</a>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Solutions</h4>
+                    <ul class="footer-links">
+                        <li><a href="../solutions.html">Warehouse Management</a></li>
+                        <li><a href="features.html">HR Management</a></li>
+                        <li><a href="features.html">Time Synchronization</a></li>
+                        <li><a href="features.html">Financial Management</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul class="footer-links">
+                        <li><a href="../about.html">About Us</a></li>
+                        <li><a href="../contact.html">Contact</a></li>
+                        <li><a href="../careers.html">Careers</a></li>
+                        <li><a href="../docs/README.md">Support</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Platform</h4>
+                    <ul class="footer-links">
+                        <li><a href="features.html">Features</a></li>
+                        <li><a href="../pricing.html">Pricing</a></li>
+                        <li><a href="../legal/security.html">Security</a></li>
+                        <li><a href="../login.html">Login</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <ul class="footer-links">
+                        <li><a href="../legal/privacy.html">Privacy Policy</a></li>
+                        <li><a href="../legal/terms.html">Terms of Service</a></li>
+                        <li><a href="api.html">API Documentation</a></li>
+                        <li><a href="../legal/compliance.html">Compliance</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Opsis Suite. All rights reserved. | Enterprise Inventory Management Platform</p>
+            </div>
+        </div>
+    </footer>
 
     <!-- NOTIFICATION TOAST -->
     <div class="notification" id="notification"></div>
@@ -685,6 +1067,26 @@
                     notification.classList.remove('show');
                 }, 4000);
             }
+        }
+
+        // FADE IN ANIMATIONS
+        function setupFadeInAnimations() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.fade-in').forEach(el => {
+                observer.observe(el);
+            });
         }
 
         // SUBSCRIPTION FUNCTIONALITY
@@ -757,28 +1159,6 @@
             }
         }
 
-        // AUTO HEIGHT COMMUNICATION WITH WIX
-        function reportHeightToWix() {
-            if (window.parent && window.parent !== window) {
-                try {
-                    const height = Math.max(
-                        document.body.scrollHeight,
-                        document.documentElement.scrollHeight,
-                        window.innerHeight
-                    );
-                    
-                    window.parent.postMessage({
-                        type: 'resize',
-                        height: height
-                    }, '*');
-                    
-                    console.log('📏 Height reported to Wix:', height + 'px');
-                } catch (e) {
-                    console.log('Height communication not available');
-                }
-            }
-        }
-
         // ENTER KEY HANDLING
         function setupKeyboardHandlers() {
             const emailInput = document.getElementById('notifyEmail');
@@ -801,45 +1181,26 @@
 
         // INITIALIZATION
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔌 Opsis Suite API Documentation - Under Development');
+            console.log('🔌 Opsis Suite API Documentation - Premium Style Redesigned');
             console.log('✅ Development progress: 62%');
-            console.log('✅ Developer notifications ready');
-            console.log('✅ Premium API documentation preview');
+            console.log('✅ Header with updated navigation links');
+            console.log('✅ Endpoint cards with dramatic hover effects');
+            console.log('✅ Code preview with syntax highlighting');
+            console.log('✅ Developer notification system');
+            console.log('✅ Footer with correct GitHub structure paths');
+            console.log('✅ Consistent premium style throughout');
             
             // Setup all features
+            setupFadeInAnimations();
             setupEndpointInteractions();
             triggerProgressAnimation();
             setupKeyboardHandlers();
             setupHomeButton();
-            
-            // Report height after animations
-            setTimeout(reportHeightToWix, 100);
-            setTimeout(reportHeightToWix, 3000); // After animations complete
         });
 
-        // RESIZE HANDLER
-        window.addEventListener('resize', function() {
-            setTimeout(reportHeightToWix, 100);
-        });
-
-        // FINAL HEIGHT REPORT
-        window.addEventListener('load', function() {
-            setTimeout(function() {
-                reportHeightToWix();
-                const finalHeight = Math.max(
-                    document.body.scrollHeight,
-                    document.documentElement.scrollHeight,
-                    window.innerHeight
-                );
-                console.log('🎯 API PAGE HEIGHT: ' + finalHeight + 'px');
-                console.log('⚙️ Configure Wix HTML embed:');
-                console.log('   - Width: 100% (Stretch to fill)');
-                console.log('   - Height: ' + Math.max(finalHeight + 50, 1000) + 'px');
-                console.log('   - Responsive: ON');
-            }, 3500);
-        });
-
-        console.log('🚀 Opsis Suite API Documentation - Ready for Wix!');
+        console.log('🎯 API Documentation page ready with premium styling!');
+        console.log('📧 All links updated to GitHub structure');
+        console.log('🎨 Consistent design with other pages');
     </script>
 </body>
 </html>
