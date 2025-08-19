@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,7 +24,7 @@
             overflow: hidden;
         }
 
-        /* Fondo sutil - Estilo Wix Original */
+        /* Fondo sutil - Estilo Opsis Original */
         body::before {
             content: '';
             position: absolute;
@@ -43,7 +44,7 @@
             66% { transform: translate(-5px, 5px) rotate(-1deg); }
         }
 
-        /* Home Button - Estilo Wix Original */
+        /* Home Button */
         .home-btn {
             position: fixed;
             top: 2rem;
@@ -76,14 +77,14 @@
             transition: transform 0.3s ease;
         }
 
-        /* Main Container - Estilo Opsis Suite */
+        /* Main Container */
         .login-container {
             max-width: 500px;
             width: 90%;
             z-index: 5;
         }
 
-        /* Logo Section - Opsis Suite Original */
+        /* Logo Section */
         .logo-section {
             text-align: center;
             margin-bottom: 3rem;
@@ -195,7 +196,7 @@
             color: #6c757d;
         }
 
-        /* Login Card - Estilo Wix Original */
+        /* Login Card */
         .login-card {
             background: linear-gradient(135deg, #ffffff, #f8f9fa);
             border: 2px solid rgba(210, 210, 215, 0.3);
@@ -207,7 +208,6 @@
         }
 
         .login-card:hover {
-            background: linear-gradient(135deg, #ffffff, #f8f9fa);
             transform: translateY(-5px);
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.12);
         }
@@ -245,24 +245,6 @@
             background: rgba(32, 201, 151, 0.1);
             border-color: rgba(32, 201, 151, 0.3);
             color: #20c997;
-        }
-
-        .company-detection.hr {
-            background: rgba(102, 16, 242, 0.1);
-            border-color: rgba(102, 16, 242, 0.3);
-            color: #6610f2;
-        }
-
-        .company-detection.timesync {
-            background: rgba(253, 126, 20, 0.1);
-            border-color: rgba(253, 126, 20, 0.3);
-            color: #fd7e14;
-        }
-
-        .company-detection.finance {
-            background: rgba(13, 202, 240, 0.1);
-            border-color: rgba(13, 202, 240, 0.3);
-            color: #0dcaf0;
         }
 
         .company-detection.admin {
@@ -638,7 +620,7 @@
                     <span class="notice-icon">🛡️</span>
                     <div class="notice-title">Supabase Authentication</div>
                     <div class="notice-text">
-                        Secure login with encrypted credentials stored in PostgreSQL database.
+                        Secure database authentication with PostgreSQL and Row Level Security.
                     </div>
                 </div>
             </div>
@@ -658,7 +640,7 @@
     
     <script>
         // ================================================================
-        // CONFIGURACIÓN SUPABASE CON TUS CREDENCIALES REALES
+        // CONFIGURACIÓN SUPABASE - CREDENCIALES REALES DE CANDELARIO
         // ================================================================
         const SUPABASE_CONFIG = {
             url: 'https://lmmlhncwdwjgtkdqaycv.supabase.co',
@@ -673,7 +655,7 @@
             'cve.com': {
                 id: 'cvesandiego',
                 name: 'CVE San Diego',
-                url: 'https://candewesth.github.io/opsis-suite/admin/index.html', // Temporal - cambiar después
+                url: 'https://candewesth.github.io/opsis-suite/admin/index.html', // Temporal
                 theme: 'warehouse',
                 icon: '🏭',
                 modules: ['Warehouse']
@@ -681,7 +663,7 @@
             'techcorp.com': {
                 id: 'techcorp',
                 name: 'Tech Corporation', 
-                url: 'https://candewesth.github.io/opsis-suite/admin/index.html', // Temporal - cambiar después
+                url: 'https://candewesth.github.io/opsis-suite/admin/index.html', // Temporal
                 theme: 'warehouse',
                 icon: '🏢',
                 modules: ['Warehouse', 'HR']
@@ -717,7 +699,7 @@
             const company = COMPANY_CONFIG[domain];
             
             if (email === 'admin@opsis-suite.com') {
-                // MODO SUPER ADMIN
+                // MODO SUPER ADMIN ACTIVADO
                 currentUserType = 'admin';
                 
                 titleEl.textContent = '⚡ Super Admin Detected';
@@ -798,7 +780,7 @@
             hideError();
 
             try {
-                console.log('Attempting Supabase login for:', email);
+                console.log('🚀 Attempting Supabase login for:', email);
                 
                 // Autenticar con Supabase
                 const { data, error } = await supabase.auth.signInWithPassword({
@@ -807,18 +789,18 @@
                 });
 
                 if (error) {
-                    console.error('Supabase auth error:', error);
+                    console.error('❌ Supabase auth error:', error);
                     throw error;
                 }
 
                 if (data.user) {
-                    console.log('User authenticated:', data.user.email);
+                    console.log('✅ User authenticated:', data.user.email);
                     
                     // Obtener perfil del usuario desde la base de datos
                     const userProfile = await getUserProfile(data.user.id);
                     
                     if (userProfile) {
-                        console.log('User profile found:', userProfile);
+                        console.log('👤 User profile found:', userProfile.name, userProfile.role);
                         
                         // Determinar empresa y URL de redirección
                         const domain = email.split('@')[1];
@@ -834,6 +816,7 @@
                             
                             // Redirigir
                             setTimeout(() => {
+                                console.log('🎯 Redirecting to:', company.url);
                                 window.open(company.url, '_top');
                             }, 3000);
                         } else {
@@ -846,7 +829,7 @@
                     showError('Authentication failed. Please try again.');
                 }
             } catch (error) {
-                console.error('Login error:', error);
+                console.error('❌ Login error:', error);
                 
                 // Mensajes de error más específicos
                 let errorMessage = 'Login failed. Please check your credentials.';
@@ -870,7 +853,7 @@
         // Obtener perfil de usuario desde Supabase
         async function getUserProfile(userId) {
             try {
-                console.log('Fetching user profile for:', userId);
+                console.log('📊 Fetching user profile for:', userId);
                 
                 const { data, error } = await supabase
                     .from('user_profiles')
@@ -879,14 +862,14 @@
                     .single();
 
                 if (error) {
-                    console.error('Profile fetch error:', error);
+                    console.error('❌ Profile fetch error:', error);
                     return null;
                 }
 
-                console.log('Profile fetched:', data);
+                console.log('✅ Profile fetched successfully:', data);
                 return data;
             } catch (error) {
-                console.error('Profile fetch error:', error);
+                console.error('❌ Profile fetch error:', error);
                 return null;
             }
         }
@@ -906,7 +889,7 @@
             };
             
             sessionStorage.setItem('opsis_session', JSON.stringify(session));
-            console.log('Session stored:', session);
+            console.log('💾 Session stored:', session);
         }
 
         // UI Helper functions
@@ -955,27 +938,29 @@
             // Auto-focus email
             document.getElementById('email').focus();
 
+            console.log('🎯 Opsis Suite Login System Loaded');
+            console.log('🔗 Connected to Supabase:', SUPABASE_CONFIG.url);
+
             // Verificar si hay sesión activa
             const { data: { session } } = await supabase.auth.getSession();
             
             if (session) {
-                console.log('Active session found:', session.user.email);
+                console.log('🔑 Active session found for:', session.user.email);
                 // Opcional: redirigir automáticamente si hay sesión activa
-                // window.location.href = 'dashboard.html';
             }
         });
 
         // Listener para cambios de autenticación
         supabase.auth.onAuthStateChange((event, session) => {
-            console.log('Auth state changed:', event, session?.user?.email);
+            console.log('🔄 Auth state changed:', event, session?.user?.email);
             
             if (event === 'SIGNED_OUT') {
                 sessionStorage.removeItem('opsis_session');
+                console.log('🚪 User signed out');
             }
         });
 
-        console.log('🛡️ Opsis Suite Supabase Login System - Database Authentication Active');
-        console.log('🔗 Connected to:', SUPABASE_CONFIG.url);
+        console.log('🛡️ Opsis Suite Supabase Login System - Ready for Authentication');
     </script>
 </body>
 </html>
