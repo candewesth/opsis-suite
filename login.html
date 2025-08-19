@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -650,24 +649,8 @@
         // Inicializar Supabase
         const supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.key);
 
-        // Company mapping configuration
+        // Company mapping configuration - SOLO SUPER ADMIN POR AHORA
         const COMPANY_CONFIG = {
-            'cve.com': {
-                id: 'cvesandiego',
-                name: 'CVE San Diego',
-                url: 'https://candewesth.github.io/opsis-suite/admin/index.html', // Temporal
-                theme: 'warehouse',
-                icon: '🏭',
-                modules: ['Warehouse']
-            },
-            'techcorp.com': {
-                id: 'techcorp',
-                name: 'Tech Corporation', 
-                url: 'https://candewesth.github.io/opsis-suite/admin/index.html', // Temporal
-                theme: 'warehouse',
-                icon: '🏢',
-                modules: ['Warehouse', 'HR']
-            },
             'opsis-suite.com': {
                 id: 'system',
                 name: 'Opsis Suite Control Center',
@@ -676,6 +659,7 @@
                 icon: '⚡',
                 modules: ['Super Admin']
             }
+            // Las empresas se agregan dinámicamente cuando las crees desde el panel
         };
 
         let currentUserType = 'company';
@@ -695,9 +679,6 @@
                 return;
             }
             
-            const domain = email.split('@')[1];
-            const company = COMPANY_CONFIG[domain];
-            
             if (email === 'admin@opsis-suite.com') {
                 // MODO SUPER ADMIN ACTIVADO
                 currentUserType = 'admin';
@@ -715,23 +696,11 @@
                 updateLoginButton();
                 console.log('🔐 Super Admin mode activated - Supabase auth enabled');
                 
-            } else if (company) {
-                // MODO EMPRESA
-                currentUserType = 'company';
-                resetToCompanyMode();
-                
-                titleEl.textContent = `✓ ${company.name}`;
-                subtitleEl.textContent = `${company.modules.join(', ')} • Ready to sign in`;
-                
-                detectionDiv.className = `company-detection show ${company.theme}`;
-                detectionDiv.querySelector('.detection-icon').textContent = company.icon;
-                
-                updateLoginButton();
-                console.log(`Company detected: ${company.name}`);
-                
             } else {
+                // No hay empresas configuradas aún - solo super admin permitido
                 detectionDiv.classList.remove('show');
                 resetToCompanyMode();
+                console.log('ℹ️ Company not configured yet. Only super admin access available.');
             }
         }
 
@@ -802,25 +771,23 @@
                     if (userProfile) {
                         console.log('👤 User profile found:', userProfile.name, userProfile.role);
                         
-                        // Determinar empresa y URL de redirección
-                        const domain = email.split('@')[1];
-                        const company = COMPANY_CONFIG[domain];
-                        
-                        if (company) {
+                        // Solo permitir super admin por ahora
+                        if (email === 'admin@opsis-suite.com' && userProfile.role === 'super_admin') {
+                            const company = COMPANY_CONFIG['opsis-suite.com'];
+                            
                             // Almacenar sesión
                             storeUserSession(data.user, userProfile, company);
                             
                             // Mostrar éxito
-                            const isAdmin = currentUserType === 'admin';
-                            showSuccess(userProfile.name || data.user.email, company.name, isAdmin);
+                            showSuccess(userProfile.name || data.user.email, company.name, true);
                             
                             // Redirigir
                             setTimeout(() => {
                                 console.log('🎯 Redirecting to:', company.url);
-                                window.open(company.url, '_top');
+                                window.location.href = company.url;
                             }, 3000);
                         } else {
-                            showError('Company not found in system');
+                            showError('Access denied. Only super admin access is currently available.');
                         }
                     } else {
                         showError('User profile not found. Please contact administrator.');
