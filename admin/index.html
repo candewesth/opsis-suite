@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Admin Panel - Opsis Suite</title>
+    <title>Sign In - Opsis Suite</title>
     <style>
         * {
             margin: 0;
@@ -16,10 +16,14 @@
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             color: #1d1d1f;
             min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             position: relative;
+            overflow: hidden;
         }
 
-        /* Fondo sutil - Estilo Wix Original */
+        /* Fondo sutil - Estilo Opsis Original */
         body::before {
             content: '';
             position: absolute;
@@ -39,16 +43,48 @@
             66% { transform: translate(-5px, 5px) rotate(-1deg); }
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-            position: relative;
-            z-index: 1;
+        /* Home Button */
+        .home-btn {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, #495057, #6c757d);
+            border: none;
+            border-radius: 16px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            z-index: 10;
         }
 
-        /* Header - Estilo Opsis Suite */
-        .header {
+        .home-btn:hover {
+            background: linear-gradient(135deg, #6c757d, #495057);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(73, 80, 87, 0.3);
+        }
+
+        .home-btn:hover .arrow {
+            transform: translateX(-3px);
+        }
+
+        .arrow {
+            transition: transform 0.3s ease;
+        }
+
+        /* Main Container */
+        .login-container {
+            max-width: 500px;
+            width: 90%;
+            z-index: 5;
+        }
+
+        /* Logo Section */
+        .logo-section {
             text-align: center;
             margin-bottom: 3rem;
         }
@@ -70,6 +106,11 @@
             background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3, #54a0ff, #5f27cd, #00d2d3, #ff9f43, #10ac84, #ee5a6f, #ff6b6b);
             background-size: 400% 400%;
             animation: gradientShift 4s ease-in-out infinite;
+        }
+
+        .logo-icon:hover {
+            animation-duration: 1s;
+            transform: scale(1.05);
         }
 
         .logo-icon::after {
@@ -99,13 +140,35 @@
             animation: winkEye 4s ease-in-out infinite;
         }
 
+        .logo-icon:hover::before {
+            animation: winkEye 0.8s ease-in-out infinite;
+        }
+
         @keyframes winkEye {
-            0%, 85% { transform: translate(-50%, -50%) scaleY(1); }
-            88% { transform: translate(-50%, -50%) scaleY(0.1); }
-            92% { transform: translate(-50%, -50%) scaleY(1); }
-            94% { transform: translate(-50%, -50%) scaleY(0.1); }
-            97% { transform: translate(-50%, -50%) scaleY(1); }
-            100% { transform: translate(-50%, -50%) scaleY(1); }
+            0%, 85% { 
+                content: '◉'; 
+                transform: translate(-50%, -50%) scaleY(1); 
+            }
+            88% { 
+                content: '◉'; 
+                transform: translate(-50%, -50%) scaleY(0.1); 
+            }
+            92% { 
+                content: '◉'; 
+                transform: translate(-50%, -50%) scaleY(1); 
+            }
+            94% { 
+                content: '◉'; 
+                transform: translate(-50%, -50%) scaleY(0.1); 
+            }
+            97% { 
+                content: '◉'; 
+                transform: translate(-50%, -50%) scaleY(1); 
+            }
+            100% { 
+                content: '◉'; 
+                transform: translate(-50%, -50%) scaleY(1); 
+            }
         }
 
         @keyframes gradientShift {
@@ -116,7 +179,7 @@
             100% { background-position: 0% 50%; }
         }
 
-        .header h1 {
+        .logo-text {
             font-size: 2.5rem;
             font-weight: 700;
             background: linear-gradient(135deg, #495057, #6c757d);
@@ -126,153 +189,112 @@
             margin-bottom: 0.5rem;
         }
 
-        .header p {
+        .logo-subtitle {
             opacity: 0.7;
             font-size: 1.1rem;
             color: #6c757d;
         }
 
-        /* Stats Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
-        }
-
-        .stat-card {
+        /* Login Card */
+        .login-card {
             background: linear-gradient(135deg, #ffffff, #f8f9fa);
             border: 2px solid rgba(210, 210, 215, 0.3);
             border-radius: 32px;
             padding: 3rem 2.5rem;
+            backdrop-filter: none;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             transition: all 0.4s ease;
-            text-align: center;
         }
 
-        .stat-card:hover {
-            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+        .login-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.12);
         }
 
-        .stat-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            color: #1d1d1f;
-        }
-
-        .stat-label {
-            opacity: 0.8;
-            font-size: 1rem;
-            color: #6c757d;
-        }
-
-        /* Navigation */
-        .nav-tabs {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-bottom: 3rem;
-            border-bottom: 1px solid rgba(210, 210, 215, 0.3);
-            padding-bottom: 1rem;
-        }
-
-        .tab-btn {
-            padding: 1rem 2rem;
-            background: linear-gradient(135deg, #ffffff, #f8f9fa);
-            border: 2px solid rgba(210, 210, 215, 0.3);
-            border-radius: 16px;
-            color: #1d1d1f;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        .login-title {
+            font-size: 2rem;
             font-weight: 600;
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #1d1d1f;
+            transition: all 0.4s ease;
         }
 
-        .tab-btn:hover,
-        .tab-btn.active {
-            background: linear-gradient(135deg, #ffffff, #f8f9fa);
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
-            border-color: #20c997;
-        }
-
-        /* Tab Content */
-        .tab-content {
+        /* Company Detection */
+        .company-detection {
+            background: rgba(32, 201, 151, 0.1);
+            border: 1px solid rgba(32, 201, 151, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            transform: translateY(10px);
+            opacity: 0;
+            transition: all 0.4s ease;
             display: none;
         }
 
-        .tab-content.active {
+        .company-detection.show {
             display: block;
+            opacity: 1;
+            transform: translateY(0);
         }
 
-        /* Admin Card */
-        .admin-card {
-            background: linear-gradient(135deg, #ffffff, #f8f9fa);
-            border: 2px solid rgba(210, 210, 215, 0.3);
-            border-radius: 32px;
-            padding: 3rem 2.5rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            margin-bottom: 2rem;
-            transition: all 0.4s ease;
+        .company-detection.warehouse {
+            background: rgba(32, 201, 151, 0.1);
+            border-color: rgba(32, 201, 151, 0.3);
+            color: #20c997;
         }
 
-        .admin-card:hover {
-            background: linear-gradient(135deg, #ffffff, #f8f9fa);
-            transform: translateY(-5px);
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.12);
+        .company-detection.admin {
+            background: rgba(220, 53, 69, 0.1);
+            border-color: rgba(220, 53, 69, 0.3);
+            color: #dc3545;
         }
 
-        .card-title {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            font-size: 1.8rem;
-            font-weight: 600;
-            margin-bottom: 2rem;
-            color: #1d1d1f;
+        .detection-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
         }
 
-        .card-icon {
-            width: 50px;
-            height: 50px;
-            background: var(--icon-gradient, linear-gradient(135deg, #495057, #6c757d));
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: white;
+        .detection-title {
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .detection-subtitle {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        /* Admin Mode */
+        .admin-mode .form-input:focus {
+            border-color: #dc3545;
+            box-shadow: 0 0 20px rgba(220, 53, 69, 0.15);
+        }
+
+        .admin-mode .login-title {
+            background: linear-gradient(135deg, #dc3545, #495057);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         /* Form Styles */
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-        }
-
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         .form-label {
             display: block;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
             font-weight: 600;
             color: #1d1d1f;
         }
 
-        .form-input,
-        .form-select {
+        .form-input {
             width: 100%;
-            padding: 1rem 1.5rem;
+            padding: 1.25rem 1.5rem;
             background: white;
             border: 2px solid rgba(210, 210, 215, 0.4);
             border-radius: 16px;
@@ -285,8 +307,7 @@
             color: #6c757d;
         }
 
-        .form-input:focus,
-        .form-select:focus {
+        .form-input:focus {
             outline: none;
             border-color: #20c997;
             background: white;
@@ -294,191 +315,216 @@
             transform: translateY(-2px);
         }
 
-        /* Button Styles */
-        .btn {
-            padding: 1rem 2rem;
+        /* Login Button */
+        .login-btn {
+            width: 100%;
+            padding: 1.5rem 2rem;
+            background: linear-gradient(135deg, #495057, #6c757d);
             border: none;
-            border-radius: 16px;
-            font-weight: 600;
+            border-radius: 20px;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 1rem;
+            position: relative;
+            overflow: hidden;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #495057, #6c757d);
-            color: white;
-        }
-
-        .btn-primary:hover {
+        .login-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(73, 80, 87, 0.4);
+            box-shadow: 0 20px 50px rgba(73, 80, 87, 0.4);
         }
 
-        .btn-secondary {
-            background: white;
-            color: #1d1d1f;
-            border: 2px solid rgba(210, 210, 215, 0.4);
+        .login-btn.admin-mode {
+            background: linear-gradient(135deg, #dc3545, #495057);
         }
 
-        .btn-secondary:hover {
-            background: #f8f9fa;
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        .login-btn.admin-mode:hover {
+            box-shadow: 0 20px 50px rgba(220, 53, 69, 0.4);
         }
 
-        /* Companies Grid */
-        .companies-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
+        .login-btn:active {
+            transform: translateY(-1px);
         }
 
-        .company-card {
-            background: white;
-            border: 2px solid rgba(210, 210, 215, 0.3);
-            border-radius: 24px;
-            padding: 2rem;
-            transition: all 0.3s ease;
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
         }
 
-        .company-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+        .login-btn:hover::before {
+            left: 100%;
         }
 
-        .company-header {
-            display: flex;
-            justify-content: between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .company-name {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: #1d1d1f;
-        }
-
-        .company-domain {
-            color: #6c757d;
-            font-size: 0.9rem;
-        }
-
-        .status-badge {
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-left: auto;
-        }
-
-        .status-active {
-            background: rgba(32, 201, 151, 0.2);
-            color: #20c997;
-        }
-
-        .status-trial {
-            background: rgba(253, 126, 20, 0.2);
-            color: #fd7e14;
-        }
-
-        /* Loading States */
-        .loading {
-            opacity: 0.7;
+        .login-btn.loading {
             pointer-events: none;
+            opacity: 0.8;
         }
 
+        .login-btn .btn-text {
+            transition: opacity 0.3s ease;
+        }
+
+        .login-btn.loading .btn-text {
+            opacity: 0;
+        }
+
+        /* Loading Spinner */
         .spinner {
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #495057;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 24px;
+            height: 24px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
             border-radius: 50%;
-            width: 20px;
-            height: 20px;
             animation: spin 1s linear infinite;
-            display: inline-block;
-            margin-left: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .login-btn.loading .spinner {
+            opacity: 1;
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
-        /* Messages */
-        .message {
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            margin-bottom: 1.5rem;
+        /* Success Screen */
+        .success-screen {
             display: none;
+            text-align: center;
+            padding: 2rem 0;
         }
 
-        .message.show {
+        .success-screen.show {
             display: block;
             animation: slideIn 0.6s ease;
         }
 
-        .message.success {
-            background: rgba(32, 201, 151, 0.2);
-            border: 1px solid rgba(32, 201, 151, 0.3);
-            color: #20c997;
+        .success-icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin: 0 auto 2rem;
+            animation: successPulse 2s ease-in-out infinite;
         }
 
-        .message.error {
-            background: rgba(220, 53, 69, 0.2);
-            border: 1px solid rgba(220, 53, 69, 0.3);
-            color: #dc3545;
+        .success-icon.admin-mode {
+            background: linear-gradient(135deg, #dc3545, #495057);
         }
 
-        @keyframes slideIn {
-            0% { opacity: 0; transform: translateX(-20px); }
-            100% { opacity: 1; transform: translateX(0); }
+        @keyframes successPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
         }
 
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            opacity: 0.7;
+        .success-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1d1d1f;
+        }
+
+        .success-subtitle {
+            opacity: 0.8;
+            margin-bottom: 2rem;
             color: #6c757d;
         }
 
-        .empty-state-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
+        .redirecting-text {
+            opacity: 0.6;
+            font-size: 0.9rem;
+            color: #6c757d;
         }
 
-        .empty-state h3 {
-            color: #1d1d1f;
-            margin-bottom: 1rem;
+        /* Error Messages */
+        .error-message {
+            background: rgba(220, 53, 69, 0.2);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            color: #ff6b7a;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            display: none;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* Security Notice */
+        .security-notice {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: rgba(13, 202, 240, 0.1);
+            border: 1px solid rgba(13, 202, 240, 0.3);
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .security-notice .notice-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            display: block;
+            color: #0dcaf0;
+        }
+
+        .security-notice .notice-title {
+            font-weight: 700;
+            color: #0dcaf0;
+            margin-bottom: 0.5rem;
+        }
+
+        .security-notice .notice-text {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            color: #6c757d;
         }
 
         /* Responsive */
         @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
+            .login-container {
+                width: 95%;
             }
 
-            .nav-tabs {
-                flex-wrap: wrap;
-            }
-
-            .tab-btn {
-                padding: 0.8rem 1.5rem;
-                font-size: 0.9rem;
-            }
-
-            .admin-card {
+            .login-card {
                 padding: 2rem 1.5rem;
             }
 
-            .form-grid {
-                grid-template-columns: 1fr;
+            .home-btn {
+                position: relative;
+                top: auto;
+                left: auto;
+                margin-bottom: 2rem;
+                align-self: flex-start;
             }
 
-            .companies-grid {
-                grid-template-columns: 1fr;
+            .logo-text {
+                font-size: 2rem;
             }
 
             .logo-icon {
@@ -486,530 +532,434 @@
                 height: 60px;
             }
 
-            .header h1 {
-                font-size: 2rem;
+            .logo-icon::after {
+                width: 54px;
+                height: 54px;
             }
+
+            .logo-icon::before {
+                font-size: 28px;
+            }
+        }
+
+        @keyframes slideIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
+    <!-- Home Button -->
+    <a href="https://www.opsis-suite.com/" class="home-btn" target="_top">
+        <span class="arrow">←</span>
+        <span>Back to Home</span>
+    </a>
+
+    <div class="login-container">
+        <!-- Logo Section -->
+        <div class="logo-section">
             <div class="logo-container">
                 <div class="logo-icon"></div>
                 <div>
-                    <h1>Opsis Suite Control Center</h1>
-                    <p>Super Admin Panel - Master SaaS Management</p>
+                    <h1 class="logo-text">Opsis Suite</h1>
+                    <p class="logo-subtitle">Integrated Enterprise Management</p>
                 </div>
             </div>
         </div>
 
-        <!-- Stats Overview -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">🏢</div>
-                <div class="stat-number" id="totalCompanies">0</div>
-                <div class="stat-label">Active Companies</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">👥</div>
-                <div class="stat-number" id="totalUsers">0</div>
-                <div class="stat-label">Total Users</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">💰</div>
-                <div class="stat-number" id="totalRevenue">$0</div>
-                <div class="stat-label">Monthly Revenue</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">📊</div>
-                <div class="stat-number" id="totalEquipment">0</div>
-                <div class="stat-label">Total Equipment</div>
-            </div>
-        </div>
-
-        <!-- Navigation Tabs -->
-        <div class="nav-tabs">
-            <button class="tab-btn active" onclick="showTab('dashboard')">🏠 Dashboard</button>
-            <button class="tab-btn" onclick="showTab('companies')">🏢 Companies</button>
-            <button class="tab-btn" onclick="showTab('users')">👥 Users</button>
-        </div>
-
-        <!-- Dashboard Tab -->
-        <div id="dashboardTab" class="tab-content active">
-            <div class="admin-card">
-                <h2 class="card-title">
-                    <div class="card-icon" style="--icon-gradient: linear-gradient(135deg, #20c997, #17a2b8);">📊</div>
-                    System Overview
-                </h2>
-                <p>Welcome to the Opsis Suite Super Admin Panel. From here you can manage all companies, users, and system settings.</p>
+        <!-- Login Card -->
+        <div class="login-card" id="loginCard">
+            <!-- Login Form -->
+            <div id="loginForm">
+                <h2 class="login-title" id="loginTitle">Sign In to Your Workspace</h2>
                 
-                <div style="margin-top: 2rem;">
-                    <button class="btn btn-primary" onclick="showTab('companies')">
-                        🏢 Manage Companies
+                <!-- Company Detection Display -->
+                <div id="companyDetection" class="company-detection">
+                    <div class="detection-icon">🏢</div>
+                    <div class="detection-title" id="detectionTitle">Company Detected</div>
+                    <div class="detection-subtitle" id="detectionSubtitle">Welcome to your workspace</div>
+                </div>
+                
+                <div id="errorMessage" class="error-message"></div>
+
+                <form id="authForm" onsubmit="return handleSupabaseLogin(event)">
+                    <div class="form-group">
+                        <label for="email" class="form-label" id="emailLabel">Email Address</label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            class="form-input" 
+                            placeholder="Enter your work email"
+                            required
+                            autocomplete="email"
+                            oninput="detectUserTypeSupabase(this.value)"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            class="form-input" 
+                            placeholder="Enter your password"
+                            required
+                            autocomplete="current-password"
+                        >
+                    </div>
+
+                    <button type="submit" class="login-btn" id="loginBtn">
+                        <span class="btn-text">🚀 Sign In to Workspace</span>
+                        <div class="spinner"></div>
                     </button>
-                    <button class="btn btn-secondary" onclick="loadRecentActivity()" style="margin-left: 1rem;">
-                        🔄 Refresh Data
-                    </button>
-                </div>
-            </div>
-
-            <!-- Recent Activity -->
-            <div class="admin-card">
-                <h2 class="card-title">
-                    <div class="card-icon" style="--icon-gradient: linear-gradient(135deg, #fd7e14, #dc3545);">📈</div>
-                    Recent Activity
-                </h2>
-                <div id="recentActivity">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📈</div>
-                        <h3>No Recent Activity</h3>
-                        <p>Activity will appear here as companies and users are added</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Companies Tab -->
-        <div id="companiesTab" class="tab-content">
-            <div class="admin-card">
-                <h2 class="card-title">
-                    <div class="card-icon" style="--icon-gradient: linear-gradient(135deg, #20c997, #17a2b8);">🏢</div>
-                    Add New Company
-                </h2>
-                
-                <div id="messageContainer"></div>
-                
-                <form id="addCompanyForm" class="form-grid">
-                    <div>
-                        <div class="form-group">
-                            <label class="form-label">Company Name</label>
-                            <input type="text" class="form-input" id="companyName" placeholder="CVE San Diego" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Email Domain</label>
-                            <input type="text" class="form-input" id="companyDomain" placeholder="cve.com" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Industry Sector</label>
-                            <select class="form-select" id="companySector" required>
-                                <option value="">Select Sector</option>
-                                <option value="construction">Construction</option>
-                                <option value="logistics">Logistics & Transportation</option>
-                                <option value="manufacturing">Manufacturing</option>
-                                <option value="retail">Retail & Wholesale</option>
-                                <option value="technology">Technology</option>
-                                <option value="healthcare">Healthcare</option>
-                                <option value="education">Education</option>
-                                <option value="government">Government</option>
-                                <option value="energy">Energy & Utilities</option>
-                                <option value="mining">Mining & Resources</option>
-                                <option value="agriculture">Agriculture</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="form-group">
-                            <label class="form-label">Subscription Plan</label>
-                            <select class="form-select" id="companyPlan" required>
-                                <option value="">Select Plan</option>
-                                <option value="trial">Trial ($0/month)</option>
-                                <option value="basic">Warehouse Basic ($49/month)</option>
-                                <option value="pro">Warehouse Pro ($149/month)</option>
-                                <option value="standard">Suite Standard ($249/month)</option>
-                                <option value="premium">Suite Premium ($499/month)</option>
-                                <option value="enterprise">Enterprise ($999/month)</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Company Admin Email</label>
-                            <input type="email" class="form-input" id="adminEmail" placeholder="admin@cve.com" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Initial Users</label>
-                            <input type="number" class="form-input" id="initialUsers" placeholder="5" min="1" max="100" value="5">
-                        </div>
-                    </div>
                 </form>
-                
-                <div style="margin-top: 2rem;">
-                    <button type="button" class="btn btn-primary" onclick="addCompany()" id="addCompanyBtn">
-                        🚀 Create Company & Setup System
-                    </button>
-                </div>
-            </div>
 
-            <!-- Companies List -->
-            <div class="admin-card">
-                <h2 class="card-title">
-                    <div class="card-icon" style="--icon-gradient: linear-gradient(135deg, #6610f2, #d63384);">📋</div>
-                    Active Companies
-                </h2>
-
-                <div id="companiesList">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">🏢</div>
-                        <h3>No Companies Yet</h3>
-                        <p>Add your first company to get started with Opsis Suite</p>
+                <!-- Security Notice -->
+                <div class="security-notice">
+                    <span class="notice-icon">🛡️</span>
+                    <div class="notice-title">Supabase Authentication</div>
+                    <div class="notice-text">
+                        Secure database authentication with PostgreSQL and Row Level Security.
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Users Tab -->
-        <div id="usersTab" class="tab-content">
-            <div class="admin-card">
-                <h2 class="card-title">
-                    <div class="card-icon" style="--icon-gradient: linear-gradient(135deg, #0dcaf0, #6f42c1);">👥</div>
-                    All System Users
-                </h2>
-
-                <div id="usersList">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">👥</div>
-                        <h3>No Users Yet</h3>
-                        <p>Users will appear here as companies are added</p>
-                    </div>
-                </div>
+            <!-- Success Screen -->
+            <div id="successScreen" class="success-screen">
+                <div class="success-icon" id="successIcon">✅</div>
+                <h2 class="success-title">Welcome Back!</h2>
+                <p class="success-subtitle" id="welcomeMessage">Redirecting to your workspace...</p>
+                <p class="redirecting-text">You will be redirected automatically in 3 seconds</p>
             </div>
         </div>
     </div>
 
-    <!-- Supabase JS Client -->
+    <!-- Supabase JavaScript SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
-        // CONFIGURACIÓN SUPABASE
-        const SUPABASE_URL = 'https://lmmlhncwdwjgtkdqaycv.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxtbWxobmN3ZHdqZ3RrZHFheWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU0MDE4ODYsImV4cCI6MjA3MDk3Nzg4Nn0.vhL5E-o9RtjEtrYTOdFCvhXs5mu5fuuAtB13LCd6dJQ';
-        
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // PRICING TIERS
-        const PRICING_TIERS = {
-            'trial': { price: 0, name: 'Trial' },
-            'basic': { price: 49, name: 'Warehouse Basic' },
-            'pro': { price: 149, name: 'Warehouse Pro' },
-            'standard': { price: 249, name: 'Suite Standard' },
-            'premium': { price: 499, name: 'Suite Premium' },
-            'enterprise': { price: 999, name: 'Enterprise' }
+        // ================================================================
+        // CONFIGURACIÓN SUPABASE - CREDENCIALES REALES DE CANDELARIO
+        // ================================================================
+        const SUPABASE_CONFIG = {
+            url: 'https://lmmlhncwdwjgtkdqaycv.supabase.co',
+            key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxtbWxobmN3ZHdqZ3RrZHFheWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU0MDE4ODYsImV4cCI6MjA3MDk3Nzg4Nn0.vhL5E-o9RtjEtrYTOdFCvhXs5mu5fuuAtB13LCd6dJQ'
         };
 
-        // STATE
-        let companies = [];
-        let users = [];
+        // Inicializar Supabase
+        const supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.key);
 
-        // TAB NAVIGATION
-        function showTab(tabName) {
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Remove active class from all buttons
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // Show selected tab
-            document.getElementById(tabName + 'Tab').classList.add('active');
-            
-            // Add active class to clicked button
-            event.target.classList.add('active');
+        // Company mapping configuration
+        const COMPANY_CONFIG = {
+            'cve.com': {
+                id: 'cvesandiego',
+                name: 'CVE San Diego',
+                url: 'https://candewesth.github.io/opsis-suite/admin/index.html', // Temporal
+                theme: 'warehouse',
+                icon: '🏭',
+                modules: ['Warehouse']
+            },
+            'techcorp.com': {
+                id: 'techcorp',
+                name: 'Tech Corporation', 
+                url: 'https://candewesth.github.io/opsis-suite/admin/index.html', // Temporal
+                theme: 'warehouse',
+                icon: '🏢',
+                modules: ['Warehouse', 'HR']
+            },
+            'opsis-suite.com': {
+                id: 'system',
+                name: 'Opsis Suite Control Center',
+                url: 'https://candewesth.github.io/opsis-suite/admin/index.html',
+                theme: 'admin',
+                icon: '⚡',
+                modules: ['Super Admin']
+            }
+        };
 
-            // Load data for the tab
-            if (tabName === 'companies') {
-                loadCompanies();
-            } else if (tabName === 'users') {
-                loadUsers();
+        let currentUserType = 'company';
+
+        // Detección automática de usuario
+        function detectUserTypeSupabase(email) {
+            const detectionDiv = document.getElementById('companyDetection');
+            const titleEl = document.getElementById('detectionTitle');
+            const subtitleEl = document.getElementById('detectionSubtitle');
+            const loginCard = document.getElementById('loginCard');
+            const loginTitle = document.getElementById('loginTitle');
+            const emailLabel = document.getElementById('emailLabel');
+            
+            if (!email.includes('@') || !email.includes('.')) {
+                detectionDiv.classList.remove('show');
+                resetToCompanyMode();
+                return;
+            }
+            
+            const domain = email.split('@')[1];
+            const company = COMPANY_CONFIG[domain];
+            
+            if (email === 'admin@opsis-suite.com') {
+                // MODO SUPER ADMIN ACTIVADO
+                currentUserType = 'admin';
+                
+                titleEl.textContent = '⚡ Super Admin Detected';
+                subtitleEl.textContent = 'Control Center Access • Supabase Authentication';
+                
+                detectionDiv.className = 'company-detection show admin';
+                detectionDiv.querySelector('.detection-icon').textContent = '🛡️';
+                
+                loginCard.classList.add('admin-mode');
+                loginTitle.textContent = 'Administrator Access';
+                emailLabel.textContent = '🔑 Admin Email';
+                
+                updateLoginButton();
+                console.log('🔐 Super Admin mode activated - Supabase auth enabled');
+                
+            } else if (company) {
+                // MODO EMPRESA
+                currentUserType = 'company';
+                resetToCompanyMode();
+                
+                titleEl.textContent = `✓ ${company.name}`;
+                subtitleEl.textContent = `${company.modules.join(', ')} • Ready to sign in`;
+                
+                detectionDiv.className = `company-detection show ${company.theme}`;
+                detectionDiv.querySelector('.detection-icon').textContent = company.icon;
+                
+                updateLoginButton();
+                console.log(`Company detected: ${company.name}`);
+                
+            } else {
+                detectionDiv.classList.remove('show');
+                resetToCompanyMode();
             }
         }
 
-        // GENERATE COMPANY SLUG
-        function generateCompanySlug(name) {
-            return name.toLowerCase()
-                      .replace(/[^a-z0-9]/g, '')
-                      .substring(0, 15);
-        }
-
-        // SHOW MESSAGE
-        function showMessage(message, type = 'success') {
-            const container = document.getElementById('messageContainer');
-            container.innerHTML = `
-                <div class="message ${type} show">
-                    ${message}
-                </div>
-            `;
+        // Resetear a modo empresa
+        function resetToCompanyMode() {
+            const loginCard = document.getElementById('loginCard');
+            const loginTitle = document.getElementById('loginTitle');
+            const emailLabel = document.getElementById('emailLabel');
             
-            setTimeout(() => {
-                container.innerHTML = '';
-            }, 5000);
+            currentUserType = 'company';
+            
+            loginCard.classList.remove('admin-mode');
+            loginTitle.textContent = 'Sign In to Your Workspace';
+            emailLabel.textContent = 'Email Address';
+            
+            updateLoginButton();
         }
 
-        // ADD COMPANY
-        async function addCompany() {
-            const btn = document.getElementById('addCompanyBtn');
-            btn.classList.add('loading');
-            btn.innerHTML = '🚀 Creating Company...<span class="spinner"></span>';
+        // Actualizar botón
+        function updateLoginButton() {
+            const btn = document.getElementById('loginBtn');
+            const btnText = btn.querySelector('.btn-text');
+            
+            if (currentUserType === 'admin') {
+                btn.classList.add('admin-mode');
+                btnText.textContent = '⚡ Access Control Center';
+            } else {
+                btn.classList.remove('admin-mode');
+                btnText.textContent = '🚀 Sign In to Workspace';
+            }
+        }
+
+        // MANEJO DE LOGIN CON SUPABASE
+        async function handleSupabaseLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                showError('Please enter both email and password');
+                return false;
+            }
+
+            setLoading(true);
+            hideError();
 
             try {
-                const company = {
-                    name: document.getElementById('companyName').value,
-                    domain: document.getElementById('companyDomain').value,
-                    slug: generateCompanySlug(document.getElementById('companyName').value),
-                    sector: document.getElementById('companySector').value,
-                    plan: document.getElementById('companyPlan').value,
-                    admin_email: document.getElementById('adminEmail').value,
-                    initial_users: parseInt(document.getElementById('initialUsers').value),
-                    status: 'active'
-                };
+                console.log('🚀 Attempting Supabase login for:', email);
+                
+                // Autenticar con Supabase
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
 
-                // Validate form
-                if (!company.name || !company.domain || !company.sector || !company.plan || !company.admin_email) {
-                    throw new Error('Please fill in all required fields');
+                if (error) {
+                    console.error('❌ Supabase auth error:', error);
+                    throw error;
                 }
 
-                // Insert company into Supabase
-                const { data: companyData, error: companyError } = await supabase
-                    .from('companies')
-                    .insert([company])
-                    .select()
+                if (data.user) {
+                    console.log('✅ User authenticated:', data.user.email);
+                    
+                    // Obtener perfil del usuario desde la base de datos
+                    const userProfile = await getUserProfile(data.user.id);
+                    
+                    if (userProfile) {
+                        console.log('👤 User profile found:', userProfile.name, userProfile.role);
+                        
+                        // Determinar empresa y URL de redirección
+                        const domain = email.split('@')[1];
+                        const company = COMPANY_CONFIG[domain];
+                        
+                        if (company) {
+                            // Almacenar sesión
+                            storeUserSession(data.user, userProfile, company);
+                            
+                            // Mostrar éxito
+                            const isAdmin = currentUserType === 'admin';
+                            showSuccess(userProfile.name || data.user.email, company.name, isAdmin);
+                            
+                            // Redirigir
+                            setTimeout(() => {
+                                console.log('🎯 Redirecting to:', company.url);
+                                window.open(company.url, '_top');
+                            }, 3000);
+                        } else {
+                            showError('Company not found in system');
+                        }
+                    } else {
+                        showError('User profile not found. Please contact administrator.');
+                    }
+                } else {
+                    showError('Authentication failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('❌ Login error:', error);
+                
+                // Mensajes de error más específicos
+                let errorMessage = 'Login failed. Please check your credentials.';
+                
+                if (error.message.includes('Invalid login credentials')) {
+                    errorMessage = 'Invalid email or password. Please try again.';
+                } else if (error.message.includes('Email not confirmed')) {
+                    errorMessage = 'Please check your email and confirm your account.';
+                } else if (error.message.includes('Too many requests')) {
+                    errorMessage = 'Too many login attempts. Please wait a moment.';
+                }
+                
+                showError(errorMessage);
+            } finally {
+                setLoading(false);
+            }
+
+            return false;
+        }
+
+        // Obtener perfil de usuario desde Supabase
+        async function getUserProfile(userId) {
+            try {
+                console.log('📊 Fetching user profile for:', userId);
+                
+                const { data, error } = await supabase
+                    .from('user_profiles')
+                    .select('*')
+                    .eq('user_id', userId)
                     .single();
 
-                if (companyError) {
-                    throw new Error(companyError.message);
+                if (error) {
+                    console.error('❌ Profile fetch error:', error);
+                    return null;
                 }
 
-                // Create default users for the company
-                await createDefaultUsers(companyData.id, company.admin_email, company.domain);
-
-                // Update displays
-                await loadStats();
-                await loadCompanies();
-                
-                // Clear form
-                document.getElementById('addCompanyForm').reset();
-                
-                // Show success message
-                showMessage(`✅ Company "${company.name}" created successfully! Dashboard URL: opsis-suite.com/${company.slug}`);
-                
+                console.log('✅ Profile fetched successfully:', data);
+                return data;
             } catch (error) {
-                console.error('Error adding company:', error);
-                showMessage(`❌ Error: ${error.message}`, 'error');
-            } finally {
+                console.error('❌ Profile fetch error:', error);
+                return null;
+            }
+        }
+
+        // Almacenar sesión de usuario
+        function storeUserSession(user, profile, company) {
+            const session = {
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    name: profile.name,
+                    role: profile.role,
+                    company_id: profile.company_id
+                },
+                company: company,
+                loginTime: new Date().toISOString()
+            };
+            
+            sessionStorage.setItem('opsis_session', JSON.stringify(session));
+            console.log('💾 Session stored:', session);
+        }
+
+        // UI Helper functions
+        function setLoading(loading) {
+            const btn = document.getElementById('loginBtn');
+            if (loading) {
+                btn.classList.add('loading');
+            } else {
                 btn.classList.remove('loading');
-                btn.innerHTML = '🚀 Create Company & Setup System';
             }
         }
 
-        // CREATE DEFAULT USERS
-        async function createDefaultUsers(companyId, adminEmail, domain) {
-            const defaultUsers = [
-                { email: adminEmail, name: 'Company Admin', role: 'admin' },
-                { email: `almacen@${domain}`, name: 'Warehouse Manager', role: 'almacen' },
-                { email: `supervisor@${domain}`, name: 'Field Supervisor', role: 'supervisor' },
-                { email: `estimador@${domain}`, name: 'Project Estimator', role: 'estimador' },
-                { email: `operativo@${domain}`, name: 'Operations Staff', role: 'operativo' }
-            ];
-
-            const usersToInsert = defaultUsers.map(user => ({
-                ...user,
-                company_id: companyId,
-                status: 'active'
-            }));
-
-            const { error } = await supabase
-                .from('users')
-                .insert(usersToInsert);
-
-            if (error) {
-                console.error('Error creating default users:', error);
-            }
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
         }
 
-        // LOAD STATS
-        async function loadStats() {
-            try {
-                // Load companies count
-                const { data: companiesData, error: companiesError } = await supabase
-                    .from('companies')
-                    .select('plan');
-
-                if (companiesError) throw companiesError;
-
-                // Load users count
-                const { data: usersData, error: usersError } = await supabase
-                    .from('users')
-                    .select('id');
-
-                if (usersError) throw usersError;
-
-                // Load equipment count
-                const { data: equipmentData, error: equipmentError } = await supabase
-                    .from('equipment')
-                    .select('id');
-
-                if (equipmentError) throw equipmentError;
-
-                // Calculate revenue
-                const totalRevenue = companiesData.reduce((sum, company) => {
-                    return sum + (PRICING_TIERS[company.plan]?.price || 0);
-                }, 0);
-
-                // Update UI
-                document.getElementById('totalCompanies').textContent = companiesData.length;
-                document.getElementById('totalUsers').textContent = usersData.length;
-                document.getElementById('totalRevenue').textContent = '$' + totalRevenue;
-                document.getElementById('totalEquipment').textContent = equipmentData.length;
-
-            } catch (error) {
-                console.error('Error loading stats:', error);
-            }
+        function hideError() {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.classList.remove('show');
         }
 
-        // LOAD COMPANIES
-        async function loadCompanies() {
-            try {
-                const { data, error } = await supabase
-                    .from('companies')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-
-                companies = data;
-                renderCompanies();
-
-            } catch (error) {
-                console.error('Error loading companies:', error);
-            }
-        }
-
-        // RENDER COMPANIES
-        function renderCompanies() {
-            const container = document.getElementById('companiesList');
+        function showSuccess(userName, companyName, isAdmin) {
+            const loginForm = document.getElementById('loginForm');
+            const successScreen = document.getElementById('successScreen');
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            const successIcon = document.getElementById('successIcon');
             
-            if (companies.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">🏢</div>
-                        <h3>No Companies Yet</h3>
-                        <p>Add your first company to get started with Opsis Suite</p>
-                    </div>
-                `;
-                return;
+            if (isAdmin) {
+                successIcon.textContent = '⚡';
+                successIcon.classList.add('admin-mode');
+                welcomeMessage.textContent = `Welcome back, ${userName}! Connecting to ${companyName}...`;
+            } else {
+                successIcon.textContent = '✅';
+                successIcon.classList.remove('admin-mode');
+                welcomeMessage.textContent = `Welcome back, ${userName}! Connecting to ${companyName}...`;
             }
-
-            container.innerHTML = `
-                <div class="companies-grid">
-                    ${companies.map(company => `
-                        <div class="company-card">
-                            <div class="company-header">
-                                <div>
-                                    <div class="company-name">${company.name}</div>
-                                    <div class="company-domain">${company.domain}</div>
-                                </div>
-                                <div class="status-badge status-${company.status}">${company.status}</div>
-                            </div>
-                            <div style="margin: 1rem 0;">
-                                <strong>Plan:</strong> ${PRICING_TIERS[company.plan]?.name || company.plan}<br>
-                                <strong>Sector:</strong> ${company.sector}<br>
-                                <strong>Users:</strong> ${company.initial_users}<br>
-                                <strong>Revenue:</strong> $${PRICING_TIERS[company.plan]?.price || 0}/mo
-                            </div>
-                            <div style="margin-top: 1rem;">
-                                <button class="btn btn-secondary" onclick="openDashboard('${company.slug}')" style="padding: 0.5rem 1rem; font-size: 0.8rem;">
-                                    🔗 Open Dashboard
-                                </button>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
-
-        // LOAD USERS
-        async function loadUsers() {
-            try {
-                const { data, error } = await supabase
-                    .from('users')
-                    .select(`
-                        *,
-                        companies (name, domain)
-                    `)
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-
-                users = data;
-                renderUsers();
-
-            } catch (error) {
-                console.error('Error loading users:', error);
-            }
-        }
-
-        // RENDER USERS
-        function renderUsers() {
-            const container = document.getElementById('usersList');
             
-            if (users.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">👥</div>
-                        <h3>No Users Yet</h3>
-                        <p>Users will appear here as companies are added</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = `
-                <div class="companies-grid">
-                    ${users.map(user => `
-                        <div class="company-card">
-                            <div class="company-header">
-                                <div>
-                                    <div class="company-name">${user.name}</div>
-                                    <div class="company-domain">${user.email}</div>
-                                </div>
-                                <div class="status-badge status-${user.status}">${user.role}</div>
-                            </div>
-                            <div style="margin: 1rem 0;">
-                                <strong>Company:</strong> ${user.companies?.name || 'N/A'}<br>
-                                <strong>Domain:</strong> ${user.companies?.domain || 'N/A'}<br>
-                                <strong>Status:</strong> ${user.status}<br>
-                                <strong>Last Login:</strong> ${user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never'}
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
+            loginForm.style.display = 'none';
+            successScreen.classList.add('show');
         }
 
-        // OPEN DASHBOARD
-        function openDashboard(companySlug) {
-            window.open(`https://www.opsis-suite.com/${companySlug}`, '_blank');
-        }
-
-        // LOAD RECENT ACTIVITY
-        async function loadRecentActivity() {
-            await loadStats();
-            showMessage('✅ Data refreshed successfully!');
-        }
-
-        // INITIALIZE ON PAGE LOAD
+        // Verificar sesión existente al cargar
         document.addEventListener('DOMContentLoaded', async function() {
-            console.log('Opsis Suite Super Admin Panel - Loading...');
+            // Auto-focus email
+            document.getElementById('email').focus();
+
+            console.log('🎯 Opsis Suite Login System Loaded');
+            console.log('🔗 Connected to Supabase:', SUPABASE_CONFIG.url);
+
+            // Verificar si hay sesión activa
+            const { data: { session } } = await supabase.auth.getSession();
             
-            // Load initial data
-            await loadStats();
-            await loadCompanies();
-            
-            console.log('Super Admin Panel ready!');
+            if (session) {
+                console.log('🔑 Active session found for:', session.user.email);
+                // Opcional: redirigir automáticamente si hay sesión activa
+            }
         });
+
+        // Listener para cambios de autenticación
+        supabase.auth.onAuthStateChange((event, session) => {
+            console.log('🔄 Auth state changed:', event, session?.user?.email);
+            
+            if (event === 'SIGNED_OUT') {
+                sessionStorage.removeItem('opsis_session');
+                console.log('🚪 User signed out');
+            }
+        });
+
+        console.log('🛡️ Opsis Suite Supabase Login System - Ready for Authentication');
     </script>
 </body>
 </html>
