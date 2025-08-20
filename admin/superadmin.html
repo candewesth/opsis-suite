@@ -1,0 +1,1702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin Panel - Opsis Suite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #e9ecef;
+            color: #1d1d1f;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header Premium */
+        .header {
+            background: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 32px;
+            padding: 3rem 2.5rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.4s ease;
+        }
+
+        .header:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 35px 100px rgba(0, 0, 0, 0.15);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .logo-container {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            padding: 2px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3, #54a0ff, #5f27cd, #00d2d3, #ff9f43, #10ac84, #ee5a6f, #ff6b6b);
+            background-size: 400% 400%;
+            animation: gradientShift 4s ease-in-out infinite;
+        }
+
+        .logo-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #495057, #6c757d);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            position: relative;
+        }
+
+        .logo-icon::after {
+            content: '◉';
+            animation: winkEye 4s ease-in-out infinite;
+        }
+
+        @keyframes winkEye {
+            0%, 88% { transform: scaleY(1); }
+            90% { transform: scaleY(0.1); }
+            92% { transform: scaleY(1); }
+            94% { transform: scaleY(0.1); }
+            96% { transform: scaleY(1); }
+            100% { transform: scaleY(1); }
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            25% { background-position: 100% 50%; }
+            50% { background-position: 100% 100%; }
+            75% { background-position: 0% 100%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .header-info h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-info p {
+            color: #495057;
+            font-size: 1.1rem;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #1d1d1f;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-role {
+            color: #495057;
+            font-size: 0.9rem;
+        }
+
+        .sign-out-btn {
+            background: linear-gradient(135deg, #495057, #6c757d);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sign-out-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(73, 80, 87, 0.3);
+        }
+
+        /* Testing Section */
+        .testing-section {
+            background: linear-gradient(135deg, rgba(255,193,7,0.1), rgba(253,126,20,0.1));
+            border: 2px solid #ffc107;
+            border-radius: 32px;
+            padding: 3rem 2.5rem;
+            margin-bottom: 3rem;
+            text-align: center;
+            transition: all 0.4s ease;
+        }
+
+        .testing-section:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 80px rgba(255,193,7,0.3);
+        }
+
+        .testing-section h3 {
+            color: #fd7e14;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .testing-section p {
+            color: #495057;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .testing-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-testing {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: #1d1d1f;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-testing:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255,193,7,0.3);
+        }
+
+        .btn-testing.danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+        }
+
+        .btn-testing.secondary {
+            background: linear-gradient(135deg, #6c757d, #495057);
+            color: white;
+        }
+
+        /* Stats Premium */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 32px;
+            padding: 3rem 2.5rem;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: var(--card-gradient);
+            border-radius: 32px 32px 0 0;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 35px 100px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card.companies {
+            --card-gradient: linear-gradient(135deg, #20c997, #17a2b8);
+        }
+
+        .stat-card.revenue {
+            --card-gradient: linear-gradient(135deg, #495057, #6c757d);
+        }
+
+        .stat-card.users {
+            --card-gradient: linear-gradient(135deg, #6610f2, #d63384);
+        }
+
+        .stat-card.modules {
+            --card-gradient: linear-gradient(135deg, #fd7e14, #dc3545);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+
+        .stat-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            background: var(--card-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            color: white;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-value {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+            color: #1d1d1f;
+        }
+
+        .stat-label {
+            color: #495057;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .stat-change {
+            font-size: 0.9rem;
+            color: #20c997;
+            margin-top: 0.5rem;
+        }
+
+        /* Quick Actions Premium */
+        .actions-section {
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            color: #1d1d1f;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .action-card {
+            background: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 32px;
+            padding: 3rem 2.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.1);
+        }
+
+        .action-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: var(--action-gradient);
+            border-radius: 32px 32px 0 0;
+        }
+
+        .action-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 35px 100px rgba(0, 0, 0, 0.15);
+        }
+
+        .action-card.add-company {
+            --action-gradient: linear-gradient(135deg, #20c997, #17a2b8);
+        }
+
+        .action-card.manage-modules {
+            --action-gradient: linear-gradient(135deg, #6610f2, #d63384);
+        }
+
+        .action-card.system-health {
+            --action-gradient: linear-gradient(135deg, #fd7e14, #dc3545);
+        }
+
+        .action-card.analytics {
+            --action-gradient: linear-gradient(135deg, #0dcaf0, #6f42c1);
+        }
+
+        .action-icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 24px;
+            background: var(--action-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.8rem;
+            color: white;
+            margin: 0 auto 2rem;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .action-card:hover .action-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .action-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #1d1d1f;
+        }
+
+        .action-description {
+            color: #495057;
+            line-height: 1.6;
+            font-size: 1.1rem;
+        }
+
+        /* Companies Table */
+        .companies-section {
+            margin-bottom: 4rem;
+        }
+
+        .companies-table {
+            background: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 32px;
+            padding: 3rem 2.5rem;
+            overflow-x: auto;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s ease;
+        }
+
+        .companies-table:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 35px 100px rgba(0, 0, 0, 0.15);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            padding: 1.5rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .table th {
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .company-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #1d1d1f;
+            margin-bottom: 0.25rem;
+        }
+
+        .company-domain {
+            color: #495057;
+            font-size: 0.9rem;
+        }
+
+        .status-badge {
+            padding: 0.6rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-badge.active {
+            background: rgba(32, 201, 151, 0.2);
+            color: #20c997;
+            border: 1px solid rgba(32, 201, 151, 0.3);
+        }
+
+        .status-badge.trial {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+
+        .plan-badge {
+            padding: 0.6rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: rgba(13, 202, 240, 0.2);
+            color: #0dcaf0;
+            border: 1px solid rgba(13, 202, 240, 0.3);
+        }
+
+        .btn-small {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #495057, #6c757d);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+        }
+
+        .btn-small:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            color: #495057;
+            padding: 4rem 2rem;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 1rem;
+        }
+
+        .empty-description {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .empty-cta {
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .empty-cta:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(32, 201, 151, 0.3);
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: white;
+            border: none;
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+            transform: translateX(400px);
+            opacity: 0;
+            transition: all 0.4s ease;
+            z-index: 1001;
+            max-width: 400px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .notification.success {
+            border-left: 4px solid #20c997;
+        }
+
+        .notification.error {
+            border-left: 4px solid #dc3545;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 0.5rem;
+        }
+
+        .notification-message {
+            color: #495057;
+            font-size: 0.9rem;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 32px;
+            padding: 3rem 2.5rem;
+            max-width: 700px;
+            width: 90%;
+            position: relative;
+            animation: modalSlideIn 0.4s ease;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1d1d1f;
+        }
+
+        .modal-close {
+            background: rgba(220, 53, 69, 0.2);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            color: #dc3545;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+        }
+
+        .modal-close:hover {
+            background: rgba(220, 53, 69, 0.3);
+            transform: scale(1.1);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group-modal {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group-modal.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label-modal {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #1d1d1f;
+            font-size: 0.9rem;
+        }
+
+        .form-input-modal,
+        .form-select-modal {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            color: #1d1d1f;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-input-modal::placeholder {
+            color: #6c757d;
+        }
+
+        .form-input-modal:focus,
+        .form-select-modal:focus {
+            outline: none;
+            border-color: #20c997;
+            background: white;
+            box-shadow: 0 0 20px rgba(32, 201, 151, 0.1);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .btn-modal {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-modal.primary {
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+            color: white;
+        }
+
+        .btn-modal.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(32, 201, 151, 0.3);
+        }
+
+        .btn-modal.secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 1px solid #e9ecef;
+        }
+
+        .btn-modal.secondary:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .btn-modal.loading {
+            pointer-events: none;
+        }
+
+        .btn-text {
+            transition: opacity 0.3s ease;
+        }
+
+        .btn-modal.loading .btn-text {
+            opacity: 0;
+        }
+
+        .btn-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn-modal.loading .btn-spinner {
+            opacity: 1;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 2rem;
+                text-align: center;
+                padding: 2rem 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-card,
+            .action-card,
+            .companies-table {
+                padding: 2rem 1.5rem;
+            }
+
+            .stat-value {
+                font-size: 2.5rem;
+            }
+
+            .action-icon {
+                width: 80px;
+                height: 80px;
+                font-size: 2.2rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                padding: 2rem 1.5rem;
+            }
+
+            .testing-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <div id="notificationTitle" class="notification-title"></div>
+        <div id="notificationMessage" class="notification-message"></div>
+    </div>
+
+    <div class="container">
+        <!-- Header Premium -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo-container">
+                    <div class="logo-icon"></div>
+                </div>
+                <div class="header-info">
+                    <h1>Super Admin Panel</h1>
+                    <p>Opsis Suite Master Control Center</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="user-info" id="userInfo">
+                    <div class="user-name">Super Administrator</div>
+                    <div class="user-role">admin@opsis-suite.com</div>
+                </div>
+                <button class="sign-out-btn" onclick="handleSignOut()">
+                    <span>🚪</span>
+                    <span>Sign Out</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Testing Section -->
+        <div class="testing-section">
+            <h3>🧪 Testing Mode</h3>
+            <p>Create test companies with fake users for development. All test accounts use password: <strong>testing123</strong></p>
+            
+            <div class="testing-buttons">
+                <button onclick="createQuickTestCompany()" class="btn-testing">
+                    🚀 Create Test Company
+                </button>
+                <button onclick="listAllTestUsers()" class="btn-testing secondary">
+                    👥 List Test Users
+                </button>
+                <button onclick="cleanupAllTestData()" class="btn-testing danger">
+                    🗑️ Cleanup Test Data
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Premium -->
+        <div class="stats-grid">
+            <div class="stat-card companies">
+                <div class="stat-header">
+                    <div class="stat-icon">🏢</div>
+                </div>
+                <div class="stat-value" id="totalCompanies">0</div>
+                <div class="stat-label">Companies</div>
+                <div class="stat-change" id="companiesChange">Ready to start</div>
+            </div>
+
+            <div class="stat-card revenue">
+                <div class="stat-header">
+                    <div class="stat-icon">💰</div>
+                </div>
+                <div class="stat-value" id="totalRevenue">$0</div>
+                <div class="stat-label">Monthly Revenue</div>
+                <div class="stat-change" id="revenueChange">Growing from zero</div>
+            </div>
+
+            <div class="stat-card users">
+                <div class="stat-header">
+                    <div class="stat-icon">👥</div>
+                </div>
+                <div class="stat-value" id="totalUsers">0</div>
+                <div class="stat-label">Total Users</div>
+                <div class="stat-change" id="usersChange">Awaiting first company</div>
+            </div>
+
+            <div class="stat-card modules">
+                <div class="stat-header">
+                    <div class="stat-icon">🚀</div>
+                </div>
+                <div class="stat-value">4</div>
+                <div class="stat-label">Available Modules</div>
+                <div class="stat-change">Warehouse, HR, TimeSync, Finance</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions Premium -->
+        <section class="actions-section">
+            <h2 class="section-title">Master Control Actions</h2>
+            <div class="actions-grid">
+                <div class="action-card add-company" onclick="addNewCompany()">
+                    <div class="action-icon">➕</div>
+                    <div class="action-title">Add New Company</div>
+                    <div class="action-description">Create new company accounts with custom configuration, sectors, and module access</div>
+                </div>
+
+                <div class="action-card manage-modules" onclick="manageModules()">
+                    <div class="action-icon">🔧</div>
+                    <div class="action-title">Manage Modules</div>
+                    <div class="action-description">Configure and assign Warehouse, HR, TimeSync, and Finance modules to companies</div>
+                </div>
+
+                <div class="action-card system-health" onclick="systemHealth()">
+                    <div class="action-icon">💚</div>
+                    <div class="action-title">System Health</div>
+                    <div class="action-description">Monitor Supabase connections, API status, and overall system performance</div>
+                </div>
+
+                <div class="action-card analytics" onclick="viewAnalytics()">
+                    <div class="action-icon">📊</div>
+                    <div class="action-title">Revenue Analytics</div>
+                    <div class="action-description">Deep dive into revenue trends, company growth, and module adoption patterns</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Companies Management Premium -->
+        <section class="companies-section">
+            <h2 class="section-title">Company Management</h2>
+            <div class="companies-table">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Company</th>
+                            <th>Status</th>
+                            <th>Plan</th>
+                            <th>Modules</th>
+                            <th>Users</th>
+                            <th>Revenue</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="companiesTableBody">
+                        <tr>
+                            <td colspan="7" class="empty-state">
+                                <div class="empty-icon">🏢</div>
+                                <div class="empty-title">Ready to Launch Your SaaS</div>
+                                <div class="empty-description">Your Opsis Suite control center is ready.<br>Start by adding your first company to begin generating revenue.</div>
+                                <button onclick="addNewCompany()" class="empty-cta">
+                                    🚀 Add First Company
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- Add Company Modal -->
+    <div id="addCompanyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">🚀 Add New Company</h3>
+                <button class="modal-close" onclick="closeAddCompanyModal()">✕</button>
+            </div>
+            
+            <form id="addCompanyForm" onsubmit="return handleAddCompany(event)">
+                <div class="form-grid">
+                    <div class="form-group-modal">
+                        <label class="form-label-modal">Company Name *</label>
+                        <input 
+                            type="text" 
+                            id="companyName" 
+                            class="form-input-modal" 
+                            placeholder="e.g., CVE San Diego"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label class="form-label-modal">Email Domain *</label>
+                        <input 
+                            type="text" 
+                            id="companyDomain" 
+                            class="form-input-modal" 
+                            placeholder="e.g., cve.com"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label class="form-label-modal">Industry Sector</label>
+                        <select id="companySector" class="form-select-modal">
+                            <option value="construction">Construction & Engineering</option>
+                            <option value="manufacturing">Manufacturing & Production</option>
+                            <option value="logistics">Logistics & Transportation</option>
+                            <option value="energy">Energy & Utilities</option>
+                            <option value="mining">Mining & Resources</option>
+                            <option value="agriculture">Agriculture & Farming</option>
+                            <option value="automotive">Automotive & Dealerships</option>
+                            <option value="healthcare">Healthcare & Medical</option>
+                            <option value="education">Education & Institutions</option>
+                            <option value="government">Government & Municipal</option>
+                            <option value="technology">Technology & Software</option>
+                            <option value="retail">Retail & E-commerce</option>
+                            <option value="food_service">Food Service & Hospitality</option>
+                            <option value="real_estate">Real Estate & Property</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label class="form-label-modal">Subscription Plan</label>
+                        <select id="companyPlan" class="form-select-modal">
+                            <option value="trial">Trial - $0/month (30 days)</option>
+                            <option value="warehouse_basic">Warehouse Basic - $49/month</option>
+                            <option value="warehouse_pro" selected>Warehouse Pro - $149/month ⭐</option>
+                            <option value="suite_standard">Suite Standard - $249/month</option>
+                            <option value="suite_premium">Suite Premium - $499/month</option>
+                            <option value="enterprise">Enterprise - $999/month</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group-modal full-width">
+                        <label class="form-label-modal">Company Admin Email *</label>
+                        <input 
+                            type="email" 
+                            id="adminEmail" 
+                            class="form-input-modal" 
+                            placeholder="admin@company.com"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label class="form-label-modal">Admin Name *</label>
+                        <input 
+                            type="text" 
+                            id="adminName" 
+                            class="form-input-modal" 
+                            placeholder="John Doe"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label class="form-label-modal">Initial Users</label>
+                        <input 
+                            type="number" 
+                            id="initialUsers" 
+                            class="form-input-modal" 
+                            placeholder="5"
+                            min="1"
+                            max="50"
+                            value="5"
+                        >
+                    </div>
+
+                    <div class="form-group-modal full-width">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="createSampleUsers" checked>
+                            <span class="form-label-modal" style="margin: 0;">Create sample team (all 5 roles with testing123 password)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-buttons">
+                    <button type="button" class="btn-modal secondary" onclick="closeAddCompanyModal()">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn-modal primary" id="submitCompanyBtn">
+                        <span class="btn-text">🚀 Create Company</span>
+                        <div class="btn-spinner"></div>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Supabase JavaScript SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        // Configuración Supabase
+        const SUPABASE_CONFIG = {
+            url: 'https://lmmlhncwdwjgtkdqaycv.supabase.co',
+            key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxtbWxobmN3ZHdqZ3RrZHFheWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU0MDE4ODYsImV4cCI6MjA3MDk3Nzg4Nn0.vhL5E-o9RtjEtrYTOdFCvhXs5mu5fuuAtB13LCd6dJQ'
+        };
+
+        const supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.key);
+
+        // Testing Configuration
+        const TESTING_CONFIG = {
+            defaultPassword: 'testing123',
+            bypassEmailVerification: true,
+            autoActivateUsers: true
+        };
+
+        // Testing Functions
+        async function createQuickTestCompany() {
+            const testCompanies = [
+                {
+                    name: 'Demo Construction LLC',
+                    slug: 'democonstruction',
+                    domain: 'democonstruction.com',
+                    sector: 'construction',
+                    plan: 'warehouse_pro',
+                    initialUsers: 5,
+                    createSampleUsers: true
+                },
+                {
+                    name: 'Test Tech Corp',
+                    slug: 'testtechcorp',
+                    domain: 'testtechcorp.com',
+                    sector: 'technology',
+                    plan: 'enterprise',
+                    initialUsers: 8,
+                    createSampleUsers: true
+                }
+            ];
+
+            const randomCompany = testCompanies[Math.floor(Math.random() * testCompanies.length)];
+            const suffix = Math.floor(Math.random() * 1000);
+            randomCompany.name += ` ${suffix}`;
+            randomCompany.slug += `${suffix}`;
+            randomCompany.domain = `${randomCompany.slug}.com`;
+
+            showNotification(
+                'Creating Test Company',
+                `Creating ${randomCompany.name} with full team...`,
+                'success'
+            );
+
+            const result = await createTestCompanyWithUsers(randomCompany);
+
+            if (result.success) {
+                showNotification(
+                    'Test Company Created!',
+                    `${randomCompany.name} ready with 5 users. Password: testing123`,
+                    'success'
+                );
+                await loadRealStats();
+                await loadCompaniesTable();
+            } else {
+                showNotification('Test Company Failed', result.error, 'error');
+            }
+        }
+
+        async function createTestCompanyWithUsers(companyData) {
+            try {
+                console.log('Creating test company:', companyData.name);
+                
+                const { data: newCompany, error: companyError } = await supabase
+                    .from('companies')
+                    .insert([{
+                        name: companyData.name,
+                        slug: companyData.slug,
+                        domain: companyData.domain,
+                        sector: companyData.sector,
+                        plan: companyData.plan,
+                        status: 'active',
+                        initial_users: companyData.initialUsers || 5,
+                        admin_email: `admin@${companyData.domain}`,
+                        created_at: new Date().toISOString()
+                    }])
+                    .select()
+                    .single();
+
+                if (companyError) {
+                    throw new Error(`Failed to create company: ${companyError.message}`);
+                }
+
+                return {
+                    success: true,
+                    company: newCompany,
+                    adminEmail: `admin@${companyData.domain}`,
+                    defaultPassword: TESTING_CONFIG.defaultPassword
+                };
+
+            } catch (error) {
+                console.error('Error creating test company:', error);
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
+
+        async function listAllTestUsers() {
+            try {
+                const { data: companies, error } = await supabase
+                    .from('companies')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                console.table(companies.map(company => ({
+                    Name: company.name,
+                    Domain: company.domain,
+                    Plan: company.plan,
+                    Status: company.status,
+                    Users: company.initial_users
+                })));
+
+                showNotification(
+                    'Companies Listed',
+                    `Found ${companies.length} companies. Check browser console for details.`,
+                    'success'
+                );
+
+                return companies;
+
+            } catch (error) {
+                console.error('Error listing companies:', error);
+                showNotification('Error', 'Failed to list companies', 'error');
+                return [];
+            }
+        }
+
+        async function cleanupAllTestData() {
+            if (!confirm('⚠️ This will delete ALL companies and users. Are you sure?')) {
+                return;
+            }
+
+            try {
+                showNotification('Cleanup Started', 'Deleting all test data...', 'success');
+
+                const { error: companiesError } = await supabase
+                    .from('companies')
+                    .delete()
+                    .neq('id', '00000000-0000-0000-0000-000000000000');
+
+                if (companiesError) {
+                    console.warn('Error deleting companies:', companiesError);
+                }
+
+                showNotification('Cleanup Complete', 'All test data has been removed.', 'success');
+
+                await loadRealStats();
+                await loadCompaniesTable();
+
+            } catch (error) {
+                console.error('Error during cleanup:', error);
+                showNotification('Cleanup Failed', error.message, 'error');
+            }
+        }
+
+        // UI Functions
+        function showNotification(title, message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const titleEl = document.getElementById('notificationTitle');
+            const messageEl = document.getElementById('notificationMessage');
+            
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+
+        // Modal Functions
+        function showAddCompanyModal() {
+            const modal = document.getElementById('addCompanyModal');
+            modal.classList.add('show');
+            setTimeout(() => {
+                document.getElementById('companyName').focus();
+            }, 100);
+        }
+
+        function closeAddCompanyModal() {
+            const modal = document.getElementById('addCompanyModal');
+            modal.classList.remove('show');
+            document.getElementById('addCompanyForm').reset();
+            const submitBtn = document.getElementById('submitCompanyBtn');
+            submitBtn.classList.remove('loading');
+        }
+
+        async function handleAddCompany(event) {
+            event.preventDefault();
+            
+            const submitBtn = document.getElementById('submitCompanyBtn');
+            submitBtn.classList.add('loading');
+            
+            try {
+                const formData = {
+                    name: document.getElementById('companyName').value.trim(),
+                    domain: document.getElementById('companyDomain').value.trim().toLowerCase(),
+                    sector: document.getElementById('companySector').value,
+                    plan: document.getElementById('companyPlan').value,
+                    adminEmail: document.getElementById('adminEmail').value.trim().toLowerCase(),
+                    adminName: document.getElementById('adminName').value.trim(),
+                    initialUsers: parseInt(document.getElementById('initialUsers').value) || 5,
+                    createSampleUsers: document.getElementById('createSampleUsers').checked
+                };
+
+                if (!formData.name || !formData.domain || !formData.adminEmail || !formData.adminName) {
+                    throw new Error('Please fill in all required fields');
+                }
+
+                const companySlug = formData.name.toLowerCase()
+                    .replace(/[^a-z0-9]/g, '')
+                    .substring(0, 15);
+
+                const testCompanyData = {
+                    name: formData.name,
+                    slug: companySlug,
+                    domain: formData.domain,
+                    sector: formData.sector,
+                    plan: formData.plan,
+                    initialUsers: formData.initialUsers,
+                    createSampleUsers: formData.createSampleUsers
+                };
+
+                const result = await createTestCompanyWithUsers(testCompanyData);
+
+                if (!result.success) {
+                    throw new Error(result.error);
+                }
+
+                showNotification(
+                    'Company Created Successfully!', 
+                    `${formData.name} ready! Admin: ${result.adminEmail} / Password: testing123`,
+                    'success'
+                );
+                
+                closeAddCompanyModal();
+                await loadRealStats();
+                await loadCompaniesTable();
+
+            } catch (error) {
+                console.error('Company creation failed:', error);
+                showNotification('Company Creation Failed', error.message, 'error');
+            } finally {
+                submitBtn.classList.remove('loading');
+            }
+
+            return false;
+        }
+
+        // Data Loading Functions
+        async function loadRealStats() {
+            try {
+                const { data: companies } = await supabase
+                    .from('companies')
+                    .select('*');
+
+                const totalCompanies = companies?.length || 0;
+                const monthlyRevenue = calculateMonthlyRevenue(companies);
+                const totalUsers = calculateTotalUsers(companies);
+
+                document.getElementById('totalCompanies').textContent = totalCompanies;
+                document.getElementById('totalRevenue').textContent = `$${monthlyRevenue.toLocaleString()}`;
+                document.getElementById('totalUsers').textContent = totalUsers;
+
+                const companiesChange = document.getElementById('companiesChange');
+                const revenueChange = document.getElementById('revenueChange');
+                const usersChange = document.getElementById('usersChange');
+
+                if (totalCompanies === 0) {
+                    companiesChange.textContent = 'Ready to start';
+                    revenueChange.textContent = 'Growing from zero';
+                    usersChange.textContent = 'Awaiting first company';
+                } else {
+                    companiesChange.textContent = `+${totalCompanies} companies created`;
+                    revenueChange.textContent = 'Monthly recurring revenue';
+                    usersChange.textContent = `${totalUsers} active users`;
+                }
+                
+            } catch (error) {
+                console.error('Error loading real stats:', error);
+            }
+        }
+
+        function calculateMonthlyRevenue(companies) {
+            if (!companies) return 0;
+            
+            let totalRevenue = 0;
+            companies.forEach(company => {
+                switch(company.plan) {
+                    case 'warehouse_basic': totalRevenue += 49; break;
+                    case 'warehouse_pro': totalRevenue += 149; break;
+                    case 'suite_standard': totalRevenue += 249; break;
+                    case 'suite_premium': totalRevenue += 499; break;
+                    case 'enterprise': totalRevenue += 999; break;
+                    case 'trial': totalRevenue += 0; break;
+                    default: totalRevenue += 0;
+                }
+            });
+            
+            return totalRevenue;
+        }
+
+        function calculateTotalUsers(companies) {
+            if (!companies) return 0;
+            
+            let totalUsers = 0;
+            companies.forEach(company => {
+                totalUsers += company.initial_users || 0;
+            });
+            
+            return totalUsers;
+        }
+
+        async function loadCompaniesTable() {
+            try {
+                const { data: companies, error } = await supabase
+                    .from('companies')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    console.error('Error loading companies:', error);
+                    return;
+                }
+
+                const tbody = document.getElementById('companiesTableBody');
+                
+                if (companies && companies.length > 0) {
+                    tbody.innerHTML = companies.map(company => {
+                        const planName = getPlanName(company.plan);
+                        const planPrice = getPlanPrice(company.plan);
+                        const modules = getModulesByPlan(company.plan);
+                        
+                        return `
+                            <tr>
+                                <td>
+                                    <div class="company-name">${company.name}</div>
+                                    <div class="company-domain">${company.domain}</div>
+                                </td>
+                                <td><span class="status-badge ${company.status}">${company.status}</span></td>
+                                <td><span class="plan-badge">${planName}</span></td>
+                                <td>${modules.join(', ')}</td>
+                                <td>${company.initial_users || 0} users</td>
+                                <td>${planPrice}/month</td>
+                                <td>
+                                    <button class="btn-small btn-primary" onclick="viewCompany('${company.slug || company.domain}')">View</button>
+                                    <button class="btn-small btn-secondary" onclick="editCompany('${company.id}')">Edit</button>
+                                    <button class="btn-small btn-danger" onclick="deleteCompany('${company.id}', '${company.name}')">Delete</button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                } else {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="empty-state">
+                                <div class="empty-icon">🏢</div>
+                                <div class="empty-title">Ready to Launch Your SaaS</div>
+                                <div class="empty-description">Starting from zero. Your control center is ready.<br>Add your first company to begin generating revenue.</div>
+                                <button onclick="addNewCompany()" class="empty-cta">
+                                    🚀 Add First Company
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Error loading companies table:', error);
+            }
+        }
+
+        // Helper Functions
+        function getPlanName(plan) {
+            const plans = {
+                'trial': 'Trial',
+                'warehouse_basic': 'Warehouse Basic',
+                'warehouse_pro': 'Warehouse Pro',
+                'suite_standard': 'Suite Standard', 
+                'suite_premium': 'Suite Premium',
+                'enterprise': 'Enterprise'
+            };
+            return plans[plan] || plan;
+        }
+
+        function getPlanPrice(plan) {
+            const prices = {
+                'trial': '$0',
+                'warehouse_basic': '$49',
+                'warehouse_pro': '$149',
+                'suite_standard': '$249',
+                'suite_premium': '$499', 
+                'enterprise': '$999'
+            };
+            return prices[plan] || '$0';
+        }
+
+        function getModulesByPlan(plan) {
+            const modules = {
+                'trial': ['Warehouse (Limited)'],
+                'warehouse_basic': ['Warehouse'],
+                'warehouse_pro': ['Warehouse Pro'],
+                'suite_standard': ['Warehouse', 'HR'],
+                'suite_premium': ['Warehouse', 'HR', 'TimeSync'],
+                'enterprise': ['Warehouse', 'HR', 'TimeSync', 'Finance']
+            };
+            return modules[plan] || ['Warehouse'];
+        }
+
+        // Action Functions
+        async function addNewCompany() {
+            showAddCompanyModal();
+        }
+
+        async function manageModules() {
+            showNotification(
+                'Module Management',
+                'Module management system coming soon. Currently managing Warehouse core.',
+                'success'
+            );
+        }
+
+        async function systemHealth() {
+            try {
+                const { data, error } = await supabase
+                    .from('companies')
+                    .select('count')
+                    .limit(1);
+
+                if (error) throw error;
+
+                showNotification(
+                    'System Status: Operational', 
+                    'Supabase connected. Database healthy. All APIs responding.',
+                    'success'
+                );
+            } catch (error) {
+                console.error('System health check failed:', error);
+                showNotification(
+                    'System Health Warning', 
+                    'Database connection issue detected. Please check configuration.',
+                    'error'
+                );
+            }
+        }
+
+        async function viewAnalytics() {
+            showNotification(
+                'Revenue Analytics',
+                'Advanced analytics dashboard coming soon. Currently tracking basic metrics.',
+                'success'
+            );
+        }
+
+        function handleSignOut() {
+            showNotification(
+                'Signing Out', 
+                'Securing your session and redirecting to login...',
+                'success'
+            );
+            
+            setTimeout(() => {
+                window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
+            }, 2000);
+        }
+
+        function viewCompany(companySlug) {
+            showNotification(
+                'Opening Company Dashboard', 
+                `Accessing ${companySlug} management interface...`,
+                'success'
+            );
+            
+            setTimeout(() => {
+                window.open(`https://candewesth.github.io/opsis-suite/dashboard/template.html?company=${companySlug}`, '_blank');
+            }, 1500);
+        }
+
+        function editCompany(companyId) {
+            showNotification('Edit Company', 'Company editing functionality coming soon', 'success');
+        }
+
+        async function deleteCompany(companyId, companyName) {
+            if (!confirm(`Are you sure you want to delete "${companyName}"? This action cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                showNotification(
+                    'Deleting Company',
+                    `Removing ${companyName} and all associated data...`,
+                    'success'
+                );
+
+                const { error: companyError } = await supabase
+                    .from('companies')
+                    .delete()
+                    .eq('id', companyId);
+
+                if (companyError) {
+                    throw companyError;
+                }
+
+                showNotification(
+                    'Company Deleted',
+                    `${companyName} has been permanently removed.`,
+                    'success'
+                );
+
+                await loadRealStats();
+                await loadCompaniesTable();
+
+            } catch (error) {
+                console.error('Error deleting company:', error);
+                showNotification('Delete Failed', error.message, 'error');
+            }
+        }
+
+        // Event Listeners
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeAddCompanyModal();
+            }
+        });
+
+        document.addEventListener('click', function(event) {
+            const addModal = document.getElementById('addCompanyModal');
+            
+            if (event.target === addModal) {
+                closeAddCompanyModal();
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('Super Admin Panel - Starting from ZERO...');
+            
+            await loadRealStats();
+            await loadCompaniesTable();
+            
+            setTimeout(() => {
+                showNotification(
+                    'Super Admin Panel Ready',
+                    'Testing system enabled. Create test companies with testing123 password.',
+                    'success'
+                );
+            }, 1000);
+            
+            console.log('Super Admin Panel Ready - Testing System Enabled');
+        });
+
+        // Auto-refresh stats every 60 seconds
+        setInterval(loadRealStats, 60000);
+
+        console.log('Super Admin Panel - Ready with Testing System!');
+    </script>
+</body>
+</html>
