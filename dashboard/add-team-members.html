@@ -576,22 +576,18 @@
 
                 if (error) {
                     console.error('Error loading company:', error);
-                    // Fallback to demo data
-                    currentCompany = {
-                        id: 'demo-' + companySlug,
-                        name: companySlug === 'cvesandiego' ? 'CVE San Diego' : 'Demo Company',
-                        slug: companySlug
-                    };
-                } else {
-                    currentCompany = company;
+                    showNotification('Company not found: ' + companySlug + '. Error: ' + error.message, 'error');
+                    throw new Error('Company not found: ' + companySlug);
                 }
 
-                console.log('Company loaded:', currentCompany);
+                currentCompany = company;
+                console.log('Company loaded successfully:', currentCompany);
+                
                 await loadTeamMembers();
 
             } catch (error) {
                 console.error('Error in loadCompanyData:', error);
-                showNotification('Error loading company data', 'error');
+                showNotification('Error loading company data: ' + error.message, 'error');
             }
         }
 
@@ -626,6 +622,12 @@
         async function createTeamMember(memberData) {
             try {
                 console.log('Creating team member:', memberData);
+                console.log('Current company:', currentCompany);
+
+                // Validate we have a company
+                if (!currentCompany || !currentCompany.id) {
+                    throw new Error('No company loaded. Please refresh the page.');
+                }
 
                 // Generate employee ID if not provided
                 if (!memberData.employee_id) {
@@ -633,29 +635,33 @@
                     memberData.employee_id = `EMP-${String(count).padStart(3, '0')}`;
                 }
 
+                const insertData = {
+                    company_id: currentCompany.id, // This is now the correct UUID
+                    name: memberData.name,
+                    email: memberData.email,
+                    phone: memberData.phone,
+                    employee_id: memberData.employee_id,
+                    role: memberData.role,
+                    status: 'pending_invitation',
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                };
+
+                console.log('Inserting data:', insertData);
+
                 // Insert into Supabase
                 const { data, error } = await supabase
                     .from('team_members')
-                    .insert([{
-                        company_id: currentCompany.id,
-                        name: memberData.name,
-                        email: memberData.email,
-                        phone: memberData.phone,
-                        employee_id: memberData.employee_id,
-                        role: memberData.role,
-                        status: 'pending_invitation',
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString()
-                    }])
+                    .insert([insertData])
                     .select()
                     .single();
 
                 if (error) {
-                    console.error('Error creating team member:', error);
-                    throw error;
+                    console.error('Supabase error:', error);
+                    throw new Error(`Database error: ${error.message}`);
                 }
 
-                console.log('Team member created:', data);
+                console.log('Team member created successfully:', data);
                 
                 // Add to local array
                 teamMembers.unshift(data);
