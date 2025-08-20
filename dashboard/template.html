@@ -1079,14 +1079,30 @@
         // COMPANY DETECTION
         // ================================================================
         function detectCompany() {
-            // Get company from URL path
+            // First try to get company from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const companyParam = urlParams.get('company');
+            
+            if (companyParam) {
+                console.log('Company from URL parameter:', companyParam);
+                return companyParam;
+            }
+            
+            // Then try to detect from path
             const path = window.location.pathname;
             const segments = path.split('/').filter(segment => segment);
+            const lastSegment = segments[segments.length - 1];
             
-            // Look for company identifier in URL
-            const companySlug = segments[segments.length - 1];
+            // If it's template.html without parameters, default to demo
+            if (lastSegment === 'template.html' || lastSegment === 'template') {
+                console.log('Template detected, defaulting to demo company');
+                return 'demo';
+            }
             
-            console.log('Detected company slug:', companySlug);
+            // Extract company name from filename (e.g., cvesandiego.html -> cvesandiego)
+            const companySlug = lastSegment.replace('.html', '');
+            
+            console.log('Detected company slug from filename:', companySlug);
             return companySlug;
         }
 
@@ -1134,20 +1150,20 @@
         }
 
         function createDemoCompany(slug) {
-            return {
-                id: 'demo-' + slug,
-                name: slug === 'cvesandiego' ? 'CVE San Diego' : 
-                      slug === 'techcorp' ? 'Tech Corporation' : 
-                      'Demo Company',
-                slug: slug,
-                domain: slug === 'cvesandiego' ? 'cve.com' : 
-                        slug === 'techcorp' ? 'techcorp.com' : 
-                        'demo.com',
+            // Default demo company - modify as needed for testing
+            const defaultCompany = {
+                id: 'demo-001',
+                name: 'Demo Company',
+                slug: 'demo',
+                domain: 'demo.com',
                 sector: 'construction',
                 plan: 'warehouse_pro',
                 status: 'active',
                 initial_users: 5
             };
+            
+            // Return default for any slug - you can add more companies here during testing
+            return defaultCompany;
         }
 
         function updateCompanyDisplay() {
@@ -1823,7 +1839,7 @@
         }
 
         // ================================================================
-        // EXPORT SYSTEM FUNCTIONS
+        // EXPORT SYSTEM FUNCTIONS (Continuación)
         // ================================================================
         function openExportModal() {
             const modal = document.getElementById('exportModal');
@@ -1837,14 +1853,9 @@
             const userFilter = document.getElementById('userFilter');
             const formatSection = document.querySelector('input[name="exportFormat"]').closest('div');
             
-            // Configure export types based on role
             const exportTypes = getExportTypesForRole(role);
             updateExportTypeOptions(exportTypes);
-            
-            // Configure user filter based on role
             updateUserFilterForRole(role);
-            
-            // Configure available formats
             updateFormatsForRole(role);
         }
 
@@ -1908,7 +1919,6 @@
                 }
             });
             
-            // Select first available option
             const firstAvailable = Object.keys(exportTypes).find(type => exportTypes[type].enabled);
             if (firstAvailable) {
                 document.querySelector(`input[value="${firstAvailable}"]`).checked = true;
@@ -1921,15 +1931,12 @@
             
             if (role === 'supervisor') {
                 userFilterContainer.style.display = 'none';
-                // Supervisor only sees their own data
             } else if (role === 'estimador' || role === 'operativo') {
                 userFilter.innerHTML = `
                     <option value="">All Users (Anonymous)</option>
                 `;
-                // These roles don't see specific user assignments
             } else {
                 userFilterContainer.style.display = 'block';
-                // Admin and Almacén see full user list
             }
         }
 
@@ -1956,7 +1963,6 @@
                 }
             });
             
-            // Select first allowed format
             if (allowedFormats.length > 0) {
                 const firstAllowed = document.querySelector(`input[value="${allowedFormats[0]}"]`);
                 if (firstAllowed) firstAllowed.checked = true;
@@ -1969,7 +1975,6 @@
         }
 
         function selectExportType(type) {
-            // Update radio selection
             document.querySelector(`input[value="${type}"]`).checked = true;
             updateExportSummary();
         }
@@ -2016,13 +2021,11 @@
             if (jobFilter) additionalFilters += `<div>🏗️ <strong>Job Number:</strong> ${jobFilter}</div>`;
             if (locationFilter) additionalFilters += `<div>📍 <strong>Location:</strong> ${locationFilter}</div>`;
 
-            // Calculate estimated records based on filters
-            let estimatedRecords = 1247; // Base number
+            let estimatedRecords = 1247;
             if (exportType === 'loans') estimatedRecords = 856;
             if (exportType === 'projects') estimatedRecords = 134;
             if (exportType === 'complete') estimatedRecords = 2897;
 
-            // Adjust based on filters
             if (userFilter) estimatedRecords = Math.floor(estimatedRecords * 0.6);
             if (equipmentFilter) estimatedRecords = Math.floor(estimatedRecords * 0.4);
             if (statusFilter) estimatedRecords = Math.floor(estimatedRecords * 0.3);
@@ -2056,14 +2059,12 @@
                 location: document.getElementById('locationFilter')?.value
             };
 
-            // Apply role-based restrictions
             const roleRestrictions = applyRoleRestrictionsToExport(userRole, filters);
             
             showNotification('Generating export... This may take a moment.', 'success');
             closeExportModal();
 
             try {
-                // Simulate data collection from Supabase with role restrictions
                 await simulateDataExport(exportType, exportFormat, roleRestrictions);
                 
                 const roleMessages = {
@@ -2086,30 +2087,25 @@
             
             switch(role) {
                 case 'supervisor':
-                    // Supervisors only see their own data
-                    restrictedFilters.user = getCurrentUserId(); // Would get from session
+                    restrictedFilters.user = getCurrentUserId();
                     restrictedFilters.supervisorOnly = true;
                     break;
                     
                 case 'estimador':
-                    // Estimators don't see user assignments or sensitive data
                     restrictedFilters.user = null;
                     restrictedFilters.hideUserData = true;
                     restrictedFilters.hideCosts = true;
                     break;
                     
                 case 'operativo':
-                    // Operativo sees equipment data but limited project info
                     restrictedFilters.limitedProjectData = true;
                     break;
                     
                 case 'almacen':
-                    // Almacén sees all operational data but not financial details
                     restrictedFilters.hideFinancialData = false;
                     break;
                     
                 case 'admin':
-                    // Admin sees everything
                     break;
             }
             
@@ -2117,15 +2113,12 @@
         }
 
         function getCurrentUserId() {
-            // In real implementation, get from authentication context
             return 'current_user_id_from_session';
         }
 
         async function simulateDataExport(type, format, filters) {
-            // Build role-aware query
             let query = `SELECT `;
             
-            // Select appropriate columns based on role restrictions
             if (filters.hideUserData) {
                 query += `equipment_id, name, type, status, location `;
             } else if (filters.limitedProjectData) {
@@ -2136,7 +2129,6 @@
             
             query += `FROM ${type} WHERE company_id = '${currentCompany?.id}'`;
 
-            // Add role-based restrictions
             if (filters.supervisorOnly) {
                 query += ` AND (assigned_to = '${filters.user}' OR requested_by = '${filters.user}')`;
             }
@@ -2145,7 +2137,6 @@
                 query += ` AND type != 'financial'`;
             }
 
-            // Add standard filters
             if (filters.startDate) query += ` AND created_at >= '${filters.startDate}'`;
             if (filters.endDate) query += ` AND created_at <= '${filters.endDate}'`;
             if (filters.user && !filters.hideUserData) query += ` AND user_id = '${filters.user}'`;
@@ -2157,7 +2148,6 @@
             console.log('Role-restricted Supabase Query:', query);
             console.log('Applied restrictions:', filters);
 
-            // Simulate processing time
             await new Promise(resolve => setTimeout(resolve, 2000));
 
             const exportData = {
@@ -2175,6 +2165,10 @@
 
             return exportData;
         }
+
+        // ================================================================
+        // ROLE SELECTOR FUNCTIONS
+        // ================================================================
         function showRoleSelector() {
             const roles = [
                 { id: 'admin', name: 'Administrator', icon: '👑' },
@@ -2184,13 +2178,60 @@
                 { id: 'estimador', name: 'Project Estimator', icon: '📋' }
             ];
 
-            const roleList = roles.map(role => 
-                `<div onclick="switchRole('${role.id}')" style="padding: 1rem; cursor: pointer; border-radius: 8px; margin: 0.5rem 0; background: rgba(255,255,255,0.1); transition: all 0.3s ease;">
-                    ${role.icon} ${role.name}
-                </div>`
-            ).join('');
+            // Create a proper modal for role selection
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                padding: 2rem;
+                border-radius: 20px;
+                box-shadow: 0 25px 80px rgba(0,0,0,0.3);
+                z-index: 10000;
+                min-width: 300px;
+            `;
 
-            showNotification(`Role Selector:\n${roleList}`, 'success');
+            modal.innerHTML = `
+                <h3 style="margin-bottom: 1.5rem; color: #1d1d1f;">Select Role</h3>
+                ${roles.map(role => `
+                    <div onclick="switchRole('${role.id}'); this.parentElement.remove();" 
+                         style="padding: 1rem; cursor: pointer; border-radius: 12px; margin: 0.5rem 0; 
+                                background: #f8f9fa; transition: all 0.3s ease; display: flex; 
+                                align-items: center; gap: 0.75rem;"
+                         onmouseover="this.style.background='#e9ecef'" 
+                         onmouseout="this.style.background='#f8f9fa'">
+                        <span style="font-size: 1.5rem;">${role.icon}</span>
+                        <span style="font-weight: 600; color: #495057;">${role.name}</span>
+                    </div>
+                `).join('')}
+                <button onclick="this.parentElement.remove()" 
+                        style="margin-top: 1rem; width: 100%; padding: 0.75rem; background: #6c757d; 
+                               color: white; border: none; border-radius: 12px; cursor: pointer; 
+                               font-weight: 600;">
+                    Cancel
+                </button>
+            `;
+
+            // Add backdrop
+            const backdrop = document.createElement('div');
+            backdrop.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 9999;
+            `;
+            backdrop.onclick = function() {
+                modal.remove();
+                backdrop.remove();
+            };
+
+            document.body.appendChild(backdrop);
+            document.body.appendChild(modal);
         }
 
         function switchRole(newRole) {
@@ -2213,8 +2254,17 @@
                 'estimador': 'E'
             };
 
-            document.getElementById('profileRole').textContent = roleNames[newRole];
-            document.getElementById('profileAvatar').textContent = roleAvatars[newRole];
+            // Safely update text content
+            const roleElement = document.getElementById('profileRole');
+            const avatarElement = document.getElementById('profileAvatar');
+            
+            if (roleElement) {
+                roleElement.textContent = roleNames[newRole] || 'Loading...';
+            }
+            
+            if (avatarElement) {
+                avatarElement.textContent = roleAvatars[newRole] || 'U';
+            }
 
             // Reload role-based content
             loadRoleBasedContent();
@@ -2222,6 +2272,9 @@
             showNotification(`Switched to ${roleNames[newRole]} role`, 'success');
         }
 
+        // ================================================================
+        // ACTION HANDLERS
+        // ================================================================
         function handleStatClick(type) {
             const messages = {
                 'equipment': 'Loading equipment inventory dashboard...',
@@ -2233,7 +2286,7 @@
             showNotification(messages[type] || 'Loading...', 'success');
             
             setTimeout(() => {
-                window.open('https://www.opsis-suite.com/built', '_top');
+                window.open('https://candewesth.github.io/opsis-suite/built.html', '_top');
             }, 1500);
         }
 
@@ -2322,7 +2375,7 @@
             }
             
             setTimeout(() => {
-                window.open('https://www.opsis-suite.com/built', '_top');
+                window.open('https://candewesth.github.io/opsis-suite/built.html', '_top');
             }, 1500);
         }
 
@@ -2330,7 +2383,7 @@
             showNotification(`Opening ${moduleId} module...`, 'success');
             
             setTimeout(() => {
-                window.open('https://www.opsis-suite.com/built', '_top');
+                window.open('https://candewesth.github.io/opsis-suite/built.html', '_top');
             }, 1500);
         }
 
