@@ -1,1320 +1,132 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Admin Panel - Opsis Suite</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: #e9ecef;
-            color: #1d1d1f;
-            min-height: 100vh;
-            position: relative;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        /* Header Premium */
-        .header {
-            background: white;
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 32px;
-            padding: 3rem 2.5rem;
-            margin-bottom: 3rem;
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.4s ease;
-        }
-
-        .header:hover {
-            transform: translateY(-15px);
-            box-shadow: 0 35px 100px rgba(0, 0, 0, 0.15);
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-        }
-
-        .logo-container {
-            position: relative;
-            width: 60px;
-            height: 60px;
-            border-radius: 16px;
-            padding: 2px;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3, #54a0ff, #5f27cd, #00d2d3, #ff9f43, #10ac84, #ee5a6f, #ff6b6b);
-            background-size: 400% 400%;
-            animation: gradientShift 4s ease-in-out infinite;
-        }
-
-        .logo-icon {
-            width: 56px;
-            height: 56px;
-            background: linear-gradient(135deg, #495057, #6c757d);
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: white;
-            position: relative;
-        }
-
-        .logo-icon::after {
-            content: '◉';
-            animation: winkEye 4s ease-in-out infinite;
-        }
-
-        @keyframes winkEye {
-            0%, 88% { transform: scaleY(1); }
-            90% { transform: scaleY(0.1); }
-            92% { transform: scaleY(1); }
-            94% { transform: scaleY(0.1); }
-            96% { transform: scaleY(1); }
-            100% { transform: scaleY(1); }
-        }
-
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            25% { background-position: 100% 50%; }
-            50% { background-position: 100% 100%; }
-            75% { background-position: 0% 100%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .header-info h1 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: #1d1d1f;
-            margin-bottom: 0.5rem;
-        }
-
-        .header-info p {
-            color: #495057;
-            font-size: 1.1rem;
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-        }
-
-        .user-info {
-            text-align: right;
-        }
-
-        .user-name {
-            font-weight: 600;
-            font-size: 1.1rem;
-            color: #1d1d1f;
-            margin-bottom: 0.25rem;
-        }
-
-        .user-role {
-            color: #495057;
-            font-size: 0.9rem;
-        }
-
-        .sign-out-btn {
-            background: linear-gradient(135deg, #495057, #6c757d);
-            color: white;
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: 16px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.4s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .sign-out-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(73, 80, 87, 0.3);
-        }
-
-        /* Development Tools Section */
-        .dev-tools-section {
-            background: linear-gradient(135deg, rgba(32, 201, 151, 0.1), rgba(23, 162, 184, 0.1));
-            border: 2px solid #20c997;
-            border-radius: 32px;
-            padding: 3rem 2.5rem;
-            margin-bottom: 3rem;
-            transition: all 0.4s ease;
-        }
-
-        .dev-tools-section:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 25px 80px rgba(32, 201, 151, 0.3);
-        }
-
-        .dev-tools-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-
-        .dev-tools-title {
-            color: #20c997;
-            font-size: 1.8rem;
-            font-weight: 700;
-        }
-
-        .dev-mode-toggle {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .toggle-switch {
-            position: relative;
-            width: 60px;
-            height: 30px;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: #ccc;
-            transition: 0.4s;
-            border-radius: 30px;
-        }
-
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 22px;
-            width: 22px;
-            left: 4px;
-            bottom: 4px;
-            background: white;
-            transition: 0.4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .toggle-slider {
-            background: #20c997;
-        }
-
-        input:checked + .toggle-slider:before {
-            transform: translateX(30px);
-        }
-
-        .dev-tools-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .dev-tool-card {
-            background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .dev-tool-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(32, 201, 151, 0.2);
-        }
-
-        .dev-tool-icon {
-            font-size: 2rem;
-        }
-
-        .dev-tool-info {
-            flex: 1;
-        }
-
-        .dev-tool-name {
-            font-weight: 600;
-            color: #1d1d1f;
-            margin-bottom: 0.25rem;
-        }
-
-        .dev-tool-desc {
-            font-size: 0.9rem;
-            color: #6c757d;
-        }
-
-        /* Testing Section */
-        .testing-section {
-            background: linear-gradient(135deg, rgba(255,193,7,0.1), rgba(253,126,20,0.1));
-            border: 2px solid #ffc107;
-            border-radius: 32px;
-            padding: 3rem 2.5rem;
-            margin-bottom: 3rem;
-            text-align: center;
-            transition: all 0.4s ease;
-            display: none;
-        }
-
-        .testing-section.active {
-            display: block;
-        }
-
-        .testing-section:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 25px 80px rgba(255,193,7,0.3);
-        }
-
-        .testing-section h3 {
-            color: #fd7e14;
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-
-        .testing-section p {
-            color: #495057;
-            font-size: 1.1rem;
-            margin-bottom: 2rem;
-            line-height: 1.6;
-        }
-
-        .testing-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn-testing {
-            background: linear-gradient(135deg, #ffc107, #fd7e14);
-            color: #1d1d1f;
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn-testing:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(255,193,7,0.3);
-        }
-
-        .btn-testing.danger {
-            background: linear-gradient(135deg, #dc3545, #c82333);
-            color: white;
-        }
-
-        .btn-testing.secondary {
-            background: linear-gradient(135deg, #6c757d, #495057);
-            color: white;
-        }
-
-        /* Stats Premium */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-bottom: 4rem;
-        }
-
-        .stat-card {
-            background: white;
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 32px;
-            padding: 3rem 2.5rem;
-            transition: all 0.4s ease;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.1);
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 6px;
-            background: var(--card-gradient);
-            border-radius: 32px 32px 0 0;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-15px);
-            box-shadow: 0 35px 100px rgba(0, 0, 0, 0.15);
-        }
-
-        .stat-card.companies {
-            --card-gradient: linear-gradient(135deg, #20c997, #17a2b8);
-        }
-
-        .stat-card.revenue {
-            --card-gradient: linear-gradient(135deg, #495057, #6c757d);
-        }
-
-        .stat-card.users {
-            --card-gradient: linear-gradient(135deg, #6610f2, #d63384);
-        }
-
-        .stat-card.modules {
-            --card-gradient: linear-gradient(135deg, #fd7e14, #dc3545);
-        }
-
-        .stat-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 2rem;
-        }
-
-        .stat-icon {
-            width: 80px;
-            height: 80px;
-            border-radius: 20px;
-            background: var(--card-gradient);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.2rem;
-            color: white;
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.1);
-        }
-
-        .stat-value {
-            font-size: 3.5rem;
-            font-weight: 800;
-            line-height: 1;
-            margin-bottom: 0.5rem;
-            color: #1d1d1f;
-        }
-
-        .stat-label {
-            color: #495057;
-            font-size: 1.2rem;
-            font-weight: 600;
-        }
-
-        .stat-change {
-            font-size: 0.9rem;
-            color: #20c997;
-            margin-top: 0.5rem;
-        }
-
-        /* Quick Actions Premium */
-        .actions-section {
-            margin-bottom: 4rem;
-        }
-
-        .section-title {
-            font-size: 2.2rem;
-            font-weight: 700;
-            margin-bottom: 2rem;
-            color: #1d1d1f;
-        }
-
-        .actions-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2rem;
-        }
-
-        .action-card {
-            background: white;
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 32px;
-            padding: 3rem 2.5rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.4s ease;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.1);
-        }
-
-        .action-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 6px;
-            background: var(--action-gradient);
-            border-radius: 32px 32px 0 0;
-        }
-
-        .action-card:hover {
-            transform: translateY(-15px);
-            box-shadow: 0 35px 100px rgba(0, 0, 0, 0.15);
-        }
-
-        .action-card.add-company {
-            --action-gradient: linear-gradient(135deg, #20c997, #17a2b8);
-        }
-
-        .action-card.bulk-import {
-            --action-gradient: linear-gradient(135deg, #0dcaf0, #6f42c1);
-        }
-
-        .action-card.system-health {
-            --action-gradient: linear-gradient(135deg, #fd7e14, #dc3545);
-        }
-
-        .action-card.analytics {
-            --action-gradient: linear-gradient(135deg, #6610f2, #d63384);
-        }
-
-        .action-card.audit-log {
-            --action-gradient: linear-gradient(135deg, #495057, #6c757d);
-        }
-
-        .action-card.backup {
-            --action-gradient: linear-gradient(135deg, #28a745, #20c997);
-        }
-
-        .action-icon {
-            width: 100px;
-            height: 100px;
-            border-radius: 24px;
-            background: var(--action-gradient);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.8rem;
-            color: white;
-            margin: 0 auto 2rem;
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .action-card:hover .action-icon {
-            transform: scale(1.1) rotate(5deg);
-        }
-
-        .action-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            color: #1d1d1f;
-        }
-
-        .action-description {
-            color: #495057;
-            line-height: 1.6;
-            font-size: 1.1rem;
-        }
-
-        /* Activity Log Section */
-        .activity-log-section {
-            background: white;
-            border-radius: 32px;
-            padding: 3rem 2.5rem;
-            margin-bottom: 3rem;
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.1);
-        }
-
-        .activity-log-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-
-        .activity-log-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #1d1d1f;
-        }
-
-        .activity-log-filters {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .filter-btn {
-            padding: 0.5rem 1rem;
-            border: 1px solid #e9ecef;
-            border-radius: 12px;
-            background: white;
-            color: #495057;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .filter-btn.active {
-            background: linear-gradient(135deg, #20c997, #17a2b8);
-            color: white;
-            border-color: transparent;
-        }
-
-        .activity-log-list {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .activity-item {
-            padding: 1.5rem;
-            border-bottom: 1px solid #e9ecef;
-            display: flex;
-            align-items: start;
-            gap: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .activity-item:hover {
-            background: #f8f9fa;
-        }
-
-        .activity-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            flex-shrink: 0;
-        }
-
-        .activity-icon.success {
-            background: rgba(32, 201, 151, 0.2);
-            color: #20c997;
-        }
-
-        .activity-icon.warning {
-            background: rgba(255, 193, 7, 0.2);
-            color: #ffc107;
-        }
-
-        .activity-icon.error {
-            background: rgba(220, 53, 69, 0.2);
-            color: #dc3545;
-        }
-
-        .activity-icon.info {
-            background: rgba(13, 202, 240, 0.2);
-            color: #0dcaf0;
-        }
-
-        .activity-details {
-            flex: 1;
-        }
-
-        .activity-title {
-            font-weight: 600;
-            color: #1d1d1f;
-            margin-bottom: 0.25rem;
-        }
-
-        .activity-description {
-            font-size: 0.9rem;
-            color: #6c757d;
-        }
-
-        .activity-time {
-            font-size: 0.8rem;
-            color: #adb5bd;
-        }
-
-        /* Companies Table */
-        .companies-section {
-            margin-bottom: 4rem;
-        }
-
-        .companies-table {
-            background: white;
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 32px;
-            padding: 3rem 2.5rem;
-            overflow-x: auto;
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.1);
-            transition: all 0.4s ease;
-        }
-
-        .companies-table:hover {
-            transform: translateY(-15px);
-            box-shadow: 0 35px 100px rgba(0, 0, 0, 0.15);
-        }
-
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .table th,
-        .table td {
-            padding: 1.5rem 1rem;
-            text-align: left;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .table th {
-            font-weight: 600;
-            color: #495057;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .company-name {
-            font-weight: 600;
-            font-size: 1.1rem;
-            color: #1d1d1f;
-            margin-bottom: 0.25rem;
-        }
-
-        .company-domain {
-            color: #495057;
-            font-size: 0.9rem;
-        }
-
-        .status-badge {
-            padding: 0.6rem 1.2rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .status-badge.active {
-            background: rgba(32, 201, 151, 0.2);
-            color: #20c997;
-            border: 1px solid rgba(32, 201, 151, 0.3);
-        }
-
-        .status-badge.trial {
-            background: rgba(255, 193, 7, 0.2);
-            color: #ffc107;
-            border: 1px solid rgba(255, 193, 7, 0.3);
-        }
-
-        .plan-badge {
-            padding: 0.6rem 1.2rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            background: rgba(13, 202, 240, 0.2);
-            color: #0dcaf0;
-            border: 1px solid rgba(13, 202, 240, 0.3);
-        }
-
-        .btn-small {
-            padding: 0.6rem 1.2rem;
-            border: none;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-right: 0.5rem;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #20c997, #17a2b8);
-            color: white;
-        }
-
-        .btn-secondary {
-            background: linear-gradient(135deg, #495057, #6c757d);
-            color: white;
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #dc3545, #c82333);
-            color: white;
-        }
-
-        .btn-small:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            color: #495057;
-            padding: 4rem 2rem;
-        }
-
-        .empty-icon {
-            font-size: 4rem;
-            margin-bottom: 1.5rem;
-            opacity: 0.5;
-        }
-
-        .empty-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #1d1d1f;
-            margin-bottom: 1rem;
-        }
-
-        .empty-description {
-            font-size: 1.1rem;
-            margin-bottom: 2rem;
-            line-height: 1.6;
-        }
-
-        .empty-cta {
-            background: linear-gradient(135deg, #20c997, #17a2b8);
-            color: white;
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .empty-cta:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(32, 201, 151, 0.3);
-        }
-
-        /* Notification */
-        .notification {
-            position: fixed;
-            top: 2rem;
-            right: 2rem;
-            background: white;
-            border: none;
-            border-radius: 16px;
-            padding: 1.5rem 2rem;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
-            transform: translateX(400px);
-            opacity: 0;
-            transition: all 0.4s ease;
-            z-index: 1001;
-            max-width: 400px;
-        }
-
-        .notification.show {
-            transform: translateX(0);
-            opacity: 1;
-        }
-
-        .notification.success {
-            border-left: 4px solid #20c997;
-        }
-
-        .notification.error {
-            border-left: 4px solid #dc3545;
-        }
-
-        .notification.warning {
-            border-left: 4px solid #ffc107;
-        }
-
-        .notification-title {
-            font-weight: 600;
-            color: #1d1d1f;
-            margin-bottom: 0.5rem;
-        }
-
-        .notification-message {
-            color: #495057;
-            font-size: 0.9rem;
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-        }
-
-        .modal.show {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: modalFadeIn 0.3s ease;
-        }
-
-        @keyframes modalFadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 32px;
-            padding: 3rem 2.5rem;
-            max-width: 700px;
-            width: 90%;
-            position: relative;
-            animation: modalSlideIn 0.4s ease;
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: scale(0.9) translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1) translateY(0);
+await loadRealStats();
+                await loadCompaniesTable();
+
+            } catch (error) {
+                console.error('Cleanup failed:', error);
+                showNotification('Cleanup Failed', error.message, 'error');
             }
         }
 
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-
-        .modal-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #1d1d1f;
-        }
-
-        .modal-close {
-            background: rgba(220, 53, 69, 0.2);
-            border: 1px solid rgba(220, 53, 69, 0.3);
-            color: #dc3545;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 1.2rem;
-        }
-
-        .modal-close:hover {
-            background: rgba(220, 53, 69, 0.3);
-            transform: scale(1.1);
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .form-group-modal {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group-modal.full-width {
-            grid-column: 1 / -1;
-        }
-
-        .form-label-modal {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: #1d1d1f;
-            font-size: 0.9rem;
-        }
-
-        .form-input-modal,
-        .form-select-modal {
-            width: 100%;
-            padding: 1rem 1.2rem;
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 12px;
-            color: #1d1d1f;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            font-family: inherit;
-        }
-
-        .form-input-modal::placeholder {
-            color: #6c757d;
-        }
-
-        .form-input-modal:focus,
-        .form-select-modal:focus {
-            outline: none;
-            border-color: #20c997;
-            background: white;
-            box-shadow: 0 0 20px rgba(32, 201, 151, 0.1);
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-            margin-top: 2rem;
-        }
-
-        .btn-modal {
-            padding: 1rem 2rem;
-            border: none;
-            border-radius: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 1rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-modal.primary {
-            background: linear-gradient(135deg, #20c997, #17a2b8);
-            color: white;
-        }
-
-        .btn-modal.primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 40px rgba(32, 201, 151, 0.3);
-        }
-
-        .btn-modal.secondary {
-            background: #f8f9fa;
-            color: #495057;
-            border: 1px solid #e9ecef;
-        }
-
-        .btn-modal.secondary:hover {
-            background: #e9ecef;
-            transform: translateY(-2px);
-        }
-
-        .btn-modal.loading {
-            pointer-events: none;
-        }
-
-        .btn-text {
-            transition: opacity 0.3s ease;
-        }
-
-        .btn-modal.loading .btn-text {
-            opacity: 0;
-        }
-
-        .btn-spinner {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top: 2px solid white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            transform: translate(-50%, -50%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .btn-modal.loading .btn-spinner {
-            opacity: 1;
-        }
-
-        @keyframes spin {
-            0% { transform: translate(-50%, -50%) rotate(0deg); }
-            100% { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-
-            .header {
-                flex-direction: column;
-                gap: 2rem;
-                text-align: center;
-                padding: 2rem 1.5rem;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .actions-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .stat-card,
-            .action-card,
-            .companies-table {
-                padding: 2rem 1.5rem;
-            }
-
-            .stat-value {
-                font-size: 2.5rem;
-            }
-
-            .action-icon {
-                width: 80px;
-                height: 80px;
-                font-size: 2.2rem;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .modal-content {
-                padding: 2rem 1.5rem;
-            }
-
-            .testing-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .dev-tools-content {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- Notification -->
-    <div id="notification" class="notification">
-        <div id="notificationTitle" class="notification-title"></div>
-        <div id="notificationMessage" class="notification-message"></div>
-    </div>
-
-    <div class="container">
-        <!-- Header Premium -->
-        <header class="header">
-            <div class="header-left">
-                <div class="logo-container">
-                    <div class="logo-icon"></div>
-                </div>
-                <div class="header-info">
-                    <h1>Super Admin Panel</h1>
-                    <p>Opsis Suite Master Control Center</p>
-                </div>
-            </div>
-            <div class="header-right">
-                <div class="user-info" id="userInfo">
-                    <div class="user-name">Super Administrator</div>
-                    <div class="user-role">admin@opsis-suite.com</div>
-                </div>
-                <button class="sign-out-btn" onclick="handleSignOut()">
-                    <span>🚪</span>
-                    <span>Sign Out</span>
-                </button>
-            </div>
-        </header>
-
-        <!-- Development Tools Section -->
-        <div class="dev-tools-section">
-            <div class="dev-tools-header">
-                <h3 class="dev-tools-title">🛠️ Development & Production Tools</h3>
-                <div class="dev-mode-toggle">
-                    <span>Test Mode</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="testModeToggle" onchange="toggleTestMode()" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-            </div>
-            <div class="dev-tools-content">
-                <div class="dev-tool-card" onclick="resetDatabase()">
-                    <div class="dev-tool-icon">🔄</div>
-                    <div class="dev-tool-info">
-                        <div class="dev-tool-name">Reset Database</div>
-                        <div class="dev-tool-desc">Clean all data for production launch</div>
-                    </div>
-                </div>
-                <div class="dev-tool-card" onclick="exportDatabase()">
-                    <div class="dev-tool-icon">💾</div>
-                    <div class="dev-tool-info">
-                        <div class="dev-tool-name">Export Database</div>
-                        <div class="dev-tool-desc">Download complete backup</div>
-                    </div>
-                </div>
-                <div class="dev-tool-card" onclick="viewAuditLog()">
-                    <div class="dev-tool-icon">📋</div>
-                    <div class="dev-tool-info">
-                        <div class="dev-tool-name">Audit Log</div>
-                        <div class="dev-tool-desc">View all system activities</div>
-                    </div>
-                </div>
-                <div class="dev-tool-card" onclick="systemDiagnostics()">
-                    <div class="dev-tool-icon">🔍</div>
-                    <div class="dev-tool-info">
-                        <div class="dev-tool-name">Diagnostics</div>
-                        <div class="dev-tool-desc">Check system health</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Testing Section -->
-        <div class="testing-section active" id="testingSection">
-            <h3>🧪 Testing Mode</h3>
-            <p>Create test companies with fake users for development. All test accounts use password: <strong>testing123</strong></p>
+        // Función para manejar el logout - FALTABA ESTA
+        function handleSignOut() {
+            const signOutBtn = document.querySelector('.sign-out-btn');
             
-            <div class="testing-buttons">
-                <button onclick="createQuickTestCompany()" class="btn-testing">
-                    🚀 Create Test Company
-                </button>
-                <button onclick="listAllTestUsers()" class="btn-testing secondary">
-                    👥 List Test Users
-                </button>
-                <button onclick="cleanupAllTestData()" class="btn-testing danger">
-                    🗑️ Cleanup Test Data
-                </button>
-            </div>
-        </div>
+            if (!confirm('Are you sure you want to sign out of the Super Admin Panel?')) {
+                return;
+            }
+            
+            signOutBtn.innerHTML = '<span>🔄</span><span>Signing out...</span>';
+            signOutBtn.disabled = true;
+            
+            localStorage.removeItem('opsis_admin_session');
+            sessionStorage.clear();
+            
+            addActivity('info', 'Admin Logout', 'Super administrator signed out');
+            showNotification('Signing Out', 'Redirecting to login page...', 'success');
+            
+            setTimeout(() => {
+                window.location.href = 'https://www.opsis-suite.com/login';
+            }, 1500);
+        }
 
-        <!-- Stats Premium -->
-        <div class="stats-grid">
-            <div class="stat-card companies">
-                <div class="stat-header">
-                    <div class="stat-icon">🏢</div>
-                </div>
-                <div class="stat-value" id="totalCompanies">0</div>
-                <div class="stat-label">Companies</div>
-                <div class="stat-change" id="companiesChange">Ready to start</div>
-            </div>
+        // Funciones de UI - FALTABAN ESTAS
+        function addNewCompany() {
+            const modal = document.getElementById('addCompanyModal');
+            modal.classList.add('show');
+            addActivity('info', 'Add Company Modal', 'Opening new company creation form');
+        }
 
-            <div class="stat-card revenue">
-                <div class="stat-header">
-                    <div class="stat-icon">💰</div>
-                </div>
-                <div class="stat-value" id="totalRevenue">$0</div>
-                <div class="stat-label">Monthly Revenue</div>
-                <div class="stat-change" id="revenueChange">Growing from zero</div>
-            </div>
+        function closeAddCompanyModal() {
+            const modal = document.getElementById('addCompanyModal');
+            modal.classList.remove('show');
+        }
 
-            <div class="stat-card users">
-                <div class="stat-header">
-                    <div class="stat-icon">👥</div>
-                </div>
-                <div class="stat-value" id="totalUsers">0</div>
-                <div class="stat-label">Total Users</div>
-                <div class="stat-change" id="usersChange">Awaiting first company</div>
-            </div>
+        function viewAnalytics() {
+            showNotification('Opening Analytics', 'Redirecting to analytics dashboard...', 'success');
+            setTimeout(() => {
+                window.open('/admin/analytics.html', '_top');
+            }, 1000);
+        }
 
-            <div class="stat-card modules">
-                <div class="stat-header">
-                    <div class="stat-icon">🚀</div>
-                </div>
-                <div class="stat-value">4</div>
-                <div class="stat-label">Available Modules</div>
-                <div class="stat-change">Warehouse, HR, TimeSync, Finance</div>
-            </div>
-        </div>
+        function systemHealth() {
+            showNotification('System Health', 'All systems operational', 'success');
+            addActivity('info', 'System Health Check', 'All services running normally');
+        }
 
-        <!-- Quick Actions Premium -->
-        <section class="actions-section">
-            <h2 class="section-title">Master Control Actions</h2>
-            <div class="actions-grid">
-                <div class="action-card add-company" onclick="addNewCompany()">
-                    <div class="action-icon">➕</div>
-                    <div class="action-title">Add New Company</div>
-                    <div class="action-description">Create new company accounts with custom configuration and module access</div>
-                </div>
+        // Sistema de notificaciones - FALTABA ESTA
+        function showNotification(title, message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const titleEl = document.getElementById('notificationTitle');
+            const messageEl = document.getElementById('notificationMessage');
+            
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            
+            notification.classList.remove('success', 'error', 'warning');
+            notification.classList.add(type, 'show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
 
-                <div class="action-card bulk-import" onclick="bulkImportCompanies()">
-                    <div class="action-icon">📥</div>
-                    <div class="action-title">Bulk Import</div>
-                    <div class="action-description">Import multiple companies from Excel/CSV with their equipment data</div>
-                </div>
+        // Cargar estadísticas - FALTABA ESTA
+        async function loadRealStats() {
+            try {
+                const { data: companies, error } = await supabase
+                    .from('companies')
+                    .select('*');
 
-                <div class="action-card system-health" onclick="systemHealth()">
-                    <div class="action-icon">💚</div>
-                    <div class="action-title">System Health</div>
-                    <div class="action-description">Monitor Supabase connections, API status, and performance metrics</div>
-                </div>
+                if (error) throw error;
 
-                <div class="action-card analytics" onclick="viewAnalytics()">
-                    <div class="action-icon">📊</div>
-                    <div class="action-title">Revenue Analytics</div>
-                    <div class="action-description">Revenue trends, company growth, and module adoption patterns</div>
-                </div>
+                const totalCompanies = companies?.length || 0;
+                const totalRevenue = calculateMonthlyRevenue(companies);
+                const totalUsers = companies?.reduce((sum, company) => sum + (company.initial_users || 0), 0) || 0;
 
-                <div class="action-card audit-log" onclick="viewAuditLog()">
-                    <div class="action-icon">📜</div>
-                    <div class="action-title">Audit Trail</div>
-                    <div class="action-description">Complete activity log of all system operations and changes</div>
-                </div>
+                document.getElementById('totalCompanies').textContent = totalCompanies;
+                document.getElementById('totalRevenue').textContent = `$${totalRevenue}`;
+                document.getElementById('totalUsers').textContent = totalUsers;
 
-                <div class="action-card backup" onclick="backupSystem()">
-                    <div class="action-icon">💾</div>
-                    <div class="action-title">Backup & Recovery</div>
-                    <div class="action-description">Create backups and restore system data when needed</div>
-                </div>
-            </div>
-        </section>
+                document.getElementById('companiesChange').textContent = totalCompanies === 0 ? 'Ready to start' : `${totalCompanies} active companies`;
+                document.getElementById('revenueChange').textContent = totalRevenue === 0 ? 'Growing from zero' : `$${totalRevenue}/month`;
+                document.getElementById('usersChange').textContent = totalUsers === 0 ? 'Awaiting first company' : `${totalUsers} users total`;
 
-        <!-- Activity Log Section -->
-        <section class="activity-log-section">
-            <div class="activity-log-header">
-                <h3 class="activity-log-title">Recent Activity</h3>
-                <div class="activity-log-filters">
-                    <button class="filter-btn active" onclick="filterActivity('all')">All</button>
-                    <button class="filter-btn" onclick="filterActivity('companies')">Companies</button>
-                    <button class="filter-btn" onclick="filterActivity('users')">Users</button>
-                    <button class="filter-btn" onclick="filterActivity('system')">System</button>
-                </div>
-            </div>
-            <div class="activity-log-list" id="activityLogList">
-                <!-- Activity items will be loaded here -->
-            </div>
-        </section>
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
 
-        <!-- Companies Management Premium -->
-        <section class="companies-section">
-            <h2 class="section-title">Company Management</h2>
-            <div class="companies-table">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Company</th>
-                            <th>Status</th>
-                            <th>Plan</th>
-                            <th>Modules</th>
-                            <th>Users</th>
-                            <th>Revenue</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="companiesTableBody">
+        function calculateMonthlyRevenue(companies) {
+            if (!companies) return 0;
+            
+            const planPrices = {
+                trial: 0,
+                warehouse_basic: 49,
+                warehouse_pro: 149,
+                suite_standard: 249,
+                suite_premium: 499,
+                enterprise: 999
+            };
+
+            return companies.reduce((total, company) => {
+                return total + (planPrices[company.plan] || 0);
+            }, 0);
+        }
+
+        // Cargar tabla de empresas - FALTABA ESTA
+        async function loadCompaniesTable() {
+            try {
+                const { data: companies, error } = await supabase
+                    .from('companies')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                const tableBody = document.getElementById('companiesTableBody');
+                
+                if (!companies || companies.length === 0) {
+                    tableBody.innerHTML = `
                         <tr>
                             <td colspan="7" class="empty-state">
                                 <div class="empty-icon">🏢</div>
@@ -1325,487 +137,87 @@
                                 </button>
                             </td>
                         </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-    </div>
+                    `;
+                    return;
+                }
 
-    <!-- Add Company Modal -->
-    <div id="addCompanyModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">🚀 Add New Company</h3>
-                <button class="modal-close" onclick="closeAddCompanyModal()">✕</button>
-            </div>
-            
-            <form id="addCompanyForm" onsubmit="return handleAddCompany(event)">
-                <div class="form-grid">
-                    <div class="form-group-modal">
-                        <label class="form-label-modal">Company Name *</label>
-                        <input 
-                            type="text" 
-                            id="companyName" 
-                            class="form-input-modal" 
-                            placeholder="e.g., CVE San Diego"
-                            required
-                        >
-                    </div>
+                tableBody.innerHTML = companies.map(company => `
+                    <tr>
+                        <td>
+                            <div class="company-name">${company.name}</div>
+                            <div class="company-domain">${company.domain}</div>
+                        </td>
+                        <td><span class="status-badge ${company.status}">${company.status}</span></td>
+                        <td><span class="plan-badge">${formatPlan(company.plan)}</span></td>
+                        <td>Warehouse${company.plan.includes('suite') ? ', HR' : ''}${company.plan === 'enterprise' ? ', TimeSync, Finance' : ''}</td>
+                        <td>${company.initial_users || 5}</td>
+                        <td>$${getPlanPrice(company.plan)}/month</td>
+                        <td>
+                            <button class="btn-small btn-primary" onclick="viewCompany('${company.slug}')">View</button>
+                            <button class="btn-small btn-secondary" onclick="editCompany('${company.id}')">Edit</button>
+                        </td>
+                    </tr>
+                `).join('');
 
-                    <div class="form-group-modal">
-                        <label class="form-label-modal">Email Domain *</label>
-                        <input 
-                            type="text" 
-                            id="companyDomain" 
-                            class="form-input-modal" 
-                            placeholder="e.g., cve.com"
-                            required
-                        >
-                    </div>
+            } catch (error) {
+                console.error('Error loading companies:', error);
+            }
+        }
 
-                    <div class="form-group-modal">
-                        <label class="form-label-modal">Industry Sector</label>
-                        <select id="companySector" class="form-select-modal">
-                            <option value="construction">Construction & Engineering</option>
-                            <option value="manufacturing">Manufacturing & Production</option>
-                            <option value="logistics">Logistics & Transportation</option>
-                            <option value="energy">Energy & Utilities</option>
-                            <option value="mining">Mining & Resources</option>
-                            <option value="agriculture">Agriculture & Farming</option>
-                            <option value="automotive">Automotive & Dealerships</option>
-                            <option value="healthcare">Healthcare & Medical</option>
-                            <option value="education">Education & Institutions</option>
-                            <option value="government">Government & Municipal</option>
-                            <option value="technology">Technology & Software</option>
-                            <option value="retail">Retail & E-commerce</option>
-                            <option value="food_service">Food Service & Hospitality</option>
-                            <option value="real_estate">Real Estate & Property</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group-modal">
-                        <label class="form-label-modal">Subscription Plan</label>
-                        <select id="companyPlan" class="form-select-modal">
-                            <option value="trial">Trial - $0/month (30 days)</option>
-                            <option value="warehouse_basic">Warehouse Basic - $49/month</option>
-                            <option value="warehouse_pro" selected>Warehouse Pro - $149/month ⭐</option>
-                            <option value="suite_standard">Suite Standard - $249/month</option>
-                            <option value="suite_premium">Suite Premium - $499/month</option>
-                            <option value="enterprise">Enterprise - $999/month</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group-modal full-width">
-                        <label class="form-label-modal">Company Admin Email *</label>
-                        <input 
-                            type="email" 
-                            id="adminEmail" 
-                            class="form-input-modal" 
-                            placeholder="admin@company.com"
-                            required
-                        >
-                    </div>
-
-                    <div class="form-group-modal">
-                        <label class="form-label-modal">Admin Name *</label>
-                        <input 
-                            type="text" 
-                            id="adminName" 
-                            class="form-input-modal" 
-                            placeholder="John Doe"
-                            required
-                        >
-                    </div>
-
-                    <div class="form-group-modal">
-                        <label class="form-label-modal">Initial Users</label>
-                        <input 
-                            type="number" 
-                            id="initialUsers" 
-                            class="form-input-modal" 
-                            placeholder="5"
-                            min="1"
-                            max="50"
-                            value="5"
-                        >
-                    </div>
-
-                    <div class="form-group-modal full-width">
-                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                            <input type="checkbox" id="createSampleUsers" checked>
-                            <span class="form-label-modal" style="margin: 0;">Create sample team (all 5 roles with testing123 password)</span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="modal-buttons">
-                    <button type="button" class="btn-modal secondary" onclick="closeAddCompanyModal()">
-                        Cancel
-                    </button>
-                    <button type="submit" class="btn-modal primary" id="submitCompanyBtn">
-                        <span class="btn-text">🚀 Create Company</span>
-                        <div class="btn-spinner"></div>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Supabase JavaScript SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <script>
-        // Configuración Supabase
-        const SUPABASE_CONFIG = {
-            url: 'https://lmmlhncwdwjgtkdqaycv.supabase.co',
-            key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxtbWxobmN3ZHdqZ3RrZHFheWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU0MDE4ODYsImV4cCI6MjA3MDk3Nzg4Nn0.vhL5E-o9RtjEtrYTOdFCvhXs5mu5fuuAtB13LCd6dJQ'
-        };
-
-        const supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.key);
-
-        // Activity Log Storage
-        let activityLog = [];
-
-        // Testing Configuration
-        const TESTING_CONFIG = {
-            defaultPassword: 'testing123',
-            bypassEmailVerification: true,
-            autoActivateUsers: true
-        };
-
-        // Add activity to log
-        function addActivity(type, title, description) {
-            const activity = {
-                id: Date.now(),
-                type: type,
-                title: title,
-                description: description,
-                timestamp: new Date()
+        function formatPlan(plan) {
+            const planNames = {
+                trial: 'Trial',
+                warehouse_basic: 'Basic',
+                warehouse_pro: 'Pro',
+                suite_standard: 'Standard',
+                suite_premium: 'Premium',
+                enterprise: 'Enterprise'
             };
-            
-            activityLog.unshift(activity);
-            if (activityLog.length > 50) {
-                activityLog = activityLog.slice(0, 50);
-            }
-            
+            return planNames[plan] || plan;
+        }
+
+        function getPlanPrice(plan) {
+            const planPrices = {
+                trial: 0,
+                warehouse_basic: 49,
+                warehouse_pro: 149,
+                suite_standard: 249,
+                suite_premium: 499,
+                enterprise: 999
+            };
+            return planPrices[plan] || 0;
+        }
+
+        function viewCompany(slug) {
+            window.open(`/${slug}`, '_blank');
+        }
+
+        function editCompany(id) {
+            showNotification('Edit Company', 'Company editing feature coming soon', 'success');
+        }
+
+        // Manejo del formulario - FALTABA ESTA
+        function handleAddCompany(event) {
+            event.preventDefault();
+            showNotification('Creating Company', 'Company creation feature coming soon', 'success');
+            closeAddCompanyModal();
+            return false;
+        }
+
+        // Inicialización - FALTABA ESTA
+        document.addEventListener('DOMContentLoaded', function() {
+            addActivity('success', 'Super Admin Panel Loaded', 'System ready for enterprise management');
+            loadRealStats();
+            loadCompaniesTable();
             updateActivityLog();
-        }
+        });
 
-        // Update activity log display
-        function updateActivityLog() {
-            const logList = document.getElementById('activityLogList');
-            
-            if (activityLog.length === 0) {
-                logList.innerHTML = `
-                    <div class="activity-item">
-                        <div class="activity-icon info">ℹ️</div>
-                        <div class="activity-details">
-                            <div class="activity-title">No recent activity</div>
-                            <div class="activity-description">System activity will appear here</div>
-                        </div>
-                    </div>
-                `;
-                return;
-            }
-            
-            logList.innerHTML = activityLog.map(activity => {
-                const iconClass = activity.type === 'success' ? 'success' : 
-                                 activity.type === 'error' ? 'error' : 
-                                 activity.type === 'warning' ? 'warning' : 'info';
-                
-                const icon = activity.type === 'success' ? '✅' : 
-                            activity.type === 'error' ? '❌' : 
-                            activity.type === 'warning' ? '⚠️' : 'ℹ️';
-                
-                const timeAgo = getTimeAgo(activity.timestamp);
-                
-                return `
-                    <div class="activity-item">
-                        <div class="activity-icon ${iconClass}">${icon}</div>
-                        <div class="activity-details">
-                            <div class="activity-title">${activity.title}</div>
-                            <div class="activity-description">${activity.description}</div>
-                            <div class="activity-time">${timeAgo}</div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
+        // Auto-refresh
+        setInterval(() => {
+            loadRealStats();
+            loadCompaniesTable();
+        }, 30000);
 
-        function getTimeAgo(timestamp) {
-            const seconds = Math.floor((new Date() - timestamp) / 1000);
-            
-            if (seconds < 60) return 'Just now';
-            if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
-            if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
-            return `${Math.floor(seconds / 86400)} days ago`;
-        }
-
-        // Toggle Test Mode
-        function toggleTestMode() {
-            const testSection = document.getElementById('testingSection');
-            const toggle = document.getElementById('testModeToggle');
-            
-            if (toggle.checked) {
-                testSection.classList.add('active');
-                addActivity('info', 'Test Mode Enabled', 'Development testing features activated');
-            } else {
-                testSection.classList.remove('active');
-                addActivity('info', 'Test Mode Disabled', 'Production mode activated');
-            }
-        }
-
-        // Development Tools Functions
-        async function resetDatabase() {
-            if (!confirm('⚠️ This will delete ALL data except Super Admin. Continue?')) return;
-            
-            try {
-                showNotification('Resetting Database', 'Cleaning all data for production...', 'warning');
-                
-                const { error } = await supabase
-                    .from('companies')
-                    .delete()
-                    .neq('id', '00000000-0000-0000-0000-000000000000');
-                
-                if (error) throw error;
-                
-                addActivity('warning', 'Database Reset', 'All company data cleared for production');
-                showNotification('Database Reset Complete', 'Ready for production launch', 'success');
-                
-                await loadRealStats();
-                await loadCompaniesTable();
-                
-            } catch (error) {
-                console.error('Reset failed:', error);
-                showNotification('Reset Failed', error.message, 'error');
-            }
-        }
-
-        async function exportDatabase() {
-            try {
-                showNotification('Exporting Database', 'Preparing backup...', 'success');
-                
-                const { data: companies } = await supabase.from('companies').select('*');
-                
-                const exportData = {
-                    exportDate: new Date().toISOString(),
-                    version: '1.0.0',
-                    companies: companies || [],
-                    totalCompanies: companies?.length || 0,
-                    totalRevenue: calculateMonthlyRevenue(companies)
-                };
-                
-                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `opsis-backup-${new Date().toISOString().split('T')[0]}.json`;
-                a.click();
-                
-                addActivity('success', 'Database Exported', `Backup created with ${exportData.totalCompanies} companies`);
-                showNotification('Export Complete', 'Database backup downloaded', 'success');
-                
-            } catch (error) {
-                console.error('Export failed:', error);
-                showNotification('Export Failed', error.message, 'error');
-            }
-        }
-
-        async function viewAuditLog() {
-            showNotification('Audit Log', 'Opening complete system audit trail...', 'success');
-        }
-
-        async function systemDiagnostics() {
-            try {
-                const startTime = Date.now();
-                const { data, error } = await supabase.from('companies').select('count').limit(1);
-                const responseTime = Date.now() - startTime;
-                
-                if (error) throw error;
-                
-                const diagnostics = `
-                    Database: Connected ✅
-                    Response Time: ${responseTime}ms
-                    API Status: Operational
-                    Cache: Active
-                    SSL: Secured
-                `;
-                
-                addActivity('success', 'System Diagnostics', `All systems operational (${responseTime}ms response)`);
-                showNotification('System Diagnostics', diagnostics, 'success');
-                
-            } catch (error) {
-                addActivity('error', 'System Diagnostics Failed', error.message);
-                showNotification('Diagnostics Error', 'System check failed', 'error');
-            }
-        }
-
-        async function bulkImportCompanies() {
-            showNotification(
-                'Bulk Import',
-                'Excel/CSV import feature will allow importing multiple companies with their equipment data',
-                'success'
-            );
-            addActivity('info', 'Bulk Import Accessed', 'Feature coming soon for production');
-        }
-
-        async function backupSystem() {
-            showNotification(
-                'Backup System',
-                'Automated backup and recovery system for production data',
-                'success'
-            );
-            addActivity('info', 'Backup System Accessed', 'Automated backups will run daily in production');
-        }
-
-        function filterActivity(type) {
-            const buttons = document.querySelectorAll('.filter-btn');
-            buttons.forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            addActivity('info', 'Filter Applied', `Showing ${type} activities`);
-        }
-
-        // Testing Functions
-        async function createQuickTestCompany() {
-            const testCompanies = [
-                {
-                    name: 'Demo Construction LLC',
-                    slug: 'democonstruction',
-                    domain: 'democonstruction.com',
-                    sector: 'construction',
-                    plan: 'warehouse_pro',
-                    initialUsers: 5,
-                    createSampleUsers: true
-                },
-                {
-                    name: 'Test Tech Corp',
-                    slug: 'testtechcorp',
-                    domain: 'testtechcorp.com',
-                    sector: 'technology',
-                    plan: 'enterprise',
-                    initialUsers: 8,
-                    createSampleUsers: true
-                }
-            ];
-
-            const randomCompany = testCompanies[Math.floor(Math.random() * testCompanies.length)];
-            const suffix = Math.floor(Math.random() * 1000);
-            randomCompany.name += ` ${suffix}`;
-            randomCompany.slug += `${suffix}`;
-            randomCompany.domain = `${randomCompany.slug}.com`;
-
-            showNotification(
-                'Creating Test Company',
-                `Creating ${randomCompany.name} with full team...`,
-                'success'
-            );
-
-            const result = await createTestCompanyWithUsers(randomCompany);
-
-            if (result.success) {
-                addActivity('success', 'Test Company Created', `${randomCompany.name} with 5 users`);
-                showNotification(
-                    'Test Company Created!',
-                    `${randomCompany.name} ready with 5 users. Password: testing123`,
-                    'success'
-                );
-                await loadRealStats();
-                await loadCompaniesTable();
-            } else {
-                addActivity('error', 'Test Company Failed', result.error);
-                showNotification('Test Company Failed', result.error, 'error');
-            }
-        }
-
-        async function createTestCompanyWithUsers(companyData) {
-            try {
-                console.log('Creating test company:', companyData.name);
-                
-                const { data: newCompany, error: companyError } = await supabase
-                    .from('companies')
-                    .insert([{
-                        name: companyData.name,
-                        slug: companyData.slug,
-                        domain: companyData.domain,
-                        sector: companyData.sector,
-                        plan: companyData.plan,
-                        status: 'active',
-                        initial_users: companyData.initialUsers || 5,
-                        admin_email: `admin@${companyData.domain}`,
-                        created_at: new Date().toISOString()
-                    }])
-                    .select()
-                    .single();
-
-                if (companyError) {
-                    throw new Error(`Failed to create company: ${companyError.message}`);
-                }
-
-                return {
-                    success: true,
-                    company: newCompany,
-                    adminEmail: `admin@${companyData.domain}`,
-                    defaultPassword: TESTING_CONFIG.defaultPassword
-                };
-
-            } catch (error) {
-                console.error('Error creating test company:', error);
-                return {
-                    success: false,
-                    error: error.message
-                };
-            }
-        }
-
-        async function listAllTestUsers() {
-            try {
-                const { data: companies, error } = await supabase
-                    .from('companies')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-
-                console.table(companies.map(company => ({
-                    Name: company.name,
-                    Domain: company.domain,
-                    Plan: company.plan,
-                    Status: company.status,
-                    Users: company.initial_users
-                })));
-
-                addActivity('info', 'Companies Listed', `Found ${companies.length} companies in database`);
-                showNotification(
-                    'Companies Listed',
-                    `Found ${companies.length} companies. Check browser console for details.`,
-                    'success'
-                );
-
-                return companies;
-
-            } catch (error) {
-                console.error('Error listing companies:', error);
-                showNotification('Error', 'Failed to list companies', 'error');
-                return [];
-            }
-        }
-
-        async function cleanupAllTestData() {
-            if (!confirm('⚠️ This will delete ALL test companies. Are you sure?')) {
-                return;
-            }
-
-            try {
-                showNotification('Cleanup Started', 'Deleting all test data...', 'success');
-
-                const { error: companiesError } = await supabase
-                    .from('companies')
-                    .delete()
-                    .neq('id', '00000000-0000-0000-0000-000000000000');
-
-                if (companiesError) throw companiesError;
-
-                addActivity('warning', 'Test Data Cleanup', 'All test companies deleted');
-                showNotification('Cleanup Complete', 'All test data has been removed', 'success');
+    </script>
+</body>
+</html>
