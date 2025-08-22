@@ -1003,25 +1003,45 @@
             document.getElementById('email').focus();
 
             // Verificar si hay sesión activa y redirigir automáticamente
-            const { data: { user } } = await supabase.auth.getUser();
-            
-            if (user) {
-                // Ya hay sesión activa, obtener perfil y redirigir
-                const { data: profile } = await supabase
-                    .from('user_profiles')
-                    .select('*, companies(*)')
-                    .eq('user_id', user.id)
-                    .single();
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
                 
-                if (profile) {
-                    console.log('Active session found, redirecting...');
+                if (user) {
+                    console.log('Active session found for:', user.email);
                     
-                    if (profile.role === 'super_admin') {
-                        window.location.href = 'https://candewesth.github.io/opsis-suite/admin/superadmin.html';
-                    } else if (profile.companies) {
-                        window.location.href = `https://candewesth.github.io/opsis-suite/dashboard/template.html?company=${profile.companies.slug}`;
+                    // Obtener perfil del usuario para determinar redirección correcta
+                    const { data: profile, error: profileError } = await supabase
+                        .from('user_profiles')
+                        .select('*, companies(*)')
+                        .eq('user_id', user.id)
+                        .single();
+                    
+                    if (profile && !profileError) {
+                        console.log('User profile found:', profile.role);
+                        
+                        // Solo redirigir si tenemos un perfil válido
+                        if (profile.role === 'super_admin') {
+                            console.log('Redirecting to super admin panel...');
+                            window.location.href = 'https://candewesth.github.io/opsis-suite/admin/superadmin.html';
+                        } else if (profile.companies && profile.companies.slug) {
+                            console.log('Redirecting to company dashboard:', profile.companies.slug);
+                            window.location.href = `https://candewesth.github.io/opsis-suite/dashboard/template.html?company=${profile.companies.slug}`;
+                        } else {
+                            console.log('No valid redirect found, staying on login');
+                            // Si no hay empresa válida, hacer logout para limpiar
+                            await supabase.auth.signOut();
+                        }
+                    } else {
+                        console.log('No profile found for user, staying on login');
+                        // Si no hay perfil, hacer logout para limpiar
+                        await supabase.auth.signOut();
                     }
+                } else {
+                    console.log('No active session, showing login form');
                 }
+            } catch (error) {
+                console.error('Error checking session:', error);
+                // En caso de error, simplemente mostrar el login
             }
         });
 
