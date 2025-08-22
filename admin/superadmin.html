@@ -1226,7 +1226,8 @@
             try {
                 const { data: { user } } = await supabase.auth.getUser();
                 if (!user) {
-                    window.location.href = '/login.html';
+                    // Redirigir al login - ajustar según tu estructura de archivos
+                    window.location.href = 'login.html'; // Sin la barra inicial
                     return;
                 }
                 currentUser = user;
@@ -1243,25 +1244,40 @@
                 if (user.email !== 'admin@opsis-suite.com' && profile?.role !== 'super_admin') {
                     showNotification('error', 'Acceso Denegado', 'No tienes permisos de Super Admin');
                     await supabase.auth.signOut();
-                    window.location.href = '/login.html';
+                    window.location.href = 'login.html';
                     return;
                 }
                 
                 document.getElementById('adminName').textContent = profile?.full_name || profile?.name || 'Super Admin';
             } catch (error) {
                 console.error('Auth error:', error);
-                // Para desarrollo, permitir continuar si hay error
-                if (currentUser?.email === 'admin@opsis-suite.com') {
-                    document.getElementById('adminName').textContent = 'Super Admin';
-                } else {
-                    window.location.href = '/login.html';
+                // Si no hay usuario autenticado, redirigir al login
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) {
+                    window.location.href = 'login.html';
                 }
             }
         }
 
         async function handleSignOut() {
-            await supabase.auth.signOut();
-            window.location.href = '/login.html';
+            try {
+                const { error } = await supabase.auth.signOut();
+                if (error) {
+                    console.error('Error al cerrar sesión:', error);
+                    showNotification('error', 'Error', 'No se pudo cerrar sesión');
+                } else {
+                    // Limpiar cualquier dato local
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    
+                    // Redirigir al login - ajustar la ruta según tu estructura
+                    window.location.href = 'login.html';
+                }
+            } catch (error) {
+                console.error('Error en signOut:', error);
+                // Forzar redirección aunque haya error
+                window.location.href = 'login.html';
+            }
         }
 
         // Tab Navigation
