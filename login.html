@@ -856,23 +856,30 @@
             hideError();
 
             try {
+                console.log('Attempting login for:', email);
+                
                 // Autenticar con Supabase
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
 
-                if (error) throw error;
+                if (error) {
+                    console.error('Authentication error:', error);
+                    throw error;
+                }
 
                 if (data.user) {
                     // Obtener perfil completo del usuario
-                    const { data: profile } = await supabase
+                    const { data: profile, error: profileError } = await supabase
                         .from('user_profiles')
                         .select('*, companies(*)')
                         .eq('user_id', data.user.id)
                         .single();
                     
-                    if (!profile) throw new Error('User profile not found');
+                    if (profileError || !profile) {
+                        throw new Error('User profile not found. Please contact your administrator.');
+                    }
                     
                     // Determinar redirección según rol
                     let redirectUrl = '';
@@ -889,8 +896,9 @@
                         localStorage.setItem('userRole', profile.role);
                         localStorage.setItem('companySlug', profile.companies.slug);
                         localStorage.setItem('userName', profile.name || profile.full_name || email);
+                        localStorage.setItem('companyName', companyName);
                     } else {
-                        throw new Error('No company associated with this user');
+                        throw new Error('No company associated with this user. Please contact your administrator.');
                     }
                     
                     // Almacenar sesión
@@ -909,12 +917,16 @@
                 
                 let errorMessage = 'Login failed. Please check your credentials.';
                 
-                if (error.message.includes('Invalid login credentials')) {
+                if (error.message === 'Invalid login credentials' || error.message.includes('Invalid login credentials')) {
                     errorMessage = 'Invalid email or password. Please try again.';
                 } else if (error.message.includes('Email not confirmed')) {
                     errorMessage = 'Please check your email and confirm your account.';
                 } else if (error.message.includes('No company')) {
                     errorMessage = 'No company associated with this account. Contact your administrator.';
+                } else if (error.message.includes('User profile not found')) {
+                    errorMessage = 'User profile not found. Please contact your administrator.';
+                } else if (error.message.includes('Too many requests')) {
+                    errorMessage = 'Too many login attempts. Please wait a moment and try again.';
                 }
                 
                 showError(errorMessage);
@@ -990,12 +1002,26 @@
         document.addEventListener('DOMContentLoaded', async function() {
             document.getElementById('email').focus();
 
-            // Verificar si hay sesión activa
-            const { data: { session } } = await supabase.auth.getSession();
+            // Verificar si hay sesión activa y redirigir automáticamente
+            const { data: { user } } = await supabase.auth.getUser();
             
-            if (session) {
-                console.log('Active session found for:', session.user.email);
-                // Opcional: redirigir automáticamente
+            if (user) {
+                // Ya hay sesión activa, obtener perfil y redirigir
+                const { data: profile } = await supabase
+                    .from('user_profiles')
+                    .select('*, companies(*)')
+                    .eq('user_id', user.id)
+                    .single();
+                
+                if (profile) {
+                    console.log('Active session found, redirecting...');
+                    
+                    if (profile.role === 'super_admin') {
+                        window.location.href = 'https://candewesth.github.io/opsis-suite/admin/superadmin.html';
+                    } else if (profile.companies) {
+                        window.location.href = `https://candewesth.github.io/opsis-suite/dashboard/template.html?company=${profile.companies.slug}`;
+                    }
+                }
             }
         });
 
@@ -1004,6 +1030,17 @@
             if (event === 'SIGNED_OUT') {
                 sessionStorage.removeItem('opsis_session');
                 localStorage.clear();
+                console.log('User signed out, session cleared');
+            } else if (event === 'SIGNED_IN') {
+                console.log('User signed in:', session?.user?.email);
+            }
+        });
+
+        // Función para limpiar la sesión en caso de logout
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'logout' && e.newValue === 'true') {
+                supabase.auth.signOut();
+                window.location.reload();
             }
         });
     </script>
