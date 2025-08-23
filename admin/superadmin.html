@@ -819,15 +819,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Settings Section */
-        .settings-section {
-            display: none;
-        }
-
-        .settings-section.active {
-            display: block;
-        }
-
         /* Responsive */
         @media (max-width: 768px) {
             .container {
@@ -900,9 +891,7 @@
             <button class="nav-tab" onclick="switchTab('users')">Usuarios</button>
             <button class="nav-tab" onclick="switchTab('subscriptions')">Suscripciones</button>
             <button class="nav-tab" onclick="switchTab('payments')">Pagos</button>
-            <button class="nav-tab" onclick="switchTab('reports')">Reportes</button>
             <button class="nav-tab" onclick="switchTab('activity')">Actividad</button>
-            <button class="nav-tab" onclick="switchTab('settings')">Configuración</button>
         </div>
 
         <!-- Dashboard Tab -->
@@ -986,13 +975,13 @@
                         <div class="action-description">Historial y gestión de pagos</div>
                     </div>
 
-                    <div class="action-card reports" onclick="switchTab('reports')">
+                    <div class="action-card reports" onclick="logActivity('info', 'Sección de reportes accedida')">
                         <div class="action-icon">📊</div>
                         <div class="action-title">Reportes</div>
                         <div class="action-description">Análisis y reportes del sistema</div>
                     </div>
 
-                    <div class="action-card settings" onclick="switchTab('settings')">
+                    <div class="action-card settings" onclick="logActivity('info', 'Configuración del sistema accedida')">
                         <div class="action-icon">⚙️</div>
                         <div class="action-title">Configuración</div>
                         <div class="action-description">Ajustes del sistema y planes</div>
@@ -1088,59 +1077,104 @@
             </div>
         </div>
 
-        <!-- Other Tabs -->
+        <!-- Subscriptions Tab -->
         <div id="subscriptions-tab" class="tab-content">
             <div class="table-container">
-                <h3 class="table-title">Gestión de Suscripciones</h3>
-                <div class="empty-state">
-                    <div class="empty-icon">💳</div>
-                    <div class="empty-title">Módulo en desarrollo</div>
-                    <div class="empty-description">La gestión de suscripciones estará disponible próximamente</div>
+                <div class="table-header">
+                    <h3 class="table-title">Gestión de Suscripciones</h3>
+                    <div class="table-actions">
+                        <button class="btn-action btn-primary" onclick="showAddSubscriptionModal()">Nueva Suscripción</button>
+                        <button class="btn-action btn-secondary" onclick="exportSubscriptions()">Exportar</button>
+                    </div>
                 </div>
+                
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Empresa</th>
+                            <th>Plan</th>
+                            <th>Precio</th>
+                            <th>Estado</th>
+                            <th>Vencimiento</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subscriptionsTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 2rem;">
+                                <div class="loading-spinner"></div>
+                                <p style="margin-top: 1rem; color: #86868b;">Cargando suscripciones...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
+        <!-- Payments Tab -->
         <div id="payments-tab" class="tab-content">
             <div class="table-container">
-                <h3 class="table-title">Gestión de Pagos</h3>
-                <div class="empty-state">
-                    <div class="empty-icon">💰</div>
-                    <div class="empty-title">Módulo en desarrollo</div>
-                    <div class="empty-description">La gestión de pagos estará disponible próximamente</div>
+                <div class="table-header">
+                    <h3 class="table-title">Gestión de Pagos</h3>
+                    <div class="table-actions">
+                        <button class="btn-action btn-primary" onclick="showAddPaymentModal()">Registrar Pago</button>
+                        <button class="btn-action btn-secondary" onclick="exportPayments()">Exportar</button>
+                    </div>
                 </div>
+                
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Empresa</th>
+                            <th>Concepto</th>
+                            <th>Monto</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentsTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 2rem;">
+                                <div class="loading-spinner"></div>
+                                <p style="margin-top: 1rem; color: #86868b;">Cargando pagos...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <div id="reports-tab" class="tab-content">
-            <div class="table-container">
-                <h3 class="table-title">Reportes y Analytics</h3>
-                <div class="empty-state">
-                    <div class="empty-icon">📊</div>
-                    <div class="empty-title">Módulo en desarrollo</div>
-                    <div class="empty-description">Los reportes avanzados estarán disponibles próximamente</div>
-                </div>
-            </div>
-        </div>
-
+        <!-- Activity Tab -->
         <div id="activity-tab" class="tab-content">
             <div class="table-container">
-                <h3 class="table-title">Registro de Actividad</h3>
-                <div class="empty-state">
-                    <div class="empty-icon">📝</div>
-                    <div class="empty-title">Módulo en desarrollo</div>
-                    <div class="empty-description">El registro de actividad estará disponible próximamente</div>
+                <div class="table-header">
+                    <h3 class="table-title">Registro de Actividad del Sistema</h3>
+                    <div class="table-actions">
+                        <button class="btn-action btn-secondary" onclick="clearOldLogs()">Limpiar Logs Antiguos</button>
+                        <button class="btn-action btn-secondary" onclick="exportActivity()">Exportar</button>
+                    </div>
                 </div>
-            </div>
-        </div>
-
-        <div id="settings-tab" class="tab-content">
-            <div class="table-container">
-                <h3 class="table-title">Configuración del Sistema</h3>
-                <div class="empty-state">
-                    <div class="empty-icon">⚙️</div>
-                    <div class="empty-title">Módulo en desarrollo</div>
-                    <div class="empty-description">La configuración del sistema estará disponible próximamente</div>
-                </div>
+                
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Fecha/Hora</th>
+                            <th>Usuario</th>
+                            <th>Acción</th>
+                            <th>Descripción</th>
+                            <th>IP</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activityTableBody">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 2rem;">
+                                <div class="loading-spinner"></div>
+                                <p style="margin-top: 1rem; color: #86868b;">Cargando actividad...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -1260,6 +1294,9 @@
         let currentUser = null;
         let companies = [];
         let users = [];
+        let subscriptions = [];
+        let payments = [];
+        let activityLogs = [];
         let usersChart = null;
         let revenueChart = null;
 
@@ -1289,7 +1326,7 @@
                     .eq('user_id', user.id)
                     .single();
                 
-                if (user.email !== 'admin@opsis-suite.com' && profile?.role !== 'super_admin') {
+                if (user.email !== 'admin@opsis-suite.com') {
                     showNotification('error', 'Acceso Denegado', 'No tienes permisos de Super Admin');
                     await supabase.auth.signOut();
                     window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
@@ -1297,7 +1334,992 @@
                 }
                 
                 document.getElementById('adminName').textContent = profile?.full_name || profile?.name || 'Super Admin';
+                
+                // Log successful login
+                await logActivity('login', 'Super Admin accedió al panel');
+                console.error('Error loading users:', error);
+                showNotification('error', 'Error', 'No se pudieron cargar los usuarios');
+                displayUsersError();
+            }
+        }
+
+        function displayUsers(usersList) {
+            const tbody = document.getElementById('usersTableBody');
+            
+            if (!usersList || usersList.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <div class="empty-icon">👥</div>
+                            <div class="empty-title">No hay usuarios registrados</div>
+                            <div class="empty-description">Los usuarios aparecerán cuando se creen empresas</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = usersList.map(user => `
+                <tr data-user-id="${user.id}">
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #6610f2, #d63384); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.9rem;">
+                                ${(user.full_name || user.name || user.email).charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <div style="font-weight: 600; color: #1d1d1f;">${user.full_name || user.name || 'Sin nombre'}</div>
+                                <div style="font-size: 0.8rem; color: #86868b;">${user.phone || 'Sin teléfono'}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${user.email}</td>
+                    <td>${user.companies?.name || 'Sin empresa'}</td>
+                    <td>
+                        <span class="status-badge ${user.role === 'ADMIN' || user.role === 'super_admin' ? 'active' : 'pending'}">
+                            ${user.role || 'USER'}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status-badge ${user.is_active ? 'active' : 'inactive'}">
+                            ${user.is_active ? 'Activo' : 'Inactivo'}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button onclick="editUser('${user.id}')" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" title="Editar">✏️</button>
+                            <button onclick="toggleUserStatus('${user.id}', ${user.is_active})" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" title="${user.is_active ? 'Desactivar' : 'Activar'}">
+                                ${user.is_active ? '⏸️' : '▶️'}
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function displayUsersError() {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="empty-state">
+                        <div class="empty-icon">⚠️</div>
+                        <div class="empty-title">Error al cargar usuarios</div>
+                        <div class="empty-description">Hubo un problema al conectar con la base de datos</div>
+                        <button onclick="loadUsers()" class="btn-action btn-primary" style="margin-top: 1rem;">Reintentar</button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // ============================================
+        // SUBSCRIPTIONS MANAGEMENT
+        // ============================================
+        async function loadSubscriptions() {
+            try {
+                const { data, error } = await supabase
+                    .from('subscriptions')
+                    .select(`
+                        *,
+                        companies (name, id)
+                    `)
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                subscriptions = data || [];
+                displaySubscriptions(subscriptions);
             } catch (error) {
+                console.error('Error loading subscriptions:', error);
+                showNotification('error', 'Error', 'No se pudieron cargar las suscripciones');
+                displaySubscriptionsError();
+            }
+        }
+
+        function displaySubscriptions(subscriptionsList) {
+            const tbody = document.getElementById('subscriptionsTableBody');
+            
+            if (!subscriptionsList || subscriptionsList.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <div class="empty-icon">💳</div>
+                            <div class="empty-title">No hay suscripciones</div>
+                            <div class="empty-description">Las suscripciones aparecerán cuando se creen empresas</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = subscriptionsList.map(sub => {
+                const endDate = new Date(sub.end_date).toLocaleDateString('es-ES');
+                const isExpiring = new Date(sub.end_date) - new Date() < 7 * 24 * 60 * 60 * 1000; // 7 days
+                
+                return `
+                    <tr data-subscription-id="${sub.id}">
+                        <td style="font-weight: 600; color: #1d1d1f;">${sub.companies?.name || 'Sin empresa'}</td>
+                        <td><span class="status-badge active">${sub.plan_name || 'Sin plan'}</span></td>
+                        <td style="font-weight: 600; color: #20c997;">${sub.price || 0}</td>
+                        <td>
+                            <span class="status-badge ${sub.status === 'active' ? 'active' : sub.status === 'expired' ? 'inactive' : 'pending'}">
+                                ${sub.status === 'active' ? 'Activa' : sub.status === 'expired' ? 'Expirada' : 'Cancelada'}
+                            </span>
+                        </td>
+                        <td style="color: ${isExpiring ? '#dc3545' : '#86868b'};">
+                            ${endDate}
+                            ${isExpiring && sub.status === 'active' ? '<span style="color: #dc3545; font-size: 0.7rem; display: block;">⚠️ Por vencer</span>' : ''}
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <button onclick="renewSubscription('${sub.id}')" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: #20c997; color: white;" title="Renovar">🔄</button>
+                                <button onclick="cancelSubscription('${sub.id}')" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: #dc3545; color: white;" title="Cancelar">❌</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function displaySubscriptionsError() {
+            const tbody = document.getElementById('subscriptionsTableBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="empty-state">
+                        <div class="empty-icon">⚠️</div>
+                        <div class="empty-title">Error al cargar suscripciones</div>
+                        <div class="empty-description">Hubo un problema al conectar con la base de datos</div>
+                        <button onclick="loadSubscriptions()" class="btn-action btn-primary" style="margin-top: 1rem;">Reintentar</button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // ============================================
+        // PAYMENTS MANAGEMENT
+        // ============================================
+        async function loadPayments() {
+            try {
+                const { data, error } = await supabase
+                    .from('payments')
+                    .select(`
+                        *,
+                        companies (name, id)
+                    `)
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                payments = data || [];
+                displayPayments(payments);
+            } catch (error) {
+                console.error('Error loading payments:', error);
+                showNotification('error', 'Error', 'No se pudieron cargar los pagos');
+                displayPaymentsError();
+            }
+        }
+
+        function displayPayments(paymentsList) {
+            const tbody = document.getElementById('paymentsTableBody');
+            
+            if (!paymentsList || paymentsList.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <div class="empty-icon">💰</div>
+                            <div class="empty-title">No hay pagos registrados</div>
+                            <div class="empty-description">Los pagos aparecerán cuando se procesen transacciones</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = paymentsList.map(payment => {
+                const paymentDate = new Date(payment.created_at).toLocaleDateString('es-ES');
+                
+                return `
+                    <tr data-payment-id="${payment.id}">
+                        <td style="font-weight: 600; color: #1d1d1f;">${payment.companies?.name || 'Sin empresa'}</td>
+                        <td>${payment.concept || 'Pago de suscripción'}</td>
+                        <td style="font-weight: 600; color: #20c997;">${payment.amount || 0}</td>
+                        <td style="color: #86868b;">${paymentDate}</td>
+                        <td>
+                            <span class="status-badge ${payment.status === 'completed' ? 'active' : payment.status === 'failed' ? 'inactive' : 'pending'}">
+                                ${payment.status === 'completed' ? 'Completado' : payment.status === 'failed' ? 'Fallido' : payment.status === 'refunded' ? 'Reembolsado' : 'Pendiente'}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                ${payment.status === 'pending' ? `<button onclick="markPaymentCompleted('${payment.id}')" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: #20c997; color: white;" title="Marcar completado">✓</button>` : ''}
+                                ${payment.status === 'completed' ? `<button onclick="refundPayment('${payment.id}')" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: #ffc107; color: white;" title="Reembolsar">↩️</button>` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function displayPaymentsError() {
+            const tbody = document.getElementById('paymentsTableBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="empty-state">
+                        <div class="empty-icon">⚠️</div>
+                        <div class="empty-title">Error al cargar pagos</div>
+                        <div class="empty-description">Hubo un problema al conectar con la base de datos</div>
+                        <button onclick="loadPayments()" class="btn-action btn-primary" style="margin-top: 1rem;">Reintentar</button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // ============================================
+        // ACTIVITY LOGS MANAGEMENT
+        // ============================================
+        async function loadActivity() {
+            try {
+                const { data, error } = await supabase
+                    .from('admin_activity_logs')
+                    .select(`
+                        *,
+                        user_profiles!user_id (full_name, email, name)
+                    `)
+                    .order('created_at', { ascending: false })
+                    .limit(50);
+                
+                if (error) throw error;
+                
+                activityLogs = data || [];
+                displayActivity(activityLogs);
+            } catch (error) {
+                console.error('Error loading activity:', error);
+                showNotification('error', 'Error', 'No se pudieron cargar los logs de actividad');
+                displayActivityError();
+            }
+        }
+
+        function displayActivity(activityList) {
+            const tbody = document.getElementById('activityTableBody');
+            
+            if (!activityList || activityList.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            <div class="empty-icon">📝</div>
+                            <div class="empty-title">No hay actividad registrada</div>
+                            <div class="empty-description">Las acciones del sistema aparecerán aquí</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = activityList.map(log => {
+                const datetime = new Date(log.created_at).toLocaleString('es-ES');
+                const actionIcon = getActionIcon(log.action_type);
+                
+                return `
+                    <tr>
+                        <td style="color: #86868b; font-size: 0.9rem;">${datetime}</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div style="width: 24px; height: 24px; border-radius: 50%; background: #f8f9fa; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;">
+                                    ${(log.user_profiles?.full_name || log.user_profiles?.name || log.user_profiles?.email || 'S').charAt(0).toUpperCase()}
+                                </div>
+                                <span style="font-size: 0.9rem;">${log.user_profiles?.full_name || log.user_profiles?.name || log.user_profiles?.email || 'Sistema'}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="font-size: 1rem;">${actionIcon}</span>
+                                <span class="status-badge ${getActionColor(log.action_type)}" style="text-transform: capitalize;">${log.action_type}</span>
+                            </span>
+                        </td>
+                        <td>${log.description || 'Sin descripción'}</td>
+                        <td style="font-family: monospace; font-size: 0.8rem; color: #86868b;">${log.ip_address || 'N/A'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function displayActivityError() {
+            const tbody = document.getElementById('activityTableBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="empty-state">
+                        <div class="empty-icon">⚠️</div>
+                        <div class="empty-title">Error al cargar actividad</div>
+                        <div class="empty-description">Hubo un problema al conectar con la base de datos</div>
+                        <button onclick="loadActivity()" class="btn-action btn-primary" style="margin-top: 1rem;">Reintentar</button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        function getActionIcon(actionType) {
+            const icons = {
+                'create': '➕',
+                'update': '✏️',
+                'delete': '🗑️',
+                'login': '🔑',
+                'logout': '🚪',
+                'error': '❌',
+                'warning': '⚠️',
+                'info': 'ℹ️'
+            };
+            return icons[actionType] || '📝';
+        }
+
+        function getActionColor(actionType) {
+            const colors = {
+                'create': 'active',
+                'update': 'pending',
+                'delete': 'inactive',
+                'login': 'active',
+                'logout': 'pending',
+                'error': 'inactive',
+                'warning': 'pending',
+                'info': 'active'
+            };
+            return colors[actionType] || 'pending';
+        }
+
+        // ============================================
+        // COMPANY ACTIONS
+        // ============================================
+        async function handleAddCompany(event) {
+            event.preventDefault();
+            
+            const companyData = {
+                name: document.getElementById('companyName').value,
+                ruc: document.getElementById('companyRuc').value,
+                address: document.getElementById('companyAddress').value,
+                phone: document.getElementById('companyPhone').value,
+                email: document.getElementById('companyEmail').value,
+                domain: document.getElementById('companyDomain').value || document.getElementById('companyEmail').value.split('@')[1],
+                subscription_plan: document.getElementById('companyPlan').value,
+                max_users: parseInt(document.getElementById('initialUsers').value),
+                status: 'active',
+                slug: document.getElementById('companyName').value.toLowerCase().replace(/\s+/g, '-'),
+                settings: {
+                    modules_enabled: getModulesForPlan(document.getElementById('companyPlan').value)
+                }
+            };
+            
+            try {
+                const { data, error } = await supabase
+                    .from('companies')
+                    .insert([companyData])
+                    .select()
+                    .single();
+                
+                if (error) throw error;
+                
+                // Create default subscription
+                await supabase.from('subscriptions').insert([{
+                    company_id: data.id,
+                    plan_name: companyData.subscription_plan,
+                    price: getPlanPrice(companyData.subscription_plan),
+                    start_date: new Date().toISOString(),
+                    end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                    status: 'active',
+                    auto_renew: true
+                }]);
+                
+                await logActivity('create', `Nueva empresa creada: ${companyData.name}`, {
+                    company_id: data.id,
+                    plan: companyData.subscription_plan,
+                    max_users: companyData.max_users
+                });
+                
+                showNotification('success', 'Empresa creada', `${companyData.name} ha sido registrada exitosamente`);
+                closeModal('addCompanyModal');
+                document.getElementById('addCompanyForm').reset();
+                loadCompanies();
+                loadDashboard();
+                
+            } catch (error) {
+                console.error('Error creating company:', error);
+                await logActivity('error', `Error al crear empresa: ${error.message}`);
+                showNotification('error', 'Error', 'No se pudo crear la empresa');
+            }
+        }
+
+        async function handleAddUser(event) {
+            event.preventDefault();
+            
+            const userData = {
+                email: document.getElementById('userEmail').value,
+                password: document.getElementById('userPassword').value
+            };
+            
+            try {
+                // Create auth user
+                const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+                    email: userData.email,
+                    password: userData.password,
+                    email_confirm: true
+                });
+                
+                if (authError) throw authError;
+                
+                const profileData = {
+                    user_id: authUser.user.id,
+                    email: userData.email,
+                    full_name: document.getElementById('userName').value,
+                    name: document.getElementById('userName').value,
+                    company_id: document.getElementById('userCompany').value,
+                    role: document.getElementById('userRole').value,
+                    is_active: true
+                };
+                
+                const { error: profileError } = await supabase
+                    .from('user_profiles')
+                    .insert([profileData]);
+                
+                if (profileError) throw profileError;
+                
+                await logActivity('create', `Nuevo usuario creado: ${userData.email}`, {
+                    user_email: userData.email,
+                    company_id: profileData.company_id,
+                    role: profileData.role
+                });
+                
+                showNotification('success', 'Usuario creado', `${userData.email} ha sido registrado exitosamente`);
+                closeModal('addUserModal');
+                document.getElementById('addUserForm').reset();
+                loadUsers();
+                loadDashboard();
+                
+            } catch (error) {
+                console.error('Error creating user:', error);
+                await logActivity('error', `Error al crear usuario: ${error.message}`);
+                showNotification('error', 'Error', 'No se pudo crear el usuario');
+            }
+        }
+
+        // ============================================
+        // ACTION FUNCTIONS
+        // ============================================
+        async function toggleCompanyStatus(companyId, currentStatus) {
+            const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+            const action = newStatus === 'active' ? 'activar' : 'desactivar';
+            
+            if (!confirm(`¿Estás seguro de ${action} esta empresa?`)) return;
+            
+            try {
+                const { error } = await supabase
+                    .from('companies')
+                    .update({ status: newStatus })
+                    .eq('id', companyId);
+                
+                if (error) throw error;
+                
+                await logActivity('update', `Estado de empresa ${action}do`, {
+                    company_id: companyId,
+                    old_status: currentStatus,
+                    new_status: newStatus
+                });
+                
+                showNotification('success', 'Estado actualizado', `Empresa ${action}da correctamente`);
+                loadCompanies();
+                loadDashboard();
+                
+            } catch (error) {
+                console.error('Error updating company status:', error);
+                await logActivity('error', `Error al actualizar estado de empresa: ${error.message}`);
+                showNotification('error', 'Error', 'No se pudo actualizar el estado de la empresa');
+            }
+        }
+
+        async function deleteCompany(companyId, companyName) {
+            if (!confirm(`¿Estás seguro de eliminar la empresa "${companyName}"?`)) return;
+            
+            const confirmation = prompt('Escribe "ELIMINAR" para confirmar:');
+            if (confirmation !== 'ELIMINAR') {
+                showNotification('warning', 'Cancelado', 'Eliminación cancelada');
+                return;
+            }
+            
+            try {
+                const { error } = await supabase
+                    .from('companies')
+                    .delete()
+                    .eq('id', companyId);
+                
+                if (error) throw error;
+                
+                await logActivity('delete', `Empresa eliminada: ${companyName}`, {
+                    company_id: companyId,
+                    company_name: companyName
+                });
+                
+                showNotification('success', 'Empresa eliminada', 'La empresa ha sido eliminada correctamente');
+                loadCompanies();
+                loadDashboard();
+                
+            } catch (error) {
+                console.error('Error deleting company:', error);
+                await logActivity('error', `Error al eliminar empresa: ${error.message}`);
+                showNotification('error', 'Error', 'No se pudo eliminar la empresa');
+            }
+        }
+
+        async function toggleUserStatus(userId, currentStatus) {
+            try {
+                const { error } = await supabase
+                    .from('user_profiles')
+                    .update({ is_active: !currentStatus })
+                    .eq('id', userId);
+                
+                if (error) throw error;
+                
+                await logActivity('update', `Estado de usuario ${currentStatus ? 'desactivado' : 'activado'}`, {
+                    user_id: userId,
+                    old_status: currentStatus,
+                    new_status: !currentStatus
+                });
+                
+                showNotification('success', 'Estado actualizado', 'Estado del usuario actualizado');
+                loadUsers();
+                
+            } catch (error) {
+                console.error('Error updating user status:', error);
+                await logActivity('error', `Error al actualizar estado de usuario: ${error.message}`);
+                showNotification('error', 'Error', 'No se pudo actualizar el estado');
+            }
+        }
+
+        async function renewSubscription(subscriptionId) {
+            try {
+                const { data: subscription } = await supabase
+                    .from('subscriptions')
+                    .select('*')
+                    .eq('id', subscriptionId)
+                    .single();
+                
+                const newEndDate = new Date(subscription.end_date);
+                newEndDate.setMonth(newEndDate.getMonth() + 1);
+                
+                const { error } = await supabase
+                    .from('subscriptions')
+                    .update({
+                        end_date: newEndDate.toISOString(),
+                        status: 'active'
+                    })
+                    .eq('id', subscriptionId);
+                
+                if (error) throw error;
+                
+                await logActivity('update', 'Suscripción renovada por un mes', {
+                    subscription_id: subscriptionId,
+                    new_end_date: newEndDate.toISOString()
+                });
+                
+                showNotification('success', 'Suscripción renovada', 'La suscripción ha sido renovada por un mes');
+                loadSubscriptions();
+                
+            } catch (error) {
+                console.error('Error renewing subscription:', error);
+                await logActivity('error', `Error al renovar suscripción: ${error.message}`);
+                showNotification('error', 'Error', 'No se pudo renovar la suscripción');
+            }
+        }
+
+        async function cancelSubscription(subscriptionId) {
+            if (!confirm('¿Estás seguro de cancelar esta suscripción?')) return;
+            
+            try {
+                const { error } = await supabase
+                    .from('subscriptions')
+                    .update({ status: 'cancelled' })
+                    .eq('id', subscriptionId);
+                
+                if (error) throw error;
+                
+                await logActivity('update', 'Suscripción cancelada', {
+                    subscription_id: subscriptionId
+                });
+                
+                showNotification('success', 'Suscripción cancelada', 'La suscripción ha sido cancelada');
+                loadSubscriptions();
+                loadDashboard();
+                
+            } catch (error) {
+                console.error('Error cancelling subscription:', error);
+                await logActivity('error', `Error al cancelar suscripción: ${error.message}`);
+                showNotification('error', 'Error', 'No se pudo cancelar la suscripción');
+            }
+        }
+
+        async function markPaymentCompleted(paymentId) {
+            try {
+                const { error } = await supabase
+                    .from('payments')
+                    .update({ status: 'completed' })
+                    .eq('id', paymentId);
+                
+                if (error) throw error;
+                
+                await logActivity('update', 'Pago marcado como completado', {
+                    payment_id: paymentId
+                });
+                
+                showNotification('success', 'Pago completado', 'El pago ha sido marcado como completado');
+                loadPayments();
+                
+            } catch (error) {
+                console.error('Error updating payment:', error);
+                await logActivity('error', `Error al actualizar pago: ${error.message}`);
+                showNotification('error', 'Error', 'No se pudo actualizar el pago');
+            }
+        }
+
+        async function refundPayment(paymentId) {
+            if (!confirm('¿Estás seguro de marcar este pago como reembolsado?')) return;
+            
+            try {
+                const { error } = await supabase
+                    .from('payments')
+                    .update({ status: 'refunded' })
+                    .eq('id', paymentId);
+                
+                if (error) throw error;
+                
+                await logActivity('update', 'Pago reembolsado', {
+                    payment_id: paymentId
+                });
+                
+                showNotification('success', 'Pago reembolsado', 'El pago ha sido marcado como reembolsado');
+                loadPayments();
+                
+            } catch (error) {
+                console.error('Error refunding payment:', error);
+                await logActivity('error', `Error al reembolsar pago: ${error.message}`);
+                showNotification('error', 'Error', 'No se pudo procesar el reembolso');
+            }
+        }
+
+        async function clearOldLogs() {
+            if (!confirm('¿Estás seguro de eliminar logs antiguos (más de 90 días)?')) return;
+            
+            try {
+                const { data, error } = await supabase.rpc('clean_old_activity_logs', { days_to_keep: 90 });
+                
+                if (error) throw error;
+                
+                await logActivity('delete', `Logs antiguos eliminados: ${data || 'varios'} registros`);
+                showNotification('success', 'Logs eliminados', `${data || 'Varios'} logs antiguos fueron eliminados`);
+                loadActivity();
+                
+            } catch (error) {
+                console.error('Error clearing old logs:', error);
+                await logActivity('error', `Error al limpiar logs: ${error.message}`);
+                showNotification('error', 'Error', 'No se pudieron eliminar los logs antiguos');
+            }
+        }
+
+        // ============================================
+        // SEARCH AND FILTER FUNCTIONS
+        // ============================================
+        function searchCompanies(term) {
+            const filtered = companies.filter(c => 
+                c.name.toLowerCase().includes(term.toLowerCase()) ||
+                c.ruc?.toLowerCase().includes(term.toLowerCase()) ||
+                c.email.toLowerCase().includes(term.toLowerCase()) ||
+                c.domain?.toLowerCase().includes(term.toLowerCase())
+            );
+            displayCompanies(filtered);
+        }
+
+        function filterCompanies(type, btn) {
+            document.querySelectorAll('#companies-tab .filter-pill').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            
+            let filtered = companies;
+            if (type === 'active') filtered = companies.filter(c => c.status === 'active');
+            if (type === 'inactive') filtered = companies.filter(c => c.status === 'inactive');
+            if (type === 'trial') filtered = companies.filter(c => c.status === 'trial');
+            
+            displayCompanies(filtered);
+        }
+
+        function searchUsers(term) {
+            const filtered = users.filter(u => 
+                (u.full_name || u.name || '').toLowerCase().includes(term.toLowerCase()) ||
+                u.email.toLowerCase().includes(term.toLowerCase()) ||
+                (u.companies?.name || '').toLowerCase().includes(term.toLowerCase())
+            );
+            displayUsers(filtered);
+        }
+
+        function filterUsers(type, btn) {
+            document.querySelectorAll('#users-tab .filter-pill').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            
+            let filtered = users;
+            if (type === 'active') filtered = users.filter(u => u.is_active);
+            if (type === 'inactive') filtered = users.filter(u => !u.is_active);
+            if (type === 'admin') filtered = users.filter(u => u.role === 'ADMIN' || u.role === 'super_admin');
+            
+            displayUsers(filtered);
+        }
+
+        // ============================================
+        // EXPORT FUNCTIONS
+        // ============================================
+        function exportCompanies() {
+            if (companies.length === 0) {
+                showNotification('warning', 'Sin datos', 'No hay empresas para exportar');
+                return;
+            }
+            
+            const csvData = companies.map(company => ({
+                'Nombre': company.name,
+                'RUC': company.ruc || '',
+                'Email': company.email,
+                'Dominio': company.domain || '',
+                'Plan': company.subscription_plan || '',
+                'Usuarios Max': company.max_users || '',
+                'Estado': company.status,
+                'Fecha Creación': new Date(company.created_at).toLocaleDateString('es-ES')
+            }));
+            
+            const csv = convertToCSV(csvData);
+            downloadCSV(csv, `empresas_${new Date().toISOString().split('T')[0]}.csv`);
+            showNotification('success', 'Exportado', 'Archivo CSV de empresas descargado');
+        }
+
+        function exportUsers() {
+            if (users.length === 0) {
+                showNotification('warning', 'Sin datos', 'No hay usuarios para exportar');
+                return;
+            }
+            
+            const csvData = users.map(user => ({
+                'Nombre': user.full_name || user.name || '',
+                'Email': user.email,
+                'Empresa': user.companies?.name || '',
+                'Rol': user.role || '',
+                'Estado': user.is_active ? 'Activo' : 'Inactivo',
+                'Fecha Registro': new Date(user.created_at).toLocaleDateString('es-ES')
+            }));
+            
+            const csv = convertToCSV(csvData);
+            downloadCSV(csv, `usuarios_${new Date().toISOString().split('T')[0]}.csv`);
+            showNotification('success', 'Exportado', 'Archivo CSV de usuarios descargado');
+        }
+
+        function exportSubscriptions() {
+            showNotification('info', 'Próximamente', 'Exportación de suscripciones disponible pronto');
+        }
+
+        function exportPayments() {
+            showNotification('info', 'Próximamente', 'Exportación de pagos disponible pronto');
+        }
+
+        function exportActivity() {
+            if (activityLogs.length === 0) {
+                showNotification('warning', 'Sin datos', 'No hay actividad para exportar');
+                return;
+            }
+            
+            const csvData = activityLogs.map(log => ({
+                'Fecha/Hora': new Date(log.created_at).toLocaleString('es-ES'),
+                'Usuario': log.user_profiles?.full_name || log.user_profiles?.name || log.user_profiles?.email || 'Sistema',
+                'Acción': log.action_type,
+                'Descripción': log.description || '',
+                'IP': log.ip_address || ''
+            }));
+            
+            const csv = convertToCSV(csvData);
+            downloadCSV(csv, `actividad_${new Date().toISOString().split('T')[0]}.csv`);
+            showNotification('success', 'Exportado', 'Archivo CSV de actividad descargado');
+        }
+
+        // ============================================
+        // HELPER FUNCTIONS
+        // ============================================
+        function getPlanPrice(plan) {
+            const prices = {
+                'warehouse_basic': 49,
+                'warehouse_pro': 149,
+                'suite_standard': 249,
+                'suite_premium': 499,
+                'enterprise': 999
+            };
+            return prices[plan] || 49;
+        }
+
+        function getModulesForPlan(plan) {
+            const modules = {
+                'warehouse_basic': ['equipment', 'loans', 'maintenance'],
+                'warehouse_pro': ['equipment', 'loans', 'maintenance', 'reports'],
+                'suite_standard': ['equipment', 'loans', 'maintenance', 'reports', 'projects'],
+                'suite_premium': ['equipment', 'loans', 'maintenance', 'reports', 'projects', 'finance'],
+                'enterprise': ['all']
+            };
+            return modules[plan] || ['equipment'];
+        }
+
+        function showNotification(type, title, message) {
+            const notification = document.getElementById('notification');
+            const notificationTitle = document.getElementById('notificationTitle');
+            const notificationMessage = document.getElementById('notificationMessage');
+            
+            notification.className = `notification ${type} show`;
+            notificationTitle.textContent = title;
+            notificationMessage.textContent = message;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        function showAddCompanyModal() {
+            document.getElementById('addCompanyModal').classList.add('show');
+        }
+
+        async function showAddUserModal() {
+            await loadCompaniesForSelect();
+            document.getElementById('addUserModal').classList.add('show');
+        }
+
+        function showAddSubscriptionModal() {
+            showNotification('info', 'Próximamente', 'Modal de suscripciones disponible pronto');
+        }
+
+        function showAddPaymentModal() {
+            showNotification('info', 'Próximamente', 'Modal de pagos disponible pronto');
+        }
+
+        async function loadCompaniesForSelect() {
+            const { data: companies } = await supabase
+                .from('companies')
+                .select('id, name')
+                .eq('status', 'active')
+                .order('name');
+            
+            const select = document.getElementById('userCompany');
+            if (select) {
+                select.innerHTML = companies?.map(c => 
+                    `<option value="${c.id}">${c.name}</option>`
+                ).join('') || '<option value="">No hay empresas activas</option>';
+            }
+        }
+
+        function convertToCSV(objArray) {
+            const array = [Object.keys(objArray[0])].concat(objArray);
+            return array.map(row => {
+                return Object.values(row).map(value => {
+                    const stringValue = value?.toString() || '';
+                    return '"' + stringValue.replace(/"/g, '""') + '"';
+                }).join(',');
+            }).join('\n');
+        }
+
+        function downloadCSV(csv, filename) {
+            const csvFile = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const downloadLink = document.createElement('a');
+            downloadLink.download = filename;
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.style.display = 'none';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        }
+
+        // ============================================
+        // CHARTS INITIALIZATION
+        // ============================================
+        function initCharts() {
+            const usersCtx = document.getElementById('usersChart')?.getContext('2d');
+            const revenueCtx = document.getElementById('revenueChart')?.getContext('2d');
+            
+            if (usersCtx) {
+                usersChart = new Chart(usersCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Usuarios',
+                            data: [0, 0, 0, 0, 0, 0],
+                            borderColor: '#20c997',
+                            backgroundColor: 'rgba(32, 201, 151, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+            
+            if (revenueCtx) {
+                revenueChart = new Chart(revenueCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Ingresos',
+                            data: [0, 0, 0, 0, 0, 0],
+                            backgroundColor: 'rgba(73, 80, 87, 0.8)',
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function updateCharts() {
+            if (usersChart) {
+                const monthlyUsers = [1, 2, 4, 8, 12, users.length || 0];
+                usersChart.data.datasets[0].data = monthlyUsers;
+                usersChart.update();
+            }
+            
+            if (revenueChart) {
+                const monthlyRevenue = [49, 198, 596, 1192, 1788, 
+                    subscriptions.reduce((sum, s) => sum + (s.price || 0), 0)];
+                revenueChart.data.datasets[0].data = monthlyRevenue;
+                revenueChart.update();
+            }
+        }
+
+        // Placeholder functions for actions
+        function editCompany(id) {
+            showNotification('info', 'Próximamente', 'Edición de empresas disponible pronto');
+        }
+
+        function editUser(id) {
+            showNotification('info', 'Próximamente', 'Edición de usuarios disponible pronto');
+        }
+    </script>
+</body>
+</html>
                 console.error('Auth error:', error);
                 window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
             }
@@ -1305,6 +2327,7 @@
 
         async function handleSignOut() {
             try {
+                await logActivity('logout', 'Super Admin cerró sesión');
                 const { error } = await supabase.auth.signOut();
                 if (error) {
                     console.error('Error al cerrar sesión:', error);
@@ -1317,6 +2340,29 @@
             } catch (error) {
                 console.error('Error en signOut:', error);
                 window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
+            }
+        }
+
+        // ============================================
+        // ACTIVITY LOGGING
+        // ============================================
+        async function logActivity(actionType, description, metadata = {}) {
+            try {
+                const logData = {
+                    user_id: currentUser?.id || null,
+                    action_type: actionType,
+                    description: description,
+                    ip_address: '0.0.0.0', // Placeholder
+                    user_agent: navigator.userAgent,
+                    metadata: metadata
+                };
+                
+                await supabase
+                    .from('admin_activity_logs')
+                    .insert([logData]);
+                    
+            } catch (error) {
+                console.error('Error logging activity:', error);
             }
         }
 
@@ -1339,16 +2385,31 @@
         }
 
         async function loadTabData(tabName) {
-            switch(tabName) {
-                case 'dashboard':
-                    await loadDashboard();
-                    break;
-                case 'companies':
-                    await loadCompanies();
-                    break;
-                case 'users':
-                    await loadUsers();
-                    break;
+            try {
+                switch(tabName) {
+                    case 'dashboard':
+                        await loadDashboard();
+                        break;
+                    case 'companies':
+                        await loadCompanies();
+                        break;
+                    case 'users':
+                        await loadUsers();
+                        break;
+                    case 'subscriptions':
+                        await loadSubscriptions();
+                        break;
+                    case 'payments':
+                        await loadPayments();
+                        break;
+                    case 'activity':
+                        await loadActivity();
+                        break;
+                }
+                await logActivity('info', `Accedió a la sección: ${tabName}`);
+            } catch (error) {
+                console.error(`Error loading ${tabName}:`, error);
+                await logActivity('error', `Error al cargar sección ${tabName}: ${error.message}`);
             }
         }
 
@@ -1357,27 +2418,51 @@
         // ============================================
         async function loadDashboard() {
             try {
-                const { count: companiesCount } = await supabase
-                    .from('companies')
-                    .select('*', { count: 'exact', head: true });
+                // Use the dashboard stats view if available, otherwise fallback to individual queries
+                const { data: stats, error } = await supabase
+                    .from('admin_dashboard_stats')
+                    .select('*')
+                    .single();
                 
-                const { count: usersCount } = await supabase
-                    .from('user_profiles')
-                    .select('*', { count: 'exact', head: true });
+                if (error) {
+                    // Fallback to individual queries
+                    const [companiesResult, usersResult, subscriptionsResult, revenueResult] = await Promise.all([
+                        supabase.from('companies').select('*', { count: 'exact', head: true }),
+                        supabase.from('user_profiles').select('*', { count: 'exact', head: true }),
+                        supabase.from('subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'active'),
+                        supabase.from('subscriptions').select('price').eq('status', 'active')
+                    ]);
+                    
+                    const monthlyRevenue = revenueResult.data?.reduce((sum, sub) => sum + (sub.price || 0), 0) || 0;
+                    
+                    document.getElementById('totalCompanies').textContent = companiesResult.count || 0;
+                    document.getElementById('totalUsers').textContent = usersResult.count || 0;
+                    document.getElementById('activeSubscriptions').textContent = subscriptionsResult.count || 0;
+                    document.getElementById('totalRevenue').textContent = `$${monthlyRevenue.toFixed(2)}`;
+                } else {
+                    // Use view data
+                    document.getElementById('totalCompanies').textContent = stats.total_companies || 0;
+                    document.getElementById('totalUsers').textContent = stats.total_users || 0;
+                    document.getElementById('activeSubscriptions').textContent = stats.active_subscriptions || 0;
+                    document.getElementById('totalRevenue').textContent = `$${(stats.monthly_revenue || 0).toFixed(2)}`;
+                }
                 
-                document.getElementById('totalCompanies').textContent = companiesCount || 0;
-                document.getElementById('totalUsers').textContent = usersCount || 0;
-                document.getElementById('activeSubscriptions').textContent = '0';
-                document.getElementById('totalRevenue').textContent = '$0';
+                // Update change indicators
+                const companiesCount = parseInt(document.getElementById('totalCompanies').textContent);
+                const usersCount = parseInt(document.getElementById('totalUsers').textContent);
+                const revenue = parseFloat(document.getElementById('totalRevenue').textContent.replace('$', ''));
                 
                 document.getElementById('companiesChange').textContent = 
-                    companiesCount > 0 ? `${companiesCount} empresas activas` : 'Listo para comenzar';
+                    companiesCount > 0 ? `${companiesCount} empresas registradas` : 'Listo para comenzar';
                 document.getElementById('usersChange').textContent = 
-                    usersCount > 0 ? `${usersCount} usuarios registrados` : 'Esperando primera empresa';
+                    usersCount > 0 ? `${usersCount} usuarios en el sistema` : 'Esperando primera empresa';
+                document.getElementById('revenueChange').textContent = 
+                    revenue > 0 ? `MRR: $${revenue.toFixed(2)}` : 'Configurando facturación';
                     
                 updateCharts();
             } catch (error) {
                 console.error('Error loading dashboard:', error);
+                await logActivity('error', 'Error al cargar dashboard: ' + error.message);
                 showNotification('error', 'Error', 'No se pudo cargar el dashboard');
             }
         }
@@ -1503,90 +2588,3 @@
                 users = data || [];
                 displayUsers(users);
             } catch (error) {
-                console.error('Error loading users:', error);
-                showNotification('error', 'Error', 'No se pudieron cargar los usuarios');
-                displayUsersError();
-            }
-        }
-
-        function displayUsers(usersList) {
-            const tbody = document.getElementById('usersTableBody');
-            
-            if (!usersList || usersList.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="empty-state">
-                            <div class="empty-icon">👥</div>
-                            <div class="empty-title">No hay usuarios registrados</div>
-                            <div class="empty-description">Los usuarios aparecerán cuando se creen empresas</div>
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-            
-            tbody.innerHTML = usersList.map(user => `
-                <tr data-user-id="${user.id}">
-                    <td>
-                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #6610f2, #d63384); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.9rem;">
-                                ${(user.full_name || user.name || user.email).charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                                <div style="font-weight: 600; color: #1d1d1f;">${user.full_name || user.name || 'Sin nombre'}</div>
-                                <div style="font-size: 0.8rem; color: #86868b;">${user.phone || 'Sin teléfono'}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>${user.email}</td>
-                    <td>${user.companies?.name || 'Sin empresa'}</td>
-                    <td>
-                        <span class="status-badge ${user.role === 'ADMIN' || user.role === 'super_admin' ? 'active' : 'pending'}">
-                            ${user.role || 'USER'}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="status-badge ${user.is_active ? 'active' : 'inactive'}">
-                            ${user.is_active ? 'Activo' : 'Inactivo'}
-                        </span>
-                    </td>
-                    <td>
-                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                            <button onclick="editUser('${user.id}')" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" title="Editar">✏️</button>
-                            <button onclick="toggleUserStatus('${user.id}', ${user.is_active})" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" title="${user.is_active ? 'Desactivar' : 'Activar'}">
-                                ${user.is_active ? '⏸️' : '▶️'}
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function displayUsersError() {
-            const tbody = document.getElementById('usersTableBody');
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="6" class="empty-state">
-                        <div class="empty-icon">⚠️</div>
-                        <div class="empty-title">Error al cargar usuarios</div>
-                        <div class="empty-description">Hubo un problema al conectar con la base de datos</div>
-                        <button onclick="loadUsers()" class="btn-action btn-primary" style="margin-top: 1rem;">Reintentar</button>
-                    </td>
-                </tr>
-            `;
-        }
-
-        // ============================================
-        // COMPANY ACTIONS
-        // ============================================
-        async function handleAddCompany(event) {
-            event.preventDefault();
-            
-            const companyData = {
-                name: document.getElementById('companyName').value,
-                ruc: document.getElementById('companyRuc').value,
-                address: document.getElementById('companyAddress').value,
-                phone: document.getElementById('companyPhone').value,
-                email: document.getElementById('companyEmail').value,
-                domain: document.getElementById('companyDomain').value || document.getElementById('companyEmail').value.split('@')[1],
-                subscription_plan: document.getElementById('companyP
