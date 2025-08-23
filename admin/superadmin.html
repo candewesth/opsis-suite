@@ -1085,8 +1085,78 @@
             </div>
         </div>
 
-        <!-- Otros tabs permanecen igual... -->
+        <!-- Subscriptions Tab -->
+        <div id="subscriptions-tab" class="tab-content">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 class="table-title">Gestión de Suscripciones</h3>
+                    <div class="table-actions">
+                        <input type="text" placeholder="Buscar suscripción..." class="form-input" style="width: 250px;" onkeyup="searchSubscriptions(this.value)">
+                    </div>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Empresa</th>
+                            <th>Plan</th>
+                            <th>Precio</th>
+                            <th>Inicio</th>
+                            <th>Vencimiento</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subscriptionsTableBody">
+                        <!-- Subscriptions will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
+        <!-- Other tabs remain the same structure but empty for now -->
+        <div id="payments-tab" class="tab-content">
+            <div class="table-container">
+                <h3 class="table-title">Gestión de Pagos</h3>
+                <div class="empty-state">
+                    <div class="empty-icon">💳</div>
+                    <div class="empty-title">Módulo en desarrollo</div>
+                    <div class="empty-description">La gestión de pagos estará disponible próximamente</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="reports-tab" class="tab-content">
+            <div class="table-container">
+                <h3 class="table-title">Reportes y Analytics</h3>
+                <div class="empty-state">
+                    <div class="empty-icon">📊</div>
+                    <div class="empty-title">Módulo en desarrollo</div>
+                    <div class="empty-description">Los reportes avanzados estarán disponibles próximamente</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="activity-tab" class="tab-content">
+            <div class="table-container">
+                <h3 class="table-title">Registro de Actividad</h3>
+                <div class="empty-state">
+                    <div class="empty-icon">📝</div>
+                    <div class="empty-title">Módulo en desarrollo</div>
+                    <div class="empty-description">El registro de actividad estará disponible próximamente</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="settings-tab" class="tab-content">
+            <div class="table-container">
+                <h3 class="table-title">Configuración del Sistema</h3>
+                <div class="empty-state">
+                    <div class="empty-icon">⚙️</div>
+                    <div class="empty-title">Módulo en desarrollo</div>
+                    <div class="empty-description">La configuración del sistema estará disponible próximamente</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Modals -->
@@ -1226,8 +1296,8 @@
             try {
                 const { data: { user } } = await supabase.auth.getUser();
                 if (!user) {
-                    // Redirigir al login - ajustar según tu estructura de archivos
-                    window.location.href = 'login.html'; // Sin la barra inicial
+                    // Redirigir al login con URL completa
+                    window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
                     return;
                 }
                 currentUser = user;
@@ -1244,7 +1314,7 @@
                 if (user.email !== 'admin@opsis-suite.com' && profile?.role !== 'super_admin') {
                     showNotification('error', 'Acceso Denegado', 'No tienes permisos de Super Admin');
                     await supabase.auth.signOut();
-                    window.location.href = 'login.html';
+                    window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
                     return;
                 }
                 
@@ -1254,7 +1324,7 @@
                 // Si no hay usuario autenticado, redirigir al login
                 const { data: { user } } = await supabase.auth.getUser();
                 if (!user) {
-                    window.location.href = 'login.html';
+                    window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
                 }
             }
         }
@@ -1270,13 +1340,13 @@
                     localStorage.clear();
                     sessionStorage.clear();
                     
-                    // Redirigir al login - ajustar la ruta según tu estructura
-                    window.location.href = 'login.html';
+                    // Redirigir al login con la URL completa
+                    window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
                 }
             } catch (error) {
                 console.error('Error en signOut:', error);
                 // Forzar redirección aunque haya error
-                window.location.href = 'login.html';
+                window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
             }
         }
 
@@ -1585,464 +1655,4 @@
                     await supabase
                         .from('user_profiles')
                         .insert({
-                            user_id: authUser.user.id,
-                            email: userData.email,
-                            full_name: document.getElementById('userName').value,
-                            name: document.getElementById('userName').value,
-                            company_id: document.getElementById('userCompany').value,
-                            role: document.getElementById('userRole').value,
-                            is_active: true
-                        });
-                }
-                
-                await logActivity('create', `Nuevo usuario creado: ${userData.email}`);
-                
-                showNotification('success', 'Éxito', 'Usuario creado exitosamente');
-                closeModal('addUserModal');
-                loadUsers();
-            } catch (error) {
-                console.error('Error creating user:', error);
-                showNotification('error', 'Error', 'No se pudo crear el usuario');
-            }
-        }
-
-        // ============================================
-        // HELPER FUNCTIONS
-        // ============================================
-        function getPlanPrice(plan) {
-            const prices = {
-                'warehouse_basic': 49,
-                'warehouse_pro': 149,
-                'suite_standard': 249,
-                'suite_premium': 499,
-                'enterprise': 999
-            };
-            return prices[plan] || 49;
-        }
-
-        function getModulesForPlan(plan) {
-            const modules = {
-                'warehouse_basic': ['equipment', 'loans', 'maintenance'],
-                'warehouse_pro': ['equipment', 'loans', 'maintenance', 'reports'],
-                'suite_standard': ['equipment', 'loans', 'maintenance', 'reports', 'projects'],
-                'suite_premium': ['equipment', 'loans', 'maintenance', 'reports', 'projects', 'finance'],
-                'enterprise': ['all']
-            };
-            return modules[plan] || ['equipment'];
-        }
-
-        async function logActivity(type, description) {
-            try {
-                await supabase.from('admin_activity_logs').insert([{
-                    user_id: currentUser?.id,
-                    action_type: type,
-                    description: description
-                }]);
-            } catch (error) {
-                console.error('Error logging activity:', error);
-            }
-        }
-
-        async function toggleUserStatus(userId, currentStatus) {
-            try {
-                const { error } = await supabase
-                    .from('user_profiles')
-                    .update({ is_active: !currentStatus })
-                    .eq('id', userId);
-                
-                if (error) throw error;
-                
-                await logActivity('update', `Estado de usuario actualizado`);
-                showNotification('success', 'Éxito', 'Estado actualizado');
-                loadUsers();
-            } catch (error) {
-                console.error('Error updating user status:', error);
-                showNotification('error', 'Error', 'No se pudo actualizar el estado');
-            }
-        }
-
-        async function deleteCompany(companyId) {
-            if (!confirm('¿Estás seguro de eliminar esta empresa? Esta acción no se puede deshacer.')) return;
-            
-            try {
-                const { error } = await supabase
-                    .from('companies')
-                    .delete()
-                    .eq('id', companyId);
-                
-                if (error) throw error;
-                
-                await logActivity('delete', 'Empresa eliminada');
-                showNotification('success', 'Éxito', 'Empresa eliminada');
-                loadCompanies();
-                loadDashboard();
-            } catch (error) {
-                console.error('Error deleting company:', error);
-                showNotification('error', 'Error', 'No se pudo eliminar la empresa');
-            }
-        }
-
-        function showNotification(type, title, message) {
-            const notification = document.getElementById('notification');
-            const notificationTitle = document.getElementById('notificationTitle');
-            const notificationMessage = document.getElementById('notificationMessage');
-            
-            notification.className = `notification ${type} show`;
-            notificationTitle.textContent = title;
-            notificationMessage.textContent = message;
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('show');
-        }
-
-        function showAddCompanyModal() {
-            document.getElementById('addCompanyModal').classList.add('show');
-        }
-
-        function showAddUserModal() {
-            loadCompaniesForSelect();
-            document.getElementById('addUserModal').classList.add('show');
-        }
-
-        async function loadCompaniesForSelect() {
-            const { data: companies } = await supabase
-                .from('companies')
-                .select('id, name')
-                .eq('status', 'active');
-            
-            const select = document.getElementById('userCompany');
-            select.innerHTML = companies?.map(c => 
-                `<option value="${c.id}">${c.name}</option>`
-            ).join('') || '<option value="">No hay empresas</option>';
-        }
-
-        // Search and Filter Functions
-        function searchCompanies(term) {
-            const filtered = companies.filter(c => 
-                c.name.toLowerCase().includes(term.toLowerCase()) ||
-                c.ruc?.includes(term)
-            );
-            displayCompanies(filtered);
-        }
-
-        function searchUsers(term) {
-            const filtered = users.filter(u => 
-                u.full_name?.toLowerCase().includes(term.toLowerCase()) ||
-                u.name?.toLowerCase().includes(term.toLowerCase()) ||
-                u.email?.toLowerCase().includes(term.toLowerCase())
-            );
-            displayUsers(filtered);
-        }
-
-        function filterUsers(type, btn) {
-            document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
-            btn.classList.add('active');
-            
-            let filtered = users;
-            if (type === 'active') filtered = users.filter(u => u.is_active);
-            if (type === 'inactive') filtered = users.filter(u => !u.is_active);
-            if (type === 'admin') filtered = users.filter(u => u.role === 'ADMIN');
-            
-            displayUsers(filtered);
-        }
-
-        // Charts
-        function initCharts() {
-            const usersCtx = document.getElementById('usersChart')?.getContext('2d');
-            const revenueCtx = document.getElementById('revenueChart')?.getContext('2d');
-            
-            if (usersCtx) {
-                usersChart = new Chart(usersCtx, {
-                    type: 'line',
-                    data: {
-                        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-                        datasets: [{
-                            label: 'Usuarios',
-                            data: [0, 0, 0, 0, 0, 0],
-                            borderColor: '#20c997',
-                            backgroundColor: 'rgba(32, 201, 151, 0.1)',
-                            tension: 0.3
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: { display: false }
-                        }
-                    }
-                });
-            }
-            
-            if (revenueCtx) {
-                revenueChart = new Chart(revenueCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-                        datasets: [{
-                            label: 'Ingresos',
-                            data: [0, 0, 0, 0, 0, 0],
-                            backgroundColor: 'rgba(73, 80, 87, 0.8)'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: { display: false }
-                        }
-                    }
-                });
-            }
-        }
-
-        async function updateCharts() {
-            // Obtener datos reales de los últimos 6 meses
-            const sixMonthsAgo = new Date();
-            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-            
-            try {
-                // Obtener crecimiento de usuarios por mes
-                const { data: usersByMonth } = await supabase
-                    .from('user_profiles')
-                    .select('created_at')
-                    .gte('created_at', sixMonthsAgo.toISOString());
-                
-                // Procesar datos por mes
-                const monthlyUsers = processMonthlyData(usersByMonth);
-                
-                // Obtener ingresos por mes
-                const { data: paymentsByMonth } = await supabase
-                    .from('payments')
-                    .select('amount, created_at')
-                    .eq('status', 'completed')
-                    .gte('created_at', sixMonthsAgo.toISOString());
-                
-                const monthlyRevenue = processMonthlyRevenue(paymentsByMonth);
-                
-                // Actualizar gráficos
-                if (usersChart) {
-                    usersChart.data.datasets[0].data = monthlyUsers;
-                    usersChart.update();
-                }
-                
-                if (revenueChart) {
-                    revenueChart.data.datasets[0].data = monthlyRevenue;
-                    revenueChart.update();
-                }
-            } catch (error) {
-                console.error('Error updating charts:', error);
-                // Usar datos de ejemplo si hay error
-                if (usersChart) {
-                    usersChart.data.datasets[0].data = [5, 12, 18, 25, 32, 40];
-                    usersChart.update();
-                }
-                
-                if (revenueChart) {
-                    revenueChart.data.datasets[0].data = [500, 1200, 1800, 2500, 3200, 4000];
-                    revenueChart.update();
-                }
-            }
-        }
-
-        function processMonthlyData(data) {
-            const months = {};
-            const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'];
-            const currentMonth = new Date().getMonth();
-            
-            // Inicializar contadores
-            for (let i = 5; i >= 0; i--) {
-                const monthIndex = (currentMonth - i + 12) % 12;
-                months[monthNames[monthIndex]] = 0;
-            }
-            
-            // Contar usuarios por mes
-            data?.forEach(item => {
-                const date = new Date(item.created_at);
-                const monthName = monthNames[date.getMonth()];
-                if (months[monthName] !== undefined) {
-                    months[monthName]++;
-                }
-            });
-            
-            return Object.values(months);
-        }
-
-        function processMonthlyRevenue(data) {
-            const months = {};
-            const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'];
-            const currentMonth = new Date().getMonth();
-            
-            // Inicializar sumas
-            for (let i = 5; i >= 0; i--) {
-                const monthIndex = (currentMonth - i + 12) % 12;
-                months[monthNames[monthIndex]] = 0;
-            }
-            
-            // Sumar ingresos por mes
-            data?.forEach(payment => {
-                const date = new Date(payment.created_at);
-                const monthName = monthNames[date.getMonth()];
-                if (months[monthName] !== undefined) {
-                    months[monthName] += payment.amount || 0;
-                }
-            });
-            
-            return Object.values(months);
-        }
-
-        // Subscriptions Management
-        async function loadSubscriptions() {
-            try {
-                const { data, error } = await supabase
-                    .from('subscriptions')
-                    .select(`
-                        *,
-                        companies (name)
-                    `)
-                    .order('created_at', { ascending: false });
-                
-                if (error) throw error;
-                
-                subscriptions = data || [];
-                displaySubscriptions(subscriptions);
-            } catch (error) {
-                console.error('Error loading subscriptions:', error);
-                showNotification('error', 'Error', 'No se pudieron cargar las suscripciones');
-            }
-        }
-
-        function displaySubscriptions(subscriptionsList) {
-            const tbody = document.getElementById('subscriptionsTableBody');
-            
-            if (!subscriptionsList || subscriptionsList.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="7" class="empty-state">
-                            <div class="empty-icon">💳</div>
-                            <div class="empty-title">No hay suscripciones</div>
-                            <div class="empty-description">Las suscripciones aparecerán aquí</div>
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-            
-            tbody.innerHTML = subscriptionsList.map(sub => {
-                const startDate = new Date(sub.start_date).toLocaleDateString();
-                const endDate = new Date(sub.end_date).toLocaleDateString();
-                
-                return `
-                    <tr>
-                        <td>${sub.companies?.name || 'N/A'}</td>
-                        <td><span class="status-badge active">${sub.plan_name}</span></td>
-                        <td>${sub.price}</td>
-                        <td>${startDate}</td>
-                        <td>${endDate}</td>
-                        <td>
-                            <span class="status-badge ${sub.status === 'active' ? 'active' : sub.status === 'expired' ? 'inactive' : 'pending'}">
-                                ${sub.status === 'active' ? 'Activa' : sub.status === 'expired' ? 'Expirada' : 'Pendiente'}
-                            </span>
-                        </td>
-                        <td>
-                            <button onclick="renewSubscription('${sub.id}')" class="btn-action btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Renovar</button>
-                            <button onclick="cancelSubscription('${sub.id}')" class="btn-action btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem; background: #dc3545; color: white;">Cancelar</button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        async function renewSubscription(subscriptionId) {
-            try {
-                const { data: subscription } = await supabase
-                    .from('subscriptions')
-                    .select('*')
-                    .eq('id', subscriptionId)
-                    .single();
-                
-                const newEndDate = new Date(subscription.end_date);
-                newEndDate.setMonth(newEndDate.getMonth() + 1);
-                
-                const { error } = await supabase
-                    .from('subscriptions')
-                    .update({
-                        end_date: newEndDate.toISOString(),
-                        status: 'active'
-                    })
-                    .eq('id', subscriptionId);
-                
-                if (error) throw error;
-                
-                await logActivity('update', 'Suscripción renovada');
-                showNotification('success', 'Éxito', 'Suscripción renovada');
-                loadSubscriptions();
-            } catch (error) {
-                console.error('Error renewing subscription:', error);
-                showNotification('error', 'Error', 'No se pudo renovar la suscripción');
-            }
-        }
-
-        async function cancelSubscription(subscriptionId) {
-            if (!confirm('¿Estás seguro de cancelar esta suscripción?')) return;
-            
-            try {
-                const { error } = await supabase
-                    .from('subscriptions')
-                    .update({ status: 'cancelled' })
-                    .eq('id', subscriptionId);
-                
-                if (error) throw error;
-                
-                await logActivity('update', 'Suscripción cancelada');
-                showNotification('success', 'Éxito', 'Suscripción cancelada');
-                loadSubscriptions();
-            } catch (error) {
-                console.error('Error cancelling subscription:', error);
-                showNotification('error', 'Error', 'No se pudo cancelar la suscripción');
-            }
-        }
-
-        // Placeholder functions para otras características
-        async function loadPayments() {
-            // Implementar cuando se tenga la tabla de pagos
-            console.log('Loading payments...');
-        }
-
-        async function loadActivity() {
-            try {
-                const { data, error } = await supabase
-                    .from('admin_activity_logs')
-                    .select(`
-                        *,
-                        user_profiles!user_id (full_name, email, name)
-                    `)
-                    .order('created_at', { ascending: false })
-                    .limit(50);
-                
-                if (error) throw error;
-                
-                activityLogs = data || [];
-                // displayActivity(activityLogs);
-            } catch (error) {
-                console.error('Error loading activity:', error);
-            }
-        }
-
-        async function loadSettings() {
-            // Implementar configuración del sistema
-            console.log('Loading settings...');
-        }
-
-        function editCompany(id) {
-            // Implementar edición de empresa
-            console.log('Edit company:', id);
-        }
-
-        function editUser(id) {
-            // Implementar edición de usuario
-            console.log('Edit user:', id);
-        }
+                            user_id: authUser
