@@ -595,7 +595,7 @@
                 
                 <div id="errorMessage" class="error-message"></div>
 
-                <form id="authForm" onsubmit="return handleSupabaseLogin(event)">
+                <form id="authForm" onsubmit="return handleSupabaseLogin(event)" autocomplete="off">
                     <div class="form-group">
                         <label for="email" class="form-label" id="emailLabel">Email Address</label>
                         <input 
@@ -604,7 +604,7 @@
                             class="form-input" 
                             placeholder="Enter your work email"
                             required
-                            autocomplete="email"
+                            autocomplete="off"
                             oninput="detectCompanyByEmail(this.value)"
                         >
                     </div>
@@ -617,7 +617,7 @@
                             class="form-input" 
                             placeholder="Enter your password"
                             required
-                            autocomplete="current-password"
+                            autocomplete="new-password"
                         >
                     </div>
 
@@ -1000,9 +1000,23 @@
 
         // Verificar sesión existente al cargar
         document.addEventListener('DOMContentLoaded', async function() {
-            document.getElementById('email').focus();
-
-            // Verificar si hay sesión activa y redirigir automáticamente
+            // Primero limpiar los campos para evitar autocompletado
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+            
+            // Verificar parámetro de logout en URL
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('logout') === 'true') {
+                await supabase.auth.signOut();
+                sessionStorage.clear();
+                localStorage.clear();
+                // Limpiar el parámetro de la URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+                console.log('Logged out successfully');
+                return;
+            }
+            
+            // Solo verificar sesión si no es un logout explícito
             try {
                 const { data: { user } } = await supabase.auth.getUser();
                 
@@ -1017,32 +1031,44 @@
                         .single();
                     
                     if (profile && !profileError) {
-                        console.log('User profile found:', profile.role);
+                        console.log('User profile found:', profile.role, 'for user:', user.email);
                         
-                        // Solo redirigir si tenemos un perfil válido
-                        if (profile.role === 'super_admin') {
-                            console.log('Redirecting to super admin panel...');
+                        // Solo redirigir si tenemos un perfil válido Y no es admin@opsis-suite.com a menos que realmente sea super_admin
+                        if (profile.role === 'super_admin' && user.email === 'admin@opsis-suite.com') {
+                            console.log('Redirecting super admin to control panel...');
                             window.location.href = 'https://candewesth.github.io/opsis-suite/admin/superadmin.html';
-                        } else if (profile.companies && profile.companies.slug) {
+                        } else if (profile.companies && profile.companies.slug && profile.role !== 'super_admin') {
                             console.log('Redirecting to company dashboard:', profile.companies.slug);
                             window.location.href = `https://candewesth.github.io/opsis-suite/dashboard/template.html?company=${profile.companies.slug}`;
                         } else {
-                            console.log('No valid redirect found, staying on login');
-                            // Si no hay empresa válida, hacer logout para limpiar
+                            console.log('Session found but no valid redirect, clearing session');
+                            // Si no hay redirección válida, limpiar sesión
                             await supabase.auth.signOut();
+                            sessionStorage.clear();
+                            localStorage.clear();
                         }
                     } else {
-                        console.log('No profile found for user, staying on login');
-                        // Si no hay perfil, hacer logout para limpiar
+                        console.log('No valid profile found, clearing session');
+                        // Si no hay perfil válido, limpiar sesión
                         await supabase.auth.signOut();
+                        sessionStorage.clear();
+                        localStorage.clear();
                     }
                 } else {
-                    console.log('No active session, showing login form');
+                    console.log('No active session, ready for login');
                 }
             } catch (error) {
                 console.error('Error checking session:', error);
-                // En caso de error, simplemente mostrar el login
+                // En caso de error, limpiar todo
+                await supabase.auth.signOut();
+                sessionStorage.clear();
+                localStorage.clear();
             }
+            
+            // Focus en el campo email después de todo
+            setTimeout(() => {
+                document.getElementById('email').focus();
+            }, 100);
         });
 
         // Listener para cambios de autenticación
