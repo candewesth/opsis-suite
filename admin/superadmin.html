@@ -532,37 +532,6 @@
             margin-bottom: 2rem;
         }
 
-        /* Search Bar */
-        .search-container {
-            position: relative;
-            margin-bottom: 2rem;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 1.2rem 1.5rem 1.2rem 3.5rem;
-            background: #f8f9fa;
-            border: 1px solid rgba(0,0,0,0.08);
-            border-radius: 20px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: #20c997;
-            background: white;
-            box-shadow: 0 0 20px rgba(32, 201, 151, 0.1);
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 1.5rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #86868b;
-        }
-
         /* Filter Pills */
         .filter-pills {
             display: flex;
@@ -850,6 +819,15 @@
             to { transform: rotate(360deg); }
         }
 
+        /* Settings Section */
+        .settings-section {
+            display: none;
+        }
+
+        .settings-section.active {
+            display: block;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .container {
@@ -1031,21 +1009,38 @@
                     <div class="table-actions">
                         <input type="text" placeholder="Buscar empresa..." class="form-input" style="width: 250px;" onkeyup="searchCompanies(this.value)">
                         <button class="btn-action btn-primary" onclick="showAddCompanyModal()">Nueva Empresa</button>
+                        <button class="btn-action btn-secondary" onclick="exportCompanies()">Exportar</button>
                     </div>
                 </div>
+                
+                <!-- Filter Pills -->
+                <div class="filter-pills">
+                    <button class="filter-pill active" onclick="filterCompanies('all', this)">Todas</button>
+                    <button class="filter-pill" onclick="filterCompanies('active', this)">Activas</button>
+                    <button class="filter-pill" onclick="filterCompanies('inactive', this)">Inactivas</button>
+                    <button class="filter-pill" onclick="filterCompanies('trial', this)">En Prueba</button>
+                </div>
+
                 <table class="table">
                     <thead>
                         <tr>
                             <th>Empresa</th>
                             <th>RUC</th>
+                            <th>Email</th>
                             <th>Plan</th>
                             <th>Usuarios</th>
+                            <th>Creada</th>
                             <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="companiesTableBody">
-                        <!-- Companies will be loaded here -->
+                        <tr>
+                            <td colspan="8" style="text-align: center; padding: 2rem;">
+                                <div class="loading-spinner"></div>
+                                <p style="margin-top: 1rem; color: #86868b;">Cargando empresas...</p>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -1059,14 +1054,17 @@
                     <div class="table-actions">
                         <input type="text" placeholder="Buscar usuario..." class="form-input" style="width: 250px;" onkeyup="searchUsers(this.value)">
                         <button class="btn-action btn-primary" onclick="showAddUserModal()">Nuevo Usuario</button>
+                        <button class="btn-action btn-secondary" onclick="exportUsers()">Exportar</button>
                     </div>
                 </div>
+                
                 <div class="filter-pills">
                     <button class="filter-pill active" onclick="filterUsers('all', this)">Todos</button>
                     <button class="filter-pill" onclick="filterUsers('active', this)">Activos</button>
                     <button class="filter-pill" onclick="filterUsers('inactive', this)">Inactivos</button>
                     <button class="filter-pill" onclick="filterUsers('admin', this)">Administradores</button>
                 </div>
+                
                 <table class="table">
                     <thead>
                         <tr>
@@ -1079,46 +1077,34 @@
                         </tr>
                     </thead>
                     <tbody id="usersTableBody">
-                        <!-- Users will be loaded here -->
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 2rem;">
+                                <div class="loading-spinner"></div>
+                                <p style="margin-top: 1rem; color: #86868b;">Cargando usuarios...</p>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Subscriptions Tab -->
+        <!-- Other Tabs -->
         <div id="subscriptions-tab" class="tab-content">
             <div class="table-container">
-                <div class="table-header">
-                    <h3 class="table-title">Gestión de Suscripciones</h3>
-                    <div class="table-actions">
-                        <input type="text" placeholder="Buscar suscripción..." class="form-input" style="width: 250px;" onkeyup="searchSubscriptions(this.value)">
-                    </div>
+                <h3 class="table-title">Gestión de Suscripciones</h3>
+                <div class="empty-state">
+                    <div class="empty-icon">💳</div>
+                    <div class="empty-title">Módulo en desarrollo</div>
+                    <div class="empty-description">La gestión de suscripciones estará disponible próximamente</div>
                 </div>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Empresa</th>
-                            <th>Plan</th>
-                            <th>Precio</th>
-                            <th>Inicio</th>
-                            <th>Vencimiento</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="subscriptionsTableBody">
-                        <!-- Subscriptions will be loaded here -->
-                    </tbody>
-                </table>
             </div>
         </div>
 
-        <!-- Other tabs remain the same structure but empty for now -->
         <div id="payments-tab" class="tab-content">
             <div class="table-container">
                 <h3 class="table-title">Gestión de Pagos</h3>
                 <div class="empty-state">
-                    <div class="empty-icon">💳</div>
+                    <div class="empty-icon">💰</div>
                     <div class="empty-title">Módulo en desarrollo</div>
                     <div class="empty-description">La gestión de pagos estará disponible próximamente</div>
                 </div>
@@ -1264,7 +1250,7 @@
 
     <script>
         // ============================================
-        // CONFIGURACIÓN DE SUPABASE CON TUS CREDENCIALES
+        // CONFIGURACIÓN DE SUPABASE
         // ============================================
         const SUPABASE_URL = 'https://lmmlhncwdwjgtkdqaycv.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxtbWxobmN3ZHdqZ3RrZHFheWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU0MDE4ODYsImV4cCI6MjA3MDk3Nzg4Nn0.vhL5E-o9RtjEtrYTOdFCvhXs5mu5fuuAtB13LCd6dJQ';
@@ -1274,11 +1260,6 @@
         let currentUser = null;
         let companies = [];
         let users = [];
-        let subscriptions = [];
-        let payments = [];
-        let activityLogs = [];
-
-        // Charts
         let usersChart = null;
         let revenueChart = null;
 
@@ -1290,27 +1271,24 @@
         });
 
         // ============================================
-        // AUTHENTICATION - ACTUALIZADO PARA user_profiles
+        // AUTHENTICATION
         // ============================================
         async function checkAuth() {
             try {
                 const { data: { user } } = await supabase.auth.getUser();
                 if (!user) {
-                    // Redirigir al login con URL completa
                     window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
                     return;
                 }
                 currentUser = user;
                 document.getElementById('adminEmail').textContent = user.email;
                 
-                // Verificar si es super admin en user_profiles
                 const { data: profile } = await supabase
                     .from('user_profiles')
                     .select('*')
                     .eq('user_id', user.id)
                     .single();
                 
-                // Para desarrollo, permitir acceso si es admin@opsis-suite.com
                 if (user.email !== 'admin@opsis-suite.com' && profile?.role !== 'super_admin') {
                     showNotification('error', 'Acceso Denegado', 'No tienes permisos de Super Admin');
                     await supabase.auth.signOut();
@@ -1321,11 +1299,7 @@
                 document.getElementById('adminName').textContent = profile?.full_name || profile?.name || 'Super Admin';
             } catch (error) {
                 console.error('Auth error:', error);
-                // Si no hay usuario autenticado, redirigir al login
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) {
-                    window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
-                }
+                window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
             }
         }
 
@@ -1336,39 +1310,31 @@
                     console.error('Error al cerrar sesión:', error);
                     showNotification('error', 'Error', 'No se pudo cerrar sesión');
                 } else {
-                    // Limpiar cualquier dato local
                     localStorage.clear();
                     sessionStorage.clear();
-                    
-                    // Redirigir al login con la URL completa
                     window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
                 }
             } catch (error) {
                 console.error('Error en signOut:', error);
-                // Forzar redirección aunque haya error
                 window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
             }
         }
 
-        // Tab Navigation
+        // ============================================
+        // TAB NAVIGATION
+        // ============================================
         function switchTab(tabName) {
-            // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
             
-            // Remove active from all nav tabs
             document.querySelectorAll('.nav-tab').forEach(tab => {
                 tab.classList.remove('active');
             });
             
-            // Show selected tab
             document.getElementById(`${tabName}-tab`).classList.add('active');
-            
-            // Mark nav tab as active
             event.target.classList.add('active');
             
-            // Load tab data
             loadTabData(tabName);
         }
 
@@ -1383,64 +1349,32 @@
                 case 'users':
                     await loadUsers();
                     break;
-                case 'subscriptions':
-                    await loadSubscriptions();
-                    break;
-                case 'payments':
-                    await loadPayments();
-                    break;
-                case 'activity':
-                    await loadActivity();
-                    break;
-                case 'settings':
-                    await loadSettings();
-                    break;
             }
         }
 
         // ============================================
-        // DASHBOARD FUNCTIONS - ACTUALIZADO
+        // DASHBOARD FUNCTIONS
         // ============================================
         async function loadDashboard() {
             try {
-                // Load companies count
                 const { count: companiesCount } = await supabase
                     .from('companies')
                     .select('*', { count: 'exact', head: true });
                 
-                // Load users count from user_profiles
                 const { count: usersCount } = await supabase
                     .from('user_profiles')
                     .select('*', { count: 'exact', head: true });
                 
-                // Load active subscriptions
-                const { count: subscriptionsCount } = await supabase
-                    .from('subscriptions')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('status', 'active');
-                
-                // Calculate monthly revenue
-                const { data: activeSubscriptions } = await supabase
-                    .from('subscriptions')
-                    .select('price')
-                    .eq('status', 'active');
-                
-                const monthlyRevenue = activeSubscriptions?.reduce((sum, sub) => sum + (sub.price || 0), 0) || 0;
-                
-                // Update UI
                 document.getElementById('totalCompanies').textContent = companiesCount || 0;
                 document.getElementById('totalUsers').textContent = usersCount || 0;
-                document.getElementById('activeSubscriptions').textContent = subscriptionsCount || 0;
-                document.getElementById('totalRevenue').textContent = `$${monthlyRevenue.toFixed(2)}`;
+                document.getElementById('activeSubscriptions').textContent = '0';
+                document.getElementById('totalRevenue').textContent = '$0';
                 
-                // Update change indicators
                 document.getElementById('companiesChange').textContent = 
                     companiesCount > 0 ? `${companiesCount} empresas activas` : 'Listo para comenzar';
                 document.getElementById('usersChange').textContent = 
                     usersCount > 0 ? `${usersCount} usuarios registrados` : 'Esperando primera empresa';
-                document.getElementById('revenueChange').textContent = 
-                    monthlyRevenue > 0 ? `+${((monthlyRevenue / 100) * 12).toFixed(1)}% este mes` : 'Creciendo desde cero';
-                
+                    
                 updateCharts();
             } catch (error) {
                 console.error('Error loading dashboard:', error);
@@ -1449,7 +1383,7 @@
         }
 
         // ============================================
-        // COMPANIES MANAGEMENT - ACTUALIZADO
+        // COMPANIES MANAGEMENT
         // ============================================
         async function loadCompanies() {
             try {
@@ -1468,6 +1402,7 @@
             } catch (error) {
                 console.error('Error loading companies:', error);
                 showNotification('error', 'Error', 'No se pudieron cargar las empresas');
+                displayCompaniesError();
             }
         }
 
@@ -1477,37 +1412,81 @@
             if (!companiesList || companiesList.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="6" class="empty-state">
+                        <td colspan="8" class="empty-state">
                             <div class="empty-icon">🏢</div>
-                            <div class="empty-title">No hay empresas</div>
+                            <div class="empty-title">No hay empresas registradas</div>
                             <div class="empty-description">Agrega la primera empresa para comenzar</div>
+                            <button onclick="showAddCompanyModal()" class="btn-action btn-primary" style="margin-top: 1rem;">Agregar Primera Empresa</button>
                         </td>
                     </tr>
                 `;
                 return;
             }
             
-            tbody.innerHTML = companiesList.map(company => `
+            tbody.innerHTML = companiesList.map(company => {
+                const userCount = company.user_profiles?.length || 0;
+                const createdDate = new Date(company.created_at).toLocaleDateString('es-ES');
+                
+                return `
+                    <tr data-company-id="${company.id}">
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="width: 40px; height: 40px; border-radius: 8px; background: linear-gradient(135deg, #20c997, #17a2b8); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.1rem;">
+                                    ${company.name.charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; color: #1d1d1f;">${company.name}</div>
+                                    <div style="font-size: 0.85rem; color: #86868b;">${company.domain || 'Sin dominio'}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${company.ruc || 'N/A'}</td>
+                        <td>${company.email}</td>
+                        <td>
+                            <span class="status-badge active">
+                                ${company.subscription_plan || 'Sin plan'}
+                            </span>
+                        </td>
+                        <td>
+                            <span style="font-weight: 600;">${userCount}</span>
+                            <span style="color: #86868b; font-size: 0.85rem;">/ ${company.max_users || 'ilimitado'}</span>
+                        </td>
+                        <td style="color: #86868b; font-size: 0.9rem;">${createdDate}</td>
+                        <td>
+                            <span class="status-badge ${company.status === 'active' ? 'active' : 'inactive'}">
+                                ${company.status === 'active' ? 'Activa' : 'Inactiva'}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <button onclick="editCompany('${company.id}')" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" title="Editar">✏️</button>
+                                <button onclick="toggleCompanyStatus('${company.id}', '${company.status}')" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" title="${company.status === 'active' ? 'Desactivar' : 'Activar'}">
+                                    ${company.status === 'active' ? '⏸️' : '▶️'}
+                                </button>
+                                <button onclick="deleteCompany('${company.id}', '${company.name}')" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: #dc3545; color: white;" title="Eliminar">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function displayCompaniesError() {
+            const tbody = document.getElementById('companiesTableBody');
+            tbody.innerHTML = `
                 <tr>
-                    <td>${company.name}</td>
-                    <td>${company.ruc || 'N/A'}</td>
-                    <td><span class="status-badge active">${company.subscription_plan || 'Básico'}</span></td>
-                    <td>${company.user_profiles?.length || 0} usuarios</td>
-                    <td>
-                        <span class="status-badge ${company.status === 'active' ? 'active' : 'inactive'}">
-                            ${company.status === 'active' ? 'Activa' : 'Inactiva'}
-                        </span>
-                    </td>
-                    <td>
-                        <button onclick="editCompany('${company.id}')" class="btn-action btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Editar</button>
-                        <button onclick="deleteCompany('${company.id}')" class="btn-action btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem; background: #dc3545; color: white;">Eliminar</button>
+                    <td colspan="8" class="empty-state">
+                        <div class="empty-icon">⚠️</div>
+                        <div class="empty-title">Error al cargar empresas</div>
+                        <div class="empty-description">Hubo un problema al conectar con la base de datos</div>
+                        <button onclick="loadCompanies()" class="btn-action btn-primary" style="margin-top: 1rem;">Reintentar</button>
                     </td>
                 </tr>
-            `).join('');
+            `;
         }
 
         // ============================================
-        // USERS MANAGEMENT - ACTUALIZADO
+        // USERS MANAGEMENT
         // ============================================
         async function loadUsers() {
             try {
@@ -1515,7 +1494,7 @@
                     .from('user_profiles')
                     .select(`
                         *,
-                        companies (name)
+                        companies (name, id)
                     `)
                     .order('created_at', { ascending: false });
                 
@@ -1526,6 +1505,7 @@
             } catch (error) {
                 console.error('Error loading users:', error);
                 showNotification('error', 'Error', 'No se pudieron cargar los usuarios');
+                displayUsersError();
             }
         }
 
@@ -1537,8 +1517,8 @@
                     <tr>
                         <td colspan="6" class="empty-state">
                             <div class="empty-icon">👥</div>
-                            <div class="empty-title">No hay usuarios</div>
-                            <div class="empty-description">Los usuarios aparecerán aquí</div>
+                            <div class="empty-title">No hay usuarios registrados</div>
+                            <div class="empty-description">Los usuarios aparecerán cuando se creen empresas</div>
                         </td>
                     </tr>
                 `;
@@ -1546,26 +1526,58 @@
             }
             
             tbody.innerHTML = usersList.map(user => `
-                <tr>
-                    <td>${user.full_name || user.name || 'N/A'}</td>
+                <tr data-user-id="${user.id}">
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #6610f2, #d63384); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.9rem;">
+                                ${(user.full_name || user.name || user.email).charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <div style="font-weight: 600; color: #1d1d1f;">${user.full_name || user.name || 'Sin nombre'}</div>
+                                <div style="font-size: 0.8rem; color: #86868b;">${user.phone || 'Sin teléfono'}</div>
+                            </div>
+                        </div>
+                    </td>
                     <td>${user.email}</td>
                     <td>${user.companies?.name || 'Sin empresa'}</td>
-                    <td><span class="status-badge ${user.role === 'ADMIN' ? 'active' : 'pending'}">${user.role || 'USER'}</span></td>
+                    <td>
+                        <span class="status-badge ${user.role === 'ADMIN' || user.role === 'super_admin' ? 'active' : 'pending'}">
+                            ${user.role || 'USER'}
+                        </span>
+                    </td>
                     <td>
                         <span class="status-badge ${user.is_active ? 'active' : 'inactive'}">
                             ${user.is_active ? 'Activo' : 'Inactivo'}
                         </span>
                     </td>
                     <td>
-                        <button onclick="editUser('${user.id}')" class="btn-action btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Editar</button>
-                        <button onclick="toggleUserStatus('${user.id}', ${user.is_active})" class="btn-action btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">${user.is_active ? 'Desactivar' : 'Activar'}</button>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button onclick="editUser('${user.id}')" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" title="Editar">✏️</button>
+                            <button onclick="toggleUserStatus('${user.id}', ${user.is_active})" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" title="${user.is_active ? 'Desactivar' : 'Activar'}">
+                                ${user.is_active ? '⏸️' : '▶️'}
+                            </button>
+                        </div>
                     </td>
                 </tr>
             `).join('');
         }
 
+        function displayUsersError() {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="empty-state">
+                        <div class="empty-icon">⚠️</div>
+                        <div class="empty-title">Error al cargar usuarios</div>
+                        <div class="empty-description">Hubo un problema al conectar con la base de datos</div>
+                        <button onclick="loadUsers()" class="btn-action btn-primary" style="margin-top: 1rem;">Reintentar</button>
+                    </td>
+                </tr>
+            `;
+        }
+
         // ============================================
-        // ADD COMPANY - ACTUALIZADO
+        // COMPANY ACTIONS
         // ============================================
         async function handleAddCompany(event) {
             event.preventDefault();
@@ -1577,82 +1589,4 @@
                 phone: document.getElementById('companyPhone').value,
                 email: document.getElementById('companyEmail').value,
                 domain: document.getElementById('companyDomain').value || document.getElementById('companyEmail').value.split('@')[1],
-                subscription_plan: document.getElementById('companyPlan').value,
-                max_users: parseInt(document.getElementById('initialUsers').value),
-                status: 'active',
-                slug: document.getElementById('companyName').value.toLowerCase().replace(/\s+/g, '-'),
-                settings: {
-                    modules_enabled: getModulesForPlan(document.getElementById('companyPlan').value)
-                }
-            };
-            
-            try {
-                const { data, error } = await supabase
-                    .from('companies')
-                    .insert([companyData])
-                    .select()
-                    .single();
-                
-                if (error) throw error;
-                
-                // Create subscription
-                await supabase.from('subscriptions').insert([{
-                    company_id: data.id,
-                    plan_name: companyData.subscription_plan,
-                    price: getPlanPrice(companyData.subscription_plan),
-                    start_date: new Date().toISOString(),
-                    end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-                    status: 'active'
-                }]);
-                
-                // Log activity
-                await logActivity('create', `Nueva empresa creada: ${companyData.name}`);
-                
-                showNotification('success', 'Éxito', 'Empresa creada exitosamente');
-                closeModal('addCompanyModal');
-                loadCompanies();
-                loadDashboard();
-            } catch (error) {
-                console.error('Error creating company:', error);
-                showNotification('error', 'Error', 'No se pudo crear la empresa');
-            }
-        }
-
-        // ============================================
-        // ADD USER - ACTUALIZADO
-        // ============================================
-        async function handleAddUser(event) {
-            event.preventDefault();
-            
-            const userData = {
-                email: document.getElementById('userEmail').value,
-                password: document.getElementById('userPassword').value
-            };
-            
-            try {
-                // Create auth user
-                const { data: authUser, error: authError } = await supabase.auth.signUp({
-                    email: userData.email,
-                    password: userData.password
-                });
-                
-                if (authError) throw authError;
-                
-                // Update user profile
-                const { error: profileError } = await supabase
-                    .from('user_profiles')
-                    .update({
-                        full_name: document.getElementById('userName').value,
-                        name: document.getElementById('userName').value,
-                        company_id: document.getElementById('userCompany').value,
-                        role: document.getElementById('userRole').value,
-                        is_active: true
-                    })
-                    .eq('user_id', authUser.user.id);
-                
-                if (profileError) {
-                    // Si falla el update, intentar insert
-                    await supabase
-                        .from('user_profiles')
-                        .insert({
-                            user_id: authUser
+                subscription_plan: document.getElementById('companyP
