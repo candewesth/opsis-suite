@@ -902,9 +902,9 @@
                     <div class="stat-header">
                         <div class="stat-icon">🏢</div>
                     </div>
-                    <div class="stat-value" id="totalCompanies">0</div>
+                    <div class="stat-value" id="totalCompanies">1</div>
                     <div class="stat-label">Empresas</div>
-                    <div class="stat-change" id="companiesChange">Listo para comenzar</div>
+                    <div class="stat-change" id="companiesChange">1 empresa demo incluida</div>
                 </div>
 
                 <div class="stat-card revenue">
@@ -913,16 +913,16 @@
                     </div>
                     <div class="stat-value" id="totalRevenue">$0</div>
                     <div class="stat-label">Ingresos Mensuales</div>
-                    <div class="stat-change" id="revenueChange">Creciendo desde cero</div>
+                    <div class="stat-change" id="revenueChange">Listo para facturar</div>
                 </div>
 
                 <div class="stat-card users">
                     <div class="stat-header">
                         <div class="stat-icon">👥</div>
                     </div>
-                    <div class="stat-value" id="totalUsers">0</div>
+                    <div class="stat-value" id="totalUsers">1</div>
                     <div class="stat-label">Usuarios Totales</div>
-                    <div class="stat-change" id="usersChange">Esperando primera empresa</div>
+                    <div class="stat-change" id="usersChange">Super Admin activo</div>
                 </div>
 
                 <div class="stat-card modules">
@@ -975,13 +975,13 @@
                         <div class="action-description">Historial y gestión de pagos</div>
                     </div>
 
-                    <div class="action-card reports" onclick="logActivity('info', 'Sección de reportes accedida')">
+                    <div class="action-card reports" onclick="showNotification('info', 'Próximamente', 'Reportes avanzados disponibles pronto')">
                         <div class="action-icon">📊</div>
                         <div class="action-title">Reportes</div>
                         <div class="action-description">Análisis y reportes del sistema</div>
                     </div>
 
-                    <div class="action-card settings" onclick="logActivity('info', 'Configuración del sistema accedida')">
+                    <div class="action-card settings" onclick="showNotification('info', 'Próximamente', 'Configuración del sistema disponible pronto')">
                         <div class="action-icon">⚙️</div>
                         <div class="action-title">Configuración</div>
                         <div class="action-description">Ajustes del sistema y planes</div>
@@ -1302,9 +1302,14 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
-            await checkAuth();
-            await loadDashboard();
-            initCharts();
+            try {
+                await checkAuth();
+                await loadDashboard();
+                initCharts();
+            } catch (error) {
+                console.error('Initialization error:', error);
+                showNotification('error', 'Error de inicialización', 'Problema al cargar el panel');
+            }
         });
 
         // ============================================
@@ -1317,14 +1322,9 @@
                     window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
                     return;
                 }
+                
                 currentUser = user;
                 document.getElementById('adminEmail').textContent = user.email;
-                
-                const { data: profile } = await supabase
-                    .from('user_profiles')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .single();
                 
                 if (user.email !== 'admin@opsis-suite.com') {
                     showNotification('error', 'Acceso Denegado', 'No tienes permisos de Super Admin');
@@ -1333,13 +1333,307 @@
                     return;
                 }
                 
-                document.getElementById('adminName').textContent = profile?.full_name || profile?.name || 'Super Admin';
+                // Get or create user profile
+                let { data: profile } = await supabase
+                    .from('user_profiles')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .single();
+                
+                if (!profile) {
+                    // Create profile if it doesn't exist
+                    const { data: newProfile, error } = await supabase
+                        .from('user_profiles')
+                        .insert([{
+                            user_id: user.id,
+                            email: user.email,
+                            full_name: 'Super Admin',
+                            name: 'Super Admin',
+                            role: 'super_admin',
+                            is_active: true
+                        }])
+                        .select()
+                        .single();
+                    
+                    if (error) {
+                        console.error('Error creating profile:', error);
+                    } else {
+                        profile = newProfile;
+                    }
+                }
+                
+                document.getElementById('adminName').textContent = profile?.full_name || 'Super Admin';
                 
                 // Log successful login
                 await logActivity('login', 'Super Admin accedió al panel');
+                
+            } catch (error) {
+                console.error('Auth error:', error);
+                window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
+            }
+        }
+
+        async function handleSignOut() {
+            try {
+                await logActivity('logout', 'Super Admin cerró sesión');
+                const { error } = await supabase.auth.signOut();
+                if (error) {
+                    console.error('Error al cerrar sesión:', error);
+                    showNotification('error', 'Error', 'No se pudo cerrar sesión');
+                } else {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
+                }
+            } catch (error) {
+                console.error('Error en signOut:', error);
+                window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
+            }
+        }
+
+        // ============================================
+        // ACTIVITY LOGGING
+        // ============================================
+        async function logActivity(actionType, description, metadata = {}) {
+            try {
+                const logData = {
+                    user_id: currentUser?.id || null,
+                    action_type: actionType,
+                    description: description,
+                    ip_address: '127.0.0.1',
+                    user_agent: navigator.userAgent,
+                    metadata: metadata
+                };
+                
+                await supabase
+                    .from('admin_activity_logs')
+                    .insert([logData]);
+                    
+            } catch (error) {
+                console.error('Error logging activity:', error);
+            }
+        }
+
+        // ============================================
+        // TAB NAVIGATION
+        // ============================================
+        function switchTab(tabName) {
+            try {
+                document.querySelectorAll('.tab-content').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                
+                document.querySelectorAll('.nav-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                
+                document.getElementById(`${tabName}-tab`).classList.add('active');
+                event.target.classList.add('active');
+                
+                loadTabData(tabName);
+            } catch (error) {
+                console.error('Error switching tab:', error);
+                showNotification('error', 'Error', 'No se pudo cambiar de pestaña');
+            }
+        }
+
+        async function loadTabData(tabName) {
+            try {
+                switch(tabName) {
+                    case 'dashboard':
+                        await loadDashboard();
+                        break;
+                    case 'companies':
+                        await loadCompanies();
+                        break;
+                    case 'users':
+                        await loadUsers();
+                        break;
+                    case 'subscriptions':
+                        await loadSubscriptions();
+                        break;
+                    case 'payments':
+                        await loadPayments();
+                        break;
+                    case 'activity':
+                        await loadActivity();
+                        break;
+                }
+                await logActivity('info', `Accedió a la sección: ${tabName}`);
+            } catch (error) {
+                console.error(`Error loading ${tabName}:`, error);
+                showNotification('error', 'Error de carga', `No se pudo cargar ${tabName}`);
+            }
+        }
+
+        // ============================================
+        // DASHBOARD FUNCTIONS
+        // ============================================
+        async function loadDashboard() {
+            try {
+                // Load basic stats
+                const [companiesResult, usersResult, subscriptionsResult, paymentsResult] = await Promise.all([
+                    supabase.from('companies').select('*', { count: 'exact', head: true }),
+                    supabase.from('user_profiles').select('*', { count: 'exact', head: true }),
+                    supabase.from('subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'active'),
+                    supabase.from('payments').select('amount').eq('status', 'completed')
+                ]);
+                
+                const companiesCount = companiesResult.count || 0;
+                const usersCount = usersResult.count || 0;
+                const subscriptionsCount = subscriptionsResult.count || 0;
+                const totalRevenue = paymentsResult.data?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+                
+                document.getElementById('totalCompanies').textContent = companiesCount;
+                document.getElementById('totalUsers').textContent = usersCount;
+                document.getElementById('activeSubscriptions').textContent = subscriptionsCount;
+                document.getElementById('totalRevenue').textContent = `$${totalRevenue.toFixed(2)}`;
+                
+                // Update change indicators
+                document.getElementById('companiesChange').textContent = 
+                    companiesCount > 0 ? `${companiesCount} empresas registradas` : 'Listo para comenzar';
+                document.getElementById('usersChange').textContent = 
+                    usersCount > 0 ? `${usersCount} usuarios en el sistema` : 'Super Admin activo';
+                document.getElementById('revenueChange').textContent = 
+                    totalRevenue > 0 ? `Total: $${totalRevenue.toFixed(2)}` : 'Listo para facturar';
+                    
+                updateCharts();
+                
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                showNotification('error', 'Error de dashboard', 'No se pudieron cargar las estadísticas');
+            }
+        }
+
+        // ============================================
+        // COMPANIES MANAGEMENT
+        // ============================================
+        async function loadCompanies() {
+            try {
+                const { data, error } = await supabase
+                    .from('companies')
+                    .select(`
+                        *,
+                        user_profiles!company_id (user_id)
+                    `)
+                    .order('created_at', { ascending: false });
+                
+                if (error) {
+                    console.error('Supabase error:', error);
+                    throw error;
+                }
+                
+                companies = data || [];
+                displayCompanies(companies);
+                
+            } catch (error) {
+                console.error('Error loading companies:', error);
+                displayCompaniesError();
+                showNotification('error', 'Error', 'No se pudieron cargar las empresas');
+            }
+        }
+
+        function displayCompanies(companiesList) {
+            const tbody = document.getElementById('companiesTableBody');
+            
+            if (!companiesList || companiesList.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="empty-state">
+                            <div class="empty-icon">🏢</div>
+                            <div class="empty-title">No hay empresas registradas</div>
+                            <div class="empty-description">Agrega la primera empresa para comenzar</div>
+                            <button onclick="showAddCompanyModal()" class="btn-action btn-primary" style="margin-top: 1rem;">Agregar Primera Empresa</button>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = companiesList.map(company => {
+                const userCount = company.user_profiles?.length || 0;
+                const createdDate = new Date(company.created_at).toLocaleDateString('es-ES');
+                
+                return `
+                    <tr data-company-id="${company.id}">
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="width: 40px; height: 40px; border-radius: 8px; background: linear-gradient(135deg, #20c997, #17a2b8); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.1rem;">
+                                    ${company.name.charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; color: #1d1d1f;">${company.name}</div>
+                                    <div style="font-size: 0.85rem; color: #86868b;">${company.domain || 'Sin dominio'}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${company.ruc || 'N/A'}</td>
+                        <td>${company.email}</td>
+                        <td>
+                            <span class="status-badge active">
+                                ${company.subscription_plan || 'Sin plan'}
+                            </span>
+                        </td>
+                        <td>
+                            <span style="font-weight: 600;">${userCount}</span>
+                            <span style="color: #86868b; font-size: 0.85rem;">/ ${company.max_users || 'ilimitado'}</span>
+                        </td>
+                        <td style="color: #86868b; font-size: 0.9rem;">${createdDate}</td>
+                        <td>
+                            <span class="status-badge ${company.status === 'active' ? 'active' : 'inactive'}">
+                                ${company.status === 'active' ? 'Activa' : 'Inactiva'}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <button onclick="editCompany('${company.id}')" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" title="Editar">✏️</button>
+                                <button onclick="toggleCompanyStatus('${company.id}', '${company.status}')" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" title="${company.status === 'active' ? 'Desactivar' : 'Activar'}">
+                                    ${company.status === 'active' ? '⏸️' : '▶️'}
+                                </button>
+                                <button onclick="deleteCompany('${company.id}', '${company.name}')" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: #dc3545; color: white;" title="Eliminar">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function displayCompaniesError() {
+            const tbody = document.getElementById('companiesTableBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="empty-state">
+                        <div class="empty-icon">⚠️</div>
+                        <div class="empty-title">Error al cargar empresas</div>
+                        <div class="empty-description">Verifica la conexión y permisos de la base de datos</div>
+                        <button onclick="loadCompanies()" class="btn-action btn-primary" style="margin-top: 1rem;">Reintentar</button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // ============================================
+        // USERS MANAGEMENT
+        // ============================================
+        async function loadUsers() {
+            try {
+                const { data, error } = await supabase
+                    .from('user_profiles')
+                    .select(`
+                        *,
+                        companies (name, id)
+                    `)
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                users = data || [];
+                displayUsers(users);
+                
+            } catch (error) {
                 console.error('Error loading users:', error);
-                showNotification('error', 'Error', 'No se pudieron cargar los usuarios');
                 displayUsersError();
+                showNotification('error', 'Error', 'No se pudieron cargar los usuarios');
             }
         }
 
@@ -1403,7 +1697,7 @@
                     <td colspan="6" class="empty-state">
                         <div class="empty-icon">⚠️</div>
                         <div class="empty-title">Error al cargar usuarios</div>
-                        <div class="empty-description">Hubo un problema al conectar con la base de datos</div>
+                        <div class="empty-description">Verifica la conexión y permisos de la base de datos</div>
                         <button onclick="loadUsers()" class="btn-action btn-primary" style="margin-top: 1rem;">Reintentar</button>
                     </td>
                 </tr>
@@ -1427,10 +1721,11 @@
                 
                 subscriptions = data || [];
                 displaySubscriptions(subscriptions);
+                
             } catch (error) {
                 console.error('Error loading subscriptions:', error);
-                showNotification('error', 'Error', 'No se pudieron cargar las suscripciones');
                 displaySubscriptionsError();
+                showNotification('error', 'Error', 'No se pudieron cargar las suscripciones');
             }
         }
 
@@ -1452,7 +1747,7 @@
             
             tbody.innerHTML = subscriptionsList.map(sub => {
                 const endDate = new Date(sub.end_date).toLocaleDateString('es-ES');
-                const isExpiring = new Date(sub.end_date) - new Date() < 7 * 24 * 60 * 60 * 1000; // 7 days
+                const isExpiring = new Date(sub.end_date) - new Date() < 7 * 24 * 60 * 60 * 1000;
                 
                 return `
                     <tr data-subscription-id="${sub.id}">
@@ -1466,7 +1761,7 @@
                         </td>
                         <td style="color: ${isExpiring ? '#dc3545' : '#86868b'};">
                             ${endDate}
-                            ${isExpiring && sub.status === 'active' ? '<span style="color: #dc3545; font-size: 0.7rem; display: block;">⚠️ Por vencer</span>' : ''}
+                            ${isExpiring && sub.status === 'active' ? '<div style="color: #dc3545; font-size: 0.7rem;">⚠️ Por vencer</div>' : ''}
                         </td>
                         <td>
                             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
@@ -1486,7 +1781,7 @@
                     <td colspan="6" class="empty-state">
                         <div class="empty-icon">⚠️</div>
                         <div class="empty-title">Error al cargar suscripciones</div>
-                        <div class="empty-description">Hubo un problema al conectar con la base de datos</div>
+                        <div class="empty-description">Verifica la conexión y permisos de la base de datos</div>
                         <button onclick="loadSubscriptions()" class="btn-action btn-primary" style="margin-top: 1rem;">Reintentar</button>
                     </td>
                 </tr>
@@ -1510,10 +1805,11 @@
                 
                 payments = data || [];
                 displayPayments(payments);
+                
             } catch (error) {
                 console.error('Error loading payments:', error);
-                showNotification('error', 'Error', 'No se pudieron cargar los pagos');
                 displayPaymentsError();
+                showNotification('error', 'Error', 'No se pudieron cargar los pagos');
             }
         }
 
@@ -1565,7 +1861,7 @@
                     <td colspan="6" class="empty-state">
                         <div class="empty-icon">⚠️</div>
                         <div class="empty-title">Error al cargar pagos</div>
-                        <div class="empty-description">Hubo un problema al conectar con la base de datos</div>
+                        <div class="empty-description">Verifica la conexión y permisos de la base de datos</div>
                         <button onclick="loadPayments()" class="btn-action btn-primary" style="margin-top: 1rem;">Reintentar</button>
                     </td>
                 </tr>
@@ -1590,10 +1886,11 @@
                 
                 activityLogs = data || [];
                 displayActivity(activityLogs);
+                
             } catch (error) {
                 console.error('Error loading activity:', error);
-                showNotification('error', 'Error', 'No se pudieron cargar los logs de actividad');
                 displayActivityError();
+                showNotification('error', 'Error', 'No se pudieron cargar los logs de actividad');
             }
         }
 
@@ -1648,7 +1945,7 @@
                     <td colspan="5" class="empty-state">
                         <div class="empty-icon">⚠️</div>
                         <div class="empty-title">Error al cargar actividad</div>
-                        <div class="empty-description">Hubo un problema al conectar con la base de datos</div>
+                        <div class="empty-description">Verifica la conexión y permisos de la base de datos</div>
                         <button onclick="loadActivity()" class="btn-action btn-primary" style="margin-top: 1rem;">Reintentar</button>
                     </td>
                 </tr>
@@ -1740,7 +2037,7 @@
             } catch (error) {
                 console.error('Error creating company:', error);
                 await logActivity('error', `Error al crear empresa: ${error.message}`);
-                showNotification('error', 'Error', 'No se pudo crear la empresa');
+                showNotification('error', 'Error', 'No se pudo crear la empresa: ' + error.message);
             }
         }
 
@@ -1753,7 +2050,7 @@
             };
             
             try {
-                // Create auth user
+                // Create auth user first
                 const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
                     email: userData.email,
                     password: userData.password,
@@ -1793,7 +2090,7 @@
             } catch (error) {
                 console.error('Error creating user:', error);
                 await logActivity('error', `Error al crear usuario: ${error.message}`);
-                showNotification('error', 'Error', 'No se pudo crear el usuario');
+                showNotification('error', 'Error', 'No se pudo crear el usuario: ' + error.message);
             }
         }
 
@@ -2172,7 +2469,7 @@
             
             setTimeout(() => {
                 notification.classList.remove('show');
-            }, 3000);
+            }, 4000);
         }
 
         function closeModal(modalId) {
@@ -2197,17 +2494,22 @@
         }
 
         async function loadCompaniesForSelect() {
-            const { data: companies } = await supabase
-                .from('companies')
-                .select('id, name')
-                .eq('status', 'active')
-                .order('name');
-            
-            const select = document.getElementById('userCompany');
-            if (select) {
-                select.innerHTML = companies?.map(c => 
-                    `<option value="${c.id}">${c.name}</option>`
-                ).join('') || '<option value="">No hay empresas activas</option>';
+            try {
+                const { data: companies } = await supabase
+                    .from('companies')
+                    .select('id, name')
+                    .eq('status', 'active')
+                    .order('name');
+                
+                const select = document.getElementById('userCompany');
+                if (select) {
+                    select.innerHTML = companies?.map(c => 
+                        `<option value="${c.id}">${c.name}</option>`
+                    ).join('') || '<option value="">No hay empresas activas</option>';
+                }
+            } catch (error) {
+                console.error('Error loading companies for select:', error);
+                showNotification('error', 'Error', 'No se pudieron cargar las empresas');
             }
         }
 
@@ -2246,7 +2548,7 @@
                         labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
                         datasets: [{
                             label: 'Usuarios',
-                            data: [0, 0, 0, 0, 0, 0],
+                            data: [0, 1, 1, 1, 1, 1],
                             borderColor: '#20c997',
                             backgroundColor: 'rgba(32, 201, 151, 0.1)',
                             tension: 0.3,
@@ -2296,13 +2598,13 @@
 
         function updateCharts() {
             if (usersChart) {
-                const monthlyUsers = [1, 2, 4, 8, 12, users.length || 0];
+                const monthlyUsers = [0, 0, 0, 1, 1, users.length || 1];
                 usersChart.data.datasets[0].data = monthlyUsers;
                 usersChart.update();
             }
             
             if (revenueChart) {
-                const monthlyRevenue = [49, 198, 596, 1192, 1788, 
+                const monthlyRevenue = [0, 0, 0, 0, 0, 
                     subscriptions.reduce((sum, s) => sum + (s.price || 0), 0)];
                 revenueChart.data.datasets[0].data = monthlyRevenue;
                 revenueChart.update();
@@ -2320,271 +2622,3 @@
     </script>
 </body>
 </html>
-                console.error('Auth error:', error);
-                window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
-            }
-        }
-
-        async function handleSignOut() {
-            try {
-                await logActivity('logout', 'Super Admin cerró sesión');
-                const { error } = await supabase.auth.signOut();
-                if (error) {
-                    console.error('Error al cerrar sesión:', error);
-                    showNotification('error', 'Error', 'No se pudo cerrar sesión');
-                } else {
-                    localStorage.clear();
-                    sessionStorage.clear();
-                    window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
-                }
-            } catch (error) {
-                console.error('Error en signOut:', error);
-                window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
-            }
-        }
-
-        // ============================================
-        // ACTIVITY LOGGING
-        // ============================================
-        async function logActivity(actionType, description, metadata = {}) {
-            try {
-                const logData = {
-                    user_id: currentUser?.id || null,
-                    action_type: actionType,
-                    description: description,
-                    ip_address: '0.0.0.0', // Placeholder
-                    user_agent: navigator.userAgent,
-                    metadata: metadata
-                };
-                
-                await supabase
-                    .from('admin_activity_logs')
-                    .insert([logData]);
-                    
-            } catch (error) {
-                console.error('Error logging activity:', error);
-            }
-        }
-
-        // ============================================
-        // TAB NAVIGATION
-        // ============================================
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            document.getElementById(`${tabName}-tab`).classList.add('active');
-            event.target.classList.add('active');
-            
-            loadTabData(tabName);
-        }
-
-        async function loadTabData(tabName) {
-            try {
-                switch(tabName) {
-                    case 'dashboard':
-                        await loadDashboard();
-                        break;
-                    case 'companies':
-                        await loadCompanies();
-                        break;
-                    case 'users':
-                        await loadUsers();
-                        break;
-                    case 'subscriptions':
-                        await loadSubscriptions();
-                        break;
-                    case 'payments':
-                        await loadPayments();
-                        break;
-                    case 'activity':
-                        await loadActivity();
-                        break;
-                }
-                await logActivity('info', `Accedió a la sección: ${tabName}`);
-            } catch (error) {
-                console.error(`Error loading ${tabName}:`, error);
-                await logActivity('error', `Error al cargar sección ${tabName}: ${error.message}`);
-            }
-        }
-
-        // ============================================
-        // DASHBOARD FUNCTIONS
-        // ============================================
-        async function loadDashboard() {
-            try {
-                // Use the dashboard stats view if available, otherwise fallback to individual queries
-                const { data: stats, error } = await supabase
-                    .from('admin_dashboard_stats')
-                    .select('*')
-                    .single();
-                
-                if (error) {
-                    // Fallback to individual queries
-                    const [companiesResult, usersResult, subscriptionsResult, revenueResult] = await Promise.all([
-                        supabase.from('companies').select('*', { count: 'exact', head: true }),
-                        supabase.from('user_profiles').select('*', { count: 'exact', head: true }),
-                        supabase.from('subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'active'),
-                        supabase.from('subscriptions').select('price').eq('status', 'active')
-                    ]);
-                    
-                    const monthlyRevenue = revenueResult.data?.reduce((sum, sub) => sum + (sub.price || 0), 0) || 0;
-                    
-                    document.getElementById('totalCompanies').textContent = companiesResult.count || 0;
-                    document.getElementById('totalUsers').textContent = usersResult.count || 0;
-                    document.getElementById('activeSubscriptions').textContent = subscriptionsResult.count || 0;
-                    document.getElementById('totalRevenue').textContent = `$${monthlyRevenue.toFixed(2)}`;
-                } else {
-                    // Use view data
-                    document.getElementById('totalCompanies').textContent = stats.total_companies || 0;
-                    document.getElementById('totalUsers').textContent = stats.total_users || 0;
-                    document.getElementById('activeSubscriptions').textContent = stats.active_subscriptions || 0;
-                    document.getElementById('totalRevenue').textContent = `$${(stats.monthly_revenue || 0).toFixed(2)}`;
-                }
-                
-                // Update change indicators
-                const companiesCount = parseInt(document.getElementById('totalCompanies').textContent);
-                const usersCount = parseInt(document.getElementById('totalUsers').textContent);
-                const revenue = parseFloat(document.getElementById('totalRevenue').textContent.replace('$', ''));
-                
-                document.getElementById('companiesChange').textContent = 
-                    companiesCount > 0 ? `${companiesCount} empresas registradas` : 'Listo para comenzar';
-                document.getElementById('usersChange').textContent = 
-                    usersCount > 0 ? `${usersCount} usuarios en el sistema` : 'Esperando primera empresa';
-                document.getElementById('revenueChange').textContent = 
-                    revenue > 0 ? `MRR: $${revenue.toFixed(2)}` : 'Configurando facturación';
-                    
-                updateCharts();
-            } catch (error) {
-                console.error('Error loading dashboard:', error);
-                await logActivity('error', 'Error al cargar dashboard: ' + error.message);
-                showNotification('error', 'Error', 'No se pudo cargar el dashboard');
-            }
-        }
-
-        // ============================================
-        // COMPANIES MANAGEMENT
-        // ============================================
-        async function loadCompanies() {
-            try {
-                const { data, error } = await supabase
-                    .from('companies')
-                    .select(`
-                        *,
-                        user_profiles!company_id (user_id)
-                    `)
-                    .order('created_at', { ascending: false });
-                
-                if (error) throw error;
-                
-                companies = data || [];
-                displayCompanies(companies);
-            } catch (error) {
-                console.error('Error loading companies:', error);
-                showNotification('error', 'Error', 'No se pudieron cargar las empresas');
-                displayCompaniesError();
-            }
-        }
-
-        function displayCompanies(companiesList) {
-            const tbody = document.getElementById('companiesTableBody');
-            
-            if (!companiesList || companiesList.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="8" class="empty-state">
-                            <div class="empty-icon">🏢</div>
-                            <div class="empty-title">No hay empresas registradas</div>
-                            <div class="empty-description">Agrega la primera empresa para comenzar</div>
-                            <button onclick="showAddCompanyModal()" class="btn-action btn-primary" style="margin-top: 1rem;">Agregar Primera Empresa</button>
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-            
-            tbody.innerHTML = companiesList.map(company => {
-                const userCount = company.user_profiles?.length || 0;
-                const createdDate = new Date(company.created_at).toLocaleDateString('es-ES');
-                
-                return `
-                    <tr data-company-id="${company.id}">
-                        <td>
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <div style="width: 40px; height: 40px; border-radius: 8px; background: linear-gradient(135deg, #20c997, #17a2b8); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.1rem;">
-                                    ${company.name.charAt(0).toUpperCase()}
-                                </div>
-                                <div>
-                                    <div style="font-weight: 600; color: #1d1d1f;">${company.name}</div>
-                                    <div style="font-size: 0.85rem; color: #86868b;">${company.domain || 'Sin dominio'}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td>${company.ruc || 'N/A'}</td>
-                        <td>${company.email}</td>
-                        <td>
-                            <span class="status-badge active">
-                                ${company.subscription_plan || 'Sin plan'}
-                            </span>
-                        </td>
-                        <td>
-                            <span style="font-weight: 600;">${userCount}</span>
-                            <span style="color: #86868b; font-size: 0.85rem;">/ ${company.max_users || 'ilimitado'}</span>
-                        </td>
-                        <td style="color: #86868b; font-size: 0.9rem;">${createdDate}</td>
-                        <td>
-                            <span class="status-badge ${company.status === 'active' ? 'active' : 'inactive'}">
-                                ${company.status === 'active' ? 'Activa' : 'Inactiva'}
-                            </span>
-                        </td>
-                        <td>
-                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                                <button onclick="editCompany('${company.id}')" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" title="Editar">✏️</button>
-                                <button onclick="toggleCompanyStatus('${company.id}', '${company.status}')" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" title="${company.status === 'active' ? 'Desactivar' : 'Activar'}">
-                                    ${company.status === 'active' ? '⏸️' : '▶️'}
-                                </button>
-                                <button onclick="deleteCompany('${company.id}', '${company.name}')" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: #dc3545; color: white;" title="Eliminar">🗑️</button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function displayCompaniesError() {
-            const tbody = document.getElementById('companiesTableBody');
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="8" class="empty-state">
-                        <div class="empty-icon">⚠️</div>
-                        <div class="empty-title">Error al cargar empresas</div>
-                        <div class="empty-description">Hubo un problema al conectar con la base de datos</div>
-                        <button onclick="loadCompanies()" class="btn-action btn-primary" style="margin-top: 1rem;">Reintentar</button>
-                    </td>
-                </tr>
-            `;
-        }
-
-        // ============================================
-        // USERS MANAGEMENT
-        // ============================================
-        async function loadUsers() {
-            try {
-                const { data, error } = await supabase
-                    .from('user_profiles')
-                    .select(`
-                        *,
-                        companies (name, id)
-                    `)
-                    .order('created_at', { ascending: false });
-                
-                if (error) throw error;
-                
-                users = data || [];
-                displayUsers(users);
-            } catch (error) {
