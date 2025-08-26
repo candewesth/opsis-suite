@@ -907,24 +907,6 @@
             gap: 0.5rem;
         }
 
-        .detail-row {
-            display: grid;
-            grid-template-columns: 150px 1fr;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            align-items: center;
-        }
-
-        .detail-label {
-            font-weight: 600;
-            color: #86868b;
-            font-size: 0.9rem;
-        }
-
-        .detail-value {
-            color: #1d1d1f;
-        }
-
         /* Advanced Settings */
         .advanced-settings {
             background: rgba(255, 193, 7, 0.05);
@@ -975,10 +957,6 @@
             .nav-tabs {
                 overflow-x: auto;
             }
-
-            .detail-row {
-                grid-template-columns: 1fr;
-            }
         }
     </style>
 </head>
@@ -993,7 +971,7 @@
     <div id="editCompanyModal" class="modal">
         <div class="modal-content" style="max-width: 900px;">
             <div class="modal-header">
-                <h3 class="modal-title">✏️ Editar Empresa</h3>
+                <h3 class="modal-title">Editar Empresa</h3>
                 <button class="modal-close" onclick="closeModal('editCompanyModal')">✕</button>
             </div>
             
@@ -1119,6 +1097,62 @@
         </div>
     </div>
 
+    <!-- Add Company Modal -->
+    <div id="addCompanyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Agregar Nueva Empresa</h3>
+                <button class="modal-close" onclick="closeModal('addCompanyModal')">✕</button>
+            </div>
+            <form id="addCompanyForm" onsubmit="handleAddCompany(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Nombre de la Empresa *</label>
+                        <input type="text" id="companyName" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">RUC *</label>
+                        <input type="text" id="companyRuc" class="form-input" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">Dirección</label>
+                        <input type="text" id="companyAddress" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Teléfono</label>
+                        <input type="tel" id="companyPhone" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email *</label>
+                        <input type="email" id="companyEmail" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Dominio</label>
+                        <input type="text" id="companyDomain" class="form-input" placeholder="empresa.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Plan de Suscripción</label>
+                        <select id="companyPlan" class="form-select">
+                            <option value="warehouse_basic">Almacén Básico - $49/mes</option>
+                            <option value="warehouse_pro">Almacén Pro - $149/mes</option>
+                            <option value="suite_standard">Suite Standard - $249/mes</option>
+                            <option value="suite_premium">Suite Premium - $499/mes</option>
+                            <option value="enterprise">Enterprise - $999/mes</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Usuarios Iniciales</label>
+                        <input type="number" id="initialUsers" class="form-input" value="5" min="1">
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-modal secondary" onclick="closeModal('addCompanyModal')">Cancelar</button>
+                    <button type="submit" class="btn-modal primary">Crear Empresa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="container">
         <!-- Header -->
         <header class="header">
@@ -1144,12 +1178,12 @@
 
         <!-- Navigation Tabs -->
         <div class="nav-tabs">
-            <button class="nav-tab active" onclick="switchTab('dashboard')">Dashboard</button>
-            <button class="nav-tab" onclick="switchTab('companies')">Empresas</button>
-            <button class="nav-tab" onclick="switchTab('users')">Usuarios</button>
-            <button class="nav-tab" onclick="switchTab('subscriptions')">Suscripciones</button>
-            <button class="nav-tab" onclick="switchTab('payments')">Pagos</button>
-            <button class="nav-tab" onclick="switchTab('activity')">Actividad</button>
+            <button class="nav-tab active" onclick="switchTab('dashboard', this)">Dashboard</button>
+            <button class="nav-tab" onclick="switchTab('companies', this)">Empresas</button>
+            <button class="nav-tab" onclick="switchTab('users', this)">Usuarios</button>
+            <button class="nav-tab" onclick="switchTab('subscriptions', this)">Suscripciones</button>
+            <button class="nav-tab" onclick="switchTab('payments', this)">Pagos</button>
+            <button class="nav-tab" onclick="switchTab('activity', this)">Actividad</button>
         </div>
 
         <!-- Dashboard Tab -->
@@ -1160,9 +1194,9 @@
                     <div class="stat-header">
                         <div class="stat-icon">🏢</div>
                     </div>
-                    <div class="stat-value" id="totalCompanies">1</div>
+                    <div class="stat-value" id="totalCompanies">0</div>
                     <div class="stat-label">Empresas</div>
-                    <div class="stat-change" id="companiesChange">1 empresa demo incluida</div>
+                    <div class="stat-change" id="companiesChange">Cargando...</div>
                 </div>
 
                 <div class="stat-card revenue">
@@ -1171,16 +1205,16 @@
                     </div>
                     <div class="stat-value" id="totalRevenue">$0</div>
                     <div class="stat-label">Ingresos Mensuales</div>
-                    <div class="stat-change" id="revenueChange">Listo para facturar</div>
+                    <div class="stat-change" id="revenueChange">Calculando...</div>
                 </div>
 
                 <div class="stat-card users">
                     <div class="stat-header">
                         <div class="stat-icon">👥</div>
                     </div>
-                    <div class="stat-value" id="totalUsers">1</div>
+                    <div class="stat-value" id="totalUsers">0</div>
                     <div class="stat-label">Usuarios Totales</div>
-                    <div class="stat-change" id="usersChange">Super Admin activo</div>
+                    <div class="stat-change" id="usersChange">Cargando...</div>
                 </div>
 
                 <div class="stat-card modules">
@@ -1204,6 +1238,48 @@
                     <canvas id="revenueChart"></canvas>
                 </div>
             </div>
+
+            <!-- Quick Actions -->
+            <section class="actions-section">
+                <h2 class="section-title">Acciones Rápidas</h2>
+                <div class="actions-grid">
+                    <div class="action-card add-company" onclick="showAddCompanyModal()">
+                        <div class="action-icon">➕</div>
+                        <div class="action-title">Nueva Empresa</div>
+                        <div class="action-description">Crear cuenta de empresa con configuración personalizada</div>
+                    </div>
+
+                    <div class="action-card manage-users" onclick="switchTab('users', document.querySelector('.nav-tab:nth-child(3))'))">
+                        <div class="action-icon">👥</div>
+                        <div class="action-title">Gestionar Usuarios</div>
+                        <div class="action-description">Administrar usuarios y permisos del sistema</div>
+                    </div>
+
+                    <div class="action-card subscriptions" onclick="switchTab('subscriptions', document.querySelector('.nav-tab:nth-child(4)'))">
+                        <div class="action-icon">💳</div>
+                        <div class="action-title">Suscripciones</div>
+                        <div class="action-description">Control de planes y renovaciones</div>
+                    </div>
+
+                    <div class="action-card payments" onclick="switchTab('payments', document.querySelector('.nav-tab:nth-child(5)'))">
+                        <div class="action-icon">💰</div>
+                        <div class="action-title">Pagos</div>
+                        <div class="action-description">Historial y gestión de pagos</div>
+                    </div>
+
+                    <div class="action-card reports" onclick="showReportsModal()">
+                        <div class="action-icon">📊</div>
+                        <div class="action-title">Reportes</div>
+                        <div class="action-description">Análisis y reportes del sistema</div>
+                    </div>
+
+                    <div class="action-card settings" onclick="showSettingsModal()">
+                        <div class="action-icon">⚙️</div>
+                        <div class="action-title">Configuración</div>
+                        <div class="action-description">Ajustes del sistema y planes</div>
+                    </div>
+                </div>
+            </section>
         </div>
 
         <!-- Companies Tab -->
@@ -1251,7 +1327,126 @@
             </div>
         </div>
 
-        <!-- Other tabs remain the same... -->
+        <!-- Users Tab -->
+        <div id="users-tab" class="tab-content">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 class="table-title">Gestión de Usuarios</h3>
+                    <div class="table-actions">
+                        <input type="text" placeholder="Buscar usuario..." class="form-input" style="width: 250px;" onkeyup="searchUsers(this.value)">
+                        <button class="btn-action btn-secondary" onclick="exportUsers()">Exportar</button>
+                    </div>
+                </div>
+                
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Email</th>
+                            <th>Empresa</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 2rem;">
+                                <div class="loading-spinner"></div>
+                                <p style="margin-top: 1rem; color: #86868b;">Cargando usuarios...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Subscriptions Tab -->
+        <div id="subscriptions-tab" class="tab-content">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 class="table-title">Gestión de Suscripciones</h3>
+                </div>
+                
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Empresa</th>
+                            <th>Plan</th>
+                            <th>Precio</th>
+                            <th>Estado</th>
+                            <th>Vencimiento</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subscriptionsTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 2rem;">
+                                <div class="empty-icon">💳</div>
+                                <div class="empty-title">Sin suscripciones</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Payments Tab -->
+        <div id="payments-tab" class="tab-content">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 class="table-title">Gestión de Pagos</h3>
+                </div>
+                
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Empresa</th>
+                            <th>Concepto</th>
+                            <th>Monto</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentsTableBody">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 2rem;">
+                                <div class="empty-icon">💰</div>
+                                <div class="empty-title">Sin pagos registrados</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Activity Tab -->
+        <div id="activity-tab" class="tab-content">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 class="table-title">Registro de Actividad</h3>
+                </div>
+                
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Fecha/Hora</th>
+                            <th>Usuario</th>
+                            <th>Acción</th>
+                            <th>Descripción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activityTableBody">
+                        <tr>
+                            <td colspan="4" style="text-align: center; padding: 2rem;">
+                                <div class="empty-icon">📝</div>
+                                <div class="empty-title">Sin actividad registrada</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -1265,6 +1460,7 @@
         // Global Variables
         let currentUser = null;
         let companies = [];
+        let users = [];
         let currentEditingCompany = null;
         let originalCompanyData = null;
 
@@ -1287,7 +1483,7 @@
             try {
                 const { data: { user } } = await supabase.auth.getUser();
                 if (!user) {
-                    window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
+                    window.location.href = 'login.html';
                     return;
                 }
                 
@@ -1297,7 +1493,7 @@
                 if (user.email !== 'admin@opsis-suite.com') {
                     showNotification('error', 'Acceso Denegado', 'No tienes permisos de Super Admin');
                     await supabase.auth.signOut();
-                    window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
+                    window.location.href = 'login.html';
                     return;
                 }
                 
@@ -1305,19 +1501,18 @@
                 
             } catch (error) {
                 console.error('Auth error:', error);
-                window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
+                window.location.href = 'login.html';
             }
         }
 
         async function handleSignOut() {
             try {
                 await logActivity('logout', 'Super Admin cerró sesión');
-                const { error } = await supabase.auth.signOut();
-                if (!error) {
-                    window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
-                }
+                await supabase.auth.signOut();
+                window.location.href = 'login.html';
             } catch (error) {
                 console.error('Error en signOut:', error);
+                window.location.href = 'login.html';
             }
         }
 
@@ -1326,8 +1521,8 @@
         // ============================================
         async function logActivity(actionType, description, metadata = {}) {
             try {
-                // For now, just log to console
                 console.log('Activity:', { actionType, description, metadata });
+                // In production, save to database
             } catch (error) {
                 console.error('Error logging activity:', error);
             }
@@ -1336,7 +1531,7 @@
         // ============================================
         // TAB NAVIGATION
         // ============================================
-        function switchTab(tabName) {
+        function switchTab(tabName, tabElement) {
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
@@ -1346,7 +1541,9 @@
             });
             
             document.getElementById(`${tabName}-tab`).classList.add('active');
-            event.target.classList.add('active');
+            if (tabElement) {
+                tabElement.classList.add('active');
+            }
             
             loadTabData(tabName);
         }
@@ -1358,6 +1555,9 @@
                     break;
                 case 'companies':
                     await loadCompanies();
+                    break;
+                case 'users':
+                    await loadUsers();
                     break;
             }
         }
@@ -1371,7 +1571,16 @@
                     .from('companies')
                     .select('*', { count: 'exact', head: true });
                 
+                const { count: usersCount } = await supabase
+                    .from('user_profiles')
+                    .select('*', { count: 'exact', head: true });
+                
                 document.getElementById('totalCompanies').textContent = companiesCount || 0;
+                document.getElementById('totalUsers').textContent = usersCount || 0;
+                document.getElementById('companiesChange').textContent = 
+                    companiesCount > 0 ? `${companiesCount} empresas registradas` : 'Listo para comenzar';
+                document.getElementById('usersChange').textContent = 
+                    usersCount > 0 ? `${usersCount} usuarios en el sistema` : 'Super Admin activo';
                 
             } catch (error) {
                 console.error('Error loading dashboard:', error);
@@ -1409,6 +1618,7 @@
                             <div class="empty-icon">🏢</div>
                             <div class="empty-title">No hay empresas registradas</div>
                             <div class="empty-description">Agrega la primera empresa para comenzar</div>
+                            <button onclick="showAddCompanyModal()" class="btn-action btn-primary">Agregar Primera Empresa</button>
                         </td>
                     </tr>
                 `;
@@ -1454,572 +1664,3 @@
                         <td>
                             <span style="font-weight: 600;">0</span>
                             <span style="color: #86868b; font-size: 0.85rem;">/ ${company.max_users || '50'}</span>
-                        </td>
-                        <td style="color: #86868b; font-size: 0.9rem;">${createdDate}</td>
-                        <td>
-                            <span class="status-badge ${company.status === 'active' ? 'active' : 'inactive'}">
-                                ${company.status === 'active' ? 'Activa' : 'Inactiva'}
-                            </span>
-                        </td>
-                        <td>
-                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                                <button onclick="editCompany('${company.id}')" class="btn-action btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" title="Editar Completo">
-                                    ⚙️ Editar
-                                </button>
-                                <button onclick="toggleCompanyStatus('${company.id}', '${company.status}')" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" title="${company.status === 'active' ? 'Desactivar' : 'Activar'}">
-                                    ${company.status === 'active' ? '⏸️' : '▶️'}
-                                </button>
-                                <button onclick="deleteCompany('${company.id}', '${company.name}')" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: #dc3545; color: white;" title="Eliminar">
-                                    🗑️
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function displayCompaniesError() {
-            const tbody = document.getElementById('companiesTableBody');
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="8" class="empty-state">
-                        <div class="empty-icon">⚠️</div>
-                        <div class="empty-title">Error al cargar empresas</div>
-                        <div class="empty-description">Verifica la conexión</div>
-                    </td>
-                </tr>
-            `;
-        }
-
-        // ============================================
-        // QUICK INLINE EDIT
-        // ============================================
-        async function quickEdit(companyId, field, element) {
-            event.stopPropagation();
-            
-            const company = companies.find(c => c.id === companyId);
-            if (!company) return;
-            
-            const currentValue = company[field] || '';
-            const fieldName = getFieldDisplayName(field);
-            
-            // Create inline edit input
-            const originalHTML = element.innerHTML;
-            
-            let inputHTML = '';
-            if (field === 'subscription_plan') {
-                inputHTML = `
-                    <select class="inline-edit-input" id="inline-edit-${field}">
-                        <option value="warehouse_basic" ${currentValue === 'warehouse_basic' ? 'selected' : ''}>Almacén Básico</option>
-                        <option value="warehouse_pro" ${currentValue === 'warehouse_pro' ? 'selected' : ''}>Almacén Pro</option>
-                        <option value="suite_standard" ${currentValue === 'suite_standard' ? 'selected' : ''}>Suite Standard</option>
-                        <option value="suite_premium" ${currentValue === 'suite_premium' ? 'selected' : ''}>Suite Premium</option>
-                        <option value="enterprise" ${currentValue === 'enterprise' ? 'selected' : ''}>Enterprise</option>
-                    </select>
-                `;
-            } else {
-                inputHTML = `<input type="text" class="inline-edit-input" id="inline-edit-${field}" value="${currentValue}" />`;
-            }
-            
-            element.innerHTML = `
-                ${inputHTML}
-                <span class="inline-edit-buttons">
-                    <button class="inline-edit-btn save" onclick="saveInlineEdit('${companyId}', '${field}', '${encodeURIComponent(originalHTML)}')">✓</button>
-                    <button class="inline-edit-btn cancel" onclick="cancelInlineEdit(this, '${encodeURIComponent(originalHTML)}')">✕</button>
-                </span>
-            `;
-            
-            document.getElementById(`inline-edit-${field}`).focus();
-            document.getElementById(`inline-edit-${field}`).select();
-        }
-
-        async function saveInlineEdit(companyId, field, originalHTML) {
-            const input = document.getElementById(`inline-edit-${field}`);
-            const newValue = input.value.trim();
-            
-            if (!newValue && field !== 'ruc' && field !== 'address' && field !== 'phone') {
-                showNotification('error', 'Error', 'Este campo no puede estar vacío');
-                return;
-            }
-            
-            try {
-                const updateData = {};
-                updateData[field] = newValue;
-                
-                const { error } = await supabase
-                    .from('companies')
-                    .update(updateData)
-                    .eq('id', companyId);
-                
-                if (error) throw error;
-                
-                await logActivity('update', `Campo ${field} actualizado para empresa`, {
-                    company_id: companyId,
-                    field: field,
-                    new_value: newValue
-                });
-                
-                showNotification('success', 'Actualizado', `${getFieldDisplayName(field)} actualizado correctamente`);
-                await loadCompanies();
-                
-            } catch (error) {
-                console.error('Error updating field:', error);
-                showNotification('error', 'Error', 'No se pudo actualizar el campo');
-                cancelInlineEdit(input.parentElement.parentElement, originalHTML);
-            }
-        }
-
-        function cancelInlineEdit(element, originalHTML) {
-            element.closest('.editable-field').innerHTML = decodeURIComponent(originalHTML);
-        }
-
-        // ============================================
-        // FULL EDIT MODAL
-        // ============================================
-        async function editCompany(companyId) {
-            const company = companies.find(c => c.id === companyId);
-            if (!company) {
-                showNotification('error', 'Error', 'No se encontró la empresa');
-                return;
-            }
-            
-            currentEditingCompany = company;
-            originalCompanyData = JSON.parse(JSON.stringify(company));
-            
-            // Fill the form with company data
-            document.getElementById('edit_companyId').value = company.id;
-            document.getElementById('edit_currentCompanyId').value = company.id;
-            document.getElementById('edit_companyName').value = company.name || '';
-            document.getElementById('edit_companyRuc').value = company.ruc || '';
-            document.getElementById('edit_companyAddress').value = company.address || '';
-            document.getElementById('edit_companyPhone').value = company.phone || '';
-            document.getElementById('edit_companyEmail').value = company.email || '';
-            document.getElementById('edit_companyDomain').value = company.domain || '';
-            document.getElementById('edit_companySlug').value = company.slug || '';
-            document.getElementById('edit_companyPlan').value = company.subscription_plan || 'warehouse_basic';
-            document.getElementById('edit_maxUsers').value = company.max_users || 50;
-            document.getElementById('edit_companyStatus').value = company.status || 'active';
-            document.getElementById('edit_createdAt').value = company.created_at ? 
-                new Date(company.created_at).toISOString().slice(0, 16) : '';
-            document.getElementById('edit_internalNotes').value = company.internal_notes || '';
-            
-            // Handle custom settings
-            if (company.settings) {
-                document.getElementById('edit_customSettings').value = 
-                    typeof company.settings === 'object' ? 
-                    JSON.stringify(company.settings, null, 2) : 
-                    company.settings;
-            } else {
-                document.getElementById('edit_customSettings').value = '{}';
-            }
-            
-            // Generate modules checkboxes
-            generateModulesCheckboxes(company.settings?.modules_enabled || []);
-            
-            document.getElementById('editCompanyModal').classList.add('show');
-            
-            await logActivity('view', `Abrió edición completa de empresa: ${company.name}`, {
-                company_id: companyId
-            });
-        }
-
-        function generateModulesCheckboxes(enabledModules) {
-            const modules = [
-                { id: 'equipment', name: 'Gestión de Equipos', icon: '🔧' },
-                { id: 'loans', name: 'Préstamos', icon: '📋' },
-                { id: 'maintenance', name: 'Mantenimiento', icon: '⚙️' },
-                { id: 'reports', name: 'Reportes', icon: '📊' },
-                { id: 'projects', name: 'Proyectos', icon: '📁' },
-                { id: 'finance', name: 'Finanzas', icon: '💰' },
-                { id: 'inventory', name: 'Inventario', icon: '📦' },
-                { id: 'api', name: 'API Access', icon: '🔌' }
-            ];
-            
-            const container = document.getElementById('edit_modulesCheckboxes');
-            container.innerHTML = modules.map(module => `
-                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                    <input type="checkbox" 
-                           id="module_${module.id}" 
-                           value="${module.id}"
-                           ${enabledModules.includes(module.id) ? 'checked' : ''}
-                           style="cursor: pointer;">
-                    <span>${module.icon} ${module.name}</span>
-                </label>
-            `).join('');
-        }
-
-        async function handleEditCompany(event) {
-            event.preventDefault();
-            
-            const companyId = document.getElementById('edit_currentCompanyId').value;
-            
-            try {
-                // Collect all form data
-                const companyData = {
-                    name: document.getElementById('edit_companyName').value,
-                    ruc: document.getElementById('edit_companyRuc').value,
-                    address: document.getElementById('edit_companyAddress').value,
-                    phone: document.getElementById('edit_companyPhone').value,
-                    email: document.getElementById('edit_companyEmail').value,
-                    domain: document.getElementById('edit_companyDomain').value,
-                    slug: document.getElementById('edit_companySlug').value,
-                    subscription_plan: document.getElementById('edit_companyPlan').value,
-                    max_users: parseInt(document.getElementById('edit_maxUsers').value),
-                    status: document.getElementById('edit_companyStatus').value,
-                    internal_notes: document.getElementById('edit_internalNotes').value
-                };
-                
-                // Get enabled modules
-                const enabledModules = [];
-                document.querySelectorAll('#edit_modulesCheckboxes input[type="checkbox"]:checked').forEach(checkbox => {
-                    enabledModules.push(checkbox.value);
-                });
-                
-                // Parse and add custom settings
-                let customSettings = {};
-                try {
-                    const settingsText = document.getElementById('edit_customSettings').value;
-                    if (settingsText.trim()) {
-                        customSettings = JSON.parse(settingsText);
-                    }
-                } catch (e) {
-                    showNotification('warning', 'Advertencia', 'El JSON de configuración no es válido, se guardará como texto');
-                    customSettings = { raw: document.getElementById('edit_customSettings').value };
-                }
-                
-                // Merge settings
-                companyData.settings = {
-                    ...customSettings,
-                    modules_enabled: enabledModules
-                };
-                
-                // Update in database
-                const { error } = await supabase
-                    .from('companies')
-                    .update(companyData)
-                    .eq('id', companyId);
-                
-                if (error) throw error;
-                
-                // Check if force cache is selected
-                if (document.getElementById('edit_forceCache').value === 'yes') {
-                    await forceCacheRefresh(companyId);
-                }
-                
-                // Log the changes
-                const changes = getChangedFields(originalCompanyData, companyData);
-                await logActivity('update', `Empresa actualizada: ${companyData.name}`, {
-                    company_id: companyId,
-                    changes: changes
-                });
-                
-                showNotification('success', 'Actualización Exitosa', `La empresa ${companyData.name} ha sido actualizada correctamente`);
-                closeModal('editCompanyModal');
-                await loadCompanies();
-                
-            } catch (error) {
-                console.error('Error updating company:', error);
-                showNotification('error', 'Error', 'No se pudo actualizar la empresa: ' + error.message);
-            }
-        }
-        
-        function getChangedFields(original, updated) {
-            const changes = {};
-            for (const key in updated) {
-                if (JSON.stringify(original[key]) !== JSON.stringify(updated[key])) {
-                    changes[key] = {
-                        from: original[key],
-                        to: updated[key]
-                    };
-                }
-            }
-            return changes;
-        }
-        
-        async function forceCacheRefresh(companyId) {
-            // This would typically clear any cached data for the company
-            console.log('Forcing cache refresh for company:', companyId);
-            // In a real implementation, you might call an API endpoint or clear specific cache keys
-        }
-        
-        function resetCompanyData() {
-            if (!originalCompanyData) return;
-            
-            // Reset all fields to original values
-            document.getElementById('edit_companyName').value = originalCompanyData.name || '';
-            document.getElementById('edit_companyRuc').value = originalCompanyData.ruc || '';
-            document.getElementById('edit_companyAddress').value = originalCompanyData.address || '';
-            document.getElementById('edit_companyPhone').value = originalCompanyData.phone || '';
-            document.getElementById('edit_companyEmail').value = originalCompanyData.email || '';
-            document.getElementById('edit_companyDomain').value = originalCompanyData.domain || '';
-            document.getElementById('edit_companySlug').value = originalCompanyData.slug || '';
-            document.getElementById('edit_companyPlan').value = originalCompanyData.subscription_plan || 'warehouse_basic';
-            document.getElementById('edit_maxUsers').value = originalCompanyData.max_users || 50;
-            document.getElementById('edit_companyStatus').value = originalCompanyData.status || 'active';
-            document.getElementById('edit_internalNotes').value = originalCompanyData.internal_notes || '';
-            
-            if (originalCompanyData.settings) {
-                document.getElementById('edit_customSettings').value = 
-                    typeof originalCompanyData.settings === 'object' ? 
-                    JSON.stringify(originalCompanyData.settings, null, 2) : 
-                    originalCompanyData.settings;
-            }
-            
-            generateModulesCheckboxes(originalCompanyData.settings?.modules_enabled || []);
-            
-            showNotification('info', 'Valores Restaurados', 'Se han restaurado los valores originales');
-        }
-
-        async function toggleCompanyStatus(companyId, currentStatus) {
-            const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-            const action = newStatus === 'active' ? 'activar' : 'desactivar';
-            
-            if (!confirm(`¿Estás seguro de ${action} esta empresa?`)) return;
-            
-            try {
-                const { error } = await supabase
-                    .from('companies')
-                    .update({ status: newStatus })
-                    .eq('id', companyId);
-                
-                if (error) throw error;
-                
-                await logActivity('update', `Estado de empresa ${action}do`, {
-                    company_id: companyId,
-                    old_status: currentStatus,
-                    new_status: newStatus
-                });
-                
-                showNotification('success', 'Estado actualizado', `Empresa ${action}da correctamente`);
-                await loadCompanies();
-                
-            } catch (error) {
-                console.error('Error updating company status:', error);
-                showNotification('error', 'Error', 'No se pudo actualizar el estado');
-            }
-        }
-
-        async function deleteCompany(companyId, companyName) {
-            if (!confirm(`¿Estás seguro de eliminar la empresa "${companyName}"?\n\n⚠️ Esta acción es IRREVERSIBLE`)) return;
-            
-            const confirmation = prompt('Escribe "ELIMINAR" para confirmar:');
-            if (confirmation !== 'ELIMINAR') {
-                showNotification('warning', 'Cancelado', 'Eliminación cancelada');
-                return;
-            }
-            
-            try {
-                // First delete related records (subscriptions, etc.)
-                await supabase.from('subscriptions').delete().eq('company_id', companyId);
-                await supabase.from('payments').delete().eq('company_id', companyId);
-                
-                // Then delete the company
-                const { error } = await supabase
-                    .from('companies')
-                    .delete()
-                    .eq('id', companyId);
-                
-                if (error) throw error;
-                
-                await logActivity('delete', `Empresa eliminada: ${companyName}`, {
-                    company_id: companyId,
-                    company_name: companyName
-                });
-                
-                showNotification('success', 'Empresa eliminada', 'La empresa y todos sus datos han sido eliminados');
-                await loadCompanies();
-                await loadDashboard();
-                
-            } catch (error) {
-                console.error('Error deleting company:', error);
-                showNotification('error', 'Error', 'No se pudo eliminar la empresa');
-            }
-        }
-
-        // ============================================
-        // HELPER FUNCTIONS
-        // ============================================
-        function getFieldDisplayName(field) {
-            const fieldNames = {
-                'name': 'Nombre',
-                'ruc': 'RUC',
-                'email': 'Email',
-                'phone': 'Teléfono',
-                'address': 'Dirección',
-                'domain': 'Dominio',
-                'slug': 'Slug',
-                'subscription_plan': 'Plan',
-                'max_users': 'Usuarios Máximos',
-                'status': 'Estado'
-            };
-            return fieldNames[field] || field;
-        }
-
-        function searchCompanies(term) {
-            const filtered = companies.filter(c => 
-                c.name.toLowerCase().includes(term.toLowerCase()) ||
-                c.ruc?.toLowerCase().includes(term.toLowerCase()) ||
-                c.email.toLowerCase().includes(term.toLowerCase()) ||
-                c.domain?.toLowerCase().includes(term.toLowerCase())
-            );
-            displayCompanies(filtered);
-        }
-
-        function filterCompanies(type, btn) {
-            document.querySelectorAll('#companies-tab .filter-pill').forEach(p => p.classList.remove('active'));
-            btn.classList.add('active');
-            
-            let filtered = companies;
-            if (type === 'active') filtered = companies.filter(c => c.status === 'active');
-            if (type === 'inactive') filtered = companies.filter(c => c.status === 'inactive');
-            if (type === 'trial') filtered = companies.filter(c => c.status === 'trial');
-            
-            displayCompanies(filtered);
-        }
-
-        function exportCompanies() {
-            if (companies.length === 0) {
-                showNotification('warning', 'Sin datos', 'No hay empresas para exportar');
-                return;
-            }
-            
-            const csvData = companies.map(company => ({
-                'ID': company.id,
-                'Nombre': company.name,
-                'RUC': company.ruc || '',
-                'Email': company.email,
-                'Dominio': company.domain || '',
-                'Plan': company.subscription_plan || '',
-                'Usuarios Max': company.max_users || '',
-                'Estado': company.status,
-                'Fecha Creación': new Date(company.created_at).toLocaleDateString('es-ES'),
-                'Notas Internas': company.internal_notes || ''
-            }));
-            
-            const csv = convertToCSV(csvData);
-            downloadCSV(csv, `empresas_${new Date().toISOString().split('T')[0]}.csv`);
-            showNotification('success', 'Exportado', 'Archivo CSV de empresas descargado');
-        }
-
-        function convertToCSV(objArray) {
-            const array = [Object.keys(objArray[0])].concat(objArray);
-            return array.map(row => {
-                return Object.values(row).map(value => {
-                    const stringValue = value?.toString() || '';
-                    return '"' + stringValue.replace(/"/g, '""') + '"';
-                }).join(',');
-            }).join('\n');
-        }
-
-        function downloadCSV(csv, filename) {
-            const csvFile = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-            const downloadLink = document.createElement('a');
-            downloadLink.download = filename;
-            downloadLink.href = window.URL.createObjectURL(csvFile);
-            downloadLink.style.display = 'none';
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            document.body.removeChild(downloadLink);
-        }
-
-        function showNotification(type, title, message) {
-            const notification = document.getElementById('notification');
-            const notificationTitle = document.getElementById('notificationTitle');
-            const notificationMessage = document.getElementById('notificationMessage');
-            
-            notification.className = `notification ${type} show`;
-            notificationTitle.textContent = title;
-            notificationMessage.textContent = message;
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 4000);
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('show');
-        }
-
-        function showAddCompanyModal() {
-            // This would open the add company modal
-            showNotification('info', 'Próximamente', 'Modal de agregar empresa en desarrollo');
-        }
-
-        // ============================================
-        // CHARTS INITIALIZATION
-        // ============================================
-        function initCharts() {
-            const usersCtx = document.getElementById('usersChart')?.getContext('2d');
-            const revenueCtx = document.getElementById('revenueChart')?.getContext('2d');
-            
-            if (usersCtx) {
-                new Chart(usersCtx, {
-                    type: 'line',
-                    data: {
-                        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-                        datasets: [{
-                            label: 'Usuarios',
-                            data: [0, 1, 1, 1, 1, 1],
-                            borderColor: '#20c997',
-                            backgroundColor: 'rgba(32, 201, 151, 0.1)',
-                            tension: 0.3,
-                            fill: true
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: { display: false }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-            }
-            
-            if (revenueCtx) {
-                new Chart(revenueCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-                        datasets: [{
-                            label: 'Ingresos',
-                            data: [0, 0, 0, 0, 0, 0],
-                            backgroundColor: 'rgba(73, 80, 87, 0.8)',
-                            borderRadius: 8
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: { display: false }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-            }
-        }
-
-        // Close modals when clicking outside
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal')) {
-                e.target.classList.remove('show');
-            }
-        });
-
-        // Close modals with Escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                document.querySelectorAll('.modal.show').forEach(modal => {
-                    modal.classList.remove('show');
-                });
-            }
-        });
