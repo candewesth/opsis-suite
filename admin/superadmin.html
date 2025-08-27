@@ -824,40 +824,65 @@
             return details[plan] || details['warehouse_basic'];
         }
 
-        function showNotification(type, title, message) {
-            const notification = document.getElementById('notification');
-            const notificationTitle = document.getElementById('notificationTitle');
-            const notificationMessage = document.getElementById('notificationMessage');
-
-            notification.className = `notification ${type} show`;
-            notificationTitle.textContent = title;
-            notificationMessage.textContent = message;
-
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 4000);
+        // ============================================
+        // HELPER FUNCTIONS
+        // ============================================
+        function getPlanPrice(plan) {
+            const prices = {
+                'warehouse_basic': 49,
+                'warehouse_pro': 149,
+                'suite_standard': 249,
+                'suite_premium': 499,
+                'enterprise': 999
+            };
+            return prices[plan] || 49;
         }
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('show');
+        function getModulesForPlan(plan) {
+            const modules = {
+                'warehouse_basic': ['equipment', 'loans', 'maintenance'],
+                'warehouse_pro': ['equipment', 'loans', 'maintenance', 'reports'],
+                'suite_standard': ['equipment', 'loans', 'maintenance', 'reports', 'projects'],
+                'suite_premium': ['equipment', 'loans', 'maintenance', 'reports', 'projects', 'finance'],
+                'enterprise': ['all']
+            };
+            return modules[plan] || ['equipment'];
         }
 
-        function showAddCompanyModal() {
-            document.getElementById('addCompanyModal').classList.add('show');
-        }
-
-        async function showAddUserModal() {
-            await loadCompaniesForSelect();
-            document.getElementById('addUserModal').classList.add('show');
-        }
-
-        function showAddSubscriptionModal() {
-            loadCompaniesForSubscriptionSelect();
-            document.getElementById('addSubscriptionModal').classList.add('show');
-        }
-
-        function showAddPaymentModal() {
-            showNotification('info', 'Próximamente', 'Modal de pagos disponible pronto');
+        function getPlanDetailsInfo(plan) {
+            const details = {
+                'warehouse_basic': {
+                    users: 'Hasta 10 usuarios',
+                    storage: '5 GB',
+                    support: 'Email básico',
+                    features: ['Gestión de equipos', 'Préstamos básicos', 'Mantenimiento básico']
+                },
+                'warehouse_pro': {
+                    users: 'Hasta 25 usuarios',
+                    storage: '25 GB',
+                    support: 'Email prioritario',
+                    features: ['Todo lo del básico', 'Reportes avanzados', 'API access']
+                },
+                'suite_standard': {
+                    users: 'Hasta 50 usuarios',
+                    storage: '100 GB',
+                    support: 'Email + Chat',
+                    features: ['Todo lo del Pro', 'Gestión de proyectos', 'Inventario avanzado']
+                },
+                'suite_premium': {
+                    users: 'Hasta 100 usuarios',
+                    storage: '500 GB',
+                    support: 'Soporte telefónico',
+                    features: ['Todo lo del Standard', 'Módulo financiero', 'Integraciones']
+                },
+                'enterprise': {
+                    users: 'Usuarios ilimitados',
+                    storage: '2 TB',
+                    support: 'Soporte dedicado',
+                    features: ['Todos los módulos', 'Personalización', 'SLA garantizado']
+                }
+            };
+            return details[plan] || details['warehouse_basic'];
         }
 
         async function loadCompaniesForSelect() {
@@ -899,6 +924,16 @@
             document.body.appendChild(downloadLink);
             downloadLink.click();
             document.body.removeChild(downloadLink);
+        }
+
+        function generateSlug(name) {
+            return name.toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .trim('-');
         }
 
         // ============================================
@@ -3193,6 +3228,56 @@
             }
         });
 
+        // ============================================
+        // MODAL AND UI FUNCTIONS (Move to top)
+        // ============================================
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        function showAddCompanyModal() {
+            document.getElementById('addCompanyModal').classList.add('show');
+        }
+
+        async function showAddUserModal() {
+            await loadCompaniesForSelect();
+            document.getElementById('addUserModal').classList.add('show');
+        }
+
+        function showAddSubscriptionModal() {
+            loadCompaniesForSubscriptionSelect();
+            document.getElementById('addSubscriptionModal').classList.add('show');
+        }
+
+        function showAddPaymentModal() {
+            showNotification('info', 'Próximamente', 'Modal de pagos disponible pronto');
+        }
+
+        function showReportsModal() {
+            document.getElementById('reportsModal').classList.add('show');
+            logActivity('info', 'Accedió al centro de reportes');
+        }
+
+        function showSettingsModal() {
+            loadSettings();
+            document.getElementById('settingsModal').classList.add('show');
+            logActivity('info', 'Accedió a la configuración del sistema');
+        }
+
+        function showNotification(type, title, message) {
+            const notification = document.getElementById('notification');
+            const notificationTitle = document.getElementById('notificationTitle');
+            const notificationMessage = document.getElementById('notificationMessage');
+
+            notification.className = `notification ${type} show`;
+            notificationTitle.textContent = title;
+            notificationMessage.textContent = message;
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+
         // Setup Event Listeners
         function setupEventListeners() {
             // Slug preview update
@@ -3346,7 +3431,30 @@
                 });
 
                 document.getElementById(`${tabName}-tab`).classList.add('active');
-                event.target.classList.add('active');
+                
+                // Find and activate the clicked tab button
+                const clickedTab = Array.from(document.querySelectorAll('.nav-tab')).find(tab => 
+                    tab.textContent.toLowerCase().includes(tabName) || 
+                    tab.onclick?.toString().includes(tabName)
+                );
+                
+                if (clickedTab) {
+                    clickedTab.classList.add('active');
+                } else {
+                    // Fallback - activate by position
+                    const tabMapping = {
+                        'dashboard': 0,
+                        'companies': 1,
+                        'users': 2,
+                        'subscriptions': 3,
+                        'payments': 4,
+                        'activity': 5
+                    };
+                    const tabIndex = tabMapping[tabName];
+                    if (tabIndex !== undefined) {
+                        document.querySelectorAll('.nav-tab')[tabIndex]?.classList.add('active');
+                    }
+                }
 
                 loadTabData(tabName);
             } catch (error) {
