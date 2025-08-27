@@ -1192,6 +1192,29 @@
         let activityLogs = [];
 
         // ============================================
+        // ACTIVITY LOGGING
+        // ============================================
+        async function logActivity(action, details = '') {
+            if (!currentUser?.id) {
+                console.log('Sin usuario - no se puede registrar actividad');
+                return;
+            }
+            
+            try {
+                await supabase
+                    .from('admin_activity_logs')
+                    .insert([{
+                        user_id: currentUser.id,
+                        action,
+                        details,
+                        created_at: new Date().toISOString()
+                    }]);
+            } catch (error) {
+                console.error('Error logging activity:', error.message || error);
+            }
+        }
+
+        // ============================================
         // INITIALIZATION
         // ============================================
         document.addEventListener('DOMContentLoaded', async () => {
@@ -1262,7 +1285,7 @@
                     userInfo.textContent = profile.email || user.email;
                 }
 
-                // Log de actividad
+                // Log de actividad (después de establecer currentUser)
                 await logActivity('login', 'Super admin accedió al panel');
                 return true;
 
