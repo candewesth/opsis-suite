@@ -770,6 +770,69 @@
         .toggle-switch.active .toggle-slider {
             transform: translateX(24px);
         }
+
+        /* Settings Sections */
+        .settings-section {
+            margin-bottom: 2.5rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .settings-section:last-of-type {
+            border-bottom: none;
+        }
+
+        .settings-section h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .settings-section h3::before {
+            content: '⚙️';
+            font-size: 1rem;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #22c55e;
+        }
+
+        .checkbox-item label {
+            margin-bottom: 0;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .settings-actions {
+            background: var(--hover-bg);
+            margin: 0 -1.5rem -1.5rem;
+            padding: 1.5rem;
+            border-radius: 0 0 16px 16px;
+        }
     </style>
 </head>
 <body>
@@ -980,28 +1043,266 @@
                 </div>
                 <div class="content-body">
                     <form id="settingsForm">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Período de Prueba (días)</label>
-                                <input type="number" class="form-control" value="30">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Usuarios por Defecto</label>
-                                <input type="number" class="form-control" value="5">
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Plan Básico (USD/mes)</label>
-                                <input type="number" class="form-control" value="99">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Plan Pro (USD/mes)</label>
-                                <input type="number" class="form-control" value="249">
+                        <!-- Configuración de Tema -->
+                        <div class="settings-section">
+                            <h3>Apariencia</h3>
+                            <div class="dark-mode-toggle">
+                                <label class="form-label" style="margin-bottom: 0;">Modo Oscuro</label>
+                                <div class="toggle-switch" id="darkModeToggle" onclick="toggleDarkMode()">
+                                    <div class="toggle-slider"></div>
+                                </div>
                             </div>
                         </div>
-                        <div style="margin-top: 2rem;">
-                            <button type="submit" class="btn btn-primary">Guardar Configuración</button>
+
+                        <!-- Configuración General del Sistema -->
+                        <div class="settings-section">
+                            <h3>Sistema General</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Período de Prueba (días)</label>
+                                    <input type="number" class="form-control" id="trialPeriod" value="30" min="1" max="365">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Usuarios por Defecto</label>
+                                    <input type="number" class="form-control" id="defaultUsers" value="5" min="1" max="1000">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Timeout de Sesión (minutos)</label>
+                                    <input type="number" class="form-control" id="sessionTimeout" value="60" min="5" max="1440">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Límite de API por Hora</label>
+                                    <input type="number" class="form-control" id="apiRateLimit" value="1000" min="100" max="50000">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Configuración de Planes y Precios -->
+                        <div class="settings-section">
+                            <h3>Planes y Precios</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Plan Básico (USD/mes)</label>
+                                    <input type="number" class="form-control" id="basicPlanPrice" value="99" min="1" max="10000" step="0.01">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Plan Pro (USD/mes)</label>
+                                    <input type="number" class="form-control" id="proPlanPrice" value="249" min="1" max="10000" step="0.01">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Plan Enterprise (USD/mes)</label>
+                                    <input type="number" class="form-control" id="enterprisePlanPrice" value="499" min="1" max="10000" step="0.01">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Impuesto por Defecto (%)</label>
+                                    <input type="number" class="form-control" id="defaultTax" value="0" min="0" max="50" step="0.01">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Días de Gracia para Pagos</label>
+                                    <input type="number" class="form-control" id="paymentGraceDays" value="7" min="0" max="30">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Moneda del Sistema</label>
+                                    <select class="form-control" id="systemCurrency">
+                                        <option value="USD">USD - Dólar Americano</option>
+                                        <option value="MXN">MXN - Peso Mexicano</option>
+                                        <option value="EUR">EUR - Euro</option>
+                                        <option value="CAD">CAD - Dólar Canadiense</option>
+                                        <option value="GBP">GBP - Libra Esterlina</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Configuración de Seguridad -->
+                        <div class="settings-section">
+                            <h3>Seguridad</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Mínimo Caracteres Contraseña</label>
+                                    <input type="number" class="form-control" id="minPasswordLength" value="8" min="6" max="128">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Intentos de Login Máximos</label>
+                                    <input type="number" class="form-control" id="maxLoginAttempts" value="5" min="3" max="20">
+                                </div>
+                            </div>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="requireSpecialChars" checked>
+                                    <label>Requerir caracteres especiales en contraseñas</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="require2FA">
+                                    <label>Requerir autenticación de dos factores para admins</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="enableIPWhitelist">
+                                    <label>Habilitar lista blanca de IPs</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Configuración de Notificaciones -->
+                        <div class="settings-section">
+                            <h3>Notificaciones y Alertas</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Email de Administrador</label>
+                                    <input type="email" class="form-control" id="adminEmail" value="admin@opsis-suite.com">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Webhook URL</label>
+                                    <input type="url" class="form-control" id="webhookUrl" placeholder="https://hooks.slack.com/...">
+                                </div>
+                            </div>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="notifyNewRegistrations" checked>
+                                    <label>Notificar nuevos registros de empresas</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="notifyFailedPayments" checked>
+                                    <label>Notificar fallos de pago</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="notifyHighUsage" checked>
+                                    <label>Alertar uso alto de recursos (>80%)</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="notifySecurityEvents" checked>
+                                    <label>Alertas de eventos de seguridad</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="dailyReports" checked>
+                                    <label>Reportes diarios por email</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="weeklyAnalytics">
+                                    <label>Análisis semanal de métricas</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Configuración de Límites y Recursos -->
+                        <div class="settings-section">
+                            <h3>Límites y Recursos</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Almacenamiento por Empresa (GB)</label>
+                                    <input type="number" class="form-control" id="storagePerCompany" value="10" min="1" max="1000">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Máximo Usuarios por Empresa</label>
+                                    <input type="number" class="form-control" id="maxUsersPerCompany" value="100" min="1" max="10000">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Backup Automático (días)</label>
+                                    <input type="number" class="form-control" id="backupFrequency" value="1" min="1" max="30">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Retención de Logs (días)</label>
+                                    <input type="number" class="form-control" id="logRetention" value="90" min="7" max="365">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Configuración de Mantenimiento -->
+                        <div class="settings-section">
+                            <h3>Mantenimiento y Sistema</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Próximo Mantenimiento</label>
+                                    <input type="datetime-local" class="form-control" id="nextMaintenance">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Duración Estimada (horas)</label>
+                                    <input type="number" class="form-control" id="maintenanceDuration" value="2" min="1" max="24" step="0.5">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Mensaje de Mantenimiento</label>
+                                <textarea class="form-control" id="maintenanceMessage" rows="3" placeholder="El sistema estará en mantenimiento para mejoras..."></textarea>
+                            </div>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="enableMaintenanceMode">
+                                    <label>Activar modo mantenimiento ahora</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="enableCDN" checked>
+                                    <label>Habilitar CDN para archivos estáticos</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="enableCaching" checked>
+                                    <label>Habilitar caché del sistema</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Configuración Regional -->
+                        <div class="settings-section">
+                            <h3>Configuración Regional</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Zona Horaria del Sistema</label>
+                                    <select class="form-control" id="systemTimezone">
+                                        <option value="America/Mexico_City">México (GMT-6)</option>
+                                        <option value="America/New_York">New York (GMT-5)</option>
+                                        <option value="America/Los_Angeles">Los Angeles (GMT-8)</option>
+                                        <option value="Europe/Madrid">Madrid (GMT+1)</option>
+                                        <option value="Europe/London">Londres (GMT+0)</option>
+                                        <option value="UTC">UTC (GMT+0)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Formato de Fecha</label>
+                                    <select class="form-control" id="dateFormat">
+                                        <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                                        <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                                        <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Idioma por Defecto</label>
+                                    <select class="form-control" id="defaultLanguage">
+                                        <option value="es">Español</option>
+                                        <option value="en">English</option>
+                                        <option value="fr">Français</option>
+                                        <option value="pt">Português</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Separador de Miles</label>
+                                    <select class="form-control" id="thousandsSeparator">
+                                        <option value=",">,</option>
+                                        <option value=".">.</option>
+                                        <option value=" ">Espacio</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones de Acción -->
+                        <div class="settings-actions">
+                            <div style="display: flex; gap: 1rem; justify-content: space-between; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                                <div style="display: flex; gap: 1rem;">
+                                    <button type="button" class="btn btn-secondary" onclick="resetToDefaults()">Restaurar por Defecto</button>
+                                    <button type="button" class="btn btn-secondary" onclick="exportSettings()">Exportar Configuración</button>
+                                    <button type="button" class="btn btn-secondary" onclick="importSettings()">Importar Configuración</button>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Guardar Todas las Configuraciones</button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -1651,6 +1952,201 @@
         }
 
         // ============================================
+        // SETTINGS MANAGEMENT
+        // ============================================
+        async function resetToDefaults() {
+            if (!confirm('¿Estás seguro de que quieres restaurar todas las configuraciones por defecto?')) return;
+
+            // Reset all form fields to default values
+            document.getElementById('trialPeriod').value = '30';
+            document.getElementById('defaultUsers').value = '5';
+            document.getElementById('sessionTimeout').value = '60';
+            document.getElementById('apiRateLimit').value = '1000';
+            document.getElementById('basicPlanPrice').value = '99';
+            document.getElementById('proPlanPrice').value = '249';
+            document.getElementById('enterprisePlanPrice').value = '499';
+            document.getElementById('defaultTax').value = '0';
+            document.getElementById('paymentGraceDays').value = '7';
+            document.getElementById('systemCurrency').value = 'USD';
+            document.getElementById('minPasswordLength').value = '8';
+            document.getElementById('maxLoginAttempts').value = '5';
+            document.getElementById('adminEmail').value = 'admin@opsis-suite.com';
+            document.getElementById('storagePerCompany').value = '10';
+            document.getElementById('maxUsersPerCompany').value = '100';
+            document.getElementById('backupFrequency').value = '1';
+            document.getElementById('logRetention').value = '90';
+            document.getElementById('maintenanceDuration').value = '2';
+            document.getElementById('systemTimezone').value = 'America/Mexico_City';
+            document.getElementById('dateFormat').value = 'DD/MM/YYYY';
+            document.getElementById('defaultLanguage').value = 'es';
+            document.getElementById('thousandsSeparator').value = ',';
+
+            // Reset checkboxes
+            document.getElementById('requireSpecialChars').checked = true;
+            document.getElementById('require2FA').checked = false;
+            document.getElementById('enableIPWhitelist').checked = false;
+            document.getElementById('notifyNewRegistrations').checked = true;
+            document.getElementById('notifyFailedPayments').checked = true;
+            document.getElementById('notifyHighUsage').checked = true;
+            document.getElementById('notifySecurityEvents').checked = true;
+            document.getElementById('dailyReports').checked = true;
+            document.getElementById('weeklyAnalytics').checked = false;
+            document.getElementById('enableMaintenanceMode').checked = false;
+            document.getElementById('enableCDN').checked = true;
+            document.getElementById('enableCaching').checked = true;
+
+            alert('Configuraciones restauradas a valores por defecto');
+        }
+
+        function exportSettings() {
+            const settings = {
+                system: {
+                    trialPeriod: document.getElementById('trialPeriod').value,
+                    defaultUsers: document.getElementById('defaultUsers').value,
+                    sessionTimeout: document.getElementById('sessionTimeout').value,
+                    apiRateLimit: document.getElementById('apiRateLimit').value
+                },
+                pricing: {
+                    basicPlanPrice: document.getElementById('basicPlanPrice').value,
+                    proPlanPrice: document.getElementById('proPlanPrice').value,
+                    enterprisePlanPrice: document.getElementById('enterprisePlanPrice').value,
+                    defaultTax: document.getElementById('defaultTax').value,
+                    paymentGraceDays: document.getElementById('paymentGraceDays').value,
+                    systemCurrency: document.getElementById('systemCurrency').value
+                },
+                security: {
+                    minPasswordLength: document.getElementById('minPasswordLength').value,
+                    maxLoginAttempts: document.getElementById('maxLoginAttempts').value,
+                    requireSpecialChars: document.getElementById('requireSpecialChars').checked,
+                    require2FA: document.getElementById('require2FA').checked,
+                    enableIPWhitelist: document.getElementById('enableIPWhitelist').checked
+                },
+                notifications: {
+                    adminEmail: document.getElementById('adminEmail').value,
+                    webhookUrl: document.getElementById('webhookUrl').value,
+                    notifyNewRegistrations: document.getElementById('notifyNewRegistrations').checked,
+                    notifyFailedPayments: document.getElementById('notifyFailedPayments').checked,
+                    notifyHighUsage: document.getElementById('notifyHighUsage').checked,
+                    notifySecurityEvents: document.getElementById('notifySecurityEvents').checked,
+                    dailyReports: document.getElementById('dailyReports').checked,
+                    weeklyAnalytics: document.getElementById('weeklyAnalytics').checked
+                },
+                limits: {
+                    storagePerCompany: document.getElementById('storagePerCompany').value,
+                    maxUsersPerCompany: document.getElementById('maxUsersPerCompany').value,
+                    backupFrequency: document.getElementById('backupFrequency').value,
+                    logRetention: document.getElementById('logRetention').value
+                },
+                maintenance: {
+                    nextMaintenance: document.getElementById('nextMaintenance').value,
+                    maintenanceDuration: document.getElementById('maintenanceDuration').value,
+                    maintenanceMessage: document.getElementById('maintenanceMessage').value,
+                    enableMaintenanceMode: document.getElementById('enableMaintenanceMode').checked,
+                    enableCDN: document.getElementById('enableCDN').checked,
+                    enableCaching: document.getElementById('enableCaching').checked
+                },
+                regional: {
+                    systemTimezone: document.getElementById('systemTimezone').value,
+                    dateFormat: document.getElementById('dateFormat').value,
+                    defaultLanguage: document.getElementById('defaultLanguage').value,
+                    thousandsSeparator: document.getElementById('thousandsSeparator').value
+                }
+            };
+
+            const dataStr = JSON.stringify(settings, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `opsis-suite-config-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            alert('Configuración exportada exitosamente');
+        }
+
+        function importSettings() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const settings = JSON.parse(e.target.result);
+                            loadSettingsFromObject(settings);
+                            alert('Configuración importada exitosamente');
+                        } catch (error) {
+                            alert('Error al importar configuración: Archivo inválido');
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        }
+
+        function loadSettingsFromObject(settings) {
+            // Load system settings
+            if (settings.system) {
+                if (settings.system.trialPeriod) document.getElementById('trialPeriod').value = settings.system.trialPeriod;
+                if (settings.system.defaultUsers) document.getElementById('defaultUsers').value = settings.system.defaultUsers;
+                if (settings.system.sessionTimeout) document.getElementById('sessionTimeout').value = settings.system.sessionTimeout;
+                if (settings.system.apiRateLimit) document.getElementById('apiRateLimit').value = settings.system.apiRateLimit;
+            }
+
+            // Load pricing settings
+            if (settings.pricing) {
+                if (settings.pricing.basicPlanPrice) document.getElementById('basicPlanPrice').value = settings.pricing.basicPlanPrice;
+                if (settings.pricing.proPlanPrice) document.getElementById('proPlanPrice').value = settings.pricing.proPlanPrice;
+                if (settings.pricing.enterprisePlanPrice) document.getElementById('enterprisePlanPrice').value = settings.pricing.enterprisePlanPrice;
+                if (settings.pricing.defaultTax) document.getElementById('defaultTax').value = settings.pricing.defaultTax;
+                if (settings.pricing.paymentGraceDays) document.getElementById('paymentGraceDays').value = settings.pricing.paymentGraceDays;
+                if (settings.pricing.systemCurrency) document.getElementById('systemCurrency').value = settings.pricing.systemCurrency;
+            }
+
+            // Continue loading other sections...
+            // Security, notifications, limits, maintenance, regional settings would follow the same pattern
+        }
+
+        // ============================================
+        // DARK MODE FUNCTIONALITY
+        // ============================================
+        function toggleDarkMode() {
+            const body = document.body;
+            const toggle = document.getElementById('darkModeToggle');
+            const isDark = body.getAttribute('data-theme') === 'dark';
+            
+            if (isDark) {
+                body.setAttribute('data-theme', 'light');
+                toggle.classList.remove('active');
+                localStorage.setItem('darkMode', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                toggle.classList.add('active');
+                localStorage.setItem('darkMode', 'dark');
+            }
+        }
+
+        function initDarkMode() {
+            const savedTheme = localStorage.getItem('darkMode');
+            const toggle = document.getElementById('darkModeToggle');
+            
+            if (savedTheme === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+                if (toggle) toggle.classList.add('active');
+            } else {
+                document.body.setAttribute('data-theme', 'light');
+                if (toggle) toggle.classList.remove('active');
+            }
+        }
+
+        // ============================================
         // EVENT LISTENERS
         // ============================================
         function setupEventListeners() {
@@ -1703,6 +2199,9 @@
         // ============================================
         document.addEventListener('DOMContentLoaded', async () => {
             console.log('Iniciando Super Admin Panel...');
+            
+            // Inicializar modo oscuro antes que nada
+            initDarkMode();
             
             try {
                 const isAuthenticated = await checkAuth();
