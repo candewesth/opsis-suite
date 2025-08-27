@@ -1,166 +1,4 @@
-// ============================================
-        // DATA LOADING
-        // ============================================
-        async function loadDashboard() {
-            try {
-                console.log('📊 Cargando datos del dashboard...');
-                
-                // Cargar en paralelo
-                await Promise.all([
-                    loadCompanies(),
-                    loadUsers(),
-                    loadSubscriptions(),
-                    loadPayments(),
-                    loadActivityLogs()
-                ]);
-
-                updateDashboardMetrics();
-                console.log('✅ Dashboard cargado completamente');
-
-            }
-
-        // ============================================
-        // ACTIVITY LOGGING
-        // ============================================
-        async function logActivity(action, details = '') {
-            if (!currentUser?.id) {
-                console.log('⚠️ Sin usuario - no se puede registrar actividad');
-                return;
-            }
-            
-            try {
-                await supabase
-                    .from('admin_activity_logs')
-                    .insert([{
-                        user_id: currentUser.id,
-                        action,
-                        details,
-                        created_at: new Date().toISOString()
-                    }]);
-            } catch (error) {
-                console.error('Error logging activity:', error.message || error);
-            }
-        } catch (error) {
-                console.error('❌ Error cargando dashboard:', error);
-            }
-        }
-
-        async function loadCompanies() {
-            try {
-                // Primero intentar con la vista
-                let { data, error } = await supabase
-                    .from('company_subscription_summary')
-                    .select('*')
-                    .order('name');
-
-                // Si la vista no existe, usar tabla companies directa
-                if (error && error.code === 'PGRST116') {
-                    console.log('⚠️ Vista no encontrada, usando tabla companies...');
-                    const { data: companiesData, error: companiesError } = await supabase
-                        .from('companies')
-                        .select('*')
-                        .order('name');
-                    
-                    if (companiesError) throw companiesError;
-                    data = companiesData;
-                }
-
-                if (error && error.code !== 'PGRST116') throw error;
-
-                companies = data || [];
-                console.log(`📈 ${companies.length} empresas cargadas`);
-
-            } catch (error) {
-                console.error('Error cargando empresas:', error.message || error);
-                companies = [];
-            }
-        }
-
-        async function loadUsers() {
-            try {
-                const { data, error } = await supabase
-                    .from('user_profiles')
-                    .select(`
-                        *,
-                        companies(name)
-                    `)
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-
-                users = data || [];
-                console.log(`👥 ${users.length} usuarios cargados`);
-
-            } catch (error) {
-                console.error('Error cargando usuarios:', error.message || error);
-                users = [];
-            }
-        }
-
-        async function loadSubscriptions() {
-            try {
-                const { data, error } = await supabase
-                    .from('subscriptions')
-                    .select(`
-                        *,
-                        companies(name)
-                    `)
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-
-                subscriptions = data || [];
-                console.log(`💳 ${subscriptions.length} suscripciones cargadas`);
-
-            } catch (error) {
-                console.error('Error cargando suscripciones:', error.message || error);
-                subscriptions = [];
-            }
-        }
-
-        async function loadPayments() {
-            try {
-                const { data, error } = await supabase
-                    .from('payments')
-                    .select(`
-                        *,
-                        companies(name),
-                        subscriptions(plan_name)
-                    `)
-                    .order('payment_date', { ascending: false });
-
-                if (error) throw error;
-
-                payments = data || [];
-                console.log(`💰 ${payments.length} pagos cargados`);
-
-            } catch (error) {
-                console.error('Error cargando pagos:', error.message || error);
-                payments = [];
-            }
-        }
-
-        async function loadActivityLogs() {
-            try {
-                const { data, error } = await supabase
-                    .from('admin_activity_logs')
-                    .select(`
-                        *,
-                        user_profiles(full_name, email)
-                    `)
-                    .order('created_at', { ascending: false })
-                    .limit(100);
-
-                if (error) throw error;
-
-                activityLogs = data || [];
-                console.log(`📋 ${activityLogs.length} registros de actividad cargados`);
-
-            } catch (error) {
-                console.error('Error cargando logs:', error.message || error);
-                activityLogs = [];
-            }
-        }<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -674,45 +512,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-            
-            .header {
-                flex-direction: column;
-                gap: 1rem;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .nav-tabs {
-                overflow-x: auto;
-                scrollbar-width: none;
-                -ms-overflow-style: none;
-            }
-            
-            .nav-tabs::-webkit-scrollbar {
-                display: none;
-            }
-            
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Hide content areas initially */
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
         /* Quick Actions Premium Apple Style */
         .actions-section {
             margin-top: 3rem;
@@ -816,6 +615,45 @@
             color: #64748b;
             font-size: 0.875rem;
             line-height: 1.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-tabs {
+                overflow-x: auto;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+            
+            .nav-tabs::-webkit-scrollbar {
+                display: none;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Hide content areas initially */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
         }
     </style>
 </head>
@@ -1177,60 +1015,21 @@
 
     <script>
         // ============================================
-        // CONFIGURACIÓN DE SUPABASE
+        // SUPABASE CONFIGURATION
         // ============================================
         const SUPABASE_URL = 'https://lmmlhncwdwjgtkdqaycv.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxtbWxobmN3ZHdqZ3RrZHFheWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU0MDE4ODYsImV4cCI6MjA3MDk3Nzg4Nn0.vhL5E-o9RtjEtrYTOdFCvhXs5mu5fuuAtB13LCd6dJQ';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Global Variables
+        // ============================================
+        // GLOBAL VARIABLES
+        // ============================================
         let currentUser = null;
         let companies = [];
         let users = [];
         let subscriptions = [];
         let payments = [];
         let activityLogs = [];
-
-        // ============================================
-        // ACTIVITY LOGGING
-        // ============================================
-        async function logActivity(action, details = '') {
-            if (!currentUser?.id) {
-                console.log('Sin usuario - no se puede registrar actividad');
-                return;
-            }
-            
-            try {
-                await supabase
-                    .from('admin_activity_logs')
-                    .insert([{
-                        user_id: currentUser.id,
-                        action,
-                        details,
-                        created_at: new Date().toISOString()
-                    }]);
-            } catch (error) {
-                console.error('Error logging activity:', error.message || error);
-            }
-        }
-
-        // ============================================
-        // INITIALIZATION
-        // ============================================
-        document.addEventListener('DOMContentLoaded', async () => {
-            console.log('Iniciando Super Admin Panel...');
-            
-            try {
-                const isAuthenticated = await checkAuth();
-                if (isAuthenticated) {
-                    await loadDashboard();
-                    populateAllTables();
-                    setupEventListeners();
-                }
-            } catch (error) {
-                console.error('Error durante inicialización:', error);
-            }
-        });
 
         // ============================================
         // AUTHENTICATION
@@ -1245,9 +1044,6 @@
                     return false;
                 }
 
-                console.log('Usuario encontrado:', user.email);
-
-                // Verificar si es super admin
                 const { data: profile, error: profileError } = await supabase
                     .from('user_profiles')
                     .select('*')
@@ -1256,20 +1052,10 @@
 
                 if (profileError) {
                     console.error('Error obteniendo perfil:', profileError);
-                    alert('Error cargando perfil de usuario');
                     return false;
                 }
 
-                console.log('Perfil encontrado:', profile);
-
-                if (!profile) {
-                    console.log('Perfil no encontrado');
-                    alert('Perfil de usuario no encontrado');
-                    return false;
-                }
-
-                if (profile.role !== 'super_admin') {
-                    console.log('Usuario no autorizado - Rol:', profile.role);
+                if (!profile || profile.role !== 'super_admin') {
                     alert('No tienes permisos para acceder a esta página');
                     await supabase.auth.signOut();
                     window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
@@ -1277,28 +1063,25 @@
                 }
 
                 currentUser = { ...user, profile };
-                console.log('Super Admin autenticado correctamente:', profile.full_name);
-
-                // Actualizar UI con info del usuario
+                
                 const userInfo = document.querySelector('.user-info span');
                 if (userInfo) {
                     userInfo.textContent = profile.email || user.email;
                 }
 
-                // Log de actividad (después de establecer currentUser)
-                await logActivity('login', 'Super admin accedió al panel');
                 return true;
 
             } catch (error) {
                 console.error('Error en autenticación:', error);
-                alert('Error de autenticación: ' + error.message);
                 return false;
             }
         }
 
         async function logout() {
             try {
-                await logActivity('logout', 'Super admin cerró sesión');
+                if (currentUser) {
+                    await logActivity('logout', 'Super admin cerró sesión');
+                }
                 await supabase.auth.signOut();
                 window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
             } catch (error) {
@@ -1307,90 +1090,169 @@
         }
 
         // ============================================
-        // TAB NAVIGATION
+        // ACTIVITY LOGGING
+        // ============================================
+        async function logActivity(action, details = '') {
+            if (!currentUser?.id) {
+                console.log('Sin usuario para logging');
+                return;
+            }
+            
+            try {
+                await supabase
+                    .from('admin_activity_logs')
+                    .insert([{
+                        user_id: currentUser.id,
+                        action,
+                        details,
+                        created_at: new Date().toISOString()
+                    }]);
+            } catch (error) {
+                console.error('Error logging activity:', error);
+            }
+        }
+
+        // ============================================
+        // DATA LOADING
+        // ============================================
+        async function loadDashboard() {
+            try {
+                await Promise.all([
+                    loadCompanies(),
+                    loadUsers(),
+                    loadSubscriptions(),
+                    loadPayments(),
+                    loadActivityLogs()
+                ]);
+
+                updateDashboardMetrics();
+                console.log('Dashboard cargado completamente');
+
+            } catch (error) {
+                console.error('Error cargando dashboard:', error);
+            }
+        }
+
+        async function loadCompanies() {
+            try {
+                const { data, error } = await supabase
+                    .from('companies')
+                    .select('*')
+                    .order('name');
+
+                if (error) throw error;
+                companies = data || [];
+
+            } catch (error) {
+                console.error('Error cargando empresas:', error);
+                companies = [];
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const { data, error } = await supabase
+                    .from('user_profiles')
+                    .select(`*, companies(name)`)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                users = data || [];
+
+            } catch (error) {
+                console.error('Error cargando usuarios:', error);
+                users = [];
+            }
+        }
+
+        async function loadSubscriptions() {
+            try {
+                const { data, error } = await supabase
+                    .from('subscriptions')
+                    .select(`*, companies(name)`)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                subscriptions = data || [];
+
+            } catch (error) {
+                console.error('Error cargando suscripciones:', error);
+                subscriptions = [];
+            }
+        }
+
+        async function loadPayments() {
+            try {
+                const { data, error } = await supabase
+                    .from('payments')
+                    .select(`*, companies(name), subscriptions(plan_name)`)
+                    .order('payment_date', { ascending: false });
+
+                if (error) throw error;
+                payments = data || [];
+
+            } catch (error) {
+                console.error('Error cargando pagos:', error);
+                payments = [];
+            }
+        }
+
+        async function loadActivityLogs() {
+            try {
+                const { data, error } = await supabase
+                    .from('admin_activity_logs')
+                    .select(`*, user_profiles(full_name, email)`)
+                    .order('created_at', { ascending: false })
+                    .limit(100);
+
+                if (error) throw error;
+                activityLogs = data || [];
+
+            } catch (error) {
+                console.error('Error cargando logs:', error);
+                activityLogs = [];
+            }
+        }
+
+        // ============================================
+        // UI FUNCTIONS
         // ============================================
         function showTab(tabName) {
-            // Remove active class from all tabs and content
             document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             
-            // Find and activate the correct nav tab
             const navTabs = document.querySelectorAll('.nav-tab');
             navTabs.forEach(tab => {
-                if (tab.textContent.toLowerCase().includes(tabName.toLowerCase()) || 
-                    (tabName === 'dashboard' && tab.textContent.toLowerCase().includes('dashboard')) ||
-                    (tabName === 'companies' && tab.textContent.toLowerCase().includes('empresas')) ||
-                    (tabName === 'users' && tab.textContent.toLowerCase().includes('usuarios')) ||
-                    (tabName === 'subscriptions' && tab.textContent.toLowerCase().includes('suscripciones')) ||
-                    (tabName === 'payments' && tab.textContent.toLowerCase().includes('pagos')) ||
-                    (tabName === 'settings' && tab.textContent.toLowerCase().includes('configuración'))) {
+                const tabText = tab.textContent.toLowerCase();
+                if (tabText.includes(tabName.toLowerCase()) || 
+                    (tabName === 'dashboard' && tabText.includes('dashboard')) ||
+                    (tabName === 'companies' && tabText.includes('empresas')) ||
+                    (tabName === 'users' && tabText.includes('usuarios')) ||
+                    (tabName === 'subscriptions' && tabText.includes('suscripciones')) ||
+                    (tabName === 'payments' && tabText.includes('pagos')) ||
+                    (tabName === 'settings' && tabText.includes('configuración'))) {
                     tab.classList.add('active');
                 }
             });
             
-            // Show the corresponding content
-            const contentId = tabName + '-content';
-            const content = document.getElementById(contentId);
+            const content = document.getElementById(tabName + '-content');
             if (content) {
                 content.classList.add('active');
             }
         }
 
-        // ============================================
-        // DASHBOARD METRICS
-        // ============================================
         function updateDashboardMetrics() {
-            // Empresas totales
             document.getElementById('companiesCount').textContent = companies.length;
-
-            // Usuarios totales (activos)
-            const activeUsers = users.filter(user => user.status === 'active').length;
-            document.getElementById('usersCount').textContent = activeUsers;
-
-            // Ingresos mensuales (suma de suscripciones activas)
+            document.getElementById('usersCount').textContent = users.filter(u => u.status === 'active').length;
+            
             const monthlyRevenue = subscriptions
                 .filter(sub => sub.status === 'active')
-                .reduce((sum, sub) => sum + sub.price, 0);
-            document.getElementById('monthlyRevenue').textContent = `${monthlyRevenue.toLocaleString()}`;
-
-            // Empresas activas
-            const activeCompanies = companies.filter(company => company.status === 'active').length;
-            document.getElementById('activeCompanies').textContent = activeCompanies;
+                .reduce((sum, sub) => sum + (sub.price || 0), 0);
+            document.getElementById('monthlyRevenue').textContent = `$${monthlyRevenue.toLocaleString()}`;
+            
+            document.getElementById('activeCompanies').textContent = companies.filter(c => c.status === 'active').length;
         }
 
-        // ============================================
-        // TAB NAVIGATION
-        // ============================================
-        function showTab(tabName) {
-            // Remove active class from all tabs and content
-            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            
-            // Find and activate the correct nav tab
-            const navTabs = document.querySelectorAll('.nav-tab');
-            navTabs.forEach(tab => {
-                if (tab.textContent.toLowerCase().includes(tabName.toLowerCase()) || 
-                    (tabName === 'dashboard' && tab.textContent.toLowerCase().includes('dashboard')) ||
-                    (tabName === 'companies' && tab.textContent.toLowerCase().includes('empresas')) ||
-                    (tabName === 'users' && tab.textContent.toLowerCase().includes('usuarios')) ||
-                    (tabName === 'subscriptions' && tab.textContent.toLowerCase().includes('suscripciones')) ||
-                    (tabName === 'payments' && tab.textContent.toLowerCase().includes('pagos')) ||
-                    (tabName === 'settings' && tab.textContent.toLowerCase().includes('configuración'))) {
-                    tab.classList.add('active');
-                }
-            });
-            
-            // Show the corresponding content
-            const contentId = tabName + '-content';
-            const content = document.getElementById(contentId);
-            if (content) {
-                content.classList.add('active');
-            }
-        }
-
-        // ============================================
-        // TABLE POPULATION
-        // ============================================
         function populateAllTables() {
             populateCompaniesTable();
             populateUsersTable();
@@ -1403,13 +1265,7 @@
             tbody.innerHTML = '';
             
             if (companies.length === 0) {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td colspan="6" style="text-align: center; padding: 2rem; color: #64748b;">
-                        No hay empresas registradas aún
-                    </td>
-                `;
-                tbody.appendChild(row);
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 2rem; color: #64748b;">No hay empresas registradas aún</td></tr>`;
                 return;
             }
 
@@ -1418,9 +1274,9 @@
                 row.innerHTML = `
                     <td>${company.name}</td>
                     <td>${company.company_id}</td>
-                    <td>${company.plan}</td>
+                    <td>${company.plan || 'Sin plan'}</td>
                     <td><span class="badge ${company.status}">${company.status}</span></td>
-                    <td>${company.users}</td>
+                    <td>${company.user_count || 0}</td>
                     <td>
                         <button class="btn btn-sm btn-secondary" onclick="editCompany(${company.id})">Editar</button>
                         <button class="btn btn-sm btn-danger" onclick="deleteCompany(${company.id})">Eliminar</button>
@@ -1435,25 +1291,19 @@
             tbody.innerHTML = '';
             
             if (users.length === 0) {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td colspan="6" style="text-align: center; padding: 2rem; color: #64748b;">
-                        No hay usuarios registrados aún
-                    </td>
-                `;
-                tbody.appendChild(row);
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 2rem; color: #64748b;">No hay usuarios registrados aún</td></tr>`;
                 return;
             }
 
             users.forEach(user => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${user.name}</td>
+                    <td>${user.full_name || 'Sin nombre'}</td>
                     <td>${user.email}</td>
-                    <td>${user.company}</td>
+                    <td>${user.companies?.name || 'Sin empresa'}</td>
                     <td>${user.role}</td>
                     <td><span class="badge ${user.status}">${user.status}</span></td>
-                    <td>${new Date(user.lastAccess).toLocaleDateString()}</td>
+                    <td>${new Date(user.last_sign_in_at || user.created_at).toLocaleDateString()}</td>
                 `;
                 tbody.appendChild(row);
             });
@@ -1464,24 +1314,18 @@
             tbody.innerHTML = '';
             
             if (subscriptions.length === 0) {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td colspan="6" style="text-align: center; padding: 2rem; color: #64748b;">
-                        No hay suscripciones activas aún
-                    </td>
-                `;
-                tbody.appendChild(row);
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 2rem; color: #64748b;">No hay suscripciones activas aún</td></tr>`;
                 return;
             }
 
             subscriptions.forEach(subscription => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${subscription.company}</td>
-                    <td>${subscription.plan}</td>
-                    <td>${subscription.price}</td>
+                    <td>${subscription.companies?.name || 'Sin empresa'}</td>
+                    <td>${subscription.plan_name}</td>
+                    <td>$${subscription.price}</td>
                     <td><span class="badge ${subscription.status}">${subscription.status}</span></td>
-                    <td>${new Date(subscription.expiry).toLocaleDateString()}</td>
+                    <td>${new Date(subscription.end_date).toLocaleDateString()}</td>
                     <td>
                         <button class="btn btn-sm btn-secondary" onclick="editSubscription(${subscription.id})">Editar</button>
                         <button class="btn btn-sm btn-danger" onclick="cancelSubscription(${subscription.id})">Cancelar</button>
@@ -1496,25 +1340,19 @@
             tbody.innerHTML = '';
             
             if (payments.length === 0) {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td colspan="6" style="text-align: center; padding: 2rem; color: #64748b;">
-                        No hay pagos registrados aún
-                    </td>
-                `;
-                tbody.appendChild(row);
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 2rem; color: #64748b;">No hay pagos registrados aún</td></tr>`;
                 return;
             }
 
             payments.forEach(payment => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${new Date(payment.date).toLocaleDateString()}</td>
-                    <td>${payment.company}</td>
-                    <td>${payment.plan}</td>
-                    <td>${payment.amount}</td>
+                    <td>${new Date(payment.payment_date).toLocaleDateString()}</td>
+                    <td>${payment.companies?.name || 'Sin empresa'}</td>
+                    <td>${payment.subscriptions?.plan_name || 'N/A'}</td>
+                    <td>$${payment.amount}</td>
                     <td><span class="badge ${payment.status}">${payment.status}</span></td>
-                    <td>${payment.method}</td>
+                    <td>${payment.payment_method || 'Tarjeta'}</td>
                 `;
                 tbody.appendChild(row);
             });
@@ -1532,9 +1370,7 @@
         }
 
         function showReportsModule() {
-            // Redirigir al módulo de reportes o mostrar mensaje
             alert('Módulo de reportes en desarrollo. Próximamente disponible.');
-            // window.open('/admin/analytics.html', '_blank');
         }
 
         // ============================================
@@ -1542,8 +1378,6 @@
         // ============================================
         async function addCompanyWithAdmin(companyData, adminData) {
             try {
-                console.log('Creando empresa y administrador...');
-
                 // 1. Crear empresa
                 const { data: newCompany, error: companyError } = await supabase
                     .from('companies')
@@ -1556,23 +1390,12 @@
                     .single();
 
                 if (companyError) throw companyError;
-                console.log('✅ Empresa creada:', newCompany);
 
-                // 2. Crear administrador (requiere crear usuario de auth primero)
-                const { data: authUser, error: authError } = await supabase.auth.signUp({
-                    email: adminData.email,
-                    password: generateTempPassword(), // Generar password temporal
-                });
-
-                if (authError) {
-                    console.log('⚠️ Usuario ya existe o error auth:', authError.message);
-                }
-
-                // 3. Crear perfil de usuario
+                // 2. Crear perfil de usuario
                 const { data: newUser, error: userError } = await supabase
                     .from('user_profiles')
                     .insert([{
-                        user_id: authUser?.user?.id || `temp_${Date.now()}`, // Usar ID temporal si falla auth
+                        user_id: `temp_${Date.now()}`,
                         company_id: newCompany.id,
                         full_name: adminData.name,
                         email: adminData.email,
@@ -1583,23 +1406,13 @@
                     .single();
 
                 if (userError) throw userError;
-                console.log('✅ Administrador creado:', newUser);
 
-                // 4. Crear suscripción si no es trial
+                // 3. Crear suscripción si no es trial
                 if (companyData.plan !== 'trial') {
-                    const planPrices = {
-                        basic: 99,
-                        pro: 249,
-                        enterprise: 499
-                    };
+                    const planPrices = { basic: 99, pro: 249, enterprise: 499 };
+                    const planNames = { basic: 'Warehouse Basic', pro: 'Warehouse Pro', enterprise: 'Enterprise' };
 
-                    const planNames = {
-                        basic: 'Warehouse Basic',
-                        pro: 'Warehouse Pro',
-                        enterprise: 'Enterprise'
-                    };
-
-                    const { data: newSubscription, error: subscriptionError } = await supabase
+                    await supabase
                         .from('subscriptions')
                         .insert([{
                             company_id: newCompany.id,
@@ -1609,33 +1422,21 @@
                             start_date: new Date().toISOString(),
                             end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
                         }]);
-
-                    if (subscriptionError) throw subscriptionError;
-                    console.log('✅ Suscripción creada:', newSubscription);
                 }
 
-                // 5. Log de actividad
                 await logActivity('add_company', `Nueva empresa: ${companyData.name} con admin: ${adminData.name}`);
-
-                // 6. Recargar datos y actualizar UI
                 await loadDashboard();
                 populateAllTables();
                 
-                // Cerrar modal y resetear formulario
                 closeModal('addCompanyModal');
                 document.getElementById('addCompanyForm').reset();
                 
-                // Mostrar mensaje de éxito
-                alert(`Empresa "${companyData.name}" creada exitosamente.\nAdministrador: ${adminData.name} (${adminData.email})\n\nSe ha enviado un email de activación al administrador.`);
+                alert(`Empresa "${companyData.name}" creada exitosamente.\nAdministrador: ${adminData.name} (${adminData.email})`);
 
             } catch (error) {
                 console.error('Error creando empresa:', error);
                 alert('Error al crear la empresa: ' + error.message);
             }
-        }
-
-        function generateTempPassword() {
-            return Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8).toUpperCase();
         }
 
         async function editCompany(companyId) {
@@ -1734,13 +1535,6 @@
             }
         }
 
-        function logout() {
-            if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-                alert('Cerrando sesión...');
-                // Aquí iría la lógica de logout
-            }
-        }
-
         // ============================================
         // EVENT LISTENERS
         // ============================================
@@ -1789,7 +1583,24 @@
             });
         }
 
-        console.log('✅ Super Admin Panel cargado completamente');
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('Iniciando Super Admin Panel...');
+            
+            try {
+                const isAuthenticated = await checkAuth();
+                if (isAuthenticated) {
+                    await logActivity('login', 'Super admin accedió al panel');
+                    await loadDashboard();
+                    populateAllTables();
+                    setupEventListeners();
+                }
+            } catch (error) {
+                console.error('Error durante inicialización:', error);
+            }
+        });
     </script>
 </body>
 </html>
