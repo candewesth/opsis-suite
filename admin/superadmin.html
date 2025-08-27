@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Super Admin Panel - Opsis Suite</title>
     
-    <!-- Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Chart.js para gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
@@ -767,6 +765,7 @@
             justify-content: center;
             color: #86868b;
             font-size: 0.9rem;
+            position: relative;
         }
 
         .report-footer {
@@ -995,12 +994,12 @@
 
         <!-- Navigation Tabs -->
         <div class="nav-tabs">
-            <button class="nav-tab active" onclick="switchTab('dashboard')">Dashboard</button>
-            <button class="nav-tab" onclick="switchTab('companies')">Empresas</button>
-            <button class="nav-tab" onclick="switchTab('users')">Usuarios</button>
-            <button class="nav-tab" onclick="switchTab('subscriptions')">Suscripciones</button>
-            <button class="nav-tab" onclick="switchTab('payments')">Pagos</button>
-            <button class="nav-tab" onclick="switchTab('activity')">Actividad</button>
+            <button class="nav-tab active" data-tab="dashboard">Dashboard</button>
+            <button class="nav-tab" data-tab="companies">Empresas</button>
+            <button class="nav-tab" data-tab="users">Usuarios</button>
+            <button class="nav-tab" data-tab="subscriptions">Suscripciones</button>
+            <button class="nav-tab" data-tab="payments">Pagos</button>
+            <button class="nav-tab" data-tab="activity">Actividad</button>
         </div>
 
         <!-- Dashboard Tab -->
@@ -1170,16 +1169,16 @@
             
             <!-- Tabs Navigation -->
             <div class="reports-tabs">
-                <button class="reports-tab active" onclick="switchReportsTab('overview', this)">📈 Resumen General</button>
-                <button class="reports-tab" onclick="switchReportsTab('companies', this)">🏢 Empresas</button>
-                <button class="reports-tab" onclick="switchReportsTab('users', this)">👥 Usuarios</button>
-                <button class="reports-tab" onclick="switchReportsTab('financial', this)">💰 Financiero</button>
-                <button class="reports-tab" onclick="switchReportsTab('performance', this)">⚡ Rendimiento</button>
-                <button class="reports-tab" onclick="switchReportsTab('predictions', this)">🔮 Predicciones IA</button>
+                <button class="reports-tab active" data-reports-tab="overview">📈 Resumen General</button>
+                <button class="reports-tab" data-reports-tab="companies">🏢 Empresas</button>
+                <button class="reports-tab" data-reports-tab="users">👥 Usuarios</button>
+                <button class="reports-tab" data-reports-tab="financial">💰 Financiero</button>
+                <button class="reports-tab" data-reports-tab="performance">⚡ Rendimiento</button>
+                <button class="reports-tab" data-reports-tab="predictions">🔮 Predicciones IA</button>
             </div>
 
             <!-- Overview Tab -->
-            <div id="overview-tab" class="reports-tab-content active">
+            <div id="overview-reports-tab" class="reports-tab-content active">
                 <!-- Real-time Section -->
                 <div class="realtime-section">
                     <h3 class="realtime-title">
@@ -1364,27 +1363,27 @@
             </div>
 
             <!-- Other tabs content -->
-            <div id="companies-tab" class="reports-tab-content">
+            <div id="companies-reports-tab" class="reports-tab-content">
                 <h3>Reportes de Empresas - Funcionalidad en construcción</h3>
                 <p>Esta sección contendrá análisis detallados de empresas.</p>
             </div>
 
-            <div id="users-tab" class="reports-tab-content">
+            <div id="users-reports-tab" class="reports-tab-content">
                 <h3>Reportes de Usuarios - Funcionalidad en construcción</h3>
                 <p>Esta sección contendrá análisis de comportamiento de usuarios.</p>
             </div>
 
-            <div id="financial-tab" class="reports-tab-content">
+            <div id="financial-reports-tab" class="reports-tab-content">
                 <h3>Reportes Financieros - Funcionalidad en construcción</h3>
                 <p>Esta sección contendrá análisis financieros detallados.</p>
             </div>
 
-            <div id="performance-tab" class="reports-tab-content">
+            <div id="performance-reports-tab" class="reports-tab-content">
                 <h3>Reportes de Rendimiento - Funcionalidad en construcción</h3>
                 <p>Esta sección contendrá métricas de performance del sistema.</p>
             </div>
 
-            <div id="predictions-tab" class="reports-tab-content">
+            <div id="predictions-reports-tab" class="reports-tab-content">
                 <h3>Predicciones con IA - Funcionalidad en construcción</h3>
                 <p>Esta sección contendrá análisis predictivos con inteligencia artificial.</p>
             </div>
@@ -1402,8 +1401,9 @@
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Inicializando panel...');
+            console.log('🚀 Inicializando Panel Super Admin...');
             initializeApp();
+            setupEventListeners();
         });
 
         // Initialize the application
@@ -1412,11 +1412,55 @@
                 checkAuth();
                 loadDashboard();
                 initCharts();
-                console.log('Panel inicializado correctamente');
+                console.log('✅ Panel inicializado correctamente');
+                showNotification('success', 'Panel listo', 'Super Admin Panel cargado exitosamente');
             } catch (error) {
-                console.error('Error en inicialización:', error);
+                console.error('❌ Error en inicialización:', error);
                 showNotification('error', 'Error de inicialización', 'Problema al cargar el panel');
             }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            console.log('🔧 Configurando event listeners...');
+            
+            // Navigation tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    switchTab(tabName, this);
+                });
+            });
+
+            // Reports tabs
+            document.querySelectorAll('.reports-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-reports-tab');
+                    switchReportsTab(tabName, this);
+                });
+            });
+
+            // Modal close on outside click
+            document.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal')) {
+                    const modalId = e.target.id;
+                    if (modalId) {
+                        closeModal(modalId);
+                    }
+                }
+            });
+
+            // ESC key to close modals
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    const openModals = document.querySelectorAll('.modal.show');
+                    openModals.forEach(modal => {
+                        closeModal(modal.id);
+                    });
+                }
+            });
+
+            console.log('✅ Event listeners configurados');
         }
 
         // Authentication check
@@ -1430,20 +1474,21 @@
             document.getElementById('adminEmail').textContent = currentUser.email;
             document.getElementById('adminName').textContent = currentUser.name;
             
-            console.log('Usuario autenticado:', currentUser.email);
+            console.log('👤 Usuario autenticado:', currentUser.email);
         }
 
         // Handle sign out
         function handleSignOut() {
+            console.log('🚪 Cerrando sesión...');
             showNotification('success', 'Cerrando sesión', 'Has cerrado sesión correctamente');
             setTimeout(() => {
-                console.log('Sesión cerrada');
+                console.log('✅ Sesión cerrada exitosamente');
             }, 2000);
         }
 
         // Tab switching functionality
-        function switchTab(tabName) {
-            console.log('Cambiando a pestaña:', tabName);
+        function switchTab(tabName, element) {
+            console.log('🔄 Cambiando a pestaña:', tabName);
             
             try {
                 // Remove active class from all tabs and content
@@ -1457,77 +1502,75 @@
                 
                 // Add active class to selected tab and content
                 const tabContent = document.getElementById(`${tabName}-tab`);
-                const tabButton = event.target;
                 
-                if (tabContent && tabButton) {
+                if (tabContent && element) {
                     tabContent.classList.add('active');
-                    tabButton.classList.add('active');
+                    element.classList.add('active');
                     
-                    console.log(`Pestaña ${tabName} activada correctamente`);
+                    console.log(`✅ Pestaña ${tabName} activada correctamente`);
                     
                     // Load specific data for the tab
                     loadTabData(tabName);
                 } else {
-                    console.error('Tab content o button no encontrado para:', tabName);
+                    console.error('❌ Tab content o element no encontrado para:', tabName);
+                    showNotification('error', 'Error', 'No se pudo cambiar de pestaña');
                 }
                 
             } catch (error) {
-                console.error('Error switching tab:', error);
+                console.error('❌ Error switching tab:', error);
                 showNotification('error', 'Error', 'No se pudo cambiar de pestaña');
             }
         }
 
         // Load tab-specific data
         function loadTabData(tabName) {
-            console.log(`Cargando datos para: ${tabName}`);
+            console.log(`📊 Cargando datos para: ${tabName}`);
             
             switch(tabName) {
                 case 'dashboard':
                     loadDashboard();
                     break;
                 case 'companies':
-                    console.log('Cargando datos de empresas...');
+                    console.log('🏢 Cargando datos de empresas...');
                     break;
                 case 'users':
-                    console.log('Cargando datos de usuarios...');
+                    console.log('👥 Cargando datos de usuarios...');
                     break;
                 case 'subscriptions':
-                    console.log('Cargando datos de suscripciones...');
+                    console.log('💳 Cargando datos de suscripciones...');
                     break;
                 case 'payments':
-                    console.log('Cargando datos de pagos...');
+                    console.log('💰 Cargando datos de pagos...');
                     break;
                 case 'activity':
-                    console.log('Cargando registro de actividad...');
+                    console.log('📋 Cargando registro de actividad...');
                     break;
                 default:
-                    console.log(`Pestaña ${tabName} no tiene datos específicos`);
+                    console.log(`ℹ️ Pestaña ${tabName} no tiene datos específicos`);
             }
         }
 
         // Load dashboard data
         function loadDashboard() {
-            console.log('Cargando dashboard...');
+            console.log('📈 Cargando dashboard...');
             
             try {
-                // Update stats with real data
                 updateDashboardStats();
                 
-                // Update charts if they exist
                 if (usersChart) {
-                    console.log('Actualizando gráfico de usuarios');
+                    console.log('🔄 Actualizando gráfico de usuarios');
                     usersChart.update();
                 }
                 
                 if (revenueChart) {
-                    console.log('Actualizando gráfico de ingresos');
+                    console.log('🔄 Actualizando gráfico de ingresos');
                     revenueChart.update();
                 }
                 
-                console.log('Dashboard cargado exitosamente');
+                console.log('✅ Dashboard cargado exitosamente');
                 
             } catch (error) {
-                console.error('Error loading dashboard:', error);
+                console.error('❌ Error loading dashboard:', error);
                 showNotification('error', 'Error de dashboard', 'No se pudieron cargar las estadísticas');
             }
         }
@@ -1548,7 +1591,7 @@
                 const element = document.getElementById(key);
                 if (element) {
                     element.textContent = stats[key];
-                    console.log(`Actualizado ${key}: ${stats[key]}`);
+                    console.log(`📊 Actualizado ${key}: ${stats[key]}`);
                 }
             });
         }
@@ -1639,8 +1682,8 @@
                 data: {
                     labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'],
                     datasets: [{
-                        label: 'Ingresos (Millones USD)',
-                        data: [1.8, 2.1, 2.3, 2.5, 2.6, 2.8],
+                        label: 'Ingresos (USD)',
+                        data: [0, 0, 0, 0, 0, 0],
                         backgroundColor: 'rgba(73, 80, 87, 0.8)',
                         borderColor: '#495057',
                         borderWidth: 2,
@@ -1660,12 +1703,15 @@
                     scales: {
                         y: {
                             beginAtZero: true,
+                            max: 1000,
                             grid: {
                                 color: 'rgba(0,0,0,0.05)'
                             },
                             ticks: {
                                 callback: function(value) {
-                                    return ' + value + 'M';
+                                    return '
+
+         + value;
                                 }
                             }
                         },
@@ -1747,7 +1793,10 @@
                 
                 // Add active class to selected tab
                 element.classList.add('active');
-                document.getElementById(tabName + '-tab').classList.add('active');
+                const tabContent = document.getElementById(tabName + '-reports-tab');
+                if (tabContent) {
+                    tabContent.classList.add('active');
+                }
                 
                 console.log('Pestaña de reportes cambiada a:', tabName);
                 
@@ -1783,7 +1832,7 @@
                 data: {
                     labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
                     datasets: [{
-                        data: [65, 78, 66, 84, 92, 89],
+                        data: [0, 0, 0, 0, 0, 1],
                         borderColor: '#20c997',
                         backgroundColor: 'rgba(32, 201, 151, 0.1)',
                         tension: 0.4,
@@ -1820,7 +1869,7 @@
                 data: {
                     labels: ['Q1', 'Q2', 'Q3', 'Q4'],
                     datasets: [{
-                        data: [2.2, 2.8, 3.1, 2.9],
+                        data: [0, 0, 0, 0],
                         backgroundColor: 'rgba(102, 16, 242, 0.8)',
                         borderRadius: 4
                     }]
@@ -1856,11 +1905,12 @@
 
         function updateRealtimeMetrics() {
             try {
-                updateMetric('liveUsers', generateRandomValue(1200, 1300));
-                updateMetric('liveRevenue', ' + generateRandomValue(85000, 95000).toLocaleString());
-                updateMetric('liveUptime', (99.5 + Math.random() * 0.5).toFixed(1) + '%');
-                updateMetric('liveAlerts', Math.floor(Math.random() * 3));
-                updateMetric('liveTransactions', generateRandomValue(2800, 2900));
+                // Keep initial values for new system
+                updateMetric('liveUsers', '1');
+                updateMetric('liveRevenue', '$0');
+                updateMetric('liveUptime', '99.9%');
+                updateMetric('liveAlerts', '0');
+                updateMetric('liveTransactions', '0');
             } catch (error) {
                 console.error('Error updating real-time metrics:', error);
             }
@@ -1879,10 +1929,6 @@
                     }, 200);
                 }, 150);
             }
-        }
-
-        function generateRandomValue(min, max) {
-            return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
         // Generate reports
@@ -1957,25 +2003,6 @@
                 notification.classList.remove('show');
             }, 4000);
         }
-
-        // Event listeners
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal')) {
-                const modalId = e.target.id;
-                if (modalId) {
-                    closeModal(modalId);
-                }
-            }
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                const openModals = document.querySelectorAll('.modal.show');
-                openModals.forEach(modal => {
-                    closeModal(modal.id);
-                });
-            }
-        });
 
         // Debug functions
         window.debugPanel = {
