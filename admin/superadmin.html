@@ -1,1351 +1,4 @@
-// ============================================
-        // SUBSCRIPTIONS MANAGEMENT
-        // ============================================
-        async function loadSubscriptions() {
-            try {
-                const { data, error } = await supabase
-                    .from('subscriptions')
-                    .select(`
-                        *,
-                        companies (name, id)
-                    `)
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-
-                subscriptions = data || [];
-                displaySubscriptions(subscriptions);
-
-            } catch (error) {
-                console.error('Error loading subscriptions:', error);
-                displaySubscriptionsError();
-                showNotification('error', 'Error', 'No se pudieron cargar las suscripciones');
-            }
-        }
-
-        function displaySubscriptions(subscriptionsList) {
-            const tbody = document.getElementById('subscriptionsTableBody');
-
-            if (!subscriptionsList || subscriptionsList.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="empty-state">
-                            <div class="empty-icon">💳</div>
-                            <div class="empty-title">No hay suscripciones</div>
-                            <div class="empty-description">Las suscripciones aparecerán cuando se creen empresas</div>
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-
-            tbody.innerHTML = subscriptionsList.map(sub => {
-                const endDate = new Date(sub.end_date).toLocaleDateString('es-ES');
-                const isExpiring = new Date(sub.end_date) - new Date() < 7 * 24 * 60 * 60 * 1000;
-
-                return `
-                    <tr data-subscription-id="${sub.id}">
-                        <td style="font-weight: 600; color: #1d1d1f;">${sub.companies?.name || 'Sin empresa'}</td>
-                        <td><span class="status-badge active">${sub.plan_name || 'Sin plan'}</span></td>
-                        <td style="font-weight: 600; color: #20c997;">${sub.price || 0}</td>
-                        <td>
-                            <span class="status-badge ${sub.status === 'active' ? 'active' : sub.status === 'expired' ? 'inactive' : 'pending'}">
-                                ${sub.status === 'active' ? 'Activa' : sub.status === 'expired' ? 'Expirada' : 'Cancelada'}
-                            </span>
-                        </td>
-                        <td style="color: ${isExpiring ? '#dc3545' : '#86868b'};">
-                            ${endDate}
-                            ${isExpiring && sub.status === 'active' ? '<div style="color: #dc3545; font-size: 0.7rem;">⚠️ Por vencer</div>' : ''}
-                        </td>
-                        <td>
-                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                                <button onclick="renewSubscription('${sub.id}')" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: #20c997; color: white;" title="Renovar">🔄</button>
-                                <button onclick="cancelSubscription('${sub.id}')" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: #dc3545; color: white;" title="Cancelar">❌</button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function displaySubscriptionsError() {
-            const tbody = document.getElementById('subscriptionsTableBody');
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="6" class="empty-state">
-                        <div class="empty-icon">⚠️</div>
-                        <div class="empty-title">Error al cargar suscripciones</div>
-                        <div class="empty-description">Verifica la conexión y permisos de la base de datos</div>
-                        <button onclick="loadSubscriptions()" class="btn-action btn-primary" style="margin-top: 1rem;">Reintentar</button>
-                    </td>
-                </tr>
-            `;
-        }
-
-        // ============================================
-        // PAYMENTS MANAGEMENT
-        // ============================================
-        async function loadPayments() {
-            try {
-                const { data, error } = await supabase
-                    .from('payments')
-                    .select(`
-                        *,
-                        companies (name, id)
-                    `)
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-
-                payments = data || [];
-                displayPayments(payments);
-
-            } catch (error) {
-                console.error('Error loading payments:', error);
-                displayPaymentsError();
-                showNotification('error', 'Error', 'No se pudieron cargar los pagos');
-            }
-        }
-
-        function displayPayments(paymentsList) {
-            const tbody = document.getElementById('paymentsTableBody');
-
-            if (!paymentsList || paymentsList.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="empty-state">
-                            <div class="empty-icon">💰</div>
-                            <div class="empty-title">No hay pagos registrados</div>
-                            <div class="empty-description">Los pagos aparecerán cuando se procesen transacciones</div>
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-
-            tbody.innerHTML = paymentsList.map(payment => {
-                const paymentDate = new Date(payment.created_at).toLocaleDateString('es-ES');
-
-                return `
-                    <tr data-payment-id="${payment.id}">
-                        <td style="font-weight: 600; color: #1d1d1f;">${payment.companies?.name || 'Sin empresa'}</td>
-                        <td>${payment.concept || 'Pago de suscripción'}</td>
-                        <td style="font-weight: 600; color: #20c997;">${payment.amount || 0}</td>
-                        <td style="color: #86868b;">${paymentDate}</td>
-                        <td>
-                            <span class="status-badge ${payment.status === 'completed' ? 'active' : payment.status === 'failed' ? 'inactive' : 'pending'}">
-                                ${payment.status === 'completed' ? 'Completado' : payment.status === 'failed' ? 'Fallido' : payment.status === 'refunded' ? 'Reembolsado' : 'Pendiente'}
-                            </span>
-                        </td>
-                        <td>
-                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                                ${payment.status === 'pending' ? `<button onclick="markPaymentCompleted('${payment.id}')" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: #20c997; color: white;" title="Marcar completado">✓</button>` : ''}
-                                ${payment.status === 'completed' ? `<button onclick="refundPayment('${payment.id}')" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: #ffc107; color: white;" title="Reembolsar">↩️</button>` : ''}
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function displayPaymentsError() {
-            const tbody = document.getElementById('paymentsTableBody');
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="6" class="empty-state">
-                        <div class="empty-icon">⚠️</div>
-                        <div class="empty-title">Error al cargar pagos</div>
-                        <div class="empty-description">Verifica la conexión y permisos de la base de datos</div>
-                        <button onclick="loadPayments()" class="btn-action btn-primary" style="margin-top: 1rem;">Reintentar</button>
-                    </td>
-                </tr>
-            `;
-        }
-
-        // ============================================
-        // ACTIVITY LOGS MANAGEMENT
-        // ============================================
-        async function loadActivity() {
-            try {
-                // First, try to create the table if it doesn't exist
-                const { data, error } = await supabase
-                    .from('admin_activity_logs')
-                    .select(`
-                        *,
-                        user_profiles!user_id (full_name, email, name)
-                        user_profiles (full_name, email, name)
-                    `)
-                    .order('created_at', { ascending: false })
-                    .limit(50);
-
-                if (error) throw error;
-
-                activityLogs = data || [];
-                displayActivity(activityLogs);
-
-            } catch (error) {
-                console.error('Error loading activity:', error);
-                displayActivityError();
-                showNotification('error', 'Error', 'No se pudieron cargar los logs de actividad');
-                // Show mock data as fallback
-                activityLogs = createMockActivityLogs();
-                displayActivity(activityLogs);
-                showNotification('warning', 'Datos de demostración', 'Mostrando datos de ejemplo para los logs de actividad');
-            }
-        }
-
-        function createMockActivityLogs() {
-            const now = new Date();
-            return [
-                {
-                    id: 1,
-                    created_at: new Date(now - 1000 * 60 * 30).toISOString(), // 30 min ago
-                    action_type: 'login',
-                    description: 'Super Admin accedió al panel',
-                    ip_address: '192.168.1.1',
-                    user_profiles: { full_name: 'Super Admin', email: 'admin@opsis-suite.com' }
-                },
-                {
-                    id: 2,
-                    created_at: new Date(now - 1000 * 60 * 60).toISOString(), // 1 hour ago
-                    action_type: 'create',
-                    description: 'Nueva empresa creada: Empresa Demo',
-                    ip_address: '192.168.1.1',
-                    user_profiles: { full_name: 'Super Admin', email: 'admin@opsis-suite.com' }
-                },
-                {
-                    id: 3,
-                    created_at: new Date(now - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
-                    action_type: 'update',
-                    description: 'Configuración del sistema actualizada',
-                    ip_address: '192.168.1.1',
-                    user_profiles: { full_name: 'Super Admin', email: 'admin@opsis-suite.com' }
-                }
-            ];
-        }
-
-        function displayActivity(activityList) {
-            const tbody = document.getElementById('activityTableBody');
-
-            if (!activityList || activityList.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="5" class="empty-state">
-                            <div class="empty-icon">📝</div>
-                            <div class="empty-title">No hay actividad registrada</div>
-                            <div class="empty-description">Las acciones del sistema aparecerán aquí</div>
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-
-            tbody.innerHTML = activityList.map(log => {
-                const datetime = new Date(log.created_at).toLocaleString('es-ES');
-                const actionIcon = getActionIcon(log.action_type);
-
-                return `
-                    <tr>
-                        <td style="color: #86868b; font-size: 0.9rem;">${datetime}</td>
-                        <td>
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <div style="width: 24px; height: 24px; border-radius: 50%; background: #f8f9fa; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;">
-                                    ${(log.user_profiles?.full_name || log.user_profiles?.name || log.user_profiles?.email || 'S').charAt(0).toUpperCase()}
-                                </div>
-                                <span style="font-size: 0.9rem;">${log.user_profiles?.full_name || log.user_profiles?.name || log.user_profiles?.email || 'Sistema'}</span>
-                            </div>
-                        </td>
-                        <td>
-                            <span style="display: flex; align-items: center; gap: 0.5rem;">
-                                <span style="font-size: 1rem;">${actionIcon}</span>
-                                <span class="status-badge ${getActionColor(log.action_type)}" style="text-transform: capitalize;">${log.action_type}</span>
-                            </span>
-                        </td>
-                        <td>${log.description || 'Sin descripción'}</td>
-                        <td style="font-family: monospace; font-size: 0.8rem; color: #86868b;">${log.ip_address || 'N/A'}</td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function displayActivityError() {
-            const tbody = document.getElementById('activityTableBody');
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="5" class="empty-state">
-                        <div class="empty-icon">⚠️</div>
-                        <div class="empty-title">Error al cargar actividad</div>
-                        <div class="empty-description">Verifica la conexión y permisos de la base de datos</div>
-                        <button onclick="loadActivity()" class="btn-action btn-primary" style="margin-top: 1rem;">Reintentar</button>
-                    </td>
-                </tr>
-            `;
-        }
-
-        function getActionIcon(actionType) {
-            const icons = {
-                'create': '➕',
-                'update': '✏️',
-                'delete': '🗑️',
-                'login': '🔑',
-                'logout': '🚪',
-                'error': '❌',
-                'warning': '⚠️',
-                'info': 'ℹ️'
-            };
-            return icons[actionType] || '📝';
-        }
-
-        function getActionColor(actionType) {
-            const colors = {
-                'create': 'active',
-                'update': 'pending',
-                'delete': 'inactive',
-                'login': 'active',
-                'logout': 'pending',
-                'error': 'inactive',
-                'warning': 'pending',
-                'info': 'active'
-            };
-            return colors[actionType] || 'pending';
-        }
-
-        // ============================================
-        // COMPANY ACTIONS
-        // ============================================
-        async function handleAddCompany(event) {
-            event.preventDefault();
-
-            const companyData = {
-                name: document.getElementById('companyName').value,
-                ruc: document.getElementById('companyRuc').value,
-                address: document.getElementById('companyAddress').value,
-                phone: document.getElementById('companyPhone').value,
-                email: document.getElementById('companyEmail').value,
-                domain: document.getElementById('companyDomain').value || document.getElementById('companyEmail').value.split('@')[1],
-                subscription_plan: document.getElementById('companyPlan').value,
-                max_users: parseInt(document.getElementById('initialUsers').value),
-                status: 'active',
-                slug: generateSlug(document.getElementById('companyName').value),
-                settings: {
-                    modules_enabled: getModulesForPlan(document.getElementById('companyPlan').value)
-                }
-            };
-
-            try {
-                const { data, error } = await supabase
-                    .from('companies')
-                    .insert([companyData])
-                    .select()
-                    .single();
-
-                if (error) throw error;
-
-                // Create default subscription
-                await supabase.from('subscriptions').insert([{
-                    company_id: data.id,
-                    plan_name: companyData.subscription_plan,
-                    price: getPlanPrice(companyData.subscription_plan),
-                    start_date: new Date().toISOString(),
-                    end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-                    status: 'active',
-                    auto_renew: true
-                }]);
-
-                await logActivity('create', `Nueva empresa creada: ${companyData.name}`, {
-                    company_id: data.id,
-                    plan: companyData.subscription_plan,
-                    max_users: companyData.max_users
-                });
-
-                showNotification('success', 'Empresa creada', `${companyData.name} ha sido registrada exitosamente`);
-                closeModal('addCompanyModal');
-                document.getElementById('addCompanyForm').reset();
-                loadCompanies();
-                loadDashboard();
-
-            } catch (error) {
-                console.error('Error creating company:', error);
-                await logActivity('error', `Error al crear empresa: ${error.message}`);
-                showNotification('error', 'Error', 'No se pudo crear la empresa: ' + error.message);
-            }
-        }
-
-        async function handleAddUser(event) {
-            event.preventDefault();
-
-            const userData = {
-                email: document.getElementById('userEmail').value,
-                password: document.getElementById('userPassword').value
-            };
-
-            try {
-                // Create auth user first
-                const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
-                    email: userData.email,
-                    password: userData.password,
-                    email_confirm: true
-                });
-
-                if (authError) throw authError;
-
-                const profileData = {
-                    user_id: authUser.user.id,
-                    email: userData.email,
-                    full_name: document.getElementById('userName').value,
-                    name: document.getElementById('userName').value,
-                    company_id: document.getElementById('userCompany').value,
-                    role: document.getElementById('userRole').value,
-                    is_active: true
-                };
-
-                const { error: profileError } = await supabase
-                    .from('user_profiles')
-                    .insert([profileData]);
-
-                if (profileError) throw profileError;
-
-                await logActivity('create', `Nuevo usuario creado: ${userData.email}`, {
-                    user_email: userData.email,
-                    company_id: profileData.company_id,
-                    role: profileData.role
-                });
-
-                showNotification('success', 'Usuario creado', `${userData.email} ha sido registrado exitosamente`);
-                closeModal('addUserModal');
-                document.getElementById('addUserForm').reset();
-                loadUsers();
-                loadDashboard();
-
-            } catch (error) {
-                console.error('Error creating user:', error);
-                await logActivity('error', `Error al crear usuario: ${error.message}`);
-                showNotification('error', 'Error', 'No se pudo crear el usuario: ' + error.message);
-            }
-        }
-
-        // ============================================
-        // ACTION FUNCTIONS
-        // ============================================
-        async function toggleCompanyStatus(companyId, currentStatus) {
-            const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-            const action = newStatus === 'active' ? 'activar' : 'desactivar';
-
-            if (!confirm(`¿Estás seguro de ${action} esta empresa?`)) return;
-
-            try {
-                const { error } = await supabase
-                    .from('companies')
-                    .update({ status: newStatus })
-                    .eq('id', companyId);
-
-                if (error) throw error;
-
-                await logActivity('update', `Estado de empresa ${action}do`, {
-                    company_id: companyId,
-                    old_status: currentStatus,
-                    new_status: newStatus
-                });
-
-                showNotification('success', 'Estado actualizado', `Empresa ${action}da correctamente`);
-                loadCompanies();
-                loadDashboard();
-
-            } catch (error) {
-                console.error('Error updating company status:', error);
-                await logActivity('error', `Error al actualizar estado de empresa: ${error.message}`);
-                showNotification('error', 'Error', 'No se pudo actualizar el estado de la empresa');
-            }
-        }
-
-        async function deleteCompany(companyId, companyName) {
-            if (!confirm(`¿Estás seguro de eliminar la empresa "${companyName}"?`)) return;
-
-            const confirmation = prompt('Escribe "ELIMINAR" para confirmar:');
-            if (confirmation !== 'ELIMINAR') {
-                showNotification('warning', 'Cancelado', 'Eliminación cancelada');
-                return;
-            }
-
-            try {
-                const { error } = await supabase
-                    .from('companies')
-                    .delete()
-                    .eq('id', companyId);
-
-                if (error) throw error;
-
-                await logActivity('delete', `Empresa eliminada: ${companyName}`, {
-                    company_id: companyId,
-                    company_name: companyName
-                });
-
-                showNotification('success', 'Empresa eliminada', 'La empresa ha sido eliminada correctamente');
-                loadCompanies();
-                loadDashboard();
-
-            } catch (error) {
-                console.error('Error deleting company:', error);
-                await logActivity('error', `Error al eliminar empresa: ${error.message}`);
-                showNotification('error', 'Error', 'No se pudo eliminar la empresa');
-            }
-        }
-
-        async function toggleUserStatus(userId, currentStatus) {
-            try {
-                const { error } = await supabase
-                    .from('user_profiles')
-                    .update({ is_active: !currentStatus })
-                    .eq('id', userId);
-
-                if (error) throw error;
-
-                await logActivity('update', `Estado de usuario ${currentStatus ? 'desactivado' : 'activado'}`, {
-                    user_id: userId,
-                    old_status: currentStatus,
-                    new_status: !currentStatus
-                });
-
-                showNotification('success', 'Estado actualizado', 'Estado del usuario actualizado');
-                loadUsers();
-
-            } catch (error) {
-                console.error('Error updating user status:', error);
-                await logActivity('error', `Error al actualizar estado de usuario: ${error.message}`);
-                showNotification('error', 'Error', 'No se pudo actualizar el estado');
-            }
-        }
-
-        async function renewSubscription(subscriptionId) {
-            try {
-                const { data: subscription } = await supabase
-                    .from('subscriptions')
-                    .select('*')
-                    .eq('id', subscriptionId)
-                    .single();
-
-                const newEndDate = new Date(subscription.end_date);
-                newEndDate.setMonth(newEndDate.getMonth() + 1);
-
-                const { error } = await supabase
-                    .from('subscriptions')
-                    .update({
-                        end_date: newEndDate.toISOString(),
-                        status: 'active'
-                    })
-                    .eq('id', subscriptionId);
-
-                if (error) throw error;
-
-                await logActivity('update', 'Suscripción renovada por un mes', {
-                    subscription_id: subscriptionId,
-                    new_end_date: newEndDate.toISOString()
-                });
-
-                showNotification('success', 'Suscripción renovada', 'La suscripción ha sido renovada por un mes');
-                loadSubscriptions();
-
-            } catch (error) {
-                console.error('Error renewing subscription:', error);
-                await logActivity('error', `Error al renovar suscripción: ${error.message}`);
-                showNotification('error', 'Error', 'No se pudo renovar la suscripción');
-            }
-        }
-
-        async function cancelSubscription(subscriptionId) {
-            if (!confirm('¿Estás seguro de cancelar esta suscripción?')) return;
-
-            try {
-                const { error } = await supabase
-                    .from('subscriptions')
-                    .update({ status: 'cancelled' })
-                    .eq('id', subscriptionId);
-
-                if (error) throw error;
-
-                await logActivity('update', 'Suscripción cancelada', {
-                    subscription_id: subscriptionId
-                });
-
-                showNotification('success', 'Suscripción cancelada', 'La suscripción ha sido cancelada');
-                loadSubscriptions();
-                loadDashboard();
-
-            } catch (error) {
-                console.error('Error cancelling subscription:', error);
-                await logActivity('error', `Error al cancelar suscripción: ${error.message}`);
-                showNotification('error', 'Error', 'No se pudo cancelar la suscripción');
-            }
-        }
-
-        async function markPaymentCompleted(paymentId) {
-            try {
-                const { error } = await supabase
-                    .from('payments')
-                    .update({ status: 'completed' })
-                    .eq('id', paymentId);
-
-                if (error) throw error;
-
-                await logActivity('update', 'Pago marcado como completado', {
-                    payment_id: paymentId
-                });
-
-                showNotification('success', 'Pago completado', 'El pago ha sido marcado como completado');
-                loadPayments();
-
-            } catch (error) {
-                console.error('Error updating payment:', error);
-                await logActivity('error', `Error al actualizar pago: ${error.message}`);
-                showNotification('error', 'Error', 'No se pudo actualizar el pago');
-            }
-        }
-
-        async function refundPayment(paymentId) {
-            if (!confirm('¿Estás seguro de marcar este pago como reembolsado?')) return;
-
-            try {
-                const { error } = await supabase
-                    .from('payments')
-                    .update({ status: 'refunded' })
-                    .eq('id', paymentId);
-
-                if (error) throw error;
-
-                await logActivity('update', 'Pago reembolsado', {
-                    payment_id: paymentId
-                });
-
-                showNotification('success', 'Pago reembolsado', 'El pago ha sido marcado como reembolsado');
-                loadPayments();
-
-            } catch (error) {
-                console.error('Error refunding payment:', error);
-                await logActivity('error', `Error al reembolsar pago: ${error.message}`);
-                showNotification('error', 'Error', 'No se pudo procesar el reembolso');
-            }
-        }
-
-        async function clearOldLogs() {
-            if (!confirm('¿Estás seguro de eliminar logs antiguos (más de 90 días)?')) return;
-
-            try {
-                const { data, error } = await supabase.rpc('clean_old_activity_logs', { days_to_keep: 90 });
-
-                if (error) throw error;
-
-                await logActivity('delete', `Logs antiguos eliminados: ${data || 'varios'} registros`);
-                showNotification('success', 'Logs eliminados', `${data || 'Varios'} logs antiguos fueron eliminados`);
-                loadActivity();
-
-            } catch (error) {
-                console.error('Error clearing old logs:', error);
-                await logActivity('error', `Error al limpiar logs: ${error.message}`);
-                showNotification('error', 'Error', 'No se pudieron eliminar los logs antiguos');
-            }
-        }
-
-        // ============================================
-        // SEARCH AND FILTER FUNCTIONS
-        // ============================================
-        function searchCompanies(term) {
-            const filtered = companies.filter(c => 
-                c.name.toLowerCase().includes(term.toLowerCase()) ||
-                c.ruc?.toLowerCase().includes(term.toLowerCase()) ||
-                c.email.toLowerCase().includes(term.toLowerCase()) ||
-                c.domain?.toLowerCase().includes(term.toLowerCase())
-            );
-            displayCompanies(filtered);
-        }
-
-        function filterCompanies(type, btn) {
-            document.querySelectorAll('#companies-tab .filter-pill').forEach(p => p.classList.remove('active'));
-            btn.classList.add('active');
-
-            let filtered = companies;
-            if (type === 'active') filtered = companies.filter(c => c.status === 'active');
-            if (type === 'inactive') filtered = companies.filter(c => c.status === 'inactive');
-            if (type === 'trial') filtered = companies.filter(c => c.status === 'trial');
-
-            displayCompanies(filtered);
-        }
-
-        function searchUsers(term) {
-            const filtered = users.filter(u => 
-                (u.full_name || u.name || '').toLowerCase().includes(term.toLowerCase()) ||
-                u.email.toLowerCase().includes(term.toLowerCase()) ||
-                (u.companies?.name || '').toLowerCase().includes(term.toLowerCase())
-            );
-            displayUsers(filtered);
-        }
-
-        function filterUsers(type, btn) {
-            document.querySelectorAll('#users-tab .filter-pill').forEach(p => p.classList.remove('active'));
-            btn.classList.add('active');
-
-            let filtered = users;
-            if (type === 'active') filtered = users.filter(u => u.is_active);
-            if (type === 'inactive') filtered = users.filter(u => !u.is_active);
-            if (type === 'admin') filtered = users.filter(u => u.role === 'ADMIN' || u.role === 'super_admin');
-
-            displayUsers(filtered);
-        }
-
-        // ============================================
-        // EXPORT FUNCTIONS
-        // ============================================
-        function exportCompanies() {
-            if (companies.length === 0) {
-                showNotification('warning', 'Sin datos', 'No hay empresas para exportar');
-                return;
-            }
-
-            const csvData = companies.map(company => ({
-                'Nombre': company.name,
-                'RUC': company.ruc || '',
-                'Email': company.email,
-                'Dominio': company.domain || '',
-                'Plan': company.subscription_plan || '',
-                'Usuarios Max': company.max_users || '',
-                'Estado': company.status,
-                'Fecha Creación': new Date(company.created_at).toLocaleDateString('es-ES')
-            }));
-
-            const csv = convertToCSV(csvData);
-            downloadCSV(csv, `empresas_${new Date().toISOString().split('T')[0]}.csv`);
-            showNotification('success', 'Exportado', 'Archivo CSV de empresas descargado');
-        }
-
-        function exportUsers() {
-            if (users.length === 0) {
-                showNotification('warning', 'Sin datos', 'No hay usuarios para exportar');
-                return;
-            }
-
-            const csvData = users.map(user => ({
-                'Nombre': user.full_name || user.name || '',
-                'Email': user.email,
-                'Empresa': user.companies?.name || '',
-                'Rol': user.role || '',
-                'Estado': user.is_active ? 'Activo' : 'Inactivo',
-                'Fecha Registro': new Date(user.created_at).toLocaleDateString('es-ES')
-            }));
-
-            const csv = convertToCSV(csvData);
-            downloadCSV(csv, `usuarios_${new Date().toISOString().split('T')[0]}.csv`);
-            showNotification('success', 'Exportado', 'Archivo CSV de usuarios descargado');
-        }
-
-        function exportSubscriptions() {
-            showNotification('info', 'Próximamente', 'Exportación de suscripciones disponible pronto');
-        }
-
-        function exportPayments() {
-            showNotification('info', 'Próximamente', 'Exportación de pagos disponible pronto');
-        }
-
-        function exportActivity() {
-            if (activityLogs.length === 0) {
-                showNotification('warning', 'Sin datos', 'No hay actividad para exportar');
-                return;
-            }
-
-            const csvData = activityLogs.map(log => ({
-                'Fecha/Hora': new Date(log.created_at).toLocaleString('es-ES'),
-                'Usuario': log.user_profiles?.full_name || log.user_profiles?.name || log.user_profiles?.email || 'Sistema',
-                'Acción': log.action_type,
-                'Descripción': log.description || '',
-                'IP': log.ip_address || ''
-            }));
-
-            const csv = convertToCSV(csvData);
-            downloadCSV(csv, `actividad_${new Date().toISOString().split('T')[0]}.csv`);
-            showNotification('success', 'Exportado', 'Archivo CSV de actividad descargado');
-        }
-
-        // ============================================
-        // HELPER FUNCTIONS
-        // ============================================
-        function getPlanPrice(plan) {
-            const prices = {
-                'warehouse_basic': 49,
-                'warehouse_pro': 149,
-                'suite_standard': 249,
-                'suite_premium': 499,
-                'enterprise': 999
-            };
-            return prices[plan] || 49;
-        }
-
-        function getModulesForPlan(plan) {
-            const modules = {
-                'warehouse_basic': ['equipment', 'loans', 'maintenance'],
-                'warehouse_pro': ['equipment', 'loans', 'maintenance', 'reports'],
-                'suite_standard': ['equipment', 'loans', 'maintenance', 'reports', 'projects'],
-                'suite_premium': ['equipment', 'loans', 'maintenance', 'reports', 'projects', 'finance'],
-                'enterprise': ['all']
-            };
-            return modules[plan] || ['equipment'];
-        }
-
-        function getPlanDetailsInfo(plan) {
-            const details = {
-                'warehouse_basic': {
-                    users: 'Hasta 10 usuarios',
-                    storage: '5 GB',
-                    support: 'Email básico',
-                    features: ['Gestión de equipos', 'Préstamos básicos', 'Mantenimiento básico']
-                },
-                'warehouse_pro': {
-                    users: 'Hasta 25 usuarios',
-                    storage: '25 GB',
-                    support: 'Email prioritario',
-                    features: ['Todo lo del básico', 'Reportes avanzados', 'API access']
-                },
-                'suite_standard': {
-                    users: 'Hasta 50 usuarios',
-                    storage: '100 GB',
-                    support: 'Email + Chat',
-                    features: ['Todo lo del Pro', 'Gestión de proyectos', 'Inventario avanzado']
-                },
-                'suite_premium': {
-                    users: 'Hasta 100 usuarios',
-                    storage: '500 GB',
-                    support: 'Soporte telefónico',
-                    features: ['Todo lo del Standard', 'Módulo financiero', 'Integraciones']
-                },
-                'enterprise': {
-                    users: 'Usuarios ilimitados',
-                    storage: '2 TB',
-                    support: 'Soporte dedicado',
-                    features: ['Todos los módulos', 'Personalización', 'SLA garantizado']
-                }
-            };
-            return details[plan] || details['warehouse_basic'];
-        }
-
-        // ============================================
-        // HELPER FUNCTIONS
-        // ============================================
-        function getPlanPrice(plan) {
-            const prices = {
-                'warehouse_basic': 49,
-                'warehouse_pro': 149,
-                'suite_standard': 249,
-                'suite_premium': 499,
-                'enterprise': 999
-            };
-            return prices[plan] || 49;
-        }
-
-        function getModulesForPlan(plan) {
-            const modules = {
-                'warehouse_basic': ['equipment', 'loans', 'maintenance'],
-                'warehouse_pro': ['equipment', 'loans', 'maintenance', 'reports'],
-                'suite_standard': ['equipment', 'loans', 'maintenance', 'reports', 'projects'],
-                'suite_premium': ['equipment', 'loans', 'maintenance', 'reports', 'projects', 'finance'],
-                'enterprise': ['all']
-            };
-            return modules[plan] || ['equipment'];
-        }
-
-        function getPlanDetailsInfo(plan) {
-            const details = {
-                'warehouse_basic': {
-                    users: 'Hasta 10 usuarios',
-                    storage: '5 GB',
-                    support: 'Email básico',
-                    features: ['Gestión de equipos', 'Préstamos básicos', 'Mantenimiento básico']
-                },
-                'warehouse_pro': {
-                    users: 'Hasta 25 usuarios',
-                    storage: '25 GB',
-                    support: 'Email prioritario',
-                    features: ['Todo lo del básico', 'Reportes avanzados', 'API access']
-                },
-                'suite_standard': {
-                    users: 'Hasta 50 usuarios',
-                    storage: '100 GB',
-                    support: 'Email + Chat',
-                    features: ['Todo lo del Pro', 'Gestión de proyectos', 'Inventario avanzado']
-                },
-                'suite_premium': {
-                    users: 'Hasta 100 usuarios',
-                    storage: '500 GB',
-                    support: 'Soporte telefónico',
-                    features: ['Todo lo del Standard', 'Módulo financiero', 'Integraciones']
-                },
-                'enterprise': {
-                    users: 'Usuarios ilimitados',
-                    storage: '2 TB',
-                    support: 'Soporte dedicado',
-                    features: ['Todos los módulos', 'Personalización', 'SLA garantizado']
-                }
-            };
-            return details[plan] || details['warehouse_basic'];
-        }
-
-        async function loadCompaniesForSelect() {
-            try {
-                const { data: companies } = await supabase
-                    .from('companies')
-                    .select('id, name')
-                    .eq('status', 'active')
-                    .order('name');
-
-                const select = document.getElementById('userCompany');
-                if (select) {
-                    select.innerHTML = companies?.map(c => 
-                        `<option value="${c.id}">${c.name}</option>`
-                    ).join('') || '<option value="">No hay empresas activas</option>';
-                }
-            } catch (error) {
-                console.error('Error loading companies for select:', error);
-                showNotification('error', 'Error', 'No se pudieron cargar las empresas');
-            }
-        }
-
-        function convertToCSV(objArray) {
-            const array = [Object.keys(objArray[0])].concat(objArray);
-            return array.map(row => {
-                return Object.values(row).map(value => {
-                    const stringValue = value?.toString() || '';
-                    return '"' + stringValue.replace(/"/g, '""') + '"';
-                }).join(',');
-            }).join('\n');
-        }
-
-        function downloadCSV(csv, filename) {
-            const csvFile = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-            const downloadLink = document.createElement('a');
-            downloadLink.download = filename;
-            downloadLink.href = window.URL.createObjectURL(csvFile);
-            downloadLink.style.display = 'none';
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            document.body.removeChild(downloadLink);
-        }
-
-        function generateSlug(name) {
-            return name.toLowerCase()
-                .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, '')
-                .replace(/[^a-z0-9\s-]/g, '')
-                .replace(/\s+/g, '-')
-                .replace(/-+/g, '-')
-                .trim('-');
-        }
-
-        // ============================================
-        // CHARTS INITIALIZATION
-        // ============================================
-        function initCharts() {
-            const usersCtx = document.getElementById('usersChart')?.getContext('2d');
-            const revenueCtx = document.getElementById('revenueChart')?.getContext('2d');
-
-            if (usersCtx) {
-                usersChart = new Chart(usersCtx, {
-                    type: 'line',
-                    data: {
-                        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-                        datasets: [{
-                            label: 'Usuarios',
-                            data: [0, 1, 1, 1, 1, 1],
-                            borderColor: '#20c997',
-                            backgroundColor: 'rgba(32, 201, 151, 0.1)',
-                            tension: 0.3,
-                            fill: true
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: { display: false }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-            }
-
-            if (revenueCtx) {
-                revenueChart = new Chart(revenueCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-                        datasets: [{
-                            label: 'Ingresos',
-                            data: [0, 0, 0, 0, 0, 0],
-                            backgroundColor: 'rgba(73, 80, 87, 0.8)',
-                            borderRadius: 8
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: { display: false }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-            }
-        }
-
-        function updateCharts() {
-            if (usersChart) {
-                const monthlyUsers = [0, 0, 0, 1, 1, users.length || 1];
-                usersChart.data.datasets[0].data = monthlyUsers;
-                usersChart.update();
-            }
-
-            if (revenueChart) {
-                const monthlyRevenue = [0, 0, 0, 0, 0, 
-                    subscriptions.reduce((sum, s) => sum + (s.price || 0), 0)];
-                revenueChart.data.datasets[0].data = monthlyRevenue;
-                revenueChart.update();
-            }
-        }
-
-        // ============================================
-        // REPORTS AND SETTINGS FUNCTIONS
-        // ============================================
-        function showReportsModal() {
-            document.getElementById('reportsModal').classList.add('show');
-            logActivity('info', 'Accedió al centro de reportes');
-        }
-
-        function showSettingsModal() {
-            loadSettings();
-            document.getElementById('settingsModal').classList.add('show');
-            logActivity('info', 'Accedió a la configuración del sistema');
-        }
-
-        function generateReport(type) {
-            const reportTypes = {
-                'companies': 'Reporte de Empresas',
-                'users': 'Reporte de Usuarios',
-                'revenue': 'Reporte Financiero',
-                'activity': 'Reporte de Actividad',
-                'performance': 'Reporte de Rendimiento',
-                'subscriptions': 'Reporte de Suscripciones'
-            };
-
-            showNotification('info', 'Generando Reporte', `Preparando ${reportTypes[type]}...`);
-            logActivity('create', `Generando reporte: ${reportTypes[type]}`, { report_type: type });
-
-            // Simulate report generation
-            setTimeout(() => {
-                showNotification('success', 'Reporte Generado', `${reportTypes[type]} se ha descargado exitosamente`);
-                closeModal('reportsModal');
-            }, 2000);
-        }
-
-        function generateCustomReport() {
-            showNotification('info', 'Reporte Personalizado', 'Funcionalidad disponible próximamente');
-        }
-
-        function loadSettings() {
-            // Load settings from localStorage or defaults
-            const settings = JSON.parse(localStorage.getItem('adminSettings')) || {};
-
-            // Apply loaded settings to the form
-            document.getElementById('publicRegistration').checked = settings.publicRegistration !== false;
-            document.getElementById('maintenanceMode').checked = settings.maintenanceMode || false;
-            document.getElementById('defaultUserLimit').value = settings.defaultUserLimit || 50;
-            document.getElementById('trialPeriod').value = settings.trialPeriod || 30;
-            document.getElementById('autoRenewal').checked = settings.autoRenewal !== false;
-            document.getElementById('expirationNotice').value = settings.expirationNotice || 7;
-            document.getElementById('basicPlanPrice').value = settings.basicPlanPrice || 49;
-            document.getElementById('proPlanPrice').value = settings.proPlanPrice || 149;
-            document.getElementById('enterprisePlanPrice').value = settings.enterprisePlanPrice || 999;
-        }
-
-        function saveSettings() {
-            // Collect all settings
-            const settings = {
-                publicRegistration: document.getElementById('publicRegistration').checked,
-                maintenanceMode: document.getElementById('maintenanceMode').checked,
-                defaultUserLimit: parseInt(document.getElementById('defaultUserLimit').value),
-                trialPeriod: parseInt(document.getElementById('trialPeriod').value),
-                autoRenewal: document.getElementById('autoRenewal').checked,
-                expirationNotice: parseInt(document.getElementById('expirationNotice').value),
-                basicPlanPrice: parseFloat(document.getElementById('basicPlanPrice').value),
-                proPlanPrice: parseFloat(document.getElementById('proPlanPrice').value),
-                enterprisePlanPrice: parseFloat(document.getElementById('enterprisePlanPrice').value),
-                lastUpdated: new Date().toISOString()
-            };
-
-            // Save to localStorage (in a real app, this would be saved to your backend)
-            localStorage.setItem('adminSettings', JSON.stringify(settings));
-
-            logActivity('update', 'Configuración del sistema actualizada', { settings });
-            showNotification('success', 'Configuración Guardada', 'Todos los cambios han sido aplicados correctamente');
-            closeModal('settingsModal');
-        }
-
-        // ============================================
-        // SUBSCRIPTION MANAGEMENT FUNCTIONS
-        // ============================================
-        async function loadCompaniesForSubscriptionSelect() {
-            try {
-                const { data: companies } = await supabase
-                    .from('companies')
-                    .select('id, name, subscription_plan')
-                    .eq('status', 'active')
-                    .order('name');
-                
-                const select = document.getElementById('subscriptionCompany');
-                if (select) {
-                    select.innerHTML = '<option value="">Seleccione una empresa...</option>' + 
-                        (companies?.map(c => 
-                            `<option value="${c.id}">${c.name}</option>`
-                        ).join('') || '');
-                }
-            } catch (error) {
-                console.error('Error loading companies for subscription select:', error);
-                showNotification('error', 'Error', 'No se pudieron cargar las empresas');
-            }
-        }
-
-        async function loadCompanySubscription() {
-            const companyId = document.getElementById('subscriptionCompany').value;
-            if (!companyId) {
-                document.getElementById('currentSubscriptionInfo').style.display = 'none';
-                document.getElementById('subscriptionForm').style.display = 'none';
-                document.getElementById('saveSubscriptionBtn').style.display = 'none';
-                return;
-            }
-
-            try {
-                // Load company details and current subscription
-                const [companyResult, subscriptionResult] = await Promise.all([
-                    supabase.from('companies').select('*').eq('id', companyId).single(),
-                    supabase.from('subscriptions').select('*').eq('company_id', companyId).eq('status', 'active').single()
-                ]);
-
-                const company = companyResult.data;
-                const currentSubscription = subscriptionResult.data;
-
-                // Show current subscription info
-                document.getElementById('currentSubscriptionInfo').style.display = 'block';
-                document.getElementById('subscriptionForm').style.display = 'block';
-                document.getElementById('saveSubscriptionBtn').style.display = 'block';
-
-                if (currentSubscription) {
-                    // Has active subscription
-                    document.getElementById('currentSubscriptionDetails').innerHTML = `
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                            <div>
-                                <strong>Plan Actual:</strong><br>
-                                <span class="status-badge active">${currentSubscription.plan_name || 'N/A'}</span>
-                            </div>
-                            <div>
-                                <strong>Precio:</strong><br>
-                                ${currentSubscription.price || 0}/mes
-                            </div>
-                            <div>
-                                <strong>Estado:</strong><br>
-                                <span class="status-badge ${currentSubscription.status === 'active' ? 'active' : 'inactive'}">${currentSubscription.status}</span>
-                            </div>
-                            <div>
-                                <strong>Vencimiento:</strong><br>
-                                ${new Date(currentSubscription.end_date).toLocaleDateString('es-ES')}
-                            </div>
-                        </div>
-                    `;
-
-                    // Fill form with current data
-                    document.getElementById('subscriptionPlan').value = currentSubscription.plan_name || 'warehouse_basic';
-                    document.getElementById('subscriptionPrice').value = currentSubscription.price || 49;
-                    document.getElementById('subscriptionStartDate').value = currentSubscription.start_date?.split('T')[0] || '';
-                    document.getElementById('subscriptionEndDate').value = currentSubscription.end_date?.split('T')[0] || '';
-                    document.getElementById('subscriptionStatus').value = currentSubscription.status || 'active';
-                    document.getElementById('autoRenew').value = currentSubscription.auto_renew ? 'true' : 'false';
-                } else {
-                    // No active subscription
-                    document.getElementById('currentSubscriptionDetails').innerHTML = `
-                        <div style="text-align: center; color: #86868b;">
-                            <strong>No hay suscripción activa</strong><br>
-                            Configure una nueva suscripción para esta empresa
-                        </div>
-                    `;
-
-                    // Set default values
-                    const today = new Date();
-                    const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate());
-                    
-                    document.getElementById('subscriptionPlan').value = company.subscription_plan || 'warehouse_basic';
-                    document.getElementById('subscriptionStartDate').value = today.toISOString().split('T')[0];
-                    document.getElementById('subscriptionEndDate').value = nextMonth.toISOString().split('T')[0];
-                    document.getElementById('subscriptionStatus').value = 'active';
-                    document.getElementById('autoRenew').value = 'true';
-                }
-
-                updatePlanDetails();
-
-            } catch (error) {
-                console.error('Error loading company subscription:', error);
-                showNotification('error', 'Error', 'No se pudo cargar la información de la suscripción');
-            }
-        }
-
-        function updatePlanDetails() {
-            const plan = document.getElementById('subscriptionPlan').value;
-            const planDetails = getPlanDetailsInfo(plan);
-            const planPrice = getPlanPrice(plan);
-            
-            // Update price automatically
-            document.getElementById('subscriptionPrice').value = planPrice;
-            
-            // Show plan details
-            document.getElementById('planDetails').innerHTML = `
-                <div style="margin-bottom: 1rem;">
-                    <strong>Precio:</strong> ${planPrice}/mes<br>
-                    <strong>Usuarios:</strong> ${planDetails.users}<br>
-                    <strong>Almacenamiento:</strong> ${planDetails.storage}<br>
-                    <strong>Soporte:</strong> ${planDetails.support}
-                </div>
-            `;
-
-            // Show modules
-            const modules = getModulesForPlan(plan);
-            document.getElementById('modulesGrid').innerHTML = getModulesHTML(modules);
-        }
-
-        function getModulesHTML(modules) {
-            const moduleNames = {
-                'equipment': { name: 'Gestión de Equipos', icon: '🔧' },
-                'loans': { name: 'Préstamos', icon: '📋' },
-                'maintenance': { name: 'Mantenimiento', icon: '⚙️' },
-                'reports': { name: 'Reportes', icon: '📊' },
-                'projects': { name: 'Proyectos', icon: '📁' },
-                'finance': { name: 'Finanzas', icon: '💰' },
-                'inventory': { name: 'Inventario', icon: '📦' },
-                'api': { name: 'API Access', icon: '🔌' },
-                'integrations': { name: 'Integraciones', icon: '🔗' },
-                'all': { name: 'Todos los Módulos', icon: '🌟' }
-            };
-
-            if (modules.includes('all')) {
-                return `
-                    <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; background: linear-gradient(135deg, #28a745, #20c997); color: white; border-radius: 12px;">
-                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌟</div>
-                        <strong>Todos los Módulos Incluidos</strong><br>
-                        <small>Acceso completo a toda la suite</small>
-                    </div>
-                `;
-            }
-
-            return modules.map(moduleId => {
-                const module = moduleNames[moduleId];
-                if (!module) return '';
-                
-                return `
-                    <div style="background: white; border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; padding: 1rem; text-align: center;">
-                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">${module.icon}</div>
-                        <strong>${module.name}</strong>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        async function handleSaveSubscription() {
-            const companyId = document.getElementById('subscriptionCompany').value;
-            if (!companyId) {
-                showNotification('error', 'Error', 'Debe seleccionar una empresa');
-                return;
-            }
-
-            const subscriptionData = {
-                company_id: companyId,
-                plan_name: document.getElementById('subscriptionPlan').value,
-                price: parseFloat(document.getElementById('subscriptionPrice').value),
-                start_date: document.getElementById('subscriptionStartDate').value,
-                end_date: document.getElementById('subscriptionEndDate').value,
-                status: document.getElementById('subscriptionStatus').value,
-                auto_renew: document.getElementById('autoRenew').value === 'true'
-            };
-
-            try {
-                // Check if company has active subscription
-                const { data: existingSubscription } = await supabase
-                    .from('subscriptions')
-                    .select('id')
-                    .eq('company_id', companyId)
-                    .eq('status', 'active')
-                    .single();
-
-                if (existingSubscription) {
-                    // Update existing subscription
-                    const { error } = await supabase
-                        .from('subscriptions')
-                        .update(subscriptionData)
-                        .eq('id', existingSubscription.id);
-                    
-                    if (error) throw error;
-                    
-                    await logActivity('update', `Suscripción actualizada para empresa`, {
-                        company_id: companyId,
-                        plan: subscriptionData.plan_name,
-                        price: subscriptionData.price
-                    });
-                    
-                    showNotification('success', 'Suscripción Actualizada', 'Los cambios han sido guardados correctamente');
-                } else {
-                    // Create new subscription
-                    const { error } = await supabase
-                        .from('subscriptions')
-                        .insert([subscriptionData]);
-                    
-                    if (error) throw error;
-                    
-                    await logActivity('create', `Nueva suscripción creada para empresa`, {
-                        company_id: companyId,
-                        plan: subscriptionData.plan_name,
-                        price: subscriptionData.price
-                    });
-                    
-                    showNotification('success', 'Suscripción Creada', 'La suscripción ha sido configurada correctamente');
-                }
-
-                // Update company plan
-                await supabase
-                    .from('companies')
-                    .update({ 
-                        subscription_plan: subscriptionData.plan_name,
-                        settings: {
-                            modules_enabled: getModulesForPlan(subscriptionData.plan_name)
-                        }
-                    })
-                    .eq('id', companyId);
-
-                closeModal('addSubscriptionModal');
-                loadSubscriptions();
-                loadDashboard();
-
-            } catch (error) {
-                console.error('Error saving subscription:', error);
-                await logActivity('error', `Error al guardar suscripción: ${error.message}`);
-                showNotification('error', 'Error', 'No se pudo guardar la suscripción: ' + error.message);
-            }
-        }
-
-        // ============================================
-        // USER EDITING (Placeholder)
-        // ============================================
-        function editUser(id) {
-            showNotification('info', 'Próximamente', 'Edición de usuarios disponible pronto');
-        }
-    </script>
-</body>
-</html><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -1354,7 +7,7 @@
 
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Chart.js para gráficos -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
@@ -1378,7 +31,6 @@
             padding: 2rem;
         }
 
-        /* Header Premium Apple Style */
         .header {
             background: white;
             border: 1px solid rgba(0,0,0,0.08);
@@ -1409,7 +61,7 @@
             height: 60px;
             border-radius: 16px;
             padding: 2px;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3, #54a0ff, #5f27cd, #00d2d3, #ff9f43, #10ac84, #ee5a6f, #ff6b6b);
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3, #54a0ff, #5f27cd, #00d2d3, #ff9f43, #10ac84, #ee5a6f);
             background-size: 400% 400%;
             animation: gradientShift 4s ease-in-out infinite;
         }
@@ -1503,7 +155,6 @@
             box-shadow: 0 15px 40px rgba(73, 80, 87, 0.3);
         }
 
-        /* Navigation Tabs */
         .nav-tabs {
             background: white;
             border: 1px solid rgba(0,0,0,0.08);
@@ -1538,7 +189,6 @@
             color: #1d1d1f;
         }
 
-        /* Tab Content */
         .tab-content {
             display: none;
         }
@@ -1553,7 +203,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Stats Premium Apple Style */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -1645,7 +294,6 @@
             font-weight: 500;
         }
 
-        /* Quick Actions Premium Apple Style */
         .actions-section {
             margin-bottom: 4rem;
         }
@@ -1748,7 +396,6 @@
             font-size: 1rem;
         }
 
-        /* Tables Apple Style */
         .table-container {
             background: white;
             border: 1px solid rgba(0,0,0,0.08);
@@ -1856,7 +503,6 @@
             border: 1px solid rgba(255, 193, 7, 0.2);
         }
 
-        /* Charts Container */
         .charts-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
@@ -1879,7 +525,6 @@
             margin-bottom: 2rem;
         }
 
-        /* Filter Pills */
         .filter-pills {
             display: flex;
             gap: 0.8rem;
@@ -1910,7 +555,6 @@
             color: #1d1d1f;
         }
 
-        /* Empty State */
         .empty-state {
             text-align: center;
             padding: 4rem 2rem;
@@ -1939,7 +583,6 @@
             margin-right: auto;
         }
 
-        /* Modal Apple Style */
         .modal {
             display: none;
             position: fixed;
@@ -2106,7 +749,6 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
         }
 
-        /* Notification Toast */
         .notification {
             position: fixed;
             top: 2rem;
@@ -2155,7 +797,6 @@
             font-size: 0.9rem;
         }
 
-        /* Loading Spinner */
         .loading-spinner {
             display: inline-block;
             width: 20px;
@@ -2170,156 +811,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Reports and Settings Styles */
-        .reports-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .report-item {
-            background: #f8f9fa;
-            border: 1px solid rgba(0,0,0,0.08);
-            border-radius: 16px;
-            padding: 2rem 1.5rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .report-item:hover {
-            background: white;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            transform: translateY(-2px);
-        }
-
-        .report-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #28a745, #20c997);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: white;
-            margin: 0 auto 1rem;
-        }
-
-        .report-name {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #1d1d1f;
-            margin-bottom: 0.5rem;
-        }
-
-        .report-description {
-            font-size: 0.85rem;
-            color: #86868b;
-        }
-
-        .settings-section {
-            margin-bottom: 2rem;
-        }
-
-        .settings-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: #1d1d1f;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .settings-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #495057, #6c757d);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1rem;
-        }
-
-        .settings-item {
-            background: #f8f9fa;
-            border: 1px solid rgba(0,0,0,0.08);
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .setting-info {
-            flex: 1;
-        }
-
-        .setting-label {
-            font-weight: 600;
-            color: #1d1d1f;
-            margin-bottom: 0.25rem;
-        }
-
-        .setting-description {
-            font-size: 0.85rem;
-            color: #86868b;
-        }
-
-        .setting-control {
-            margin-left: 1rem;
-        }
-
-        .toggle-switch {
-            position: relative;
-            width: 50px;
-            height: 26px;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 26px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 20px;
-            width: 20px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: #20c997;
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(24px);
-        }
-
-        /* Responsive */
         @media (max-width: 768px) {
             .container {
                 padding: 1rem;
@@ -2351,10 +842,6 @@
             .nav-tabs {
                 overflow-x: auto;
             }
-
-            .reports-grid {
-                grid-template-columns: 1fr;
-            }
         }
     </style>
 </head>
@@ -2363,93 +850,6 @@
     <div id="notification" class="notification">
         <div id="notificationTitle" class="notification-title"></div>
         <div id="notificationMessage" class="notification-message"></div>
-    </div>
-
-    <!-- Add Subscription Modal -->
-    <div id="addSubscriptionModal" class="modal">
-        <div class="modal-content" style="max-width: 800px;">
-            <div class="modal-header">
-                <h3 class="modal-title">Gestionar Suscripción</h3>
-                <button class="modal-close" onclick="closeModal('addSubscriptionModal')">✕</button>
-            </div>
-            
-            <!-- Company Selection -->
-            <div class="form-group">
-                <label class="form-label">Seleccionar Empresa</label>
-                <select id="subscriptionCompany" class="form-select" onchange="loadCompanySubscription()" required>
-                    <option value="">Seleccione una empresa...</option>
-                </select>
-            </div>
-
-            <!-- Current Subscription Info -->
-            <div id="currentSubscriptionInfo" style="display: none; background: #f8f9fa; border-radius: 16px; padding: 1.5rem; margin: 1.5rem 0;">
-                <h4 style="margin-bottom: 1rem; color: #1d1d1f;">Suscripción Actual</h4>
-                <div id="currentSubscriptionDetails"></div>
-            </div>
-
-            <!-- Subscription Form -->
-            <div id="subscriptionForm" style="display: none;">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">Plan de Suscripción</label>
-                        <select id="subscriptionPlan" class="form-select" onchange="updatePlanDetails()" required>
-                            <option value="warehouse_basic">Almacén Básico</option>
-                            <option value="warehouse_pro">Almacén Pro</option>
-                            <option value="suite_standard">Suite Standard</option>
-                            <option value="suite_premium">Suite Premium</option>
-                            <option value="enterprise">Enterprise</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Precio Mensual (USD)</label>
-                        <input type="number" id="subscriptionPrice" class="form-input" step="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Fecha de Inicio</label>
-                        <input type="date" id="subscriptionStartDate" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Fecha de Vencimiento</label>
-                        <input type="date" id="subscriptionEndDate" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Estado</label>
-                        <select id="subscriptionStatus" class="form-select">
-                            <option value="active">Activa</option>
-                            <option value="trial">Prueba</option>
-                            <option value="expired">Expirada</option>
-                            <option value="cancelled">Cancelada</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Auto-renovación</label>
-                        <select id="autoRenew" class="form-select">
-                            <option value="true">Sí</option>
-                            <option value="false">No</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Plan Details -->
-                <div id="planDetailsContainer" style="background: #f8f9fa; border-radius: 16px; padding: 1.5rem; margin-top: 1.5rem;">
-                    <h4 style="margin-bottom: 1rem; color: #1d1d1f;">Detalles del Plan</h4>
-                    <div id="planDetails"></div>
-                </div>
-
-                <!-- Modules Configuration -->
-                <div style="margin-top: 1.5rem;">
-                    <h4 style="margin-bottom: 1rem; color: #1d1d1f;">Módulos Incluidos</h4>
-                    <div id="modulesGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                        <!-- Modules will be loaded here -->
-                    </div>
-                </div>
-            </div>
-
-            <div class="modal-buttons">
-                <button type="button" class="btn-modal secondary" onclick="closeModal('addSubscriptionModal')">Cancelar</button>
-                <button type="button" id="saveSubscriptionBtn" class="btn-modal primary" onclick="handleSaveSubscription()" style="display: none;">Guardar Suscripción</button>
-            </div>
-        </div>
     </div>
 
     <div class="container">
@@ -2485,7 +885,7 @@
             <button class="nav-tab" onclick="switchTab('activity')">Actividad</button>
         </div>
 
-        <!-- Dashboard Tab -->
+            <!-- Dashboard Tab -->
         <div id="dashboard-tab" class="tab-content active">
             <!-- Stats -->
             <div class="stats-grid">
@@ -2593,7 +993,6 @@
                     </div>
                 </div>
 
-                <!-- Filter Pills -->
                 <div class="filter-pills">
                     <button class="filter-pill active" onclick="filterCompanies('all', this)">Todas</button>
                     <button class="filter-pill" onclick="filterCompanies('active', this)">Activas</button>
@@ -2770,7 +1169,6 @@
         </div>
     </div>
 
-    <!-- Modals -->
     <!-- Add Company Modal -->
     <div id="addCompanyModal" class="modal">
         <div class="modal-content">
@@ -2826,373 +1224,6 @@
             </form>
         </div>
     </div>
-
-    <!-- Add User Modal -->
-    <div id="addUserModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Agregar Nuevo Usuario</h3>
-                <button class="modal-close" onclick="closeModal('addUserModal')">✕</button>
-            </div>
-            <form id="addUserForm" onsubmit="handleAddUser(event)">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">Nombre Completo *</label>
-                        <input type="text" id="userName" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Email *</label>
-                        <input type="email" id="userEmail" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Empresa</label>
-                        <select id="userCompany" class="form-select" required>
-                            <!-- Companies will be loaded here -->
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Rol</label>
-                        <select id="userRole" class="form-select">
-                            <option value="ADMIN">Administrador</option>
-                            <option value="ALMACEN">Almacén</option>
-                            <option value="OPERATIVO">Operativo</option>
-                            <option value="ESTIMADOR">Estimador</option>
-                            <option value="SUPERVISOR">Supervisor</option>
-                        </select>
-                    </div>
-                    <div class="form-group full-width">
-                        <label class="form-label">Contraseña Temporal</label>
-                        <input type="password" id="userPassword" class="form-input" value="Password123!" required>
-                    </div>
-                </div>
-                <div class="modal-buttons">
-                    <button type="button" class="btn-modal secondary" onclick="closeModal('addUserModal')">Cancelar</button>
-                    <button type="submit" class="btn-modal primary">Crear Usuario</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Edit Company Modal -->
-    <div id="editCompanyModal" class="modal">
-        <div class="modal-content" style="max-width: 900px;">
-            <div class="modal-header">
-                <h3 class="modal-title">Editar Empresa - <span id="editCompanyTitle">Cargando...</span></h3>
-                <button class="modal-close" onclick="closeModal('editCompanyModal')">✕</button>
-            </div>
-            
-            <!-- Company Info Section -->
-            <div style="background: #f8f9fa; border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem;">
-                <h4 style="margin-bottom: 1rem; color: #1d1d1f; display: flex; align-items: center; gap: 0.5rem;">
-                    <span>📋</span> Información Básica
-                </h4>
-                <form id="editCompanyForm" onsubmit="handleEditCompany(event)">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label class="form-label">Nombre de la Empresa *</label>
-                            <input type="text" id="editCompanyName" class="form-input" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">RUC *</label>
-                            <input type="text" id="editCompanyRuc" class="form-input" required>
-                        </div>
-                        <div class="form-group full-width">
-                            <label class="form-label">Dirección</label>
-                            <input type="text" id="editCompanyAddress" class="form-input">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Teléfono</label>
-                            <input type="tel" id="editCompanyPhone" class="form-input">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Email *</label>
-                            <input type="email" id="editCompanyEmail" class="form-input" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Dominio</label>
-                            <input type="text" id="editCompanyDomain" class="form-input" placeholder="empresa.com">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Estado</label>
-                            <select id="editCompanyStatus" class="form-select">
-                                <option value="active">Activa</option>
-                                <option value="inactive">Inactiva</option>
-                                <option value="trial">En Prueba</option>
-                                <option value="suspended">Suspendida</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Límite de Usuarios</label>
-                            <input type="number" id="editCompanyMaxUsers" class="form-input" min="1" max="1000">
-                        </div>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Subscription Section -->
-            <div style="background: #f8f9fa; border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem;">
-                <h4 style="margin-bottom: 1rem; color: #1d1d1f; display: flex; align-items: center; gap: 0.5rem;">
-                    <span>💳</span> Plan de Suscripción
-                </h4>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">Plan Actual</label>
-                        <select id="editCompanyPlan" class="form-select" onchange="updateEditPlanDetails()">
-                            <option value="warehouse_basic">Almacén Básico - $49/mes</option>
-                            <option value="warehouse_pro">Almacén Pro - $149/mes</option>
-                            <option value="suite_standard">Suite Standard - $249/mes</option>
-                            <option value="suite_premium">Suite Premium - $499/mes</option>
-                            <option value="enterprise">Enterprise - $999/mes</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Slug URL</label>
-                        <input type="text" id="editCompanySlug" class="form-input" placeholder="empresa-slug">
-                        <small style="color: #86868b;">URL: https://app.opsis-suite.com/<span id="slugPreview">empresa-slug</span></small>
-                    </div>
-                </div>
-                <div id="editPlanDetails" style="background: white; border-radius: 12px; padding: 1rem; margin-top: 1rem;">
-                    <!-- Plan details will be loaded here -->
-                </div>
-            </div>
-
-            <!-- Modules Configuration -->
-            <div style="background: #f8f9fa; border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem;">
-                <h4 style="margin-bottom: 1rem; color: #1d1d1f; display: flex; align-items: center; gap: 0.5rem;">
-                    <span>🚀</span> Módulos Habilitados
-                </h4>
-                <div id="editModulesGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                    <!-- Modules will be loaded here -->
-                </div>
-            </div>
-
-            <!-- Advanced Settings -->
-            <div style="background: #f8f9fa; border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem;">
-                <h4 style="margin-bottom: 1rem; color: #1d1d1f; display: flex; align-items: center; gap: 0.5rem;">
-                    <span>⚙️</span> Configuración Avanzada
-                </h4>
-                <div class="form-group">
-                    <label class="form-label">Configuración JSON Personalizada</label>
-                    <textarea id="editCompanySettings" class="form-textarea" rows="4" placeholder='{"custom_setting": "value"}'></textarea>
-                    <small style="color: #86868b;">Configuraciones específicas en formato JSON. Solo para usuarios avanzados.</small>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Notas Administrativas</label>
-                    <textarea id="editCompanyNotes" class="form-textarea" rows="3" placeholder="Notas internas sobre esta empresa..."></textarea>
-                </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="modal-buttons" style="justify-content: space-between;">
-                <div style="display: flex; gap: 1rem;">
-                    <button type="button" class="btn-modal secondary" onclick="resetCompanyData()" title="Deshacer cambios">
-                        <span>🔄</span> Restaurar
-                    </button>
-                    <button type="button" class="btn-modal secondary" onclick="duplicateCompany()" title="Crear empresa similar">
-                        <span>📋</span> Duplicar
-                    </button>
-                </div>
-                <div style="display: flex; gap: 1rem;">
-                    <button type="button" class="btn-modal secondary" onclick="closeModal('editCompanyModal')">Cancelar</button>
-                    <button type="button" class="btn-modal primary" onclick="handleEditCompany(event)" style="background: linear-gradient(135deg, #20c997, #17a2b8);">
-                        <span>💾</span> Guardar Cambios
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Reports Modal -->
-    <div id="reportsModal" class="modal">
-        <div class="modal-content" style="max-width: 900px;">
-            <div class="modal-header">
-                <h3 class="modal-title">📊 Centro de Reportes</h3>
-                <button class="modal-close" onclick="closeModal('reportsModal')">✕</button>
-            </div>
-
-            <div class="reports-grid">
-                <div class="report-item" onclick="generateReport('companies')">
-                    <div class="report-icon">🏢</div>
-                    <div class="report-name">Reporte de Empresas</div>
-                    <div class="report-description">Estado, suscripciones y actividad</div>
-                </div>
-
-                <div class="report-item" onclick="generateReport('users')">
-                    <div class="report-icon">👥</div>
-                    <div class="report-name">Reporte de Usuarios</div>
-                    <div class="report-description">Actividad y estadísticas de uso</div>
-                </div>
-
-                <div class="report-item" onclick="generateReport('revenue')">
-                    <div class="report-icon">💰</div>
-                    <div class="report-name">Reporte Financiero</div>
-                    <div class="report-description">Ingresos, pagos y proyecciones</div>
-                </div>
-
-                <div class="report-item" onclick="generateReport('activity')">
-                    <div class="report-icon">📈</div>
-                    <div class="report-name">Reporte de Actividad</div>
-                    <div class="report-description">Logs del sistema y seguridad</div>
-                </div>
-
-                <div class="report-item" onclick="generateReport('performance')">
-                    <div class="report-icon">⚡</div>
-                    <div class="report-name">Reporte de Rendimiento</div>
-                    <div class="report-description">Métricas de sistema y base de datos</div>
-                </div>
-
-                <div class="report-item" onclick="generateReport('subscriptions')">
-                    <div class="report-icon">📋</div>
-                    <div class="report-name">Reporte de Suscripciones</div>
-                    <div class="report-description">Planes, vencimientos y renovaciones</div>
-                </div>
-            </div>
-
-            <div style="margin-top: 2rem; text-align: center;">
-                <button class="btn-secondary" onclick="closeModal('reportsModal')">Cerrar</button>
-                <button class="btn-primary" onclick="generateCustomReport()" style="margin-left: 1rem;">Reporte Personalizado</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Settings Modal -->
-    <div id="settingsModal" class="modal">
-        <div class="modal-content" style="max-width: 900px;">
-            <div class="modal-header">
-                <h3 class="modal-title">⚙️ Configuración del Sistema</h3>
-                <button class="modal-close" onclick="closeModal('settingsModal')">✕</button>
-            </div>
-
-            <!-- General Settings -->
-            <div class="settings-section">
-                <div class="settings-title">
-                    <div class="settings-icon">🌐</div>
-                    Configuración General
-                </div>
-
-                <div class="settings-item">
-                    <div class="setting-info">
-                        <div class="setting-label">Registros Públicos</div>
-                        <div class="setting-description">Permitir registro de nuevas empresas</div>
-                    </div>
-                    <div class="setting-control">
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="publicRegistration" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="settings-item">
-                    <div class="setting-info">
-                        <div class="setting-label">Modo Mantenimiento</div>
-                        <div class="setting-description">Desactivar acceso para mantenimiento</div>
-                    </div>
-                    <div class="setting-control">
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="maintenanceMode">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="settings-item">
-                    <div class="setting-info">
-                        <div class="setting-label">Límite de Usuarios por Empresa</div>
-                        <div class="setting-description">Máximo por defecto</div>
-                    </div>
-                    <div class="setting-control">
-                        <input type="number" class="form-input" id="defaultUserLimit" value="50" min="1" max="1000" style="width: 150px; padding: 0.5rem 0.75rem; background: white; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; color: #1d1d1f; font-size: 0.9rem; transition: all 0.3s ease;">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Subscription Settings -->
-            <div class="settings-section">
-                <div class="settings-title">
-                    <div class="settings-icon">💳</div>
-                    Configuración de Suscripciones
-                </div>
-
-                <div class="settings-item">
-                    <div class="setting-info">
-                        <div class="setting-label">Periodo de Prueba</div>
-                        <div class="setting-description">Días de prueba gratuita</div>
-                    </div>
-                    <div class="setting-control">
-                        <input type="number" class="form-input" id="trialPeriod" value="30" min="0" max="90" style="width: 150px; padding: 0.5rem 0.75rem; background: white; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; color: #1d1d1f; font-size: 0.9rem; transition: all 0.3s ease;">
-                    </div>
-                </div>
-
-                <div class="settings-item">
-                    <div class="setting-info">
-                        <div class="setting-label">Auto-renovación</div>
-                        <div class="setting-description">Renovar automáticamente suscripciones</div>
-                    </div>
-                    <div class="setting-control">
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="autoRenewal" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="settings-item">
-                    <div class="setting-info">
-                        <div class="setting-label">Notificación de Vencimiento</div>
-                        <div class="setting-description">Días antes del vencimiento</div>
-                    </div>
-                    <div class="setting-control">
-                        <input type="number" class="form-input" id="expirationNotice" value="7" min="1" max="30" style="width: 150px; padding: 0.5rem 0.75rem; background: white; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; color: #1d1d1f; font-size: 0.9rem; transition: all 0.3s ease;">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Plan Settings -->
-            <div class="settings-section">
-                <div class="settings-title">
-                    <div class="settings-icon">📦</div>
-                    Configuración de Planes
-                </div>
-
-                <div class="settings-item">
-                    <div class="setting-info">
-                        <div class="setting-label">Plan Básico - Precio</div>
-                        <div class="setting-description">Precio mensual en USD</div>
-                    </div>
-                    <div class="setting-control">
-                        <input type="number" class="form-input" id="basicPlanPrice" value="49" min="1" step="0.01" style="width: 150px; padding: 0.5rem 0.75rem; background: white; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; color: #1d1d1f; font-size: 0.9rem; transition: all 0.3s ease;">
-                    </div>
-                </div>
-
-                <div class="settings-item">
-                    <div class="setting-info">
-                        <div class="setting-label">Plan Pro - Precio</div>
-                        <div class="setting-description">Precio mensual en USD</div>
-                    </div>
-                    <div class="setting-control">
-                        <input type="number" class="form-input" id="proPlanPrice" value="149" min="1" step="0.01" style="width: 150px; padding: 0.5rem 0.75rem; background: white; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; color: #1d1d1f; font-size: 0.9rem; transition: all 0.3s ease;">
-                    </div>
-                </div>
-
-                <div class="settings-item">
-                    <div class="setting-info">
-                        <div class="setting-label">Plan Enterprise - Precio</div>
-                        <div class="setting-description">Precio mensual en USD</div>
-                    </div>
-                    <div class="setting-control">
-                        <input type="number" class="form-input" id="enterprisePlanPrice" value="999" min="1" step="0.01" style="width: 150px; padding: 0.5rem 0.75rem; background: white; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; color: #1d1d1f; font-size: 0.9rem; transition: all 0.3s ease;">
-                    </div>
-                </div>
-            </div>
-
-            <div style="margin-top: 2rem; text-align: center;">
-                <button class="btn-secondary" onclick="closeModal('settingsModal')">Cancelar</button>
-                <button class="btn-primary" onclick="saveSettings()" style="margin-left: 1rem;">Guardar Configuración</button>
-            </div>
-        </div>
-    </div>
-
     <script>
         // ============================================
         // CONFIGURACIÓN DE SUPABASE
@@ -3211,17 +1242,12 @@
         let usersChart = null;
         let revenueChart = null;
 
-        // Company Editing Variables
-        let currentEditingCompany = null;
-        let originalCompanyData = null;
-
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
             try {
                 await checkAuth();
                 await loadDashboard();
                 initCharts();
-                setupEventListeners();
             } catch (error) {
                 console.error('Initialization error:', error);
                 showNotification('error', 'Error de inicialización', 'Problema al cargar el panel');
@@ -3229,41 +1255,8 @@
         });
 
         // ============================================
-        // MODAL AND UI FUNCTIONS (Move to top)
+        // UTILITY FUNCTIONS
         // ============================================
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('show');
-        }
-
-        function showAddCompanyModal() {
-            document.getElementById('addCompanyModal').classList.add('show');
-        }
-
-        async function showAddUserModal() {
-            await loadCompaniesForSelect();
-            document.getElementById('addUserModal').classList.add('show');
-        }
-
-        function showAddSubscriptionModal() {
-            loadCompaniesForSubscriptionSelect();
-            document.getElementById('addSubscriptionModal').classList.add('show');
-        }
-
-        function showAddPaymentModal() {
-            showNotification('info', 'Próximamente', 'Modal de pagos disponible pronto');
-        }
-
-        function showReportsModal() {
-            document.getElementById('reportsModal').classList.add('show');
-            logActivity('info', 'Accedió al centro de reportes');
-        }
-
-        function showSettingsModal() {
-            loadSettings();
-            document.getElementById('settingsModal').classList.add('show');
-            logActivity('info', 'Accedió a la configuración del sistema');
-        }
-
         function showNotification(type, title, message) {
             const notification = document.getElementById('notification');
             const notificationTitle = document.getElementById('notificationTitle');
@@ -3278,143 +1271,37 @@
             }, 4000);
         }
 
-        // Setup Event Listeners
-        function setupEventListeners() {
-            // Slug preview update
-            const slugInput = document.getElementById('editCompanySlug');
-            if (slugInput) {
-                slugInput.addEventListener('input', updateSlugPreview);
-            }
-
-            // Company name to slug auto-generation
-            const nameInput = document.getElementById('editCompanyName');
-            if (nameInput) {
-                nameInput.addEventListener('input', (e) => {
-                    const slugField = document.getElementById('editCompanySlug');
-                    if (slugField && !slugField.value) {
-                        slugField.value = generateSlug(e.target.value);
-                        updateSlugPreview();
-                    }
-                });
-            }
-
-            // Close modals when clicking outside
-            document.addEventListener('click', (e) => {
-                if (e.target.classList.contains('modal')) {
-                    e.target.classList.remove('show');
-                }
-            });
-
-            // Close modals with Escape key
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    document.querySelectorAll('.modal.show').forEach(modal => {
-                        modal.classList.remove('show');
-                    });
-                }
-            });
-        }
-
-        // ============================================
-        // AUTHENTICATION
-        // ============================================
-        async function checkAuth() {
-            try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) {
-                    window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
-                    return;
-                }
-
-                currentUser = user;
-                document.getElementById('adminEmail').textContent = user.email;
-
-                if (user.email !== 'admin@opsis-suite.com') {
-                    showNotification('error', 'Acceso Denegado', 'No tienes permisos de Super Admin');
-                    await supabase.auth.signOut();
-                    window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
-                    return;
-                }
-
-                // Get or create user profile
-                let { data: profile } = await supabase
-                    .from('user_profiles')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .single();
-
-                if (!profile) {
-                    // Create profile if it doesn't exist
-                    const { data: newProfile, error } = await supabase
-                        .from('user_profiles')
-                        .insert([{
-                            user_id: user.id,
-                            email: user.email,
-                            full_name: 'Super Admin',
-                            name: 'Super Admin',
-                            role: 'super_admin',
-                            is_active: true
-                        }])
-                        .select()
-                        .single();
-
-                    if (error) {
-                        console.error('Error creating profile:', error);
-                    } else {
-                        profile = newProfile;
-                    }
-                }
-
-                document.getElementById('adminName').textContent = profile?.full_name || 'Super Admin';
-
-                // Log successful login
-                await logActivity('login', 'Super Admin accedió al panel');
-
-            } catch (error) {
-                console.error('Auth error:', error);
-                window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+            // Remover modales dinámicos si existen
+            const modal = document.getElementById(modalId);
+            if (modalId === 'editCompanyModal' && modal) {
+                modal.remove();
             }
         }
 
-        async function handleSignOut() {
-            try {
-                await logActivity('logout', 'Super Admin cerró sesión');
-                const { error } = await supabase.auth.signOut();
-                if (error) {
-                    console.error('Error al cerrar sesión:', error);
-                    showNotification('error', 'Error', 'No se pudo cerrar sesión');
-                } else {
-                    localStorage.clear();
-                    sessionStorage.clear();
-                    window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
-                }
-            } catch (error) {
-                console.error('Error en signOut:', error);
-                window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
-            }
+        function showAddCompanyModal() {
+            document.getElementById('addCompanyModal').classList.add('show');
         }
 
-        // ============================================
-        // ACTIVITY LOGGING
-        // ============================================
-        async function logActivity(actionType, description, metadata = {}) {
-            try {
-                const logData = {
-                    user_id: currentUser?.id || null,
-                    action_type: actionType,
-                    description: description,
-                    ip_address: '127.0.0.1',
-                    user_agent: navigator.userAgent,
-                    metadata: metadata
-                };
+        function showReportsModal() {
+            showNotification('info', 'Reportes', 'Centro de reportes próximamente disponible');
+        }
 
-                await supabase
-                    .from('admin_activity_logs')
-                    .insert([logData]);
+        function showSettingsModal() {
+            showNotification('info', 'Configuración', 'Configuración del sistema próximamente disponible');
+        }
 
-            } catch (error) {
-                console.error('Error logging activity:', error);
-            }
+        function showAddUserModal() {
+            showNotification('info', 'Usuarios', 'Gestión de usuarios próximamente disponible');
+        }
+
+        function showAddSubscriptionModal() {
+            showNotification('info', 'Suscripciones', 'Gestión de suscripciones próximamente disponible');
+        }
+
+        function showAddPaymentModal() {
+            showNotification('info', 'Pagos', 'Gestión de pagos próximamente disponible');
         }
 
         // ============================================
@@ -3422,6 +1309,7 @@
         // ============================================
         function switchTab(tabName) {
             try {
+                // Remove active class from all tabs
                 document.querySelectorAll('.tab-content').forEach(tab => {
                     tab.classList.remove('active');
                 });
@@ -3430,30 +1318,15 @@
                     tab.classList.remove('active');
                 });
 
+                // Add active class to selected tab
                 document.getElementById(`${tabName}-tab`).classList.add('active');
                 
-                // Find and activate the clicked tab button
-                const clickedTab = Array.from(document.querySelectorAll('.nav-tab')).find(tab => 
-                    tab.textContent.toLowerCase().includes(tabName) || 
-                    tab.onclick?.toString().includes(tabName)
-                );
-                
-                if (clickedTab) {
-                    clickedTab.classList.add('active');
-                } else {
-                    // Fallback - activate by position
-                    const tabMapping = {
-                        'dashboard': 0,
-                        'companies': 1,
-                        'users': 2,
-                        'subscriptions': 3,
-                        'payments': 4,
-                        'activity': 5
-                    };
-                    const tabIndex = tabMapping[tabName];
-                    if (tabIndex !== undefined) {
-                        document.querySelectorAll('.nav-tab')[tabIndex]?.classList.add('active');
-                    }
+                // Find and activate the correct nav tab
+                const tabButtons = document.querySelectorAll('.nav-tab');
+                const tabNames = ['dashboard', 'companies', 'users', 'subscriptions', 'payments', 'activity'];
+                const tabIndex = tabNames.indexOf(tabName);
+                if (tabIndex !== -1 && tabButtons[tabIndex]) {
+                    tabButtons[tabIndex].classList.add('active');
                 }
 
                 loadTabData(tabName);
@@ -3485,10 +1358,55 @@
                         await loadActivity();
                         break;
                 }
-                await logActivity('info', `Accedió a la sección: ${tabName}`);
             } catch (error) {
                 console.error(`Error loading ${tabName}:`, error);
                 showNotification('error', 'Error de carga', `No se pudo cargar ${tabName}`);
+            }
+        }
+
+        // ============================================
+        // AUTHENTICATION
+        // ============================================
+        async function checkAuth() {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) {
+                    window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
+                    return;
+                }
+
+                currentUser = user;
+                document.getElementById('adminEmail').textContent = user.email;
+
+                if (user.email !== 'admin@opsis-suite.com') {
+                    showNotification('error', 'Acceso Denegado', 'No tienes permisos de Super Admin');
+                    await supabase.auth.signOut();
+                    window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
+                    return;
+                }
+
+                document.getElementById('adminName').textContent = 'Super Admin';
+
+            } catch (error) {
+                console.error('Auth error:', error);
+                window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
+            }
+        }
+
+        async function handleSignOut() {
+            try {
+                const { error } = await supabase.auth.signOut();
+                if (error) {
+                    console.error('Error al cerrar sesión:', error);
+                    showNotification('error', 'Error', 'No se pudo cerrar sesión');
+                } else {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
+                }
+            } catch (error) {
+                console.error('Error en signOut:', error);
+                window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
             }
         }
 
@@ -3497,7 +1415,6 @@
         // ============================================
         async function loadDashboard() {
             try {
-                // Load basic stats
                 const [companiesResult, usersResult, subscriptionsResult, paymentsResult] = await Promise.all([
                     supabase.from('companies').select('*', { count: 'exact', head: true }),
                     supabase.from('user_profiles').select('*', { count: 'exact', head: true }),
@@ -3513,15 +1430,14 @@
                 document.getElementById('totalCompanies').textContent = companiesCount;
                 document.getElementById('totalUsers').textContent = usersCount;
                 document.getElementById('activeSubscriptions').textContent = subscriptionsCount;
-                document.getElementById('totalRevenue').textContent = `${totalRevenue.toFixed(2)}`;
+                document.getElementById('totalRevenue').textContent = `$${totalRevenue.toFixed(2)}`;
 
-                // Update change indicators
                 document.getElementById('companiesChange').textContent = 
                     companiesCount > 0 ? `${companiesCount} empresas registradas` : 'Listo para comenzar';
                 document.getElementById('usersChange').textContent = 
                     usersCount > 0 ? `${usersCount} usuarios en el sistema` : 'Super Admin activo';
                 document.getElementById('revenueChange').textContent = 
-                    totalRevenue > 0 ? `Total: ${totalRevenue.toFixed(2)}` : 'Listo para facturar';
+                    totalRevenue > 0 ? `Total: $${totalRevenue.toFixed(2)}` : 'Listo para facturar';
 
                 updateCharts();
 
@@ -3538,16 +1454,10 @@
             try {
                 const { data, error } = await supabase
                     .from('companies')
-                    .select(`
-                        *,
-                        user_profiles!company_id (user_id)
-                    `)
+                    .select('*, user_profiles!company_id (user_id)')
                     .order('created_at', { ascending: false });
 
-                if (error) {
-                    console.error('Supabase error:', error);
-                    throw error;
-                }
+                if (error) throw error;
 
                 companies = data || [];
                 displayCompanies(companies);
@@ -3581,7 +1491,7 @@
                 const createdDate = new Date(company.created_at).toLocaleDateString('es-ES');
 
                 return `
-                    <tr data-company-id="${company.id}">
+                    <tr>
                         <td>
                             <div style="display: flex; align-items: center; gap: 0.75rem;">
                                 <div style="width: 40px; height: 40px; border-radius: 8px; background: linear-gradient(135deg, #20c997, #17a2b8); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.1rem;">
@@ -3639,344 +1549,329 @@
         }
 
         // ============================================
-        // COMPANY EDITING FUNCTIONS
+        // EDIT COMPANY FUNCTION - MEJORADA
         // ============================================
-        async function editCompany(companyId) {
-            try {
-                // Load company data
-                const { data: company, error } = await supabase
-                    .from('companies')
-                    .select(`
-                        *,
-                        subscriptions!company_id (*)
-                    `)
-                    .eq('id', companyId)
-                    .single();
-
-                if (error) throw error;
-
-                currentEditingCompany = company;
-                originalCompanyData = JSON.parse(JSON.stringify(company)); // Deep copy
-
-                // Populate the edit form
-                document.getElementById('editCompanyTitle').textContent = company.name;
-                document.getElementById('editCompanyName').value = company.name || '';
-                document.getElementById('editCompanyRuc').value = company.ruc || '';
-                document.getElementById('editCompanyAddress').value = company.address || '';
-                document.getElementById('editCompanyPhone').value = company.phone || '';
-                document.getElementById('editCompanyEmail').value = company.email || '';
-                document.getElementById('editCompanyDomain').value = company.domain || '';
-                document.getElementById('editCompanyStatus').value = company.status || 'active';
-                document.getElementById('editCompanyMaxUsers').value = company.max_users || 50;
-                document.getElementById('editCompanyPlan').value = company.subscription_plan || 'warehouse_basic';
-                document.getElementById('editCompanySlug').value = company.slug || '';
-                document.getElementById('editCompanySettings').value = company.settings ? JSON.stringify(company.settings, null, 2) : '{}';
-                document.getElementById('editCompanyNotes').value = company.admin_notes || '';
-
-                // Update slug preview
-                updateSlugPreview();
-                updateEditPlanDetails();
-
-                // Show modal
-                document.getElementById('editCompanyModal').classList.add('show');
-                await logActivity('info', `Abrió edición de empresa: ${company.name}`, { company_id: companyId });
-
-            } catch (error) {
-                console.error('Error loading company for edit:', error);
-                await logActivity('error', `Error al cargar empresa para editar: ${error.message}`);
-                showNotification('error', 'Error', 'No se pudo cargar la información de la empresa');
+        function editCompany(id) {
+            const company = companies.find(c => c.id === id);
+            if (!company) {
+                showNotification('error', 'Error', 'Empresa no encontrada');
+                return;
             }
-        }
 
-        function updateSlugPreview() {
-            const slug = document.getElementById('editCompanySlug').value;
-            document.getElementById('slugPreview').textContent = slug || 'empresa-slug';
-        }
-
-        function updateEditPlanDetails() {
-            const plan = document.getElementById('editCompanyPlan').value;
-            const planDetails = getPlanDetailsInfo(plan);
-            const planPrice = getPlanPrice(plan);
-            
-            document.getElementById('editPlanDetails').innerHTML = `
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
-                    <div>
-                        <strong>Precio:</strong><br>
-                        <span style="color: #20c997; font-size: 1.2rem; font-weight: 600;">${planPrice}/mes</span>
+            const modalHTML = `
+                <div id="editCompanyModal" class="modal show">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 class="modal-title">Editar Empresa: ${company.name}</h3>
+                            <button class="modal-close" onclick="closeModal('editCompanyModal')">✕</button>
+                        </div>
+                        <form onsubmit="saveCompanyEdits(event, '${id}')">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Nombre</label>
+                                    <input type="text" id="editName" class="form-input" value="${company.name}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">RUC</label>
+                                    <input type="text" id="editRuc" class="form-input" value="${company.ruc || ''}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" id="editEmail" class="form-input" value="${company.email}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Teléfono</label>
+                                    <input type="tel" id="editPhone" class="form-input" value="${company.phone || ''}">
+                                </div>
+                                <div class="form-group full-width">
+                                    <label class="form-label">Dirección</label>
+                                    <input type="text" id="editAddress" class="form-input" value="${company.address || ''}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Plan</label>
+                                    <select id="editPlan" class="form-select">
+                                        <option value="warehouse_basic" ${company.subscription_plan === 'warehouse_basic' ? 'selected' : ''}>Almacén Básico - $49/mes</option>
+                                        <option value="warehouse_pro" ${company.subscription_plan === 'warehouse_pro' ? 'selected' : ''}>Almacén Pro - $149/mes</option>
+                                        <option value="suite_standard" ${company.subscription_plan === 'suite_standard' ? 'selected' : ''}>Suite Standard - $249/mes</option>
+                                        <option value="suite_premium" ${company.subscription_plan === 'suite_premium' ? 'selected' : ''}>Suite Premium - $499/mes</option>
+                                        <option value="enterprise" ${company.subscription_plan === 'enterprise' ? 'selected' : ''}>Enterprise - $999/mes</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Max Usuarios</label>
+                                    <input type="number" id="editMaxUsers" class="form-input" value="${company.max_users || 5}" min="1">
+                                </div>
+                            </div>
+                            <div class="modal-buttons">
+                                <button type="button" class="btn-modal secondary" onclick="closeModal('editCompanyModal')">Cancelar</button>
+                                <button type="submit" class="btn-modal primary">Guardar Cambios</button>
+                            </div>
+                        </form>
                     </div>
-                    <div>
-                        <strong>Usuarios:</strong><br>
-                        ${planDetails.users}
-                    </div>
-                    <div>
-                        <strong>Almacenamiento:</strong><br>
-                        ${planDetails.storage}
-                    </div>
-                    <div>
-                        <strong>Soporte:</strong><br>
-                        ${planDetails.support}
-                    </div>
-                </div>
-                <div style="margin-top: 1rem;">
-                    <strong>Características incluidas:</strong>
-                    <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: #86868b;">
-                        ${planDetails.features.map(f => `<li>${f}</li>`).join('')}
-                    </ul>
                 </div>
             `;
 
-            // Update modules
-            const modules = getModulesForPlan(plan);
-            document.getElementById('editModulesGrid').innerHTML = getEditModulesHTML(modules);
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
         }
 
-        function getEditModulesHTML(modules) {
-            const moduleNames = {
-                'equipment': { name: 'Gestión de Equipos', icon: '🔧', description: 'Control de inventario de equipos' },
-                'loans': { name: 'Préstamos', icon: '📋', description: 'Gestión de préstamos y devoluciones' },
-                'maintenance': { name: 'Mantenimiento', icon: '⚙️', description: 'Programación y seguimiento' },
-                'reports': { name: 'Reportes', icon: '📊', description: 'Análisis y estadísticas' },
-                'projects': { name: 'Proyectos', icon: '📁', description: 'Gestión de proyectos' },
-                'finance': { name: 'Finanzas', icon: '💰', description: 'Control financiero' },
-                'inventory': { name: 'Inventario', icon: '📦', description: 'Gestión de stock' },
-                'api': { name: 'API Access', icon: '🔌', description: 'Integración con terceros' },
-                'integrations': { name: 'Integraciones', icon: '🔗', description: 'Conectores externos' },
-                'all': { name: 'Todos los Módulos', icon: '🌟', description: 'Acceso completo' }
+        async function saveCompanyEdits(event, companyId) {
+            event.preventDefault();
+
+            const updateData = {
+                name: document.getElementById('editName').value,
+                ruc: document.getElementById('editRuc').value,
+                email: document.getElementById('editEmail').value,
+                phone: document.getElementById('editPhone').value,
+                address: document.getElementById('editAddress').value,
+                subscription_plan: document.getElementById('editPlan').value,
+                max_users: parseInt(document.getElementById('editMaxUsers').value)
             };
 
-            if (modules.includes('all')) {
-                return `
-                    <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; background: linear-gradient(135deg, #28a745, #20c997); color: white; border-radius: 12px; position: relative; overflow: hidden;">
-                        <div style="position: absolute; top: 10px; right: 15px; background: rgba(255,255,255,0.2); padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.7rem; font-weight: bold;">PREMIUM</div>
-                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🌟</div>
-                        <strong style="font-size: 1.1rem;">Todos los Módulos Incluidos</strong><br>
-                        <small style="opacity: 0.9;">Acceso completo a toda la suite Opsis</small>
-                    </div>
-                `;
-            }
-
-            return modules.map(moduleId => {
-                const module = moduleNames[moduleId];
-                if (!module) return '';
-                
-                return `
-                    <div style="background: white; border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; padding: 1rem; text-align: center; transition: all 0.3s ease; cursor: default;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">${module.icon}</div>
-                        <strong style="color: #1d1d1f; font-size: 0.9rem;">${module.name}</strong><br>
-                        <small style="color: #86868b; font-size: 0.75rem;">${module.description}</small>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        async function handleEditCompany(event) {
-            if (event) event.preventDefault();
-
-            if (!currentEditingCompany) {
-                showNotification('error', 'Error', 'No hay empresa seleccionada para editar');
-                return;
-            }
-
-            // Validate JSON settings
-            let settings = {};
             try {
-                const settingsText = document.getElementById('editCompanySettings').value.trim();
-                if (settingsText) {
-                    settings = JSON.parse(settingsText);
-                }
-            } catch (error) {
-                showNotification('error', 'Error de JSON', 'La configuración JSON no es válida');
-                return;
-            }
-
-            const updatedData = {
-                name: document.getElementById('editCompanyName').value,
-                ruc: document.getElementById('editCompanyRuc').value,
-                address: document.getElementById('editCompanyAddress').value || null,
-                phone: document.getElementById('editCompanyPhone').value || null,
-                email: document.getElementById('editCompanyEmail').value,
-                domain: document.getElementById('editCompanyDomain').value || null,
-                status: document.getElementById('editCompanyStatus').value,
-                max_users: parseInt(document.getElementById('editCompanyMaxUsers').value),
-                subscription_plan: document.getElementById('editCompanyPlan').value,
-                slug: document.getElementById('editCompanySlug').value || generateSlug(document.getElementById('editCompanyName').value),
-                settings: {
-                    ...settings,
-                    modules_enabled: getModulesForPlan(document.getElementById('editCompanyPlan').value)
-                },
-                admin_notes: document.getElementById('editCompanyNotes').value || null
-            };
-
-            // Detect changes
-            const changes = detectCompanyChanges(originalCompanyData, updatedData);
-            
-            if (changes.length === 0) {
-                showNotification('info', 'Sin cambios', 'No se detectaron modificaciones en los datos');
-                return;
-            }
-
-            // Show confirmation for critical changes
-            const criticalChanges = changes.filter(c => ['status', 'subscription_plan', 'max_users'].includes(c.field));
-            if (criticalChanges.length > 0) {
-                const changesList = criticalChanges.map(c => `• ${c.label}: ${c.oldValue} → ${c.newValue}`).join('\n');
-                if (!confirm(`Cambios críticos detectados:\n\n${changesList}\n\n¿Confirmar cambios?`)) {
-                    return;
-                }
-            }
-
-            try {
-                // Update company
                 const { error } = await supabase
                     .from('companies')
-                    .update(updatedData)
-                    .eq('id', currentEditingCompany.id);
+                    .update(updateData)
+                    .eq('id', companyId);
 
                 if (error) throw error;
 
-                // Update subscription if plan changed
-                if (originalCompanyData.subscription_plan !== updatedData.subscription_plan) {
-                    await updateCompanySubscription(currentEditingCompany.id, updatedData.subscription_plan);
-                }
-
-                // Log all changes
-                await logActivity('update', `Empresa actualizada: ${updatedData.name}`, {
-                    company_id: currentEditingCompany.id,
-                    changes: changes.map(c => ({ field: c.field, old: c.oldValue, new: c.newValue })),
-                    critical_changes: criticalChanges.length > 0
-                });
-
-                showNotification('success', 'Empresa Actualizada', `Los datos de ${updatedData.name} han sido actualizados correctamente`);
+                showNotification('success', 'Empresa actualizada', 'Los cambios se guardaron correctamente');
                 closeModal('editCompanyModal');
                 loadCompanies();
-                loadDashboard();
-
-                // Reset editing state
-                currentEditingCompany = null;
-                originalCompanyData = null;
 
             } catch (error) {
                 console.error('Error updating company:', error);
-                await logActivity('error', `Error al actualizar empresa: ${error.message}`, {
-                    company_id: currentEditingCompany.id,
-                    attempted_changes: changes
-                });
-                showNotification('error', 'Error', 'No se pudo actualizar la empresa: ' + error.message);
+                showNotification('error', 'Error', 'No se pudieron guardar los cambios');
             }
         }
 
-        function detectCompanyChanges(original, updated) {
-            const changes = [];
-            const fieldLabels = {
-                name: 'Nombre',
-                ruc: 'RUC',
-                address: 'Dirección',
-                phone: 'Teléfono',
-                email: 'Email',
-                domain: 'Dominio',
-                status: 'Estado',
-                max_users: 'Límite de Usuarios',
-                subscription_plan: 'Plan de Suscripción',
-                slug: 'Slug URL',
-                admin_notes: 'Notas Administrativas'
+        async function toggleCompanyStatus(companyId, currentStatus) {
+            const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+            const action = newStatus === 'active' ? 'activar' : 'desactivar';
+
+            if (!confirm(`¿Estás seguro de ${action} esta empresa?`)) return;
+
+            try {
+                const { error } = await supabase
+                    .from('companies')
+                    .update({ status: newStatus })
+                    .eq('id', companyId);
+
+                if (error) throw error;
+
+                showNotification('success', 'Estado actualizado', `Empresa ${action}da correctamente`);
+                loadCompanies();
+                loadDashboard();
+
+            } catch (error) {
+                console.error('Error updating company status:', error);
+                showNotification('error', 'Error', 'No se pudo actualizar el estado de la empresa');
+            }
+        }
+
+        async function deleteCompany(companyId, companyName) {
+            if (!confirm(`¿Estás seguro de eliminar la empresa "${companyName}"?`)) return;
+
+            const confirmation = prompt('Escribe "ELIMINAR" para confirmar:');
+            if (confirmation !== 'ELIMINAR') {
+                showNotification('warning', 'Cancelado', 'Eliminación cancelada');
+                return;
+            }
+
+            try {
+                const { error } = await supabase
+                    .from('companies')
+                    .delete()
+                    .eq('id', companyId);
+
+                if (error) throw error;
+
+                showNotification('success', 'Empresa eliminada', 'La empresa ha sido eliminada correctamente');
+                loadCompanies();
+                loadDashboard();
+
+            } catch (error) {
+                console.error('Error deleting company:', error);
+                showNotification('error', 'Error', 'No se pudo eliminar la empresa');
+            }
+        }
+
+        // ============================================
+        // COMPANY ACTIONS
+        // ============================================
+        async function handleAddCompany(event) {
+            event.preventDefault();
+
+            const companyData = {
+                name: document.getElementById('companyName').value,
+                ruc: document.getElementById('companyRuc').value,
+                address: document.getElementById('companyAddress').value,
+                phone: document.getElementById('companyPhone').value,
+                email: document.getElementById('companyEmail').value,
+                domain: document.getElementById('companyDomain').value || document.getElementById('companyEmail').value.split('@')[1],
+                subscription_plan: document.getElementById('companyPlan').value,
+                max_users: parseInt(document.getElementById('initialUsers').value),
+                status: 'active',
+                slug: generateSlug(document.getElementById('companyName').value),
+                settings: {
+                    modules_enabled: getModulesForPlan(document.getElementById('companyPlan').value)
+                }
             };
 
-            for (const [key, label] of Object.entries(fieldLabels)) {
-                if (original[key] !== updated[key]) {
-                    changes.push({
-                        field: key,
-                        label: label,
-                        oldValue: original[key] || 'vacío',
-                        newValue: updated[key] || 'vacío'
-                    });
-                }
-            }
-
-            return changes;
-        }
-
-        async function updateCompanySubscription(companyId, newPlan) {
             try {
-                // Get current active subscription
-                const { data: subscription } = await supabase
-                    .from('subscriptions')
-                    .select('*')
-                    .eq('company_id', companyId)
-                    .eq('status', 'active')
+                const { data, error } = await supabase
+                    .from('companies')
+                    .insert([companyData])
+                    .select()
                     .single();
 
-                if (subscription) {
-                    // Update existing subscription
-                    await supabase
-                        .from('subscriptions')
-                        .update({
-                            plan_name: newPlan,
-                            price: getPlanPrice(newPlan)
-                        })
-                        .eq('id', subscription.id);
-                } else {
-                    // Create new subscription
-                    await supabase.from('subscriptions').insert([{
-                        company_id: companyId,
-                        plan_name: newPlan,
-                        price: getPlanPrice(newPlan),
-                        start_date: new Date().toISOString(),
-                        end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-                        status: 'active',
-                        auto_renew: true
-                    }]);
-                }
+                if (error) throw error;
+
+                showNotification('success', 'Empresa creada', `${companyData.name} ha sido registrada exitosamente`);
+                closeModal('addCompanyModal');
+                document.getElementById('addCompanyForm').reset();
+                loadCompanies();
+                loadDashboard();
+
             } catch (error) {
-                console.error('Error updating subscription:', error);
-                // Don't throw - subscription update is secondary
+                console.error('Error creating company:', error);
+                showNotification('error', 'Error', 'No se pudo crear la empresa: ' + error.message);
             }
         }
 
-        function resetCompanyData() {
-            if (!originalCompanyData) return;
-
-            if (confirm('¿Restaurar todos los campos a sus valores originales?')) {
-                // Restore original values
-                document.getElementById('editCompanyName').value = originalCompanyData.name || '';
-                document.getElementById('editCompanyRuc').value = originalCompanyData.ruc || '';
-                document.getElementById('editCompanyAddress').value = originalCompanyData.address || '';
-                document.getElementById('editCompanyPhone').value = originalCompanyData.phone || '';
-                document.getElementById('editCompanyEmail').value = originalCompanyData.email || '';
-                document.getElementById('editCompanyDomain').value = originalCompanyData.domain || '';
-                document.getElementById('editCompanyStatus').value = originalCompanyData.status || 'active';
-                document.getElementById('editCompanyMaxUsers').value = originalCompanyData.max_users || 50;
-                document.getElementById('editCompanyPlan').value = originalCompanyData.subscription_plan || 'warehouse_basic';
-                document.getElementById('editCompanySlug').value = originalCompanyData.slug || '';
-                document.getElementById('editCompanySettings').value = originalCompanyData.settings ? JSON.stringify(originalCompanyData.settings, null, 2) : '{}';
-                document.getElementById('editCompanyNotes').value = originalCompanyData.admin_notes || '';
-
-                updateSlugPreview();
-                updateEditPlanDetails();
-                showNotification('info', 'Datos Restaurados', 'Se han restaurado los valores originales');
-            }
+        // ============================================
+        // FILTER AND SEARCH FUNCTIONS
+        // ============================================
+        function searchCompanies(term) {
+            const filtered = companies.filter(c => 
+                c.name.toLowerCase().includes(term.toLowerCase()) ||
+                (c.ruc && c.ruc.toLowerCase().includes(term.toLowerCase())) ||
+                c.email.toLowerCase().includes(term.toLowerCase()) ||
+                (c.domain && c.domain.toLowerCase().includes(term.toLowerCase()))
+            );
+            displayCompanies(filtered);
         }
 
-        function duplicateCompany() {
-            if (!currentEditingCompany) return;
+        function filterCompanies(type, btn) {
+            document.querySelectorAll('#companies-tab .filter-pill').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
 
-            if (confirm('¿Crear una nueva empresa basada en esta configuración?')) {
-                // Close edit modal and open create modal with pre-filled data
-                closeModal('editCompanyModal');
-                
-                // Pre-fill create form with current data (but generate new unique identifiers)
-                document.getElementById('companyName').value = `${currentEditingCompany.name} (Copia)`;
-                document.getElementById('companyRuc').value = '';  // RUC must be unique
-                document.getElementById('companyAddress').value = currentEditingCompany.address || '';
-                document.getElementById('companyPhone').value = currentEditingCompany.phone || '';
-                document.getElementById('companyEmail').value = '';  // Email must be unique
-                document.getElementById('companyDomain').value = '';  // Domain must be unique
-                document.getElementById('companyPlan').value = currentEditingCompany.subscription_plan || 'warehouse_basic';
-                document.getElementById('initialUsers').value = currentEditingCompany.max_users || 5;
+            let filtered = companies;
+            if (type === 'active') filtered = companies.filter(c => c.status === 'active');
+            if (type === 'inactive') filtered = companies.filter(c => c.status === 'inactive');
+            if (type === 'trial') filtered = companies.filter(c => c.status === 'trial');
 
-                showAddCompanyModal();
-                showNotification('info', 'Duplicando Empresa', 'Complete los campos únicos (RUC, Email, Dominio)');
-            }
+            displayCompanies(filtered);
         }
 
+        function searchUsers(term) {
+            showNotification('info', 'Búsqueda', 'Funcionalidad de búsqueda próximamente disponible');
+        }
+
+        function filterUsers(type, btn) {
+            showNotification('info', 'Filtros', 'Funcionalidad de filtros próximamente disponible');
+        }
+
+        function exportCompanies() {
+            if (companies.length === 0) {
+                showNotification('warning', 'Sin datos', 'No hay empresas para exportar');
+                return;
+            }
+
+            const csvData = companies.map(company => ({
+                'Nombre': company.name,
+                'RUC': company.ruc || '',
+                'Email': company.email,
+                'Dominio': company.domain || '',
+                'Plan': company.subscription_plan || '',
+                'Usuarios Max': company.max_users || '',
+                'Estado': company.status,
+                'Fecha Creación': new Date(company.created_at).toLocaleDateString('es-ES')
+            }));
+
+            const csv = convertToCSV(csvData);
+            downloadCSV(csv, `empresas_${new Date().toISOString().split('T')[0]}.csv`);
+            showNotification('success', 'Exportado', 'Archivo CSV de empresas descargado');
+        }
+
+        function exportUsers() {
+            showNotification('info', 'Próximamente', 'Exportación de usuarios próximamente disponible');
+        }
+
+        function exportSubscriptions() {
+            showNotification('info', 'Próximamente', 'Exportación de suscripciones próximamente disponible');
+        }
+
+        function exportPayments() {
+            showNotification('info', 'Próximamente', 'Exportación de pagos próximamente disponible');
+        }
+
+        function exportActivity() {
+            showNotification('info', 'Próximamente', 'Exportación de actividad próximamente disponible');
+        }
+
+        function clearOldLogs() {
+            showNotification('info', 'Próximamente', 'Limpieza de logs próximamente disponible');
+        }
+
+        // ============================================
+        // TAB DATA LOADING FUNCTIONS
+        // ============================================
+        async function loadUsers() {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="empty-state">
+                        <div class="empty-icon">👥</div>
+                        <div class="empty-title">Gestión de Usuarios</div>
+                        <div class="empty-description">Funcionalidad próximamente disponible</div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        async function loadSubscriptions() {
+            const tbody = document.getElementById('subscriptionsTableBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="empty-state">
+                        <div class="empty-icon">💳</div>
+                        <div class="empty-title">Gestión de Suscripciones</div>
+                        <div class="empty-description">Funcionalidad próximamente disponible</div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        async function loadPayments() {
+            const tbody = document.getElementById('paymentsTableBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="empty-state">
+                        <div class="empty-icon">💰</div>
+                        <div class="empty-title">Gestión de Pagos</div>
+                        <div class="empty-description">Funcionalidad próximamente disponible</div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        async function loadActivity() {
+            const tbody = document.getElementById('activityTableBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="empty-state">
+                        <div class="empty-icon">📝</div>
+                        <div class="empty-title">Registro de Actividad</div>
+                        <div class="empty-description">Funcionalidad próximamente disponible</div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // ============================================
+        // HELPER FUNCTIONS
+        // ============================================
         function generateSlug(name) {
             return name.toLowerCase()
                 .normalize('NFD')
@@ -3987,94 +1882,139 @@
                 .trim('-');
         }
 
+        function getModulesForPlan(plan) {
+            const modules = {
+                'warehouse_basic': ['equipment', 'loans', 'maintenance'],
+                'warehouse_pro': ['equipment', 'loans', 'maintenance', 'reports'],
+                'suite_standard': ['equipment', 'loans', 'maintenance', 'reports', 'projects'],
+                'suite_premium': ['equipment', 'loans', 'maintenance', 'reports', 'projects', 'finance'],
+                'enterprise': ['all']
+            };
+            return modules[plan] || ['equipment'];
+        }
+
+        function convertToCSV(objArray) {
+            const array = [Object.keys(objArray[0])].concat(objArray);
+            return array.map(row => {
+                return Object.values(row).map(value => {
+                    const stringValue = value?.toString() || '';
+                    return '"' + stringValue.replace(/"/g, '""') + '"';
+                }).join(',');
+            }).join('\n');
+        }
+
+        function downloadCSV(csv, filename) {
+            const csvFile = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const downloadLink = document.createElement('a');
+            downloadLink.download = filename;
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.style.display = 'none';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        }
+
         // ============================================
-        // USERS MANAGEMENT
+        // CHARTS INITIALIZATION
         // ============================================
-        async function loadUsers() {
-            try {
-                const { data, error } = await supabase
-                    .from('user_profiles')
-                    .select(`
-                        *,
-                        companies (name, id)
-                    `)
-                    .order('created_at', { ascending: false });
+        function initCharts() {
+            const usersCtx = document.getElementById('usersChart')?.getContext('2d');
+            const revenueCtx = document.getElementById('revenueChart')?.getContext('2d');
 
-                if (error) throw error;
+            if (usersCtx) {
+                usersChart = new Chart(usersCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Usuarios',
+                            data: [0, 1, 1, 1, 1, 1],
+                            borderColor: '#20c997',
+                            backgroundColor: 'rgba(32, 201, 151, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
 
-                users = data || [];
-                displayUsers(users);
-
-            } catch (error) {
-                console.error('Error loading users:', error);
-                displayUsersError();
-                showNotification('error', 'Error', 'No se pudieron cargar los usuarios');
+            if (revenueCtx) {
+                revenueChart = new Chart(revenueCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Ingresos',
+                            data: [0, 0, 0, 0, 0, 0],
+                            backgroundColor: 'rgba(73, 80, 87, 0.8)',
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
             }
         }
 
-        function displayUsers(usersList) {
-            const tbody = document.getElementById('usersTableBody');
-
-            if (!usersList || usersList.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="empty-state">
-                            <div class="empty-icon">👥</div>
-                            <div class="empty-title">No hay usuarios registrados</div>
-                            <div class="empty-description">Los usuarios aparecerán cuando se creen empresas</div>
-                        </td>
-                    </tr>
-                `;
-                return;
+        function updateCharts() {
+            if (usersChart) {
+                const monthlyUsers = [0, 0, 0, 1, 1, users.length || 1];
+                usersChart.data.datasets[0].data = monthlyUsers;
+                usersChart.update();
             }
 
-            tbody.innerHTML = usersList.map(user => `
-                <tr data-user-id="${user.id}">
-                    <td>
-                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #6610f2, #d63384); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.9rem;">
-                                ${(user.full_name || user.name || user.email).charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                                <div style="font-weight: 600; color: #1d1d1f;">${user.full_name || user.name || 'Sin nombre'}</div>
-                                <div style="font-size: 0.8rem; color: #86868b;">${user.phone || 'Sin teléfono'}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>${user.email}</td>
-                    <td>${user.companies?.name || 'Sin empresa'}</td>
-                    <td>
-                        <span class="status-badge ${user.role === 'ADMIN' || user.role === 'super_admin' ? 'active' : 'pending'}">
-                            ${user.role || 'USER'}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="status-badge ${user.is_active ? 'active' : 'inactive'}">
-                            ${user.is_active ? 'Activo' : 'Inactivo'}
-                        </span>
-                    </td>
-                    <td>
-                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                            <button onclick="editUser('${user.id}')" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" title="Editar">✏️</button>
-                            <button onclick="toggleUserStatus('${user.id}', ${user.is_active})" class="btn-action btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" title="${user.is_active ? 'Desactivar' : 'Activar'}">
-                                ${user.is_active ? '⏸️' : '▶️'}
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
+            if (revenueChart) {
+                const monthlyRevenue = [0, 0, 0, 0, 0, 
+                    subscriptions.reduce((sum, s) => sum + (s.price || 0), 0)];
+                revenueChart.data.datasets[0].data = monthlyRevenue;
+                revenueChart.update();
+            }
         }
 
-        function displayUsersError() {
-            const tbody = document.getElementById('usersTableBody');
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="6" class="empty-state">
-                        <div class="empty-icon">⚠️</div>
-                        <div class="empty-title">Error al cargar usuarios</div>
-                        <div class="empty-description">Verifica la conexión y permisos de la base de datos</div>
-                        <button onclick="loadUsers()" class="btn-action btn-primary" style="margin-top: 1rem;">Reintentar</button>
-                    </td>
-                </tr>
-            `;
-        }
+        // ============================================
+        // EVENT LISTENERS
+        // ============================================
+        // Close modals when clicking outside
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('show');
+                if (e.target.id === 'editCompanyModal') {
+                    e.target.remove();
+                }
+            }
+        });
+
+        // Close modals with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.show').forEach(modal => {
+                    modal.classList.remove('show');
+                    if (modal.id === 'editCompanyModal') {
+                        modal.remove();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
