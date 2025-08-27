@@ -555,7 +555,154 @@
             font-size: 0.9rem;
         }
 
-        @media (max-width: 768px) {
+        /* Table Styles */
+        .table-container {
+            background: white;
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 32px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.06);
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .table-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin: 0;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn-action {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(32, 201, 151, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(134, 134, 139, 0.1);
+            color: #86868b;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(134, 134, 139, 0.2);
+            color: #1d1d1f;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .table th {
+            background: #f8f9fa;
+            padding: 1rem 1.5rem;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid rgba(0,0,0,0.08);
+        }
+
+        .table td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            color: #1d1d1f;
+        }
+
+        .table tr:hover {
+            background: rgba(32, 201, 151, 0.05);
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #20c997;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            opacity: 0.5;
+            margin-bottom: 1rem;
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-description {
+            color: #86868b;
+            font-size: 1rem;
+        }
+
+        .filter-pills {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-pill {
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(0,0,0,0.1);
+            background: white;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #86868b;
+        }
+
+        .filter-pill.active,
+        .filter-pill:hover {
+            background: #20c997;
+            color: white;
+            border-color: #20c997;
+        }
             .container {
                 padding: 1rem;
             }
@@ -681,19 +828,19 @@
                         <div class="action-description">Crear cuenta de empresa con configuración personalizada</div>
                     </div>
 
-                    <div class="action-card manage-users" onclick="switchTab('users', this)">
+                    <div class="action-card manage-users" onclick="switchToTab('users')">
                         <div class="action-icon">👥</div>
                         <div class="action-title">Gestionar Usuarios</div>
                         <div class="action-description">Administrar usuarios y permisos del sistema</div>
                     </div>
 
-                    <div class="action-card subscriptions" onclick="switchTab('subscriptions', this)">
+                    <div class="action-card subscriptions" onclick="switchToTab('subscriptions')">
                         <div class="action-icon">💳</div>
                         <div class="action-title">Suscripciones</div>
                         <div class="action-description">Control de planes y renovaciones</div>
                     </div>
 
-                    <div class="action-card payments" onclick="switchTab('payments', this)">
+                    <div class="action-card payments" onclick="switchToTab('payments')">
                         <div class="action-icon">💰</div>
                         <div class="action-title">Pagos</div>
                         <div class="action-description">Historial y gestión de pagos</div>
@@ -766,6 +913,281 @@
                 <button onclick="showNotification('info', 'En desarrollo', 'Esta sección está en construcción')" style="background: linear-gradient(135deg, #28a745, #20c997); color: white; border: none; padding: 1rem 2rem; border-radius: 16px; font-weight: 600; cursor: pointer;">
                     Ver Avance
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALES COMPLETOS RESTAURADOS -->
+
+    <!-- Add Company Modal -->
+    <div id="addCompanyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Agregar Nueva Empresa</h3>
+                <button class="modal-close" onclick="closeModal('addCompanyModal')">✕</button>
+            </div>
+            <form id="addCompanyForm" onsubmit="handleAddCompany(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Nombre de la Empresa *</label>
+                        <input type="text" id="companyName" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">RUC *</label>
+                        <input type="text" id="companyRuc" class="form-input" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">Dirección</label>
+                        <input type="text" id="companyAddress" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email *</label>
+                        <input type="email" id="companyEmail" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Dominio</label>
+                        <input type="text" id="companyDomain" class="form-input" placeholder="empresa.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Plan de Suscripción</label>
+                        <select id="companyPlan" class="form-select">
+                            <option value="warehouse_basic">Almacén Básico - $49/mes</option>
+                            <option value="warehouse_pro">Almacén Pro - $149/mes</option>
+                            <option value="suite_standard">Suite Standard - $249/mes</option>
+                            <option value="suite_premium">Suite Premium - $499/mes</option>
+                            <option value="enterprise">Enterprise - $999/mes</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Usuarios Iniciales</label>
+                        <input type="number" id="initialUsers" class="form-input" value="5" min="1">
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-modal secondary" onclick="closeModal('addCompanyModal')">Cancelar</button>
+                    <button type="submit" class="btn-modal primary">Crear Empresa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Company Modal -->
+    <div id="editCompanyModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Editar Empresa</h3>
+                <button class="modal-close" onclick="closeModal('editCompanyModal')">✕</button>
+            </div>
+            <form id="editCompanyForm" onsubmit="handleEditCompany(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Nombre de la Empresa</label>
+                        <input type="text" id="edit_companyName" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">RUC</label>
+                        <input type="text" id="edit_companyRuc" class="form-input" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">Dirección</label>
+                        <input type="text" id="edit_companyAddress" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" id="edit_companyEmail" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Dominio</label>
+                        <input type="text" id="edit_companyDomain" class="form-input" placeholder="empresa.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Plan de Suscripción</label>
+                        <select id="edit_companyPlan" class="form-select">
+                            <option value="warehouse_basic">Almacén Básico - $49/mes</option>
+                            <option value="warehouse_pro">Almacén Pro - $149/mes</option>
+                            <option value="suite_standard">Suite Standard - $249/mes</option>
+                            <option value="suite_premium">Suite Premium - $499/mes</option>
+                            <option value="enterprise">Enterprise - $999/mes</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Estado</label>
+                        <select id="edit_companyStatus" class="form-select">
+                            <option value="active">Activa</option>
+                            <option value="inactive">Inactiva</option>
+                            <option value="trial">Periodo de Prueba</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">Notas Administrativas</label>
+                        <textarea id="edit_companyNotes" class="form-textarea" placeholder="Notas internas sobre la empresa..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Módulos Habilitados</label>
+                        <div id="edit_modulesCheckboxes" style="display: grid; gap: 0.5rem; margin-top: 0.5rem;">
+                            <label><input type="checkbox" value="warehouse"> Almacén</label>
+                            <label><input type="checkbox" value="analytics"> Analytics</label>
+                            <label><input type="checkbox" value="reports"> Reportes</label>
+                            <label><input type="checkbox" value="users"> Gestión de Usuarios</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Configuración JSON Personalizada</label>
+                        <textarea id="edit_customSettings" class="form-textarea" style="font-family: monospace; min-height: 150px;" placeholder='{"key": "value"}'></textarea>
+                    </div>
+                </div>
+                
+                <input type="hidden" id="edit_currentCompanyId">
+                
+                <div class="modal-buttons">
+                    <button type="button" class="btn-modal secondary" onclick="closeModal('editCompanyModal')">Cancelar</button>
+                    <button type="button" class="btn-modal secondary" onclick="resetCompanyData()" style="background: #ffc107; color: white;">Restaurar Valores</button>
+                    <button type="submit" class="btn-modal primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div id="addUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Agregar Nuevo Usuario</h3>
+                <button class="modal-close" onclick="closeModal('addUserModal')">✕</button>
+            </div>
+            <form id="addUserForm" onsubmit="handleAddUser(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Nombre Completo *</label>
+                        <input type="text" id="userName" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email *</label>
+                        <input type="email" id="userEmail" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Empresa</label>
+                        <select id="userCompany" class="form-select" required>
+                            <option value="">Seleccionar empresa...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Rol</label>
+                        <select id="userRole" class="form-select">
+                            <option value="ADMIN">Administrador</option>
+                            <option value="ALMACEN">Almacén</option>
+                            <option value="OPERATIVO">Operativo</option>
+                            <option value="ESTIMADOR">Estimador</option>
+                            <option value="SUPERVISOR">Supervisor</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">Contraseña Temporal</label>
+                        <input type="password" id="userPassword" class="form-input" value="Password123!" required>
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-modal secondary" onclick="closeModal('addUserModal')">Cancelar</button>
+                    <button type="submit" class="btn-modal primary">Crear Usuario</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h3 class="modal-title">⚙️ Configuración del Sistema</h3>
+                <button class="modal-close" onclick="closeModal('settingsModal')">✕</button>
+            </div>
+            
+            <div class="settings-section">
+                <div class="settings-title">
+                    <div class="settings-icon">🌐</div>
+                    Configuración General
+                </div>
+                
+                <div class="settings-item">
+                    <div class="setting-info">
+                        <div class="setting-label">Registros Públicos</div>
+                        <div class="setting-description">Permitir registro de nuevas empresas</div>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="publicRegistration" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="settings-item">
+                    <div class="setting-info">
+                        <div class="setting-label">Período de Prueba</div>
+                        <div class="setting-description">Días gratuitos para nuevas empresas</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="number" id="trialDays" class="form-input" value="30" min="0" max="365" style="width: 100px;">
+                    </div>
+                </div>
+
+                <div class="settings-item">
+                    <div class="setting-info">
+                        <div class="setting-label">Notificaciones por Email</div>
+                        <div class="setting-description">Enviar alertas por correo electrónico</div>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="emailNotifications" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="settings-item">
+                    <div class="setting-info">
+                        <div class="setting-label">Modo de Mantenimiento</div>
+                        <div class="setting-description">Activar modo de mantenimiento del sistema</div>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="maintenanceMode">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-title">
+                    <div class="settings-icon">💳</div>
+                    Configuración de Pagos
+                </div>
+                
+                <div class="settings-item">
+                    <div class="setting-info">
+                        <div class="setting-label">Recordatorios de Pago</div>
+                        <div class="setting-description">Días antes del vencimiento para enviar recordatorios</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="number" id="paymentReminder" class="form-input" value="7" min="1" max="30" style="width: 100px;">
+                    </div>
+                </div>
+
+                <div class="settings-item">
+                    <div class="setting-info">
+                        <div class="setting-label">Gracia para Pagos</div>
+                        <div class="setting-description">Días de gracia después del vencimiento</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="number" id="gracePeriod" class="form-input" value="5" min="0" max="30" style="width: 100px;">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-buttons">
+                <button type="button" class="btn-modal secondary" onclick="closeModal('settingsModal')">Cancelar</button>
+                <button type="button" class="btn-modal primary" onclick="saveSettings()">Guardar Configuración</button>
             </div>
         </div>
     </div>
@@ -874,6 +1296,62 @@
                 
             } catch (error) {
                 console.error('Error switching tab:', error);
+                showNotification('error', 'Error', 'No se pudo cambiar de pestaña');
+            }
+        }
+
+        // Función específica para los action cards que cambia tanto el tab como el botón de navegación
+        function switchToTab(tabName) {
+            console.log('Cambiando a pestaña desde action card:', tabName);
+            
+            try {
+                // Cambiar contenido de pestañas
+                document.querySelectorAll('.tab-content').forEach(function(tab) {
+                    tab.classList.remove('active');
+                });
+                
+                document.querySelectorAll('.nav-tab').forEach(function(tab) {
+                    tab.classList.remove('active');
+                });
+                
+                // Activar pestaña de contenido
+                const tabContent = document.getElementById(tabName + '-tab');
+                if (tabContent) {
+                    tabContent.classList.add('active');
+                }
+                
+                // Activar botón de navegación correspondiente
+                const navTabs = document.querySelectorAll('.nav-tab');
+                let targetNavTab = null;
+                
+                switch(tabName) {
+                    case 'dashboard':
+                        targetNavTab = navTabs[0];
+                        break;
+                    case 'companies':
+                        targetNavTab = navTabs[1];
+                        break;
+                    case 'users':
+                        targetNavTab = navTabs[2];
+                        break;
+                    case 'subscriptions':
+                        targetNavTab = navTabs[3];
+                        break;
+                    case 'payments':
+                        targetNavTab = navTabs[4];
+                        break;
+                    case 'activity':
+                        targetNavTab = navTabs[5];
+                        break;
+                }
+                
+                if (targetNavTab) {
+                    targetNavTab.classList.add('active');
+                    console.log('Pestaña ' + tabName + ' activada correctamente desde action card');
+                }
+                
+            } catch (error) {
+                console.error('Error switching to tab from action card:', error);
                 showNotification('error', 'Error', 'No se pudo cambiar de pestaña');
             }
         }
@@ -1091,6 +1569,28 @@
             setTimeout(function() {
                 notification.classList.remove('show');
             }, 4000);
+        }
+
+        function filterUsers(filter, element) {
+            console.log('Filtrando usuarios por:', filter);
+            
+            // Remove active class from all pills
+            document.querySelectorAll('.filter-pill').forEach(function(pill) {
+                pill.classList.remove('active');
+            });
+            
+            // Add active class to clicked pill
+            element.classList.add('active');
+            
+            // Show notification about filter
+            const filterNames = {
+                'all': 'Todos los usuarios',
+                'active': 'Usuarios activos',
+                'inactive': 'Usuarios inactivos',
+                'admin': 'Administradores'
+            };
+            
+            showNotification('info', 'Filtro aplicado', 'Mostrando: ' + filterNames[filter]);
         }
 
         console.log('Panel Super Admin cargado completamente - TODAS LAS FUNCIONES DEFINIDAS');
