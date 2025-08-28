@@ -9,6 +9,28 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
+        /* CSS Variables Dinámicas - Se cargan desde la base de datos */
+        :root {
+            /* Colores por defecto - serán reemplazados dinámicamente */
+            --primary-color: #495057;
+            --secondary-color: #6c757d;
+            --accent-color: #20c997;
+            --background-color: #f8f9fa;
+            --text-color: #1d1d1f;
+            --sidebar-color: #ffffff;
+            --card-color: #ffffff;
+            --border-color: #e9ecef;
+            --hover-color: #f8f9fa;
+            
+            /* Gradientes calculados automáticamente */
+            --primary-gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            --accent-gradient: linear-gradient(135deg, var(--accent-color), #17a2b8);
+            --card-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            --header-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            --border-radius: 32px;
+            --small-radius: 16px;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -17,14 +39,14 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            color: #1d1d1f;
+            background: linear-gradient(135deg, var(--background-color) 0%, color-mix(in srgb, var(--background-color) 90%, var(--primary-color) 10%) 100%);
+            color: var(--text-color);
             min-height: 100vh;
             position: relative;
             line-height: 1.6;
         }
 
-        /* Background Pattern - Premium Style */
+        /* Background Pattern - Dinámico con colores de empresa */
         body::before {
             content: '';
             position: absolute;
@@ -33,10 +55,10 @@
             right: 0;
             bottom: 0;
             background: 
-                radial-gradient(circle at 20% 20%, rgba(32, 201, 151, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(253, 126, 20, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 20% 80%, rgba(102, 16, 242, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(13, 202, 240, 0.1) 0%, transparent 50%);
+                radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--primary-color) 10%, transparent) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, color-mix(in srgb, var(--accent-color) 10%, transparent) 0%, transparent 50%),
+                radial-gradient(circle at 20% 80%, color-mix(in srgb, var(--secondary-color) 10%, transparent) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, color-mix(in srgb, var(--primary-color) 8%, transparent) 0%, transparent 50%);
             animation: subtleFloat 40s ease-in-out infinite;
             z-index: -1;
         }
@@ -47,14 +69,14 @@
             66% { transform: translate(-25px, 25px) rotate(-2deg); }
         }
 
-        /* Loading Screen - Premium */
+        /* Loading Screen - Dinámico */
         .loading-screen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #495057, #6c757d);
+            background: var(--primary-gradient);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -69,7 +91,7 @@
             visibility: hidden;
         }
 
-        /* Opsis Suite Logo - Premium */
+        /* Logo dinámico - Puede ser imagen o icono */
         .company-logo {
             position: relative;
             width: 120px;
@@ -77,12 +99,25 @@
             border-radius: 30px;
             padding: 4px;
             background: linear-gradient(45deg, 
-                #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, 
-                #feca57, #ff9ff3, #54a0ff, #5f27cd, 
-                #00d2d3, #ff9f43, #10ac84, #ee5a6f);
+                color-mix(in srgb, var(--accent-color) 80%, white),
+                color-mix(in srgb, var(--primary-color) 80%, white),
+                color-mix(in srgb, var(--secondary-color) 80%, white));
             background-size: 400% 400%;
             animation: gradientShift 4s ease-in-out infinite, pulse 2s ease-in-out infinite;
             margin-bottom: 2rem;
+        }
+
+        .company-logo.has-image {
+            padding: 0;
+            background: white;
+            overflow: hidden;
+        }
+
+        .company-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 26px;
         }
 
         .company-logo::after {
@@ -92,9 +127,13 @@
             left: 4px;
             width: 112px;
             height: 112px;
-            background: linear-gradient(135deg, #495057, #6c757d);
+            background: var(--primary-gradient);
             border-radius: 26px;
             box-shadow: 0 8px 25px rgba(73, 80, 87, 0.3);
+        }
+
+        .company-logo.has-image::after {
+            display: none;
         }
 
         .company-logo::before {
@@ -107,6 +146,10 @@
             color: white;
             z-index: 3;
             animation: winkEye 6s ease-in-out infinite;
+        }
+
+        .company-logo.has-image::before {
+            display: none;
         }
 
         @keyframes winkEye {
@@ -164,12 +207,12 @@
             100% { width: 100%; }
         }
 
-        /* Header - Premium Design */
+        /* Header - Con colores dinámicos */
         .dashboard-header {
-            background: linear-gradient(135deg, #495057, #6c757d);
+            background: var(--primary-gradient);
             color: white;
             padding: 2rem;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            box-shadow: var(--header-shadow);
             position: relative;
             overflow: hidden;
         }
@@ -295,11 +338,11 @@
         }
 
         .logout-btn {
-            background: linear-gradient(135deg, #495057, #6c757d);
+            background: var(--primary-gradient);
             color: white;
             border: none;
             padding: 0.75rem 1.5rem;
-            border-radius: 16px;
+            border-radius: var(--small-radius);
             cursor: pointer;
             transition: all 0.4s ease;
             text-decoration: none;
@@ -308,10 +351,10 @@
 
         .logout-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(73, 80, 87, 0.3);
+            box-shadow: 0 15px 40px color-mix(in srgb, var(--primary-color) 30%, transparent);
         }
 
-        /* Main Container - Premium Spacing */
+        /* Main Container */
         .dashboard-container {
             max-width: 1400px;
             margin: 0 auto;
@@ -321,7 +364,7 @@
         .dashboard-title {
             font-size: 3.5rem;
             font-weight: 700;
-            background: linear-gradient(135deg, #1d1d1f, #495057);
+            background: linear-gradient(135deg, var(--text-color), var(--primary-color));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -332,7 +375,7 @@
 
         .dashboard-subtitle {
             text-align: center;
-            color: #6c757d;
+            color: color-mix(in srgb, var(--text-color) 70%, transparent);
             font-size: 1.2rem;
             margin-bottom: 4rem;
             max-width: 800px;
@@ -340,7 +383,7 @@
             margin-right: auto;
         }
 
-        /* Stats Grid - Premium Cards */
+        /* Stats Grid - Con colores dinámicos */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -349,11 +392,11 @@
         }
 
         .stat-card {
-            background: linear-gradient(135deg, #ffffff, #f8f9fa);
-            border: 1px solid rgba(210, 210, 215, 0.3);
-            border-radius: 32px;
+            background: linear-gradient(135deg, var(--card-color), color-mix(in srgb, var(--card-color) 95%, var(--primary-color) 5%));
+            border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+            border-radius: var(--border-radius);
             padding: 3rem 2.5rem;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            box-shadow: var(--card-shadow);
             transition: all 0.4s ease;
             cursor: pointer;
             position: relative;
@@ -368,21 +411,21 @@
             left: 0;
             width: 100%;
             height: 6px;
-            background: linear-gradient(135deg, #20c997, #17a2b8);
-            border-radius: 32px 32px 0 0;
+            background: var(--accent-gradient);
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
         }
 
         .stat-card:hover {
             transform: translateY(-15px);
-            box-shadow: 0 25px 80px rgba(0,0,0,0.15);
-            background: white;
+            box-shadow: 0 25px 80px color-mix(in srgb, var(--primary-color) 15%, transparent);
+            background: var(--card-color);
         }
 
         .stat-icon {
             width: 100px;
             height: 100px;
             border-radius: 28px;
-            background: linear-gradient(135deg, #20c997, #17a2b8);
+            background: var(--accent-gradient);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -390,7 +433,7 @@
             margin: 0 auto 2rem;
             transition: all 0.3s ease;
             color: white;
-            box-shadow: 0 15px 40px rgba(32, 201, 151, 0.3);
+            box-shadow: 0 15px 40px color-mix(in srgb, var(--accent-color) 30%, transparent);
         }
 
         .stat-card:hover .stat-icon {
@@ -400,28 +443,28 @@
         .stat-number {
             font-size: 2.8rem;
             font-weight: 700;
-            color: #1d1d1f;
+            color: var(--text-color);
             margin-bottom: 0.5rem;
         }
 
         .stat-label {
             font-size: 1.2rem;
-            color: #495057;
+            color: var(--primary-color);
             font-weight: 600;
             margin-bottom: 0.5rem;
         }
 
         .stat-sublabel {
             font-size: 1rem;
-            color: #6c757d;
+            color: color-mix(in srgb, var(--text-color) 70%, transparent);
         }
 
-        /* Notification - Premium */
+        /* Notification - Con colores dinámicos */
         .notification {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: linear-gradient(135deg, #20c997, #17a2b8);
+            background: var(--accent-gradient);
             color: white;
             padding: 1.5rem 2rem;
             border-radius: 20px;
@@ -438,7 +481,7 @@
         }
 
         .notification.success {
-            background: linear-gradient(135deg, #20c997, #17a2b8);
+            background: var(--accent-gradient);
         }
 
         .notification.error {
@@ -449,13 +492,36 @@
             background: linear-gradient(135deg, #fd7e14, #e55a14);
         }
 
-        /* Otros estilos permanecen igual... */
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .dashboard-title {
+                font-size: 2.5rem;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .header-stats {
+                justify-content: center;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Estilos para custom CSS adicional de empresa */
+        .custom-company-styles {
+            /* Este bloque será reemplazado dinámicamente con CSS personalizado de cada empresa */
+        }
     </style>
 </head>
 <body>
     <!-- Loading Screen -->
     <div id="loadingScreen" class="loading-screen">
-        <div class="company-logo"></div>
+        <div class="company-logo" id="loadingLogo"></div>
         <div class="loading-company-name" id="loadingCompanyName">Loading...</div>
         <div class="loading-subtitle" id="loadingSubtitle">Initializing your workspace...</div>
         <div class="loading-progress">
@@ -538,6 +604,9 @@
     <!-- Notification -->
     <div id="notification" class="notification"></div>
 
+    <!-- CSS dinámico inyectado por JavaScript -->
+    <style id="dynamicCompanyStyles"></style>
+
     <script>
         // ================================================================
         // SUPABASE CONFIGURATION
@@ -554,7 +623,122 @@
         // ================================================================
         let currentCompany = null;
         let currentUser = null;
-        let userRole = 'admin'; // Default role
+        let userRole = 'admin';
+        let companyBranding = null;
+
+        // ================================================================
+        // DYNAMIC BRANDING SYSTEM
+        // ================================================================
+        async function loadCompanyBranding(companyId) {
+            try {
+                console.log('Loading branding for company:', companyId);
+                
+                const { data: branding, error } = await supabase
+                    .from('company_branding')
+                    .select('*')
+                    .eq('company_id', companyId)
+                    .single();
+
+                if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+                    console.error('Error loading branding:', error);
+                    return null;
+                }
+
+                if (branding) {
+                    console.log('Company branding loaded:', branding);
+                    companyBranding = branding;
+                    applyCompanyBranding(branding);
+                } else {
+                    console.log('No custom branding found, using defaults');
+                    companyBranding = getDefaultBranding();
+                    applyCompanyBranding(companyBranding);
+                }
+
+                return branding;
+            } catch (error) {
+                console.error('Error in loadCompanyBranding:', error);
+                return null;
+            }
+        }
+
+        function getDefaultBranding() {
+            return {
+                primary_color: '#495057',
+                secondary_color: '#6c757d',
+                accent_color: '#20c997',
+                background_color: '#f8f9fa',
+                text_color: '#1d1d1f',
+                sidebar_color: '#ffffff',
+                logo_url: null,
+                custom_css: null
+            };
+        }
+
+        function applyCompanyBranding(branding) {
+            if (!branding) return;
+
+            console.log('Applying company branding:', branding);
+
+            // Aplicar colores a CSS variables
+            const root = document.documentElement;
+            
+            if (branding.primary_color) {
+                root.style.setProperty('--primary-color', branding.primary_color);
+            }
+            if (branding.secondary_color) {
+                root.style.setProperty('--secondary-color', branding.secondary_color);
+            }
+            if (branding.accent_color) {
+                root.style.setProperty('--accent-color', branding.accent_color);
+            }
+            if (branding.background_color) {
+                root.style.setProperty('--background-color', branding.background_color);
+            }
+            if (branding.text_color) {
+                root.style.setProperty('--text-color', branding.text_color);
+            }
+            if (branding.sidebar_color) {
+                root.style.setProperty('--sidebar-color', branding.sidebar_color);
+            }
+
+            // Aplicar logo si existe
+            if (branding.logo_url) {
+                applyCompanyLogo(branding.logo_url);
+            }
+
+            // Aplicar CSS personalizado
+            if (branding.custom_css) {
+                applyCustomCSS(branding.custom_css);
+            }
+
+            console.log('Company branding applied successfully');
+        }
+
+        function applyCompanyLogo(logoUrl) {
+            console.log('Applying company logo:', logoUrl);
+            
+            // Logo en la pantalla de carga
+            const loadingLogo = document.getElementById('loadingLogo');
+            if (loadingLogo) {
+                loadingLogo.classList.add('has-image');
+                loadingLogo.innerHTML = `<img src="${logoUrl}" alt="Company Logo" onerror="this.style.display='none'">`;
+            }
+
+            // Logo en header si existe un elemento para ello
+            const headerLogo = document.getElementById('headerLogo');
+            if (headerLogo) {
+                headerLogo.innerHTML = `<img src="${logoUrl}" alt="Company Logo" style="max-height: 40px; width: auto;">`;
+            }
+        }
+
+        function applyCustomCSS(customCSS) {
+            console.log('Applying custom CSS');
+            
+            const styleElement = document.getElementById('dynamicCompanyStyles');
+            if (styleElement) {
+                styleElement.textContent = customCSS;
+            }
+        }
 
         // ================================================================
         // AUTHENTICATION CHECK
@@ -595,54 +779,45 @@
         }
 
         // ================================================================
-        // SIGN OUT FUNCTION - ACTUALIZADA
+        // SIGN OUT FUNCTION
         // ================================================================
         async function handleSignOut() {
             try {
                 console.log('Iniciando cierre de sesión...');
                 
-                // Mostrar notificación
                 showNotification('Cerrando sesión...', 'success');
                 
-                // Cerrar sesión en Supabase
                 const { error } = await supabase.auth.signOut();
                 
                 if (error) {
                     console.error('Error al cerrar sesión en Supabase:', error);
-                    // Continuar con la limpieza aunque haya error
                 }
                 
-                // Limpiar todo el almacenamiento local
                 console.log('Limpiando almacenamiento local...');
                 localStorage.clear();
                 sessionStorage.clear();
                 
-                // Limpiar cookies si las hay
                 document.cookie.split(";").forEach(function(c) { 
                     document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
                 });
                 
-                // Limpiar variables globales
                 currentUser = null;
                 currentCompany = null;
+                companyBranding = null;
                 userRole = null;
                 
                 console.log('Redirigiendo al login...');
                 
-                // Pequeña demora para que el usuario vea la notificación
                 setTimeout(() => {
-                    // Redirigir al login con la ruta completa
                     window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
                 }, 500);
                 
             } catch (error) {
                 console.error('Error en handleSignOut:', error);
                 
-                // Si hay cualquier error, forzar la limpieza y redirección
                 localStorage.clear();
                 sessionStorage.clear();
                 
-                // Forzar redirección
                 window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
             }
         }
@@ -700,6 +875,12 @@
                 }
 
                 console.log('Company loaded:', currentCompany);
+                
+                // Cargar branding de la empresa
+                if (currentCompany && currentCompany.id) {
+                    await loadCompanyBranding(currentCompany.id);
+                }
+                
                 updateCompanyDisplay();
 
             } catch (error) {
@@ -763,7 +944,6 @@
         }
 
         function showRoleSelector() {
-            // Implementación del selector de rol
             showNotification('Role selector coming soon', 'success');
         }
 
@@ -771,13 +951,13 @@
         // INITIALIZATION
         // ================================================================
         document.addEventListener('DOMContentLoaded', async function() {
-            console.log('Iniciando Dashboard - Opsis Suite');
+            console.log('Iniciando Dashboard Multi-Tenant - Opsis Suite');
             
             // Verificar autenticación primero
             const user = await checkAuth();
             
             if (user) {
-                // Cargar datos de la empresa
+                // Cargar datos de la empresa (incluye branding)
                 await loadCompanyData();
                 
                 // Cargar estadísticas (valores demo por ahora)
@@ -793,7 +973,7 @@
                 setTimeout(() => {
                     document.getElementById('loadingScreen').classList.add('hidden');
                     showNotification(`Bienvenido a ${currentCompany?.name || 'Opsis Suite'}`, 'success');
-                }, 2000);
+                }, 2500);
             }
         });
 
@@ -805,19 +985,16 @@
             
             if (event === 'SIGNED_OUT') {
                 console.log('Usuario cerró sesión, redirigiendo...');
-                // Limpiar datos locales
                 localStorage.clear();
                 sessionStorage.clear();
-                // Redirigir al login
                 window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
             } else if (event === 'SIGNED_IN' && !currentUser) {
-                // Si el usuario se acaba de autenticar, recargar la página
                 console.log('Usuario autenticado, recargando...');
                 window.location.reload();
             }
         });
 
-        console.log('Dashboard Template - Opsis Suite Ready!');
+        console.log('Multi-Tenant Dashboard Template - Opsis Suite Ready!');
     </script>
 </body>
 </html>
