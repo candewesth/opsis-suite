@@ -46,6 +46,13 @@
             line-height: 1.6;
         }
 
+        /* Fallback para navegadores que no soportan color-mix */
+        @supports not (background: color-mix(in srgb, white 50%, black)) {
+            body {
+                background: linear-gradient(135deg, var(--background-color) 0%, var(--background-color) 100%);
+            }
+        }
+
         /* Background Pattern - Dinámico con colores de empresa */
         body::before {
             content: '';
@@ -55,12 +62,13 @@
             right: 0;
             bottom: 0;
             background: 
-                radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--primary-color) 10%, transparent) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, color-mix(in srgb, var(--accent-color) 10%, transparent) 0%, transparent 50%),
-                radial-gradient(circle at 20% 80%, color-mix(in srgb, var(--secondary-color) 10%, transparent) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, color-mix(in srgb, var(--primary-color) 8%, transparent) 0%, transparent 50%);
+                radial-gradient(circle at 20% 20%, rgba(32, 201, 151, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(253, 126, 20, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 20% 80%, rgba(102, 16, 242, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(13, 202, 240, 0.05) 0%, transparent 50%);
             animation: subtleFloat 40s ease-in-out infinite;
             z-index: -1;
+            opacity: 0.6;
         }
 
         @keyframes subtleFloat {
@@ -99,9 +107,9 @@
             border-radius: 30px;
             padding: 4px;
             background: linear-gradient(45deg, 
-                color-mix(in srgb, var(--accent-color) 80%, white),
-                color-mix(in srgb, var(--primary-color) 80%, white),
-                color-mix(in srgb, var(--secondary-color) 80%, white));
+                var(--accent-color),
+                var(--primary-color),
+                var(--secondary-color));
             background-size: 400% 400%;
             animation: gradientShift 4s ease-in-out infinite, pulse 2s ease-in-out infinite;
             margin-bottom: 2rem;
@@ -351,7 +359,7 @@
 
         .logout-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 15px 40px color-mix(in srgb, var(--primary-color) 30%, transparent);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
         }
 
         /* Main Container */
@@ -373,9 +381,17 @@
             letter-spacing: -2px;
         }
 
+        /* Fallback para navegadores que no soportan background-clip */
+        @supports not (-webkit-background-clip: text) {
+            .dashboard-title {
+                color: var(--text-color);
+                background: none;
+            }
+        }
+
         .dashboard-subtitle {
             text-align: center;
-            color: color-mix(in srgb, var(--text-color) 70%, transparent);
+            color: #6c757d;
             font-size: 1.2rem;
             margin-bottom: 4rem;
             max-width: 800px;
@@ -392,8 +408,8 @@
         }
 
         .stat-card {
-            background: linear-gradient(135deg, var(--card-color), color-mix(in srgb, var(--card-color) 95%, var(--primary-color) 5%));
-            border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+            background: var(--card-color);
+            border: 1px solid var(--border-color);
             border-radius: var(--border-radius);
             padding: 3rem 2.5rem;
             box-shadow: var(--card-shadow);
@@ -417,7 +433,7 @@
 
         .stat-card:hover {
             transform: translateY(-15px);
-            box-shadow: 0 25px 80px color-mix(in srgb, var(--primary-color) 15%, transparent);
+            box-shadow: 0 25px 80px rgba(0,0,0,0.15);
             background: var(--card-color);
         }
 
@@ -433,7 +449,7 @@
             margin: 0 auto 2rem;
             transition: all 0.3s ease;
             color: white;
-            box-shadow: 0 15px 40px color-mix(in srgb, var(--accent-color) 30%, transparent);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
         }
 
         .stat-card:hover .stat-icon {
@@ -456,7 +472,7 @@
 
         .stat-sublabel {
             font-size: 1rem;
-            color: color-mix(in srgb, var(--text-color) 70%, transparent);
+            color: #6c757d;
         }
 
         /* Notification - Con colores dinámicos */
@@ -510,11 +526,28 @@
             .stats-grid {
                 grid-template-columns: 1fr;
             }
+            
+            .dashboard-container {
+                padding: 3rem 1rem;
+            }
         }
 
-        /* Estilos para custom CSS adicional de empresa */
-        .custom-company-styles {
-            /* Este bloque será reemplazado dinámicamente con CSS personalizado de cada empresa */
+        /* Debug info - Solo visible en desarrollo */
+        .debug-info {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-family: monospace;
+            display: none;
+        }
+
+        .debug-info.show {
+            display: block;
         }
     </style>
 </head>
@@ -604,8 +637,8 @@
     <!-- Notification -->
     <div id="notification" class="notification"></div>
 
-    <!-- CSS dinámico inyectado por JavaScript -->
-    <style id="dynamicCompanyStyles"></style>
+    <!-- Debug Info (solo para desarrollo) -->
+    <div id="debugInfo" class="debug-info"></div>
 
     <script>
         // ================================================================
@@ -625,6 +658,7 @@
         let currentUser = null;
         let userRole = 'admin';
         let companyBranding = null;
+        let isDebugMode = window.location.search.includes('debug=true');
 
         // ================================================================
         // DYNAMIC BRANDING SYSTEM
@@ -684,6 +718,7 @@
             
             if (branding.primary_color) {
                 root.style.setProperty('--primary-color', branding.primary_color);
+                updateDebugInfo(`Primary: ${branding.primary_color}`);
             }
             if (branding.secondary_color) {
                 root.style.setProperty('--secondary-color', branding.secondary_color);
@@ -701,12 +736,19 @@
                 root.style.setProperty('--sidebar-color', branding.sidebar_color);
             }
 
+            // Recalcular gradientes
+            const primaryGradient = `linear-gradient(135deg, ${branding.primary_color || '#495057'}, ${branding.secondary_color || '#6c757d'})`;
+            const accentGradient = `linear-gradient(135deg, ${branding.accent_color || '#20c997'}, #17a2b8)`;
+            
+            root.style.setProperty('--primary-gradient', primaryGradient);
+            root.style.setProperty('--accent-gradient', accentGradient);
+
             // Aplicar logo si existe
             if (branding.logo_url) {
                 applyCompanyLogo(branding.logo_url);
             }
 
-            // Aplicar CSS personalizado
+            // Aplicar CSS personalizado si existe
             if (branding.custom_css) {
                 applyCustomCSS(branding.custom_css);
             }
@@ -721,7 +763,7 @@
             const loadingLogo = document.getElementById('loadingLogo');
             if (loadingLogo) {
                 loadingLogo.classList.add('has-image');
-                loadingLogo.innerHTML = `<img src="${logoUrl}" alt="Company Logo" onerror="this.style.display='none'">`;
+                loadingLogo.innerHTML = `<img src="${logoUrl}" alt="Company Logo" onerror="handleLogoError(this)">`;
             }
 
             // Logo en header si existe un elemento para ello
@@ -731,13 +773,28 @@
             }
         }
 
+        function handleLogoError(img) {
+            console.warn('Logo failed to load:', img.src);
+            img.style.display = 'none';
+            // Revertir al icono por defecto
+            const logoContainer = img.parentElement;
+            if (logoContainer) {
+                logoContainer.classList.remove('has-image');
+            }
+        }
+
         function applyCustomCSS(customCSS) {
             console.log('Applying custom CSS');
             
-            const styleElement = document.getElementById('dynamicCompanyStyles');
-            if (styleElement) {
-                styleElement.textContent = customCSS;
+            // Crear o actualizar elemento de estilo personalizado
+            let styleElement = document.getElementById('customCompanyStyles');
+            if (!styleElement) {
+                styleElement = document.createElement('style');
+                styleElement.id = 'customCompanyStyles';
+                document.head.appendChild(styleElement);
             }
+            
+            styleElement.textContent = customCSS;
         }
 
         // ================================================================
@@ -892,10 +949,10 @@
 
         function createDemoCompany(slug) {
             return {
-                id: 'demo-001',
-                name: 'Demo Company',
-                slug: 'demo',
-                domain: 'demo.com',
+                id: slug === 'demo' ? 'demo-001' : 'acme-002',
+                name: slug === 'demo' ? 'Demo Company' : 'ACME Corp',
+                slug: slug,
+                domain: `${slug}.opsisuite.com`,
                 sector: 'construction',
                 plan: 'warehouse_pro',
                 status: 'active',
@@ -910,6 +967,8 @@
             document.getElementById('loadingSubtitle').textContent = `Initializing ${currentCompany.name} workspace...`;
             document.getElementById('companyName').textContent = currentCompany.name;
             document.getElementById('dashboardTitle').textContent = `${currentCompany.name} Dashboard`;
+            
+            updateDebugInfo(`Company: ${currentCompany.slug} (${currentCompany.id})`);
         }
 
         // ================================================================
@@ -947,11 +1006,25 @@
             showNotification('Role selector coming soon', 'success');
         }
 
+        function updateDebugInfo(info) {
+            if (!isDebugMode) return;
+            
+            const debugElement = document.getElementById('debugInfo');
+            if (debugElement) {
+                debugElement.classList.add('show');
+                debugElement.innerHTML += `<div>${info}</div>`;
+            }
+        }
+
         // ================================================================
         // INITIALIZATION
         // ================================================================
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('Iniciando Dashboard Multi-Tenant - Opsis Suite');
+            
+            if (isDebugMode) {
+                updateDebugInfo('Debug mode enabled');
+            }
             
             // Verificar autenticación primero
             const user = await checkAuth();
@@ -993,6 +1066,17 @@
                 window.location.reload();
             }
         });
+
+        // Keyboard shortcuts para debugging
+        if (isDebugMode) {
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'd') {
+                    e.preventDefault();
+                    const debugElement = document.getElementById('debugInfo');
+                    debugElement.classList.toggle('show');
+                }
+            });
+        }
 
         console.log('Multi-Tenant Dashboard Template - Opsis Suite Ready!');
     </script>
