@@ -2497,6 +2497,11 @@
             });
         }
 
+        function revokeSuperAdmin() {
+            const userId = document.getElementById('editSuperAdminId').value;
+            revokeSuperAdminAccess(userId);
+        }
+
         // ============================================
         // MODAL FUNCTIONS
         // ============================================
@@ -2806,7 +2811,7 @@
         // ============================================
         function setupEventListeners() {
             // Add company form
-            document.getElementById('addCompanyForm').addEventListener('submit', (e) => {
+            document.getElementById('addCompanyForm')?.addEventListener('submit', (e) => {
                 e.preventDefault();
                 
                 const companyData = {
@@ -2825,44 +2830,44 @@
             });
 
             // Invite super admin form
-            document.getElementById('inviteSuperAdminForm').addEventListener('submit', (e) => {
+            document.getElementById('inviteSuperAdminForm')?.addEventListener('submit', (e) => {
                 e.preventDefault();
                 
                 const email = document.getElementById('superAdminEmail').value;
                 const name = document.getElementById('superAdminName').value;
                 const permissions = [];
                 
-                if (document.getElementById('perm_manage_companies').checked) permissions.push('manage_companies');
-                if (document.getElementById('perm_manage_users').checked) permissions.push('manage_users');
-                if (document.getElementById('perm_manage_subscriptions').checked) permissions.push('manage_subscriptions');
-                if (document.getElementById('perm_view_payments').checked) permissions.push('view_payments');
-                if (document.getElementById('perm_manage_settings').checked) permissions.push('manage_settings');
-                if (document.getElementById('perm_invite_admins').checked) permissions.push('invite_admins');
-                if (document.getElementById('perm_view_reports').checked) permissions.push('view_reports');
+                if (document.getElementById('perm_manage_companies')?.checked) permissions.push('manage_companies');
+                if (document.getElementById('perm_manage_users')?.checked) permissions.push('manage_users');
+                if (document.getElementById('perm_manage_subscriptions')?.checked) permissions.push('manage_subscriptions');
+                if (document.getElementById('perm_view_payments')?.checked) permissions.push('view_payments');
+                if (document.getElementById('perm_manage_settings')?.checked) permissions.push('manage_settings');
+                if (document.getElementById('perm_invite_admins')?.checked) permissions.push('invite_admins');
+                if (document.getElementById('perm_view_reports')?.checked) permissions.push('view_reports');
                 
                 inviteSuperAdmin(email, name, permissions);
             });
 
             // Edit super admin form
-            document.getElementById('editSuperAdminForm').addEventListener('submit', (e) => {
+            document.getElementById('editSuperAdminForm')?.addEventListener('submit', (e) => {
                 e.preventDefault();
                 
                 const userId = document.getElementById('editSuperAdminId').value;
                 const permissions = [];
                 
-                if (document.getElementById('edit_perm_manage_companies').checked) permissions.push('manage_companies');
-                if (document.getElementById('edit_perm_manage_users').checked) permissions.push('manage_users');
-                if (document.getElementById('edit_perm_manage_subscriptions').checked) permissions.push('manage_subscriptions');
-                if (document.getElementById('edit_perm_view_payments').checked) permissions.push('view_payments');
-                if (document.getElementById('edit_perm_manage_settings').checked) permissions.push('manage_settings');
-                if (document.getElementById('edit_perm_invite_admins').checked) permissions.push('invite_admins');
-                if (document.getElementById('edit_perm_view_reports').checked) permissions.push('view_reports');
+                if (document.getElementById('edit_perm_manage_companies')?.checked) permissions.push('manage_companies');
+                if (document.getElementById('edit_perm_manage_users')?.checked) permissions.push('manage_users');
+                if (document.getElementById('edit_perm_manage_subscriptions')?.checked) permissions.push('manage_subscriptions');
+                if (document.getElementById('edit_perm_view_payments')?.checked) permissions.push('view_payments');
+                if (document.getElementById('edit_perm_manage_settings')?.checked) permissions.push('manage_settings');
+                if (document.getElementById('edit_perm_invite_admins')?.checked) permissions.push('invite_admins');
+                if (document.getElementById('edit_perm_view_reports')?.checked) permissions.push('view_reports');
                 
                 updateSuperAdminPermissions(userId, permissions);
             });
 
-            // Settings form - Now saves to Supabase
-            document.getElementById('settingsForm').addEventListener('submit', (e) => {
+            // Settings form
+            document.getElementById('settingsForm')?.addEventListener('submit', (e) => {
                 e.preventDefault();
                 saveAllSettings();
             });
@@ -2886,57 +2891,73 @@
             });
         }
 
-        // Global functions for modal management
-        window.showReportsModule = () => showTab('reports');
-        window.revokeSuperAdmin = () => {
-            const userId = document.getElementById('editSuperAdminId').value;
-            revokeSuperAdminAccess(userId);
-        };
-
         // ============================================
         // INITIALIZATION
         // ============================================
         document.addEventListener('DOMContentLoaded', async () => {
-            console.log('🚀 Iniciando Super Admin Panel v2.0 - Apple 96 Design...');
+            console.log('🚀 Iniciando Super Admin Panel v2.0...');
             
-            // Inicializar modo oscuro antes que nada
+            // Hacer funciones globalmente accesibles ANTES de cualquier otra cosa
+            window.showTab = showTab;
+            window.showAddCompanyModal = showAddCompanyModal;
+            window.showInviteSuperAdminModal = showInviteSuperAdminModal;
+            window.closeModal = closeModal;
+            window.editCompany = editCompany;
+            window.deleteCompany = deleteCompany;
+            window.editSubscription = editSubscription;
+            window.cancelSubscription = cancelSubscription;
+            window.editSuperAdmin = editSuperAdmin;
+            window.revokeSuperAdminAccess = revokeSuperAdminAccess;
+            window.revokeSuperAdmin = revokeSuperAdmin;
+            window.generateReport = generateReport;
+            window.exportReport = exportReport;
+            window.resetToDefaults = resetToDefaults;
+            window.exportSettings = exportSettings;
+            window.toggleDarkMode = toggleDarkMode;
+            window.logout = logout;
+            
+            // Inicializar modo oscuro
             initDarkMode();
             
             try {
+                // Verificar autenticación
                 const isAuthenticated = await checkAuth();
-                if (isAuthenticated) {
-                    await logActivity('login', 'Super admin accedió al panel');
-                    
-                    // Mostrar loading mientras carga datos
-                    showLoadingState();
-                    
-                    // Cargar todo el dashboard
-                    await loadDashboard();
-                    
-                    // Poblar todas las tablas
-                    populateAllTables();
-                    
-                    // Setup event listeners
-                    setupEventListeners();
-                    
-                    // Ocultar loading
-                    hideLoadingState();
-                    
-                    // Generar gráficos iniciales
-                    setTimeout(() => {
-                        generateDashboardCharts();
-                    }, 500);
-                    
-                    console.log('✅ Super Admin Panel completamente inicializado');
+                if (!isAuthenticated) {
+                    return; // checkAuth ya maneja la redirección
                 }
+
+                await logActivity('login', 'Super admin accedió al panel');
+                
+                // Mostrar loading
+                showLoadingState();
+                
+                // Cargar datos
+                await loadDashboard();
+                
+                // Poblar tablas
+                populateAllTables();
+                
+                // Setup event listeners
+                setupEventListeners();
+                
+                // Ocultar loading
+                hideLoadingState();
+                
+                // Generar gráficos iniciales después de un delay
+                setTimeout(() => {
+                    generateDashboardCharts();
+                }, 1000);
+                
+                console.log('✅ Super Admin Panel inicializado correctamente');
+                
             } catch (error) {
                 console.error('❌ Error durante inicialización:', error);
                 hideLoadingState();
-                showErrorState('Error cargando el panel de administración');
+                showErrorState('Error cargando el panel: ' + error.message);
             }
         });
 
-        // Cleanup charts when page unloads
+        // Cleanup al cerrar
         window.addEventListener('beforeunload', () => {
             Object.values(reportCharts).forEach(chart => {
                 if (chart && typeof chart.destroy === 'function') {
@@ -2945,12 +2966,14 @@
             });
         });
 
-        // Auto-refresh dashboard every 5 minutes
+        // Auto-refresh cada 5 minutos
         setInterval(async () => {
             try {
-                await loadDashboard();
-                updateDashboardMetrics();
-                console.log('📊 Dashboard actualizado automáticamente');
+                if (currentUser) {
+                    await loadDashboard();
+                    updateDashboardMetrics();
+                    console.log('📊 Dashboard actualizado automáticamente');
+                }
             } catch (error) {
                 console.error('Error en actualización automática:', error);
             }
