@@ -19,7 +19,26 @@
             --card-color: #ffffff;
             --border-color: #e2e8f0;
             --hover-color: #f1f5f9;
+        function updateDebugInfo(info) {
+            if (!isDebugMode) return;
+            
+            const debugElement = document.getElementById('debugInfo');
+            if (debugElement) {
+                debugElement.classList.add('show');
+                const timestamp = new Date().toLocaleTimeString();
+                debugElement.innerHTML += `<div>[${timestamp}] ${info}</div>`;
+                
+                // Limitar a últimas 10 líneas
+                const lines = debugElement.querySelectorAll('div');
+                if (lines.length > 10) {
+                    lines[0].remove();
+                }
+            }
         }
+
+        // ================================================================
+        // UTILITY FUNCTIONS
+        // ================================================================
 
         * {
             margin: 0;
@@ -820,14 +839,21 @@
                     ]);
                     
                     if (!profileError && profile) {
+                        const userRole = profile.role || 'OPERATIVO';
                         document.getElementById('profileName').textContent = profile.full_name || profile.name || user.email;
-                        document.getElementById('profileRole').textContent = profile.role || 'User';
-                        updateDebugInfo(`Profile loaded: ${profile.role}`);
+                        document.getElementById('profileRole').textContent = userRole;
+                        updateDebugInfo(`Profile loaded: ${userRole}`);
+                        
+                        // Actualizar dashboard según el rol
+                        updateDashboardForRole(userRole);
+                        window.currentUserRole = userRole;
                     } else {
                         console.warn('No se pudo cargar el perfil del usuario:', profileError);
                         updateDebugInfo('Profile load failed, using defaults');
                         document.getElementById('profileName').textContent = user.email;
-                        document.getElementById('profileRole').textContent = 'User';
+                        document.getElementById('profileRole').textContent = 'OPERATIVO';
+                        updateDashboardForRole('OPERATIVO');
+                        window.currentUserRole = 'OPERATIVO';
                     }
                 } catch (profileError) {
                     console.warn('Error cargando perfil:', profileError);
@@ -992,8 +1018,63 @@
         }
 
         // ================================================================
-        // UTILITY FUNCTIONS
+        // ROLE-BASED DASHBOARD SYSTEM
         // ================================================================
+        const ROLE_CONFIGURATIONS = {
+            'ADMIN': {
+                title: 'Panel de Administración',
+                subtitle: 'Control total de la empresa y configuraciones del sistema',
+                widgets: ['users', 'financial', 'settings', 'subscription'],
+                actions: ['manage_users', 'company_settings', 'billing', 'reports']
+            },
+            'ALMACEN': {
+                title: 'Centro de Almacén',
+                subtitle: 'Gestión de inventario y control de equipos',
+                widgets: ['inventory', 'stock_alerts', 'movements', 'maintenance'],
+                actions: ['add_equipment', 'stock_check', 'generate_report', 'schedule_maintenance']
+            },
+            'OPERATIVO': {
+                title: 'Panel Operativo',
+                subtitle: 'Check-in/out de equipos y gestión de campo',
+                widgets: ['my_equipment', 'quick_checkout', 'incidents', 'schedule'],
+                actions: ['quick_checkout', 'report_incident', 'check_status', 'view_schedule']
+            },
+            'ESTIMADOR': {
+                title: 'Mesa de Estimaciones',
+                subtitle: 'Cotizaciones, proyectos y análisis de costos',
+                widgets: ['projects', 'quotes', 'costs', 'profitability'],
+                actions: ['new_quote', 'project_analysis', 'cost_calculator', 'view_projects']
+            },
+            'SUPERVISOR': {
+                title: 'Control de Campo',
+                subtitle: 'Supervisión de equipos y equipos de trabajo',
+                widgets: ['field_equipment', 'team_productivity', 'active_projects', 'alerts'],
+                actions: ['assign_equipment', 'team_report', 'project_status', 'field_alerts']
+            }
+        };
+
+        function getRoleConfiguration(role) {
+            return ROLE_CONFIGURATIONS[role] || ROLE_CONFIGURATIONS['OPERATIVO'];
+        }
+
+        function updateDashboardForRole(role) {
+            const config = getRoleConfiguration(role);
+            
+            // Actualizar títulos
+            const titleElement = document.querySelector('.header-info h1');
+            const subtitleElement = document.querySelector('.header-info p');
+            
+            if (titleElement) titleElement.textContent = config.title;
+            if (subtitleElement) subtitleElement.textContent = config.subtitle;
+            
+            // Actualizar widgets
+            updateWidgetsForRole(role, config.widgets);
+            
+            // Actualizar acciones
+            updateActionsForRole(role, config.actions);
+            
+            updateDebugInfo(`Dashboard updated for role: ${role}`);
+        }
         function showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
             
@@ -1035,20 +1116,185 @@
             updateDebugInfo(`Action: ${action}`);
         }
 
-        function updateDebugInfo(info) {
+        function updateWidgetsForRole(role, widgets) {
+            const statsGrid = document.querySelector('.stats-grid');
+            if (!statsGrid) return;
+            
+            // Limpiar widgets existentes
+            statsGrid.innerHTML = '';
+            
+            // Crear widgets específicos por rol
+            widgets.forEach(widget => {
+                const widgetConfig = getWidgetConfig(widget, role);
+                if (widgetConfig) {
+                    const widgetElement = createWidget(widgetConfig);
+                    statsGrid.appendChild(widgetElement);
+                }
+            });
+        }
+
+        function getWidgetConfig(widget, role) {
+            const configs = {
+                // Widgets para ADMIN
+                'users': { icon: '👥', title: 'Total Users', number: '15', label: 'Active team members', action: 'users' },
+                'financial': { icon: '💰', title: 'Monthly Revenue', number: '$2,500', label: 'Current billing cycle', action: 'financial' },
+                'settings': { icon: '⚙️', title: 'System Health', number: '98%', label: 'All systems operational', action: 'settings' },
+                'subscription': { icon: '📋', title: 'Plan Status', number: 'Pro', label: 'Warehouse Pro active', action: 'subscription' },
+                
+                // Widgets para ALMACEN
+                'inventory': { icon: '📦', title: 'Total Inventory', number: '247', label: 'Items in warehouse', action: 'inventory' },
+                'stock_alerts': { icon: '⚠️', title: 'Low Stock Alerts', number: '8', label: 'Items need reorder', action: 'stock_alerts' },
+                'movements': { icon: '🔄', title: 'Daily Movements', number: '45', label: 'In/Out today', action: 'movements' },
+                'maintenance': { icon: '🔧', title: 'Pending Maintenance', number: '12', label: 'Items scheduled', action: 'maintenance' },
+                
+                // Widgets para OPERATIVO
+                'my_equipment': { icon: '🎯', title: 'My Equipment', number: '8', label: 'Currently assigned', action: 'my_equipment' },
+                'quick_checkout': { icon: '⚡', title: 'Quick Actions', number: '3', label: 'Pending checkout', action: 'quick_checkout' },
+                'incidents': { icon: '🚨', title: 'Open Incidents', number: '2', label: 'Require attention', action: 'incidents' },
+                'schedule': { icon: '📅', title: 'Today Schedule', number: '6', label: 'Scheduled tasks', action: 'schedule' },
+                
+                // Widgets para ESTIMADOR
+                'projects': { icon: '🏗️', title: 'Active Projects', number: '12', label: 'In progress', action: 'projects' },
+                'quotes': { icon: '📊', title: 'Pending Quotes', number: '7', label: 'Awaiting approval', action: 'quotes' },
+                'costs': { icon: '💵', title: 'Cost Analysis', number: '$45K', label: 'Monthly equipment cost', action: 'costs' },
+                'profitability': { icon: '📈', title: 'Profit Margin', number: '23%', label: 'Current quarter', action: 'profitability' },
+                
+                // Widgets para SUPERVISOR
+                'field_equipment': { icon: '🚛', title: 'Field Equipment', number: '89', label: 'On active sites', action: 'field_equipment' },
+                'team_productivity': { icon: '⭐', title: 'Team Efficiency', number: '94%', label: 'This week average', action: 'team_productivity' },
+                'active_projects': { icon: '🎯', title: 'Supervised Sites', number: '5', label: 'Active locations', action: 'active_projects' },
+                'alerts': { icon: '🔔', title: 'Field Alerts', number: '3', label: 'Require response', action: 'alerts' }
+            };
+            
+            return configs[widget];
+        }
+
+        function createWidget(config) {
+            const widget = document.createElement('div');
+            widget.className = 'stat-card';
+            widget.onclick = () => handleStatClick(config.action);
+            
+            widget.innerHTML = `
+                <div class="stat-header">
+                    <div class="stat-title">${config.title}</div>
+                    <div class="stat-icon">${config.icon}</div>
+                </div>
+                <div class="stat-number">${config.number}</div>
+                <div class="stat-label">${config.label}</div>
+            `;
+            
+            return widget;
+        }
+
+        function updateActionsForRole(role, actions) {
+            const actionsContainer = document.querySelector('.card-body [style*="display: flex"]');
+            if (!actionsContainer) return;
+            
+            // Limpiar acciones existentes
+            actionsContainer.innerHTML = '';
+            
+            // Crear botones específicos por rol
+            actions.forEach(action => {
+                const actionConfig = getActionConfig(action, role);
+                if (actionConfig) {
+                    const button = document.createElement('button');
+                    button.className = `btn ${actionConfig.type}`;
+                    button.onclick = () => handleActionClick(action);
+                    button.innerHTML = actionConfig.label;
+                    actionsContainer.appendChild(button);
+                }
+            });
+        }
+
+        function getActionConfig(action, role) {
+            const configs = {
+                // Acciones para ADMIN
+                'manage_users': { label: '👥 Manage Users', type: 'btn-primary' },
+                'company_settings': { label: '⚙️ Company Settings', type: 'btn-secondary' },
+                'billing': { label: '💳 Billing & Plans', type: 'btn-success' },
+                'reports': { label: '📊 Financial Reports', type: 'btn-secondary' },
+                
+                // Acciones para ALMACEN
+                'add_equipment': { label: '➕ Add Equipment', type: 'btn-primary' },
+                'stock_check': { label: '📋 Stock Check', type: 'btn-secondary' },
+                'generate_report': { label: '📄 Generate Report', type: 'btn-secondary' },
+                'schedule_maintenance': { label: '🔧 Schedule Maintenance', type: 'btn-success' },
+                
+                // Acciones para OPERATIVO
+                'quick_checkout': { label: '⚡ Quick Checkout', type: 'btn-primary' },
+                'report_incident': { label: '🚨 Report Incident', type: 'btn-secondary' },
+                'check_status': { label: '📱 Check Status', type: 'btn-secondary' },
+                'view_schedule': { label: '📅 My Schedule', type: 'btn-success' },
+                
+                // Acciones para ESTIMADOR
+                'new_quote': { label: '📝 New Quote', type: 'btn-primary' },
+                'project_analysis': { label: '📊 Project Analysis', type: 'btn-secondary' },
+                'cost_calculator': { label: '🧮 Cost Calculator', type: 'btn-success' },
+                'view_projects': { label: '🏗️ View Projects', type: 'btn-secondary' },
+                
+                // Acciones para SUPERVISOR
+                'assign_equipment': { label: '🎯 Assign Equipment', type: 'btn-primary' },
+                'team_report': { label: '👥 Team Report', type: 'btn-secondary' },
+                'project_status': { label: '📈 Project Status', type: 'btn-success' },
+                'field_alerts': { label: '🔔 Field Alerts', type: 'btn-secondary' }
+            };
+            
+            return configs[action];
+        }
+
+        // ================================================================
+        // ROLE DETECTION AND SIMULATION
+        // ================================================================
+        function detectUserRole() {
+            // En modo debug, simular diferentes roles
+            if (isDebugMode) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const roleParam = urlParams.get('role');
+                
+                if (roleParam) {
+                    console.log('Role from URL parameter:', roleParam);
+                    return roleParam.toUpperCase();
+                }
+                
+                // Role por defecto en debug
+                return 'ALMACEN';
+            }
+            
+            // En modo real, obtener del perfil del usuario
+            return userRole || 'OPERATIVO';
+        }
+
+        function setupRoleSelector() {
             if (!isDebugMode) return;
             
-            const debugElement = document.getElementById('debugInfo');
-            if (debugElement) {
-                debugElement.classList.add('show');
-                const timestamp = new Date().toLocaleTimeString();
-                debugElement.innerHTML += `<div>[${timestamp}] ${info}</div>`;
+            // Agregar selector de roles en modo debug
+            const header = document.querySelector('.header-actions');
+            if (header && !document.getElementById('roleSelector')) {
+                const roleSelector = document.createElement('select');
+                roleSelector.id = 'roleSelector';
+                roleSelector.style.cssText = `
+                    padding: 0.5rem 1rem;
+                    border-radius: 8px;
+                    border: 1px solid var(--border-color);
+                    background: var(--card-color);
+                    margin-right: 1rem;
+                `;
                 
-                // Limitar a últimas 10 líneas
-                const lines = debugElement.querySelectorAll('div');
-                if (lines.length > 10) {
-                    lines[0].remove();
-                }
+                const roles = ['ADMIN', 'ALMACEN', 'OPERATIVO', 'ESTIMADOR', 'SUPERVISOR'];
+                const currentRole = detectUserRole();
+                
+                roleSelector.innerHTML = roles.map(role => 
+                    `<option value="${role}" ${role === currentRole ? 'selected' : ''}>${role}</option>`
+                ).join('');
+                
+                roleSelector.onchange = (e) => {
+                    const newRole = e.target.value;
+                    const url = new URL(window.location);
+                    url.searchParams.set('role', newRole.toLowerCase());
+                    window.location.href = url.toString();
+                };
+                
+                header.insertBefore(roleSelector, header.firstChild);
             }
         }
 
@@ -1109,6 +1355,12 @@
                     
                     currentCompany = createDemoCompany('demo');
                     updateCompanyDisplay();
+                    
+                    // Aplicar rol desde URL o usar por defecto
+                    const debugRole = detectUserRole();
+                    updateDashboardForRole(debugRole);
+                    setupRoleSelector();
+                    window.currentUserRole = debugRole;
                     
                     document.getElementById('availableEquipment').textContent = '168';
                     document.getElementById('activeLoans').textContent = '56';
