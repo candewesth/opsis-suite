@@ -798,38 +798,93 @@
         }
 
         // ================================================================
-        // AUTHENTICATION CHECK
+        // AUTHENTICATION CHECK CON MEJOR DEBUG
         // ================================================================
         async function checkAuth() {
             try {
-                const { data: { user } } = await supabase.auth.getUser();
+                console.log('Verificando autenticación...');
+                updateDebugInfo('Checking authentication...');
+                
+                const { data: { user }, error } = await supabase.auth.getUser();
+                
+                if (error) {
+                    console.error('Error en getUser:', error);
+                    updateDebugInfo(`Auth error: ${error.message}`);
+                    
+                    // Si hay error de auth, continuar sin autenticación para testing
+                    if (isDebugMode) {
+                        console.warn('DEBUG MODE: Continuando sin autenticación');
+                        updateDebugInfo('DEBUG: Skipping auth for testing');
+                        return { id: 'debug-user', email: 'debug@test.com' };
+                    }
+                    
+                    console.log('Redirigiendo al login por error de auth...');
+                    window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
+                    return null;
+                }
                 
                 if (!user) {
-                    console.log('No hay usuario autenticado, redirigiendo al login...');
+                    console.log('No hay usuario autenticado');
+                    updateDebugInfo('No authenticated user found');
+                    
+                    // En modo debug, simular usuario
+                    if (isDebugMode) {
+                        console.warn('DEBUG MODE: Simulando usuario autenticado');
+                        updateDebugInfo('DEBUG: Simulating authenticated user');
+                        return { id: 'debug-user', email: 'debug@test.com' };
+                    }
+                    
+                    console.log('Redirigiendo al login...');
                     window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
                     return null;
                 }
                 
                 console.log('Usuario autenticado:', user.email);
+                updateDebugInfo(`Authenticated: ${user.email}`);
                 currentUser = user;
                 
-                // Cargar perfil del usuario
-                const { data: profile } = await supabase
-                    .from('user_profiles')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .single();
-                
-                if (profile) {
-                    document.getElementById('profileName').textContent = profile.full_name || profile.name || user.email;
-                    document.getElementById('profileRole').textContent = profile.role || 'User';
-                    document.getElementById('profileAvatar').textContent = (profile.full_name || profile.name || user.email).charAt(0).toUpperCase();
+                // Cargar perfil del usuario (con timeout)
+                try {
+                    const { data: profile, error: profileError } = await Promise.race([
+                        supabase.from('user_profiles').select('*').eq('user_id', user.id).single(),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('Profile load timeout')), 5000))
+                    ]);
+                    
+                    if (!profileError && profile) {
+                        document.getElementById('profileName').textContent = profile.full_name || profile.name || user.email;
+                        document.getElementById('profileRole').textContent = profile.role || 'User';
+                        document.getElementById('profileAvatar').textContent = (profile.full_name || profile.name || user.email).charAt(0).toUpperCase();
+                        updateDebugInfo(`Profile loaded: ${profile.role}`);
+                    } else {
+                        console.warn('No se pudo cargar el perfil del usuario:', profileError);
+                        updateDebugInfo('Profile load failed, using defaults');
+                        // Usar datos por defecto
+                        document.getElementById('profileName').textContent = user.email;
+                        document.getElementById('profileRole').textContent = 'User';
+                        document.getElementById('profileAvatar').textContent = user.email.charAt(0).toUpperCase();
+                    }
+                } catch (profileError) {
+                    console.warn('Error cargando perfil:', profileError);
+                    updateDebugInfo('Profile error, using email');
+                    document.getElementById('profileName').textContent = user.email;
+                    document.getElementById('profileRole').textContent = 'User';
+                    document.getElementById('profileAvatar').textContent = user.email.charAt(0).toUpperCase();
                 }
                 
                 return user;
                 
             } catch (error) {
-                console.error('Error verificando autenticación:', error);
+                console.error('Error crítico en checkAuth:', error);
+                updateDebugInfo(`Critical auth error: ${error.message}`);
+                
+                // En modo debug, continuar
+                if (isDebugMode) {
+                    console.warn('DEBUG MODE: Continuando con error de auth');
+                    return { id: 'debug-user', email: 'debug@test.com' };
+                }
+                
+                // Mostrar error y redirigir
+                alert('Error de autenticación. Redirigiendo al login...');
                 window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
                 return null;
             }
@@ -1028,36 +1083,102 @@
         }
 
         // ================================================================
-        // INITIALIZATION
+        // INITIALIZATION CON MEJOR ERROR HANDLING
         // ================================================================
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('Iniciando Dashboard Multi-Tenant - Opsis Suite');
             
             if (isDebugMode) {
                 updateDebugInfo('Debug mode enabled');
+                document.getElementById('debugInfo').classList.add('show');
             }
             
-            // Verificar autenticación primero
-            const user = await checkAuth();
-            
-            if (user) {
-                // Cargar datos de la empresa (incluye branding)
-                await loadCompanyData();
+            try {
+                updateDebugInfo('Starting initialization...');
                 
-                // Cargar estadísticas (valores demo por ahora)
-                document.getElementById('headerEquipment').textContent = '247';
-                document.getElementById('headerActive').textContent = '56';
-                document.getElementById('headerUsers').textContent = '15';
-                document.getElementById('availableEquipment').textContent = '168';
-                document.getElementById('activeLoans').textContent = '56';
-                document.getElementById('inMaintenance').textContent = '23';
-                document.getElementById('overdueReturns').textContent = '12';
+                // Verificar autenticación con timeout
+                const user = await Promise.race([
+                    checkAuth(),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Auth timeout')), 10000))
+                ]);
                 
-                // Ocultar pantalla de carga
-                setTimeout(() => {
-                    document.getElementById('loadingScreen').classList.add('hidden');
-                    showNotification(`Bienvenido a ${currentCompany?.name || 'Opsis Suite'}`, 'success');
-                }, 2500);
+                if (user) {
+                    updateDebugInfo('User authenticated, loading company data...');
+                    
+                    // Cargar datos de la empresa (incluye branding) con timeout
+                    await Promise.race([
+                        loadCompanyData(),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('Company load timeout')), 8000))
+                    ]);
+                    
+                    updateDebugInfo('Company data loaded, setting up stats...');
+                    
+                    // Cargar estadísticas (valores demo por ahora)
+                    document.getElementById('headerEquipment').textContent = '247';
+                    document.getElementById('headerActive').textContent = '56';
+                    document.getElementById('headerUsers').textContent = '15';
+                    document.getElementById('availableEquipment').textContent = '168';
+                    document.getElementById('activeLoans').textContent = '56';
+                    document.getElementById('inMaintenance').textContent = '23';
+                    document.getElementById('overdueReturns').textContent = '12';
+                    
+                    updateDebugInfo('Stats loaded, hiding loading screen...');
+                    
+                    // Ocultar pantalla de carga
+                    setTimeout(() => {
+                        document.getElementById('loadingScreen').classList.add('hidden');
+                        showNotification(`Bienvenido a ${currentCompany?.name || 'Opsis Suite'}`, 'success');
+                        updateDebugInfo('Initialization completed successfully');
+                    }, 1500);
+                }
+                
+            } catch (error) {
+                console.error('Error durante la inicialización:', error);
+                updateDebugInfo(`Initialization error: ${error.message}`);
+                
+                if (isDebugMode) {
+                    // En modo debug, continuar sin autenticación
+                    console.warn('DEBUG MODE: Continuando con datos de prueba');
+                    updateDebugInfo('DEBUG: Using test data, skipping auth');
+                    
+                    // Simular carga de datos
+                    currentCompany = createDemoCompany('demo');
+                    updateCompanyDisplay();
+                    
+                    // Estadísticas de prueba
+                    document.getElementById('headerEquipment').textContent = '247';
+                    document.getElementById('headerActive').textContent = '56';
+                    document.getElementById('headerUsers').textContent = '15';
+                    document.getElementById('availableEquipment').textContent = '168';
+                    document.getElementById('activeLoans').textContent = '56';
+                    document.getElementById('inMaintenance').textContent = '23';
+                    document.getElementById('overdueReturns').textContent = '12';
+                    
+                    setTimeout(() => {
+                        document.getElementById('loadingScreen').classList.add('hidden');
+                        showNotification('Modo debug: Datos de prueba cargados', 'warning');
+                    }, 1500);
+                } else {
+                    // Mostrar error y opción de continuar
+                    setTimeout(() => {
+                        document.getElementById('loadingScreen').innerHTML = `
+                            <div style="text-align: center; color: white; padding: 2rem;">
+                                <h2>Error de Conexión</h2>
+                                <p>No se pudo conectar con el servidor.</p>
+                                <p><strong>Opciones:</strong></p>
+                                <button onclick="window.location.reload()" style="margin: 0.5rem; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; background: #007AFF; color: white; cursor: pointer;">
+                                    Intentar de Nuevo
+                                </button>
+                                <button onclick="window.location.href='?debug=true'" style="margin: 0.5rem; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; background: #FF9500; color: white; cursor: pointer;">
+                                    Modo Debug
+                                </button>
+                                <button onclick="window.location.href='https://candewesth.github.io/opsis-suite/login.html'" style="margin: 0.5rem; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; background: #34C759; color: white; cursor: pointer;">
+                                    Ir al Login
+                                </button>
+                            </div>
+                        `;
+                    }, 3000);
+                }
             }
         });
 
