@@ -1683,14 +1683,14 @@
                 const { data, error } = await supabase
                     .from('system_settings')
                     .select('*')
-                    .order('category, setting_key');
+                    .order('category, key');
 
                 if (error) throw error;
                 
                 systemSettings = {};
                 data?.forEach(setting => {
-                    systemSettings[setting.setting_key] = {
-                        value: setting.setting_value,
+                    systemSettings[setting.key] = {
+                        value: setting.value,
                         type: setting.data_type,
                         category: setting.category
                     };
@@ -1911,8 +1911,8 @@
                 const { error } = await supabase
                     .from('system_settings')
                     .upsert({
-                        setting_key: key,
-                        setting_value: value.toString(),
+                        key: key,
+                        value: value.toString(),
                         category: category,
                         updated_by: currentUser.id,
                         updated_at: new Date().toISOString()
