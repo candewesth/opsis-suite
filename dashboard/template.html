@@ -24,7 +24,7 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* Apple 96 Design System Variables - Copiado exacto del superadmin */
+        /* Apple 96 Design System Variables */
         :root {
             --bg-color: #f8fafc;
             --card-bg: white;
@@ -64,7 +64,7 @@
             padding: 2rem;
         }
 
-        /* Header Premium Apple Style - Copiado exacto */
+        /* Header Premium Apple Style */
         .header {
             background: var(--card-bg);
             border-radius: var(--border-radius-lg);
@@ -160,6 +160,27 @@
             align-items: center;
         }
 
+        /* Config Button */
+        .config-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: var(--hover-bg);
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .config-btn:hover {
+            background: var(--border-color);
+            transform: scale(1.05);
+        }
+
         .profile-info {
             text-align: right;
             margin-right: 1rem;
@@ -193,10 +214,10 @@
             transform: translateY(-1px);
         }
 
-        /* Stats Grid exacto del superadmin */
+        /* Stats Grid expandido */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
@@ -208,6 +229,24 @@
             border: 1px solid var(--border-color);
             transition: all 0.3s ease;
             cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--stat-color);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
         }
 
         .stat-card:hover {
@@ -234,10 +273,34 @@
             color: white;
         }
 
-        .stat-icon.companies { background: linear-gradient(135deg, var(--primary-green), var(--primary-green-hover)); }
-        .stat-icon.users { background: linear-gradient(135deg, var(--info-blue), #1d4ed8); }
-        .stat-icon.revenue { background: linear-gradient(135deg, var(--warning-orange), #d97706); }
-        .stat-icon.activity { background: linear-gradient(135deg, var(--purple), #7c3aed); }
+        .stat-icon.companies { 
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-green-hover)); 
+            --stat-color: var(--primary-green);
+        }
+        .stat-icon.users { 
+            background: linear-gradient(135deg, var(--info-blue), #1d4ed8); 
+            --stat-color: var(--info-blue);
+        }
+        .stat-icon.revenue { 
+            background: linear-gradient(135deg, var(--warning-orange), #d97706); 
+            --stat-color: var(--warning-orange);
+        }
+        .stat-icon.activity { 
+            background: linear-gradient(135deg, var(--purple), #7c3aed); 
+            --stat-color: var(--purple);
+        }
+        .stat-icon.maintenance { 
+            background: linear-gradient(135deg, #ef4444, #dc2626); 
+            --stat-color: #ef4444;
+        }
+        .stat-icon.efficiency { 
+            background: linear-gradient(135deg, #06b6d4, #0891b2); 
+            --stat-color: #06b6d4;
+        }
+
+        .stat-card {
+            --stat-color: var(--primary-green);
+        }
 
         .stat-trend {
             font-size: 0.75rem;
@@ -249,6 +312,16 @@
         .stat-trend.up {
             background: #dcfce7;
             color: #166534;
+        }
+
+        .stat-trend.down {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+
+        .stat-trend.neutral {
+            background: #f1f5f9;
+            color: #64748b;
         }
 
         .stat-title {
@@ -486,11 +559,13 @@
             border-radius: var(--border-radius);
             padding: 1.5rem;
             transition: all 0.3s ease;
+            cursor: pointer;
         }
 
         .content-card:hover {
             background: var(--card-bg);
             box-shadow: var(--shadow-sm);
+            transform: translateY(-2px);
         }
 
         .content-card h4 {
@@ -565,6 +640,207 @@
             margin-right: 1rem;
             font-size: 14px;
             color: var(--text-primary);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: var(--border-radius-lg);
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 0.25rem;
+            border-radius: 4px;
+        }
+
+        .modal-close:hover {
+            background: var(--hover-bg);
+            color: var(--text-primary);
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            background: var(--card-bg);
+            color: var(--text-primary);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* Notification styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: var(--shadow-lg);
+            z-index: 10001;
+            min-width: 300px;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-left: 4px solid var(--primary-green);
+        }
+
+        .notification.error {
+            border-left: 4px solid var(--danger-red);
+        }
+
+        .notification.warning {
+            border-left: 4px solid var(--warning-orange);
+        }
+
+        /* Progress bar for actions */
+        .progress-container {
+            background: var(--hover-bg);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        .progress-container.show {
+            display: block;
+        }
+
+        .progress-bar-action {
+            width: 100%;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-green);
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        /* Toggle Switch Styles */
+        .config-toggle {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .config-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--border-color);
+            transition: .3s;
+            border-radius: 26px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        .config-toggle input:checked + .toggle-slider {
+            background: var(--primary-green);
+        }
+
+        .config-toggle input:checked + .toggle-slider:before {
+            transform: translateX(24px);
         }
 
         /* Responsive */
@@ -642,6 +918,12 @@
                         <option value="admin">ADMIN</option>
                     </select>
                 </div>
+                
+                <!-- Configuraciones -->
+                <button class="config-btn" onclick="showModal('configModal')" title="Configuración">
+                    <span>⚙️</span>
+                </button>
+                
                 <div class="profile-info">
                     <div class="profile-name" id="profileName">Usuario Demo</div>
                     <div class="profile-role" id="profileRole">Almacén</div>
@@ -650,7 +932,7 @@
             </div>
         </div>
 
-        <!-- Stats Overview -->
+        <!-- Stats Overview - Expandido con más widgets -->
         <div class="stats-grid" id="statsGrid">
             <!-- Widgets se cargarán dinámicamente según el rol -->
         </div>
@@ -669,17 +951,265 @@
     <!-- Debug Info -->
     <div id="debugInfo" class="debug-info"></div>
 
+    <!-- Modal de Configuración -->
+    <div id="configModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Configuración del Sistema</h2>
+                <button class="modal-close" onclick="closeModal('configModal')">&times;</button>
+            </div>
+            <div style="padding: 1rem;">
+                <!-- Dark Mode Toggle -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding: 1rem; background: var(--hover-bg); border-radius: 8px;">
+                    <div>
+                        <h4 style="margin: 0;">Modo Oscuro</h4>
+                        <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">Cambia la apariencia del dashboard</p>
+                    </div>
+                    <label class="config-toggle">
+                        <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <!-- Notificaciones -->
+                <div style="margin-bottom: 2rem; padding: 1rem; background: var(--hover-bg); border-radius: 8px;">
+                    <h4 style="margin-bottom: 1rem;">Notificaciones</h4>
+                    <div class="form-group">
+                        <label style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <span>Alertas del sistema</span>
+                            <label class="config-toggle">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </label>
+                        <label style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <span>Notificaciones push</span>
+                            <label class="config-toggle">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </label>
+                        <label style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>Reportes automáticos</span>
+                            <label class="config-toggle">
+                                <input type="checkbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Configuración de Seguridad -->
+                <div style="margin-bottom: 2rem; padding: 1rem; background: var(--hover-bg); border-radius: 8px;">
+                    <h4 style="margin-bottom: 1rem;">Seguridad</h4>
+                    <div class="form-group">
+                        <label class="form-label">Timeout de sesión (minutos)</label>
+                        <select class="form-control">
+                            <option value="15">15 minutos</option>
+                            <option value="30" selected>30 minutos</option>
+                            <option value="60">1 hora</option>
+                            <option value="120">2 horas</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>Autenticación de dos factores</span>
+                            <label class="config-toggle">
+                                <input type="checkbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Configuración de Performance -->
+                <div style="margin-bottom: 2rem; padding: 1rem; background: var(--hover-bg); border-radius: 8px;">
+                    <h4 style="margin-bottom: 1rem;">Performance</h4>
+                    <div class="form-group">
+                        <label class="form-label">Actualización de datos</label>
+                        <select class="form-control">
+                            <option value="realtime">Tiempo real</option>
+                            <option value="30s" selected>Cada 30 segundos</option>
+                            <option value="1m">Cada minuto</option>
+                            <option value="5m">Cada 5 minutos</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>Caché de datos</span>
+                            <label class="config-toggle">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </label>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary" onclick="resetToDefaults()">Restaurar Valores por Defecto</button>
+                    <button type="button" class="btn btn-primary" onclick="saveConfig()">Guardar Configuración</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notificationContainer"></div>
+
+    <!-- Modales específicos -->
+    
+    <!-- Modal de QR Scanner -->
+    <div id="qrScannerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Escanear Código QR</h2>
+                <button class="modal-close" onclick="closeModal('qrScannerModal')">&times;</button>
+            </div>
+            <div style="text-align: center; padding: 2rem;">
+                <div style="width: 200px; height: 200px; border: 2px dashed var(--border-color); border-radius: 8px; margin: 0 auto; display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">
+                    📱 Cámara QR Scanner
+                </div>
+                <p style="margin-top: 1rem;">Simula escaneo de código QR del equipo</p>
+                <div class="progress-container show">
+                    <div class="progress-bar-action">
+                        <div class="progress-fill" id="qrProgress"></div>
+                    </div>
+                    <p style="margin: 0; font-size: 0.875rem;">Procesando equipo...</p>
+                </div>
+                <button class="btn btn-primary" onclick="simulateQRScan()" style="margin-top: 1rem;">Simular Escaneo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de GPS Tracker -->
+    <div id="gpsTrackerModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Seguimiento GPS en Tiempo Real</h2>
+                <button class="modal-close" onclick="closeModal('gpsTrackerModal')">&times;</button>
+            </div>
+            <div style="padding: 1rem;">
+                <div style="background: var(--hover-bg); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                    <h4>Equipos en Campo</h4>
+                    <div id="gpsEquipmentList">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                            <div style="text-align: center; padding: 1rem; background: white; border-radius: 6px;">
+                                <div style="width: 12px; height: 12px; background: #22c55e; border-radius: 50%; margin: 0 auto;"></div>
+                                <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem;">Excavadora #001</p>
+                                <p style="margin: 0; font-size: 0.75rem; color: var(--text-secondary);">Online</p>
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: white; border-radius: 6px;">
+                                <div style="width: 12px; height: 12px; background: #f59e0b; border-radius: 50%; margin: 0 auto;"></div>
+                                <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem;">Grúa #002</p>
+                                <p style="margin: 0; font-size: 0.75rem; color: var(--text-secondary);">Idle</p>
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: white; border-radius: 6px;">
+                                <div style="width: 12px; height: 12px; background: #22c55e; border-radius: 50%; margin: 0 auto;"></div>
+                                <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem;">Bulldozer #003</p>
+                                <p style="margin: 0; font-size: 0.75rem; color: var(--text-secondary);">Online</p>
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: white; border-radius: 6px;">
+                                <div style="width: 12px; height: 12px; background: #ef4444; border-radius: 50%; margin: 0 auto;"></div>
+                                <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem;">Camión #004</p>
+                                <p style="margin: 0; font-size: 0.75rem; color: var(--text-secondary);">Offline</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="text-align: center; padding: 2rem; border: 1px solid var(--border-color); border-radius: 8px;">
+                    🗺️ Mapa GPS Interactivo
+                    <p style="margin-top: 1rem;">Vista de ubicaciones en tiempo real</p>
+                    <button class="btn btn-primary" onclick="showNotification('GPS actualizado correctamente', 'success')">Actualizar Ubicaciones</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Check-in/out -->
+    <div id="checkinModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Check-in/Check-out Digital</h2>
+                <button class="modal-close" onclick="closeModal('checkinModal')">&times;</button>
+            </div>
+            <form onsubmit="processCheckIn(); return false;">
+                <div class="form-group">
+                    <label class="form-label">Código de Equipo</label>
+                    <input type="text" class="form-control" id="equipmentCode" placeholder="Escanear QR o ingresar código" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tipo de Operación</label>
+                    <select class="form-control" required>
+                        <option value="">Seleccionar operación</option>
+                        <option value="checkout">Check-out (Retirar equipo)</option>
+                        <option value="checkin">Check-in (Devolver equipo)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ubicación GPS</label>
+                    <button type="button" class="btn btn-secondary" onclick="getCurrentLocation()" style="width: 100%;">
+                        Obtener Ubicación Actual
+                    </button>
+                    <p style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);" id="locationDisplay">Ubicación no obtenida</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Condición del Equipo</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="radio" name="condition" value="excellent" required> Excelente
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="radio" name="condition" value="good" required> Buena
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="radio" name="condition" value="fair" required> Regular
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="radio" name="condition" value="poor" required> Mala
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="radio" name="condition" value="damaged" required> Dañada
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="radio" name="condition" value="maintenance" required> Mantenimiento
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Comentarios</label>
+                    <textarea class="form-control" rows="3" placeholder="Observaciones adicionales..."></textarea>
+                </div>
+                <div class="progress-container" id="checkinProgress">
+                    <div class="progress-bar-action">
+                        <div class="progress-fill" id="checkinProgressFill"></div>
+                    </div>
+                    <p style="margin: 0; font-size: 0.875rem;">Procesando check-in...</p>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('checkinModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Procesar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // ================================================================
-        // VARIABLES GLOBALES
+        // VARIABLES GLOBALES Y CONFIGURACIÓN
         // ================================================================
         
         let currentRole = 'ALMACEN';
         let currentCompany = null;
         let isDebugMode = false;
+        let notifications = [];
+        let currentTheme = 'light';
+
+        // Configuración de Supabase (simulada para demo)
+        const SUPABASE_URL = 'https://lmmlhncwdwjgtkdqaycv.supabase.co';
+        const SUPABASE_KEY = 'demo-key-for-testing';
 
         // ================================================================
-        // FUNCIONES DE UTILIDAD (DEFINIDAS PRIMERO)
+        // FUNCIONES DE UTILIDAD
         // ================================================================
 
         function log(message) {
@@ -694,7 +1224,6 @@
                     div.textContent = `[${time}] ${message}`;
                     debugElement.appendChild(div);
                     
-                    // Mantener solo las últimas 8 líneas
                     while (debugElement.children.length > 8) {
                         debugElement.removeChild(debugElement.firstChild);
                     }
@@ -718,7 +1247,36 @@
         }
 
         // ================================================================
-        // CONFIGURACIÓN DE ROLES Y CONTENIDO
+        // SISTEMA DE NOTIFICACIONES
+        // ================================================================
+
+        function showNotification(message, type = 'success', duration = 3000) {
+            const container = document.getElementById('notificationContainer');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div style="font-weight: 600;">${type === 'success' ? '✓' : type === 'error' ? '✗' : '⚠'}</div>
+                    <div>${message}</div>
+                    <button onclick="this.parentElement.parentElement.remove()" style="margin-left: auto; background: none; border: none; cursor: pointer; font-size: 1.2rem;">×</button>
+                </div>
+            `;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => notification.classList.add('show'), 100);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, duration);
+            
+            log(`Notification: ${type.toUpperCase()} - ${message}`);
+        }
+
+        // ================================================================
+        // CONFIGURACIÓN DE ROLES EXPANDIDA
         // ================================================================
 
         const ROLES_CONFIG = {
@@ -726,26 +1284,30 @@
                 title: 'Panel de Administración',
                 subtitle: 'Control total de la empresa y configuraciones del sistema',
                 widgets: [
-                    { icon: '👥', title: 'Total Users', number: '0', label: 'Active team members' },
-                    { icon: '💰', title: 'Monthly Revenue', number: '$0', label: 'Current billing cycle' },
-                    { icon: '⚙️', title: 'System Health', number: '0%', label: 'All systems operational' },
-                    { icon: '📋', title: 'Plan Status', number: 'Free', label: 'Current plan active' }
+                    { icon: '👥', title: 'Total Users', number: '0', label: 'Active team members', trend: 'neutral' },
+                    { icon: '💰', title: 'Monthly Revenue', number: '$0', label: 'Current billing cycle', trend: 'neutral' },
+                    { icon: '⚙️', title: 'System Health', number: '0%', label: 'All systems operational', trend: 'neutral' },
+                    { icon: '📋', title: 'Plan Status', number: 'Free', label: 'Current plan active', trend: 'neutral' },
+                    { icon: '🔒', title: 'Security Score', number: '0/100', label: 'Security compliance', trend: 'neutral' },
+                    { icon: '📊', title: 'API Calls', number: '0', label: 'This month usage', trend: 'neutral' }
                 ],
                 tabs: [
                     { id: 'admin-users', label: 'Usuarios', icon: '👥' },
-                    { id: 'admin-companies', label: 'Empresas', icon: '🏢' },
+                    { id: 'admin-companies', label: 'Configuración', icon: '🏢' },
                     { id: 'admin-billing', label: 'Facturación', icon: '💳' },
-                    { id: 'admin-settings', label: 'Configuración', icon: '⚙️' }
+                    { id: 'admin-security', label: 'Seguridad', icon: '🔒' }
                 ]
             },
             ALMACEN: {
                 title: 'Gestión de Equipos y Logística',
                 subtitle: 'Control integral de inventario, distribución y ciclo de vida de equipos',
                 widgets: [
-                    { icon: '📦', title: 'Inventario Total', number: '0', label: 'Equipos gestionados' },
-                    { icon: '🚛', title: 'En Campo', number: '0', label: 'Equipos desplegados' },
-                    { icon: '🔄', title: 'Operaciones Hoy', number: '0', label: 'Check-in/out realizados' },
-                    { icon: '🔧', title: 'Mantenimiento', number: '0', label: 'Equipos programados' }
+                    { icon: '📦', title: 'Inventario Total', number: '0', label: 'Equipos gestionados', trend: 'neutral' },
+                    { icon: '🚛', title: 'En Campo', number: '0', label: 'Equipos desplegados', trend: 'neutral' },
+                    { icon: '🔄', title: 'Operaciones Hoy', number: '0', label: 'Check-in/out realizados', trend: 'neutral' },
+                    { icon: '🔧', title: 'Mantenimiento', number: '0', label: 'Equipos programados', trend: 'neutral' },
+                    { icon: '⚡', title: 'Eficiencia', number: '0%', label: 'Utilización promedio', trend: 'neutral' },
+                    { icon: '📍', title: 'GPS Activos', number: '0', label: 'Equipos con seguimiento', trend: 'neutral' }
                 ],
                 tabs: [
                     { id: 'inventory', label: 'Inventario', icon: '📦' },
@@ -758,218 +1320,228 @@
                 title: 'Panel Operativo',
                 subtitle: 'Check-in/out y gestión de campo',
                 widgets: [
-                    { icon: '🎯', title: 'Mis Equipos', number: '0', label: 'Actualmente asignados' },
-                    { icon: '⚡', title: 'Acciones Rápidas', number: '0', label: 'Check-outs pendientes' },
-                    { icon: '🚨', title: 'Incidencias', number: '0', label: 'Requieren atención' },
-                    { icon: '📅', title: 'Cronograma Hoy', number: '0', label: 'Tareas programadas' }
+                    { icon: '🎯', title: 'Mis Equipos', number: '0', label: 'Actualmente asignados', trend: 'neutral' },
+                    { icon: '⚡', title: 'Acciones Rápidas', number: '0', label: 'Check-outs pendientes', trend: 'neutral' },
+                    { icon: '🚨', title: 'Incidencias', number: '0', label: 'Requieren atención', trend: 'neutral' },
+                    { icon: '📅', title: 'Cronograma Hoy', number: '0', label: 'Tareas programadas', trend: 'neutral' },
+                    { icon: '⏱️', title: 'Horas Trabajadas', number: '0h', label: 'Hoy registradas', trend: 'neutral' },
+                    { icon: '📱', title: 'Check-ins Móvil', number: '0', label: 'Realizados con app', trend: 'neutral' }
                 ],
                 tabs: [
                     { id: 'my-equipment', label: 'Mis Equipos', icon: '🎯' },
                     { id: 'checkout', label: 'Check-in/out', icon: '⚡' },
                     { id: 'incidents', label: 'Incidencias', icon: '🚨' },
-                    { id: 'schedule', label: 'Horario', icon: '📅' }
+                    { id: 'timesheet', label: 'Timesheet', icon: '📅' }
                 ]
             },
             ESTIMADOR: {
                 title: 'Mesa de Estimaciones',
                 subtitle: 'Cotizaciones, proyectos y análisis de costos',
                 widgets: [
-                    { icon: '🏗️', title: 'Proyectos Activos', number: '0', label: 'En progreso' },
-                    { icon: '📊', title: 'Cotizaciones', number: '0', label: 'Esperando aprobación' },
-                    { icon: '💵', title: 'Análisis de Costos', number: '$0', label: 'Costo mensual equipos' },
-                    { icon: '📈', title: 'Margen', number: '0%', label: 'Trimestre actual' }
+                    { icon: '🏗️', title: 'Proyectos Activos', number: '0', label: 'En progreso', trend: 'neutral' },
+                    { icon: '📊', title: 'Cotizaciones', number: '0', label: 'Esperando aprobación', trend: 'neutral' },
+                    { icon: '💵', title: 'Análisis de Costos', number: '$0', label: 'Costo mensual equipos', trend: 'neutral' },
+                    { icon: '📈', title: 'Margen', number: '0%', label: 'Trimestre actual', trend: 'neutral' },
+                    { icon: '🎯', title: 'Tasa Conversión', number: '0%', label: 'Cotizaciones ganadas', trend: 'neutral' },
+                    { icon: '🤖', title: 'IA Predictions', number: '0', label: 'Análisis generados', trend: 'neutral' }
                 ],
                 tabs: [
                     { id: 'projects', label: 'Proyectos', icon: '🏗️' },
                     { id: 'quotes', label: 'Cotizaciones', icon: '📊' },
-                    { id: 'costs', label: 'Costos', icon: '💵' },
-                    { id: 'calculator', label: 'Calculadora', icon: '🧮' }
+                    { id: 'costs', label: 'Análisis Costos', icon: '💵' },
+                    { id: 'ai-tools', label: 'Herramientas IA', icon: '🤖' }
                 ]
             },
             SUPERVISOR: {
                 title: 'Control de Campo',
                 subtitle: 'Supervisión de equipos y productividad',
                 widgets: [
-                    { icon: '🚛', title: 'Equipos en Campo', number: '0', label: 'En sitios activos' },
-                    { icon: '⭐', title: 'Eficiencia del Equipo', number: '0%', label: 'Promedio semanal' },
-                    { icon: '🎯', title: 'Sitios Supervisados', number: '0', label: 'Ubicaciones activas' },
-                    { icon: '🔔', title: 'Alertas de Campo', number: '0', label: 'Requieren respuesta' }
+                    { icon: '🚛', title: 'Equipos en Campo', number: '0', label: 'En sitios activos', trend: 'neutral' },
+                    { icon: '⭐', title: 'Eficiencia del Equipo', number: '0%', label: 'Promedio semanal', trend: 'neutral' },
+                    { icon: '🎯', title: 'Sitios Supervisados', number: '0', label: 'Ubicaciones activas', trend: 'neutral' },
+                    { icon: '🔔', title: 'Alertas de Campo', number: '0', label: 'Requieren respuesta', trend: 'neutral' },
+                    { icon: '📡', title: 'IoT Sensores', number: '0', label: 'Dispositivos conectados', trend: 'neutral' },
+                    { icon: '💬', title: 'Comunicaciones', number: '0', label: 'Mensajes del equipo', trend: 'neutral' }
                 ],
                 tabs: [
                     { id: 'field', label: 'Campo', icon: '🚛' },
                     { id: 'team', label: 'Equipo', icon: '👥' },
-                    { id: 'productivity', label: 'Productividad', icon: '📈' },
-                    { id: 'assignments', label: 'Asignaciones', icon: '🎯' }
+                    { id: 'iot-monitoring', label: 'IoT Monitor', icon: '📡' },
+                    { id: 'communications', label: 'Comunicaciones', icon: '💬' }
                 ]
             }
         };
 
         const TAB_CONTENT = {
-            // ADMIN tabs
+            // ADMIN tabs expandidas
             'admin-users': {
-                title: 'Gestión de Usuarios',
-                description: 'Administrar usuarios del sistema y asignar roles',
+                title: 'Gestión Avanzada de Usuarios',
+                description: 'Administrar usuarios con control de permisos granular y analytics de actividad',
                 content: [
-                    { title: 'Usuarios Activos', desc: '0 usuarios registrados en el sistema' },
-                    { title: 'Roles y Permisos', desc: 'Configurar niveles de acceso por rol' },
-                    { title: 'Invitaciones Pendientes', desc: '0 invitaciones enviadas' },
-                    { title: 'Últimas Conexiones', desc: 'Monitoreo de actividad de usuarios' }
+                    { title: 'Usuarios Activos', desc: '0 usuarios registrados con roles específicos' },
+                    { title: 'Control de Permisos', desc: 'Matriz de permisos por rol y funcionalidad' },
+                    { title: 'Invitaciones Pendientes', desc: '0 invitaciones enviadas y tracking' },
+                    { title: 'Analytics de Actividad', desc: 'Monitoreo de uso y patrones de acceso' },
+                    { title: 'Sesiones Activas', desc: 'Control de sesiones concurrentes por usuario' },
+                    { title: 'Auditoría de Seguridad', desc: 'Logs de intentos de acceso y cambios' }
                 ],
-                actions: ['Nuevo Usuario', 'Gestionar Roles', 'Exportar Lista', 'Configurar Permisos']
+                actions: ['Nuevo Usuario', 'Matriz Permisos', 'Exportar Audit', 'Dashboard Analytics', 'Configurar 2FA', 'Bulk Operations']
             },
             'admin-companies': {
-                title: 'Configuración Empresarial',
-                description: 'Administrar configuración de la empresa y módulos',
+                title: 'Configuración Empresarial Avanzada',
+                description: 'Centro de control para configuración completa de la empresa',
                 content: [
-                    { title: 'Información General', desc: 'Datos corporativos y contacto' },
-                    { title: 'Módulos Activos', desc: 'Warehouse, HR, TimeSync, Finance' },
-                    { title: 'Políticas y Reglas', desc: 'Configuraciones específicas del negocio' },
-                    { title: 'Integraciones', desc: 'APIs y sistemas externos conectados' }
+                    { title: 'Información Corporativa', desc: 'Datos legales, contactos y certificaciones' },
+                    { title: 'Módulos y Funcionalidades', desc: 'Activar/desactivar características por plan' },
+                    { title: 'Políticas de Negocio', desc: 'Reglas automáticas y flujos de aprobación' },
+                    { title: 'Integraciones API', desc: 'Conexiones con sistemas ERP y externos' },
+                    { title: 'Branding Corporativo', desc: 'Logos, colores y personalización visual' },
+                    { title: 'Compliance y Normas', desc: 'Configuración de cumplimiento regulatorio' }
                 ],
-                actions: ['Editar Empresa', 'Activar Módulos', 'Configurar Políticas', 'Ver Integraciones']
+                actions: ['Editar Empresa', 'Configurar Módulos', 'Políticas Custom', 'Test APIs', 'Upload Branding', 'Compliance Check']
             },
 
-            // ALMACEN tabs expandidas
+            // ALMACEN tabs súper expandidas
             'inventory': {
-                title: 'Control de Inventario Avanzado',
-                description: 'Gestión completa del inventario con códigos QR y geolocalización',
+                title: 'Control de Inventario Inteligente',
+                description: 'Sistema avanzado con IA, IoT y códigos QR para gestión total de equipos',
                 content: [
-                    { title: 'Equipos Disponibles', desc: '0 equipos listos para préstamo con códigos QR' },
-                    { title: 'Equipos en Campo', desc: '0 equipos con seguimiento GPS en tiempo real' },
-                    { title: 'Alertas de Stock', desc: '0 equipos necesitan reabastecimiento automático' },
-                    { title: 'Mantenimiento Predictivo', desc: 'IA predice necesidades de mantenimiento' },
-                    { title: 'Análisis de Calidad', desc: 'Métricas de performance y durabilidad' },
-                    { title: 'Warehouse Analytics', desc: 'Optimización de espacios y rutas internas' }
+                    { title: 'Equipos con QR/RFID', desc: '0 equipos con identificación digital única' },
+                    { title: 'Seguimiento GPS/IoT', desc: '0 equipos con telemetría en tiempo real' },
+                    { title: 'Alertas Predictivas', desc: 'IA predice necesidades de restock automáticamente' },
+                    { title: 'Mantenimiento Predictivo', desc: 'Algoritmos ML predicen fallas antes de ocurrir' },
+                    { title: 'Optimización de Layout', desc: 'IA optimiza ubicaciones en warehouse' },
+                    { title: 'Analytics Avanzados', desc: 'ROI, utilización, depreciación por equipo' }
                 ],
-                actions: ['Agregar Equipo', 'Escanear QR', 'Ver Mapa GPS', 'Generar Alertas', 'Análisis IA', 'Optimizar Layout']
+                actions: ['Escanear QR', 'Ver Mapa GPS', 'IA Predictions', 'Optimize Layout', 'Generate Analytics', 'Bulk Import']
             },
             'distribution': {
-                title: 'Centro de Distribución Inteligente',
-                description: 'Control de entregas con optimización de rutas y seguimiento en tiempo real',
+                title: 'Distribución y Logística 4.0',
+                description: 'Sistema inteligente de distribución con optimización de rutas y seguimiento total',
                 content: [
-                    { title: 'Entregas Programadas', desc: '0 entregas con rutas optimizadas por IA' },
-                    { title: 'Retornos Esperados', desc: '0 equipos con cronograma automático' },
-                    { title: 'Rutas Optimizadas', desc: 'Algoritmo reduce tiempo y costos de transporte' },
-                    { title: 'Conductores y Vehículos', desc: 'Gestión de flota y asignación inteligente' },
-                    { title: 'Confirmaciones Digitales', desc: 'Firmas electrónicas y fotos de entrega' },
-                    { title: 'Análisis de Performance', desc: 'KPIs de entrega y satisfacción del cliente' }
+                    { title: 'Rutas Optimizadas por IA', desc: '0 rutas con algoritmos de optimización avanzados' },
+                    { title: 'Seguimiento en Tiempo Real', desc: 'GPS tracking de vehículos y equipos en tránsito' },
+                    { title: 'Confirmaciones Digitales', desc: 'Firmas electrónicas, fotos y validaciones GPS' },
+                    { title: 'Gestión de Flota', desc: 'Control de vehículos, conductores y mantenimiento' },
+                    { title: 'Predicción de Demanda', desc: 'IA predice necesidades de distribución futuras' },
+                    { title: 'Analytics de Performance', desc: 'KPIs de entrega, satisfacción y costos' }
                 ],
-                actions: ['Planificar Ruta', 'Asignar Conductor', 'Seguimiento Live', 'Confirmar Entrega', 'Generar POD', 'Ver Analytics']
+                actions: ['Planificar Rutas IA', 'Seguimiento Live', 'Firmas Digitales', 'Fleet Management', 'Demand Forecast', 'Performance Analytics']
             },
             'maintenance': {
-                title: 'Mantenimiento Predictivo e Inteligente',
-                description: 'Sistema avanzado de mantenimiento con IA y análisis predictivo',
+                title: 'Mantenimiento Predictivo Avanzado',
+                description: 'Sistema basado en IA para mantenimiento proactivo y gestión de costos',
                 content: [
-                    { title: 'Mantenimiento Predictivo', desc: 'IA predice fallas antes de que ocurran' },
-                    { title: 'Cronograma Automático', desc: '0 equipos programados según algoritmos' },
-                    { title: 'Historial Completo', desc: 'Registro detallado por equipo con códigos QR' },
-                    { title: 'Alertas Inteligentes', desc: 'Notificaciones proactivas por condición' },
-                    { title: 'Proveedores de Servicio', desc: 'Red de técnicos certificados por zona' },
-                    { title: 'Análisis de Costos', desc: 'ROI del mantenimiento preventivo vs correctivo' }
+                    { title: 'Predicciones de Fallas', desc: 'IA analiza patrones y predice averías futuras' },
+                    { title: 'Cronogramas Inteligentes', desc: 'Optimización automática de calendarios de mantenimiento' },
+                    { title: 'Red de Proveedores', desc: 'Marketplace de técnicos certificados por zona' },
+                    { title: 'Análisis de Costos', desc: 'ROI del mantenimiento preventivo vs correctivo' },
+                    { title: 'Historial Completo', desc: 'Blockchain de mantenimientos por equipo' },
+                    { title: 'Alertas Proactivas', desc: 'Notificaciones multi-canal por condiciones críticas' }
                 ],
-                actions: ['Programar IA', 'Crear Orden', 'Asignar Técnico', 'Verificar Estado', 'Generar Reporte', 'Optimizar Costos']
+                actions: ['AI Predictions', 'Schedule Optimization', 'Find Technicians', 'Cost Analysis', 'Blockchain History', 'Alert Config']
             },
             'reports': {
-                title: 'Reportes y Analytics Avanzados',
-                description: 'Business Intelligence específico para operaciones de construcción',
+                title: 'Business Intelligence y Analytics',
+                description: 'Reportes avanzados con IA y predicciones para toma de decisiones',
                 content: [
-                    { title: 'Dashboard Ejecutivo', desc: 'KPIs en tiempo real para directivos' },
-                    { title: 'Análisis de Rentabilidad', desc: 'ROI por equipo, proyecto y período' },
-                    { title: 'Productividad de Equipos', desc: 'Utilización, tiempo muerto, eficiencia' },
-                    { title: 'Predicciones de Demanda', desc: 'IA predice necesidades futuras de equipos' },
-                    { title: 'Benchmarking', desc: 'Comparativas con estándares de la industria' },
-                    { title: 'Reportes Regulatorios', desc: 'Cumplimiento automático de normativas' }
+                    { title: 'Dashboard Ejecutivo', desc: 'KPIs en tiempo real con drill-down interactivo' },
+                    { title: 'Análisis Predictivo', desc: 'IA predice tendencias y oportunidades de negocio' },
+                    { title: 'Benchmarking Industrial', desc: 'Comparativas con estándares de la industria' },
+                    { title: 'Reportes Regulatorios', desc: 'Cumplimiento automático con normativas locales' },
+                    { title: 'Custom Dashboards', desc: 'Dashboards personalizados por rol y KPI' },
+                    { title: 'Export Automation', desc: 'Reportes automáticos por email/API' }
                 ],
-                actions: ['Dashboard Live', 'Análisis ROI', 'Predicciones IA', 'Export PDF', 'Configurar Alertas', 'Benchmark']
+                actions: ['Executive Dashboard', 'AI Predictions', 'Industry Benchmark', 'Regulatory Reports', 'Custom Builder', 'Auto Export']
             },
 
             // OPERATIVO tabs expandidas
             'my-equipment': {
-                title: 'Mis Equipos con Seguimiento GPS',
-                description: 'Gestión personal de equipos asignados con tecnología móvil',
+                title: 'Mis Equipos con Tecnología Móvil',
+                description: 'Gestión personal de equipos con app móvil, GPS y realidad aumentada',
                 content: [
-                    { title: 'Equipos Asignados', desc: '0 equipos bajo mi responsabilidad con GPS' },
-                    { title: 'Estado en Tiempo Real', desc: 'Ubicación, condición y uso actual' },
-                    { title: 'Próximas Entregas', desc: '0 equipos programados para entrega' },
-                    { title: 'Check-in/out Móvil', desc: 'App móvil con códigos QR y GPS' },
-                    { title: 'Reportes de Campo', desc: 'Fotos, incidencias y estado desde móvil' },
-                    { title: 'Timesheet Automático', desc: 'Registro automático de horas trabajadas' }
+                    { title: 'Equipos Asignados GPS', desc: '0 equipos bajo responsabilidad con ubicación real' },
+                    { title: 'App Móvil Avanzada', desc: 'Check-in/out con QR, GPS y fotos automáticas' },
+                    { title: 'Realidad Aumentada', desc: 'AR para identificación y instrucciones de uso' },
+                    { title: 'Timesheet Automático', desc: 'Registro de horas basado en geolocalización' },
+                    { title: 'Comunicación Directa', desc: 'Chat y video con supervisores y almacén' },
+                    { title: 'Gamificación', desc: 'Sistema de puntos y logros por performance' }
                 ],
-                actions: ['Ver en Mapa', 'Escanear QR', 'Check-out', 'Reportar Estado', 'Subir Fotos', 'Ver Timesheet']
+                actions: ['Open Mobile App', 'AR Scanner', 'GPS Check-in', 'Auto Timesheet', 'Team Chat', 'My Achievements']
             },
             'checkout': {
-                title: 'Sistema de Check-in/out Avanzado',
-                description: 'Proceso digital completo con validaciones y confirmaciones',
+                title: 'Check-in/out Digital Avanzado',
+                description: 'Proceso completamente digital con validaciones múltiples y trazabilidad total',
                 content: [
-                    { title: 'Check-out Rápido', desc: '0 equipos listos con validación automática' },
-                    { title: 'Validaciones GPS', desc: 'Confirmación de ubicación en check-in/out' },
-                    { title: 'Firmas Digitales', desc: 'Confirmación legal de responsabilidad' },
-                    { title: 'Fotos de Condición', desc: 'Registro visual antes y después del uso' },
-                    { title: 'Historial Completo', desc: 'Trazabilidad total de movimientos' },
-                    { title: 'Alertas de Vencimiento', desc: 'Notificaciones automáticas de devolución' }
+                    { title: 'Proceso Digital Completo', desc: 'QR + GPS + Firmas + Fotos en un solo flujo' },
+                    { title: 'Validaciones Automáticas', desc: 'IA valida condiciones y autoriza operaciones' },
+                    { title: 'Blockchain de Custody', desc: 'Cadena de custodia inmutable por equipo' },
+                    { title: 'Inspecciones Guiadas', desc: 'AR guide para inspecciones pre/post uso' },
+                    { title: 'Alertas Inteligentes', desc: 'Notificaciones proactivas por vencimientos' },
+                    { title: 'Analytics de Uso', desc: 'Patrones de uso y optimización de asignaciones' }
                 ],
-                actions: ['Check-out GPS', 'Firmar Digital', 'Tomar Fotos', 'Confirmar Estado', 'Ver Historial', 'Alertas Push']
+                actions: ['Digital Check-out', 'AI Validation', 'Blockchain Verify', 'AR Inspection', 'Smart Alerts', 'Usage Analytics']
             },
 
             // ESTIMADOR tabs expandidas
             'projects': {
-                title: 'Gestión Inteligente de Proyectos',
-                description: 'Planificación de proyectos con IA y análisis predictivo de costos',
+                title: 'Gestión de Proyectos con IA',
+                description: 'Planificación inteligente de proyectos con machine learning y análisis predictivo',
                 content: [
-                    { title: 'Proyectos Activos', desc: '0 proyectos con timeline inteligente' },
-                    { title: 'Planificación con IA', desc: 'Algoritmos optimizan recursos y cronogramas' },
-                    { title: 'Base de Datos Histórica', desc: 'Costos y tiempos de proyectos similares' },
-                    { title: 'Análisis de Riesgos', desc: 'IA identifica posibles desviaciones' },
-                    { title: 'Colaboración en Tiempo Real', desc: 'Equipos multidisciplinarios conectados' },
-                    { title: 'Control de Cambios', desc: 'Gestión de modificaciones y su impacto' }
+                    { title: 'Planificación con IA', desc: '0 proyectos con timeline optimizado por algoritmos' },
+                    { title: 'Análisis de Riesgos', desc: 'ML identifica riesgos potenciales automáticamente' },
+                    { title: 'Base de Datos Histórica', desc: 'Patrones de proyectos similares para estimación' },
+                    { title: 'Colaboración en Tiempo Real', desc: 'Workspace compartido para equipos multidisciplinarios' },
+                    { title: 'Simulaciones de Escenarios', desc: 'What-if analysis con diferentes variables' },
+                    { title: 'Control de Cambios IA', desc: 'Impact analysis automático de modificaciones' }
                 ],
-                actions: ['Nuevo Proyecto', 'Planificar IA', 'Análisis Riesgo', 'Colaborar', 'Control Cambios', 'Timeline']
+                actions: ['AI Planning', 'Risk Analysis', 'Historical Data', 'Real-time Collab', 'Scenario Simulation', 'Change Impact']
             },
             'quotes': {
-                title: 'Generador de Cotizaciones Inteligente',
-                description: 'Sistema automatizado de cotizaciones con precios dinámicos',
+                title: 'Cotizador Inteligente con Pricing Dinámico',
+                description: 'Sistema automatizado de cotizaciones con IA para pricing competitivo',
                 content: [
-                    { title: 'Cotizaciones Activas', desc: '0 propuestas con pricing inteligente' },
-                    { title: 'Precios Dinámicos', desc: 'Algoritmos ajustan precios según mercado' },
-                    { title: 'Templates Avanzados', desc: 'Plantillas personalizables por tipo de proyecto' },
-                    { title: 'Análisis de Competencia', desc: 'IA compara con precios del mercado' },
-                    { title: 'Generación Automática', desc: 'PDFs profesionales con un click' },
-                    { title: 'Seguimiento de Conversión', desc: 'Analytics de propuestas ganadoras' }
+                    { title: 'Pricing Dinámico', desc: 'IA ajusta precios según mercado y competencia' },
+                    { title: 'Templates Inteligentes', desc: 'Plantillas que se adaptan según tipo de proyecto' },
+                    { title: 'Análisis de Competencia', desc: 'ML compara precios con market intelligence' },
+                    { title: 'Generación Automática', desc: 'PDFs profesionales generados por IA' },
+                    { title: 'Predicción de Cierre', desc: 'IA predice probabilidad de conversión' },
+                    { title: 'A/B Testing', desc: 'Testing automático de diferentes approaches' }
                 ],
-                actions: ['Nueva Cotización', 'Pricing IA', 'Templates', 'Análisis Mercado', 'Generar PDF', 'Ver Analytics']
+                actions: ['Dynamic Pricing', 'Smart Templates', 'Competitor Analysis', 'Auto Generate', 'Close Prediction', 'A/B Testing']
             },
 
             // SUPERVISOR tabs expandidas
             'field': {
-                title: 'Supervisión de Campo en Tiempo Real',
-                description: 'Control total de operaciones de campo con tecnología IoT',
+                title: 'Supervisión de Campo IoT',
+                description: 'Control total de operaciones con telemetría, IA y comunicación en tiempo real',
                 content: [
-                    { title: 'Equipos en Campo', desc: '0 equipos con telemetría en tiempo real' },
-                    { title: 'Monitoreo IoT', desc: 'Sensores reportan ubicación y condición' },
-                    { title: 'Geofencing Inteligente', desc: 'Alertas automáticas por zonas restringidas' },
-                    { title: 'Dashboard de Campo', desc: 'Vista unified de todas las operaciones' },
-                    { title: 'Alertas Proactivas', desc: 'IA predice problemas antes de que ocurran' },
-                    { title: 'Comunicación Directa', desc: 'Chat y video llamadas con operarios' }
+                    { title: 'Telemetría IoT', desc: '0 equipos con sensores reportando en tiempo real' },
+                    { title: 'Geofencing Inteligente', desc: 'Zonas virtuales con alertas automáticas' },
+                    { title: 'Predicciones de Performance', desc: 'IA predice problemas antes de que ocurran' },
+                    { title: 'Dashboard Unificado', desc: 'Vista 360° de todas las operaciones de campo' },
+                    { title: 'Comunicación Directa', desc: 'Chat, video y alertas push con operarios' },
+                    { title: 'Análisis de Productividad', desc: 'Métricas en tiempo real de eficiencia' }
                 ],
-                actions: ['Ver Dashboard', 'Configurar Geofence', 'Alertas IA', 'Chat Equipos', 'Inspección Remote', 'Generar Reporte']
+                actions: ['IoT Dashboard', 'Configure Geofence', 'AI Predictions', 'Unified View', 'Team Communications', 'Productivity Analytics']
             },
             'team': {
-                title: 'Gestión Avanzada del Equipo',
-                description: 'Productividad y performance del equipo con analytics avanzados',
+                title: 'Gestión Inteligente del Equipo',
+                description: 'Management de equipos con IA, gamificación y desarrollo profesional',
                 content: [
-                    { title: 'Performance Individual', desc: 'Métricas detalladas por operario' },
-                    { title: 'Asignación Inteligente', desc: 'IA optimiza asignación de tareas' },
-                    { title: 'Capacitación y Certificación', desc: 'Tracking de skills y entrenamientos' },
-                    { title: 'Evaluaciones 360°', desc: 'Feedback multidireccional del equipo' },
-                    { title: 'Incentivos y Reconocimientos', desc: 'Sistema gamificado de recompensas' },
-                    { title: 'Análisis Predictivo', desc: 'Predicción de rotación y satisfacción' }
+                    { title: 'Performance Individual', desc: 'Métricas detalladas con IA por cada operario' },
+                    { title: 'Asignación Inteligente', desc: 'IA optimiza asignaciones según skills y carga' },
+                    { title: 'Desarrollo y Certificación', desc: 'Tracking de capacitaciones y certificaciones' },
+                    { title: 'Evaluaciones 360°', desc: 'Feedback multidireccional automatizado' },
+                    { title: 'Gamificación Avanzada', desc: 'Sistema de logros, rankings y recompensas' },
+                    { title: 'Predicción de Retención', desc: 'IA predice riesgo de rotación temprana' }
                 ],
-                actions: ['Ver Performance', 'Asignar IA', 'Planificar Training', 'Evaluación 360', 'Sistema Incentivos', 'Predictive Analytics']
+                actions: ['Performance Analytics', 'AI Assignment', 'Training Plans', '360 Feedback', 'Gamification Hub', 'Retention Analysis']
             }
         };
 
         // ================================================================
-        // FUNCIONES DE INTERFAZ
+        // FUNCIONES DE INTERFAZ EXPANDIDAS
         // ================================================================
 
         function updateWidgets(role) {
@@ -983,28 +1555,46 @@
                 const card = document.createElement('div');
                 card.className = 'stat-card';
                 
-                // Determinar clase del icono según el índice
                 let iconClass = '';
                 switch(index) {
                     case 0: iconClass = 'companies'; break;
                     case 1: iconClass = 'users'; break;
                     case 2: iconClass = 'revenue'; break;
                     case 3: iconClass = 'activity'; break;
+                    case 4: iconClass = 'maintenance'; break;
+                    case 5: iconClass = 'efficiency'; break;
                 }
+                
+                const trendClass = widget.trend || 'neutral';
+                const trendIcon = trendClass === 'up' ? '↗ +0%' : trendClass === 'down' ? '↘ -0%' : '→ 0%';
                 
                 card.innerHTML = `
                     <div class="stat-header">
                         <div class="stat-icon ${iconClass}">${widget.icon}</div>
-                        <div class="stat-trend up">↗ +0%</div>
+                        <div class="stat-trend ${trendClass}">${trendIcon}</div>
                     </div>
                     <div class="stat-title">${widget.title}</div>
                     <div class="stat-value">${widget.number}</div>
                     <div class="stat-description">${widget.label}</div>
                 `;
+                
+                card.style.setProperty('--stat-color', getColorForIcon(iconClass));
                 statsGrid.appendChild(card);
             });
 
             log(`Widgets updated for role: ${role}`);
+        }
+
+        function getColorForIcon(iconClass) {
+            const colors = {
+                'companies': 'var(--primary-green)',
+                'users': 'var(--info-blue)',
+                'revenue': 'var(--warning-orange)',
+                'activity': 'var(--purple)',
+                'maintenance': '#ef4444',
+                'efficiency': '#06b6d4'
+            };
+            return colors[iconClass] || 'var(--primary-green)';
         }
 
         function createTabs(role) {
@@ -1014,20 +1604,16 @@
             const tabsHeader = document.getElementById('tabsHeader');
             const tabsContent = document.getElementById('tabsContent');
             
-            // Limpiar contenido existente
             tabsHeader.innerHTML = '';
             tabsContent.innerHTML = '';
             
-            // Crear pestañas
             config.tabs.forEach((tab, index) => {
-                // Crear botón de pestaña
                 const tabButton = document.createElement('button');
                 tabButton.className = `tab ${index === 0 ? 'active' : ''}`;
                 tabButton.innerHTML = `${tab.icon} ${tab.label}`;
                 tabButton.onclick = () => switchTab(tab.id, tabButton);
                 tabsHeader.appendChild(tabButton);
                 
-                // Crear contenido de pestaña
                 const tabPane = document.createElement('div');
                 tabPane.className = `tab-pane ${index === 0 ? 'active' : ''}`;
                 tabPane.id = tab.id;
@@ -1039,7 +1625,7 @@
                         <p>${content.description}</p>
                         <div class="content-grid">
                             ${content.content.map(item => `
-                                <div class="content-card">
+                                <div class="content-card" onclick="handleContentCardClick('${item.title}')">
                                     <h4>${item.title}</h4>
                                     <p>${item.desc}</p>
                                 </div>
@@ -1047,7 +1633,7 @@
                         </div>
                         <div class="action-buttons">
                             ${content.actions.map(action => `
-                                <button class="btn btn-primary" onclick="handleAction('${action}')">${action}</button>
+                                <button class="btn btn-primary" onclick="handleAdvancedAction('${action}')">${action}</button>
                             `).join('')}
                         </div>
                     `;
@@ -1055,12 +1641,6 @@
                     tabPane.innerHTML = `
                         <h3>${tab.label}</h3>
                         <p>Contenido de ${tab.label} en desarrollo</p>
-                        <div class="content-grid">
-                            <div class="content-card">
-                                <h4>Funcionalidad próximamente</h4>
-                                <p>Esta sección estará disponible en futuras actualizaciones</p>
-                            </div>
-                        </div>
                     `;
                 }
                 
@@ -1071,11 +1651,9 @@
         }
 
         function switchTab(tabId, clickedButton) {
-            // Actualizar botones de pestañas
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             clickedButton.classList.add('active');
             
-            // Actualizar contenido de pestañas
             document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
             const targetPane = document.getElementById(tabId);
             if (targetPane) {
@@ -1122,20 +1700,230 @@
         }
 
         // ================================================================
+        // FUNCIONES AVANZADAS DE ACCIONES
+        // ================================================================
+
+        function handleAdvancedAction(action) {
+            log(`Advanced action triggered: ${action}`);
+            
+            const actionMap = {
+                'Escanear QR': () => showModal('qrScannerModal'),
+                'Ver Mapa GPS': () => showModal('gpsTrackerModal'),
+                'Digital Check-out': () => showModal('checkinModal'),
+                'AI Predictions': () => simulateAIPredictions(),
+                'IoT Dashboard': () => simulateIoTDashboard(),
+                'Performance Analytics': () => simulateAnalytics()
+            };
+
+            if (actionMap[action]) {
+                actionMap[action]();
+            } else {
+                showNotification(`Ejecutando: ${action}`, 'success');
+            }
+        }
+
+        function handleContentCardClick(cardTitle) {
+            log(`Content card clicked: ${cardTitle}`);
+            showNotification(`Abriendo ${cardTitle}`, 'success');
+        }
+
+        function showModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('show');
+                log(`Modal opened: ${modalId}`);
+            }
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('show');
+                log(`Modal closed: ${modalId}`);
+            }
+        }
+
+        // ================================================================
+        // SIMULACIONES DE FUNCIONALIDADES AVANZADAS
+        // ================================================================
+
+        function simulateQRScan() {
+            const progressBar = document.getElementById('qrProgress');
+            let progress = 0;
+            
+            const interval = setInterval(() => {
+                progress += 20;
+                progressBar.style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        showNotification('Equipo EXC-001 escaneado correctamente', 'success');
+                        closeModal('qrScannerModal');
+                    }, 500);
+                }
+            }, 200);
+        }
+
+        function simulateAIPredictions() {
+            showNotification('Generando predicciones con IA...', 'warning');
+            
+            setTimeout(() => {
+                const predictions = [
+                    'Equipo EXC-001: Mantenimiento recomendado en 5 días',
+                    'Grúa GRU-002: Riesgo de falla en sistema hidráulico (72%)',
+                    'Bulldozer BUL-003: Optimización de ruta puede ahorrar 15% combustible'
+                ];
+                
+                predictions.forEach((prediction, index) => {
+                    setTimeout(() => {
+                        showNotification(prediction, 'success', 5000);
+                    }, index * 1000);
+                });
+            }, 2000);
+        }
+
+        function simulateIoTDashboard() {
+            showNotification('Conectando con sensores IoT...', 'warning');
+            
+            setTimeout(() => {
+                showModal('gpsTrackerModal');
+                showNotification('Dashboard IoT actualizado', 'success');
+            }, 1500);
+        }
+
+        function simulateAnalytics() {
+            showNotification('Generando analytics avanzados...', 'warning');
+            
+            setTimeout(() => {
+                const analytics = [
+                    'Eficiencia promedio del equipo: 87%',
+                    'Tiempo de inactividad reducido: 23%',
+                    'ROI de mantenimiento predictivo: +156%'
+                ];
+                
+                analytics.forEach((analytic, index) => {
+                    setTimeout(() => {
+                        showNotification(analytic, 'success', 4000);
+                    }, index * 800);
+                });
+            }, 2000);
+        }
+
+        function processCheckIn() {
+            const progressContainer = document.getElementById('checkinProgress');
+            const progressFill = document.getElementById('checkinProgressFill');
+            
+            progressContainer.classList.add('show');
+            let progress = 0;
+            
+            const interval = setInterval(() => {
+                progress += 25;
+                progressFill.style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        showNotification('Check-in procesado correctamente', 'success');
+                        closeModal('checkinModal');
+                        progressContainer.classList.remove('show');
+                        progressFill.style.width = '0%';
+                    }, 500);
+                }
+            }, 300);
+        }
+
+        function getCurrentLocation() {
+            const locationDisplay = document.getElementById('locationDisplay');
+            locationDisplay.textContent = 'Obteniendo ubicación...';
+            
+            setTimeout(() => {
+                locationDisplay.textContent = 'Lat: 25.6866, Lng: -100.3161 (Monterrey, MX)';
+                showNotification('Ubicación GPS obtenida', 'success');
+            }, 1500);
+        }
+
+        // ================================================================
+        // FUNCIONES DE TEMA Y CONFIGURACIÓN
+        // ================================================================
+
+        function toggleDarkMode() {
+            const body = document.body;
+            const toggle = document.getElementById('darkModeToggle');
+            const isDark = body.getAttribute('data-theme') === 'dark';
+            
+            if (isDark) {
+                body.setAttribute('data-theme', 'light');
+                toggle.checked = false;
+                localStorage.setItem('opsis-darkMode', 'light');
+                log('Theme switched to light mode');
+                showNotification('Modo claro activado', 'success');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                toggle.checked = true;
+                localStorage.setItem('opsis-darkMode', 'dark');
+                log('Theme switched to dark mode');
+                showNotification('Modo oscuro activado', 'success');
+            }
+        }
+
+        function initDarkMode() {
+            const savedTheme = localStorage.getItem('opsis-darkMode');
+            const toggle = document.getElementById('darkModeToggle');
+            
+            if (savedTheme === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+                if (toggle) toggle.checked = true;
+                currentTheme = 'dark';
+            } else {
+                document.body.setAttribute('data-theme', 'light');
+                if (toggle) toggle.checked = false;
+                currentTheme = 'light';
+            }
+            
+            log(`Theme loaded: ${currentTheme}`);
+        }
+
+        function saveConfig() {
+            const formData = {
+                darkMode: document.getElementById('darkModeToggle').checked,
+                sessionTimeout: document.querySelector('select[onchange*="timeout"]')?.value || '30',
+                dataRefresh: document.querySelector('select[onchange*="refresh"]')?.value || '30s'
+            };
+            
+            localStorage.setItem('opsis-config', JSON.stringify(formData));
+            showNotification('Configuración guardada exitosamente', 'success');
+            closeModal('configModal');
+            log('Configuration saved: ' + JSON.stringify(formData));
+        }
+
+        function resetToDefaults() {
+            if (confirm('¿Estás seguro de que quieres restaurar la configuración por defecto?')) {
+                localStorage.removeItem('opsis-config');
+                localStorage.removeItem('opsis-darkMode');
+                document.body.setAttribute('data-theme', 'light');
+                const toggle = document.getElementById('darkModeToggle');
+                if (toggle) toggle.checked = false;
+                showNotification('Configuración restaurada a valores por defecto', 'success');
+                log('Configuration reset to defaults');
+            }
+        }
+
+        // ================================================================
         // FUNCIONES DE EVENTOS
         // ================================================================
 
         function handleAction(action) {
-            log(`Action triggered: ${action}`);
-            alert(`Acción: ${action}\nEsta funcionalidad estará disponible próximamente.`);
+            handleAdvancedAction(action);
         }
 
         function handleSignOut() {
             log('Sign out clicked');
             if (confirm('¿Estás seguro que deseas cerrar sesión?')) {
+                showNotification('Cerrando sesión...', 'warning');
                 setTimeout(() => {
                     window.location.href = 'login.html';
-                }, 500);
+                }, 1000);
             }
         }
 
@@ -1145,9 +1933,8 @@
 
         function init() {
             try {
-                log('Initializing dashboard');
+                log('Initializing advanced dashboard');
 
-                // Detectar configuraciones
                 isDebugMode = detectDebugMode();
                 currentRole = detectRole();
                 const company = detectCompany();
@@ -1156,28 +1943,30 @@
                 log(`Role detected: ${currentRole}`);
                 log(`Company: ${company}`);
 
-                // Configurar interfaz
+                // Cargar configuraciones guardadas
+                initDarkMode();
+
                 updateHeader(currentRole);
                 updateWidgets(currentRole);
                 createTabs(currentRole);
                 setupDebugControls();
 
-                // Actualizar loading screen
                 const config = ROLES_CONFIG[currentRole];
                 if (config) {
                     document.getElementById('loadingCompanyName').textContent = config.title;
                     document.getElementById('loadingSubtitle').textContent = `Iniciando ${config.subtitle.toLowerCase()}...`;
                 }
 
-                // Ocultar loading screen
                 setTimeout(() => {
                     document.getElementById('loadingScreen').classList.add('hidden');
-                    log('Dashboard initialization completed successfully');
+                    log('Advanced dashboard initialization completed');
+                    showNotification('Dashboard cargado correctamente', 'success');
                 }, 1500);
 
             } catch (error) {
                 log(`Initialization error: ${error.message}`);
                 console.error('Dashboard initialization failed:', error);
+                showNotification('Error al cargar dashboard', 'error');
             }
         }
 
@@ -1187,7 +1976,6 @@
 
         document.addEventListener('DOMContentLoaded', init);
 
-        // Atajos de teclado para debug
         document.addEventListener('keydown', (e) => {
             if (e.ctrlKey && e.key === 'd') {
                 e.preventDefault();
@@ -1201,7 +1989,14 @@
             }
         });
 
-        log('Dashboard script loaded');
+        // Cerrar modales al hacer clic fuera
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('show');
+            }
+        });
+
+        log('Advanced dashboard script loaded');
     </script>
 </body>
 </html>
