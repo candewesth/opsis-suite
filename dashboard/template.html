@@ -9,112 +9,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
-        :root {
-            /* Colores dinámicos que se cargan desde la base de datos */
-            --primary-color: #495057;
-            --secondary-color: #6c757d;
-            --accent-color: #22c55e;
-            --background-color: #f8fafc;
-            --text-color: #1e293b;
-            --card-color: #ffffff;
-            --border-color: #e2e8f0;
-            --hover-color: #f1f5f9;
-        // ================================================================
-        // UTILITY FUNCTIONS
-        // ================================================================
-        function updateDebugInfo(info) {
-            if (!isDebugMode) return;
-            
-            const debugElement = document.getElementById('debugInfo');
-            if (debugElement) {
-                debugElement.classList.add('show');
-                const timestamp = new Date().toLocaleTimeString();
-                debugElement.innerHTML += `<div>[${timestamp}] ${info}</div>`;
-                
-                // Limitar a últimas 10 líneas
-                const lines = debugElement.querySelectorAll('div');
-                if (lines.length > 10) {
-                    lines[0].remove();
-                }
-            }
-        }
-
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            
-            notification.textContent = message;
-            notification.classList.remove('success', 'warning', 'error');
-            notification.classList.add(type);
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-
-        function handleStatClick(type) {
-            const messages = {
-                'equipment': 'Loading equipment inventory dashboard...',
-                'loans': 'Opening active loans management...',
-                'maintenance': 'Loading maintenance scheduler...',
-                'overdue': 'Opening overdue tracking system...',
-                'users': 'Loading user management...',
-                'financial': 'Opening financial dashboard...',
-                'settings': 'Loading system settings...',
-                'subscription': 'Opening subscription management...',
-                'inventory': 'Loading inventory management...',
-                'stock_alerts': 'Checking stock alerts...',
-                'movements': 'Loading movement history...',
-                'my_equipment': 'Loading your assigned equipment...',
-                'quick_checkout': 'Opening quick checkout...',
-                'incidents': 'Loading incident reports...',
-                'schedule': 'Opening your schedule...',
-                'projects': 'Loading project management...',
-                'quotes': 'Opening quote manager...',
-                'costs': 'Loading cost analysis...',
-                'profitability': 'Opening profitability reports...',
-                'field_equipment': 'Loading field equipment tracker...',
-                'team_productivity': 'Opening team productivity dashboard...',
-                'active_projects': 'Loading active project sites...',
-                'alerts': 'Opening field alerts...'
-            };
-            
-            showNotification(messages[type] || 'Loading...', 'success');
-            updateDebugInfo(`Stat clicked: ${type}`);
-            
-            setTimeout(() => {
-                window.location.href = 'https://candewesth.github.io/opsis-suite/built.html';
-            }, 1000);
-        }
-
-        function handleActionClick(action) {
-            const messages = {
-                'manage_users': 'Opening user management...',
-                'company_settings': 'Loading company settings...',
-                'billing': 'Opening billing dashboard...',
-                'reports': 'Generating financial reports...',
-                'add_equipment': 'Opening equipment addition form...',
-                'stock_check': 'Starting stock verification...',
-                'generate_report': 'Generating inventory report...',
-                'schedule_maintenance': 'Opening maintenance scheduler...',
-                'quick_checkout': 'Opening quick checkout interface...',
-                'report_incident': 'Loading incident report form...',
-                'check_status': 'Checking equipment status...',
-                'view_schedule': 'Loading your work schedule...',
-                'new_quote': 'Creating new project quote...',
-                'project_analysis': 'Loading project analysis tools...',
-                'cost_calculator': 'Opening cost calculation tool...',
-                'view_projects': 'Loading project overview...',
-                'assign_equipment': 'Opening equipment assignment...',
-                'team_report': 'Generating team performance report...',
-                'project_status': 'Loading project status dashboard...',
-                'field_alerts': 'Opening field alert management...'
-            };
-            
-            showNotification(messages[action] || 'Loading...', 'success');
-            updateDebugInfo(`Action: ${action}`);
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -123,10 +17,45 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: var(--background-color);
-            color: var(--text-color);
+            background: var(--bg-color);
+            color: var(--text-primary);
             min-height: 100vh;
             line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Apple 96 Design System Variables - Copiado exacto del superadmin */
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: white;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-tertiary: #94a3b8;
+            --border-color: #e2e8f0;
+            --hover-bg: #f1f5f9;
+            --primary-green: #22c55e;
+            --primary-green-hover: #16a34a;
+            --danger-red: #ef4444;
+            --danger-red-hover: #dc2626;
+            --warning-orange: #f59e0b;
+            --info-blue: #3b82f6;
+            --purple: #8b5cf6;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.1);
+            --border-radius: 12px;
+            --border-radius-lg: 16px;
+            --border-radius-xl: 20px;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-tertiary: #94a3b8;
+            --border-color: #334155;
+            --hover-bg: #334155;
         }
 
         .container {
@@ -135,17 +64,18 @@
             padding: 2rem;
         }
 
-        /* Header - Estilo Apple 96 */
+        /* Header Premium Apple Style - Copiado exacto */
         .header {
-            background: var(--card-color);
-            border-radius: 16px;
+            background: var(--card-bg);
+            border-radius: var(--border-radius-lg);
             padding: 2rem;
             margin-bottom: 2rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow-sm);
             display: flex;
             justify-content: space-between;
             align-items: center;
             border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
         }
 
         .header-left {
@@ -154,17 +84,17 @@
             gap: 1rem;
         }
 
-        /* Logo dinámico */
+        /* Logo exacto del superadmin */
         .logo-container {
             position: relative;
             width: 48px;
             height: 48px;
-            border-radius: 12px;
+            border-radius: var(--border-radius);
             padding: 2px;
-            background: linear-gradient(45deg, var(--accent-color), var(--primary-color), var(--secondary-color));
+            background: linear-gradient(45deg, var(--primary-green), #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3, #54a0ff, #5f27cd, #00d2d3, #ff9f43, #10ac84, #ee5a6f, var(--primary-green));
             background-size: 400% 400%;
             animation: gradientShift 4s ease-in-out infinite;
-            box-shadow: 0 4px 12px color-mix(in srgb, var(--accent-color) 20%, transparent);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
         }
 
         @keyframes gradientShift {
@@ -175,7 +105,7 @@
         .logo-icon {
             width: 44px;
             height: 44px;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(135deg, #495057, #6c757d);
             border-radius: 10px;
             display: flex;
             align-items: center;
@@ -208,19 +138,20 @@
 
         @keyframes winkEye {
             0%, 90%, 100% { content: '◉'; }
-            95% { content: '●'; }
+            95% { content: '◉'; }
         }
 
         .header-info h1 {
-            font-size: 28px;
-            font-weight: 600;
-            color: var(--text-color);
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--text-primary);
             margin-bottom: 0.25rem;
         }
 
         .header-info p {
-            color: #64748b;
-            font-size: 16px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
         }
 
         .header-actions {
@@ -236,33 +167,33 @@
 
         .profile-name {
             font-weight: 600;
-            color: var(--text-color);
+            color: var(--text-primary);
             margin-bottom: 0.25rem;
         }
 
         .profile-role {
-            color: #64748b;
+            color: var(--text-secondary);
             font-size: 14px;
         }
 
         .logout-btn {
-            background: #ef4444;
+            padding: 0.5rem 1rem;
+            background: var(--danger-red);
             color: white;
             border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
         }
 
         .logout-btn:hover {
-            background: #dc2626;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            background: var(--danger-red-hover);
+            transform: translateY(-1px);
         }
 
-        /* Stats Grid - Apple 96 */
+        /* Stats Grid exacto del superadmin */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -271,138 +202,72 @@
         }
 
         .stat-card {
-            background: var(--card-color);
+            background: var(--card-bg);
+            border-radius: var(--border-radius-lg);
+            padding: 1.5rem;
             border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 2rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
             cursor: pointer;
         }
 
         .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary-green);
         }
 
         .stat-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .stat-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--text-color);
+            justify-content: space-between;
+            margin-bottom: 1rem;
         }
 
         .stat-icon {
             width: 40px;
             height: 40px;
             border-radius: 10px;
-            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 1.25rem;
             color: white;
-            font-size: 18px;
         }
 
-        .stat-number {
-            font-size: 36px;
+        .stat-icon.companies { background: linear-gradient(135deg, var(--primary-green), var(--primary-green-hover)); }
+        .stat-icon.users { background: linear-gradient(135deg, var(--info-blue), #1d4ed8); }
+        .stat-icon.revenue { background: linear-gradient(135deg, var(--warning-orange), #d97706); }
+        .stat-icon.activity { background: linear-gradient(135deg, var(--purple), #7c3aed); }
+
+        .stat-trend {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .stat-trend.up {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .stat-title {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
             font-weight: 700;
-            color: var(--text-color);
-            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
         }
 
-        .stat-label {
-            color: #64748b;
-            font-size: 14px;
-        }
-
-        /* Main Content */
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 2rem;
-        }
-
-        .content-card {
-            background: var(--card-color);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .card-header {
-            background: #fafbfc;
-            padding: 1.5rem 2rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .card-title {
-            font-size: 20px;
-            font-weight: 600;
-            color: var(--text-color);
-            margin-bottom: 0.5rem;
-        }
-
-        .card-subtitle {
-            color: #64748b;
-            font-size: 14px;
-        }
-
-        .card-body {
-            padding: 2rem;
-        }
-
-        /* Buttons Apple Style */
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            text-decoration: none;
-            font-size: 14px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px color-mix(in srgb, var(--primary-color) 30%, transparent);
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, var(--accent-color), #16a34a);
-            color: white;
-        }
-
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px color-mix(in srgb, var(--accent-color) 30%, transparent);
-        }
-
-        .btn-secondary {
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-        }
-
-        .btn-secondary:hover {
-            background: var(--hover-color);
-            border-color: #cbd5e1;
+        .stat-description {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
         }
 
         /* Loading Screen */
@@ -412,7 +277,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(135deg, var(--primary-green), #4ecdc4);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -456,10 +321,16 @@
 
         .loading-logo::after {
             content: '◉';
+            animation: winkEye 4s ease-in-out infinite;
         }
 
         .loading-logo.has-image::after {
             display: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
         .loading-text {
@@ -494,42 +365,6 @@
             100% { width: 100%; }
         }
 
-        /* Notification */
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--card-color);
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            transform: translateX(400px);
-            transition: all 0.3s ease;
-            z-index: 1000;
-            max-width: 300px;
-        }
-
-        .notification.show {
-            transform: translateX(0);
-        }
-
-        .notification.success {
-            border-left: 4px solid var(--accent-color);
-            background: color-mix(in srgb, var(--accent-color) 5%, var(--card-color));
-        }
-
-        .notification.error {
-            border-left: 4px solid #ef4444;
-            background: color-mix(in srgb, #ef4444 5%, var(--card-color));
-        }
-
-        .notification.warning {
-            border-left: 4px solid #f59e0b;
-            background: color-mix(in srgb, #f59e0b 5%, var(--card-color));
-        }
-
         /* Debug Info */
         .debug-info {
             position: fixed;
@@ -556,6 +391,182 @@
             opacity: 0.9;
         }
 
+        /* Sistema de Pestañas Contextuales */
+        .tabs-container {
+            margin-top: 2rem;
+        }
+
+        .tabs-header {
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--card-bg);
+            border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+            padding: 0 2rem;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 14px;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab:hover {
+            color: var(--primary-green);
+            background: var(--hover-bg);
+        }
+
+        .tab.active {
+            color: var(--primary-green);
+            background: var(--hover-bg);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary-green);
+        }
+
+        .tabs-content {
+            background: var(--card-bg);
+            border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
+            border: 1px solid var(--border-color);
+            border-top: none;
+            min-height: 400px;
+        }
+
+        .tab-pane {
+            padding: 2rem;
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        .tab-pane h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .tab-pane p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        /* Contenido específico de pestañas */
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .content-card {
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .content-card:hover {
+            background: var(--card-bg);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .content-card h4 {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .content-card p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-green);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-green-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--hover-bg);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        .btn-success {
+            background: var(--primary-green);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: var(--primary-green-hover);
+            transform: translateY(-1px);
+        }
+
+        /* Role selector para debug */
+        .role-selector {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            margin-right: 1rem;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .container {
@@ -579,12 +590,12 @@
         }
     </style>
 </head>
-<body>
+<body data-theme="light">
     <!-- Loading Screen -->
     <div id="loadingScreen" class="loading-screen">
         <div class="loading-logo" id="loadingLogo"></div>
-        <div class="loading-text" id="loadingCompanyName">Loading...</div>
-        <div class="loading-subtitle" id="loadingSubtitle">Initializing your workspace...</div>
+        <div class="loading-text" id="loadingCompanyName">Opsis Suite</div>
+        <div class="loading-subtitle" id="loadingSubtitle">Iniciando Dashboard...</div>
         <div class="loading-progress">
             <div class="progress-bar"></div>
         </div>
@@ -598,912 +609,489 @@
                     <div class="logo-icon" id="headerLogo"></div>
                 </div>
                 <div class="header-info">
-                    <h1 id="companyName">Loading...</h1>
+                    <h1 id="companyName">Dashboard</h1>
                     <p id="companyDescription">Warehouse Management System</p>
                 </div>
             </div>
             <div class="header-actions">
-                <div class="profile-info">
-                    <div class="profile-name" id="profileName">User</div>
-                    <div class="profile-role" id="profileRole">Loading...</div>
+                <!-- Role selector en modo debug -->
+                <div id="debugControls" style="display: none;">
+                    <select class="role-selector" id="roleSelector">
+                        <option value="almacen">ALMACÉN</option>
+                        <option value="operativo">OPERATIVO</option>
+                        <option value="estimador">ESTIMADOR</option>
+                        <option value="supervisor">SUPERVISOR</option>
+                        <option value="admin">ADMIN</option>
+                    </select>
                 </div>
-                <button class="logout-btn" onclick="handleSignOut()">Sign Out</button>
+                <div class="profile-info">
+                    <div class="profile-name" id="profileName">Usuario Demo</div>
+                    <div class="profile-role" id="profileRole">Almacén</div>
+                </div>
+                <button class="logout-btn" onclick="handleSignOut()">Salir</button>
             </div>
         </div>
 
         <!-- Stats Overview -->
-        <div class="stats-grid">
-            <div class="stat-card" onclick="handleStatClick('equipment')">
-                <div class="stat-header">
-                    <div class="stat-title">Available Equipment</div>
-                    <div class="stat-icon">✅</div>
-                </div>
-                <div class="stat-number" id="availableEquipment">0</div>
-                <div class="stat-label">Ready for checkout</div>
-            </div>
-
-            <div class="stat-card" onclick="handleStatClick('loans')">
-                <div class="stat-header">
-                    <div class="stat-title">Active Loans</div>
-                    <div class="stat-icon">🔄</div>
-                </div>
-                <div class="stat-number" id="activeLoans">0</div>
-                <div class="stat-label">Currently checked out</div>
-            </div>
-
-            <div class="stat-card" onclick="handleStatClick('maintenance')">
-                <div class="stat-header">
-                    <div class="stat-title">In Maintenance</div>
-                    <div class="stat-icon">🔧</div>
-                </div>
-                <div class="stat-number" id="inMaintenance">0</div>
-                <div class="stat-label">Being serviced</div>
-            </div>
-
-            <div class="stat-card" onclick="handleStatClick('overdue')">
-                <div class="stat-header">
-                    <div class="stat-title">Overdue Returns</div>
-                    <div class="stat-icon">⏰</div>
-                </div>
-                <div class="stat-number" id="overdueReturns">0</div>
-                <div class="stat-label">Require attention</div>
-            </div>
+        <div class="stats-grid" id="statsGrid">
+            <!-- Widgets se cargarán dinámicamente según el rol -->
         </div>
 
-        <!-- Main Content -->
-        <div class="main-content">
-            <div class="content-card">
-                <div class="card-header">
-                    <div class="card-title">Dashboard Overview</div>
-                    <div class="card-subtitle">Warehouse operations and equipment management</div>
-                </div>
-                <div class="card-body">
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-header">
-                                <div class="stat-title">Total Equipment</div>
-                                <div class="stat-icon">📦</div>
-                            </div>
-                            <div class="stat-number" id="totalEquipment">0</div>
-                            <div class="stat-label">All inventory items</div>
-                        </div>
-
-                        <div class="stat-card">
-                            <div class="stat-header">
-                                <div class="stat-title">Active Users</div>
-                                <div class="stat-icon">👥</div>
-                            </div>
-                            <div class="stat-number" id="activeUsers">0</div>
-                            <div class="stat-label">Current team members</div>
-                        </div>
-
-                        <div class="stat-card">
-                            <div class="stat-header">
-                                <div class="stat-title">This Month</div>
-                                <div class="stat-icon">📊</div>
-                            </div>
-                            <div class="stat-number" id="monthlyLoans">0</div>
-                            <div class="stat-label">Equipment loans</div>
-                        </div>
-                    </div>
-
-                    <div style="display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
-                        <button class="btn btn-primary" onclick="handleActionClick('inventory')">
-                            Manage Inventory
-                        </button>
-                        <button class="btn btn-success" onclick="handleActionClick('loans')">
-                            New Loan
-                        </button>
-                        <button class="btn btn-secondary" onclick="handleActionClick('reports')">
-                            View Reports
-                        </button>
-                        <button class="btn btn-secondary" onclick="handleActionClick('maintenance')">
-                            Schedule Maintenance
-                        </button>
-                    </div>
-                </div>
+        <!-- Sistema de Pestañas Contextuales -->
+        <div class="tabs-container" id="tabsContainer">
+            <div class="tabs-header" id="tabsHeader">
+                <!-- Pestañas se generan dinámicamente -->
+            </div>
+            <div class="tabs-content" id="tabsContent">
+                <!-- Contenido de pestañas se carga dinámicamente -->
             </div>
         </div>
     </div>
-
-    <!-- Notification -->
-    <div id="notification" class="notification"></div>
 
     <!-- Debug Info -->
     <div id="debugInfo" class="debug-info"></div>
 
     <script>
         // ================================================================
-        // SUPABASE CONFIGURATION
+        // VARIABLES GLOBALES
         // ================================================================
-        const SUPABASE_CONFIG = {
-            url: 'https://lmmlhncwdwjgtkdqaycv.supabase.co',
-            key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxtbWxobmN3ZHdqZ3RrZHFheWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU0MDE4ODYsImV4cCI6MjA3MDk3Nzg4Nn0.vhL5E-o9RtjEtrYTOdFCvhXs5mu5fuuAtB13LCd6dJQ'
-        };
-
-        const supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.key);
-
-        // ================================================================
-        // GLOBAL VARIABLES
-        // ================================================================
+        
+        let currentRole = 'ALMACEN';
         let currentCompany = null;
-        let currentUser = null;
-        let userRole = 'admin';
-        let companyBranding = null;
-        let isDebugMode = window.location.search.includes('debug=true');
+        let isDebugMode = false;
 
         // ================================================================
-        // DYNAMIC BRANDING SYSTEM
+        // FUNCIONES DE UTILIDAD (DEFINIDAS PRIMERO)
         // ================================================================
-        async function loadCompanyBranding(companyId) {
-            try {
-                console.log('Loading branding for company:', companyId);
-                updateDebugInfo(`Loading branding: ${companyId}`);
-                
-                const { data: branding, error } = await supabase
-                    .from('company_branding')
-                    .select('*')
-                    .eq('company_id', companyId)
-                    .single();
 
-                if (error && error.code !== 'PGRST116') {
-                    console.error('Error loading branding:', error);
-                    updateDebugInfo(`Branding error: ${error.message}`);
-                    return null;
-                }
-
-                if (branding) {
-                    console.log('Company branding loaded:', branding);
-                    updateDebugInfo(`Branding loaded: ${branding.primary_color}`);
-                    companyBranding = branding;
-                    applyCompanyBranding(branding);
-                } else {
-                    console.log('No custom branding found, using defaults');
-                    updateDebugInfo('Using default branding');
-                    companyBranding = getDefaultBranding();
-                    applyCompanyBranding(companyBranding);
-                }
-
-                return branding;
-            } catch (error) {
-                console.error('Error in loadCompanyBranding:', error);
-                updateDebugInfo(`Branding critical error: ${error.message}`);
-                return null;
-            }
-        }
-
-        function getDefaultBranding() {
-            return {
-                primary_color: '#495057',
-                secondary_color: '#6c757d',
-                accent_color: '#22c55e',
-                background_color: '#f8fafc',
-                text_color: '#1e293b',
-                sidebar_color: '#ffffff',
-                logo_url: null,
-                custom_css: null
-            };
-        }
-
-        function applyCompanyBranding(branding) {
-            if (!branding) return;
-
-            console.log('Applying company branding:', branding);
-            updateDebugInfo('Applying branding colors');
-
-            const root = document.documentElement;
+        function log(message) {
+            console.log(`[Dashboard] ${message}`);
             
-            if (branding.primary_color) {
-                root.style.setProperty('--primary-color', branding.primary_color);
-            }
-            if (branding.secondary_color) {
-                root.style.setProperty('--secondary-color', branding.secondary_color);
-            }
-            if (branding.accent_color) {
-                root.style.setProperty('--accent-color', branding.accent_color);
-            }
-            if (branding.background_color) {
-                root.style.setProperty('--background-color', branding.background_color);
-            }
-            if (branding.text_color) {
-                root.style.setProperty('--text-color', branding.text_color);
-            }
-
-            if (branding.logo_url) {
-                applyCompanyLogo(branding.logo_url);
-            }
-
-            if (branding.custom_css) {
-                applyCustomCSS(branding.custom_css);
-            }
-
-            updateDebugInfo('Branding applied successfully');
-            console.log('Company branding applied successfully');
-        }
-
-        function applyCompanyLogo(logoUrl) {
-            console.log('Applying company logo:', logoUrl);
-            updateDebugInfo(`Logo: ${logoUrl}`);
-            
-            const loadingLogo = document.getElementById('loadingLogo');
-            const headerLogo = document.getElementById('headerLogo');
-            
-            if (loadingLogo) {
-                loadingLogo.classList.add('has-image');
-                loadingLogo.innerHTML = `<img src="${logoUrl}" alt="Company Logo" onerror="handleLogoError(this)">`;
-            }
-
-            if (headerLogo) {
-                headerLogo.classList.add('has-image');
-                headerLogo.innerHTML = `<img src="${logoUrl}" alt="Company Logo" onerror="handleLogoError(this)">`;
-            }
-        }
-
-        function handleLogoError(img) {
-            console.warn('Logo failed to load:', img.src);
-            updateDebugInfo('Logo load failed');
-            img.style.display = 'none';
-            const logoContainer = img.parentElement;
-            if (logoContainer) {
-                logoContainer.classList.remove('has-image');
-            }
-        }
-
-        function applyCustomCSS(customCSS) {
-            console.log('Applying custom CSS');
-            updateDebugInfo('Custom CSS applied');
-            
-            let styleElement = document.getElementById('customCompanyStyles');
-            if (!styleElement) {
-                styleElement = document.createElement('style');
-                styleElement.id = 'customCompanyStyles';
-                document.head.appendChild(styleElement);
-            }
-            
-            styleElement.textContent = customCSS;
-        }
-
-        // ================================================================
-        // AUTHENTICATION CHECK CON MEJOR DEBUG
-        // ================================================================
-        async function checkAuth() {
-            try {
-                console.log('Verificando autenticación...');
-                updateDebugInfo('Checking authentication...');
-                
-                const { data: { user }, error } = await supabase.auth.getUser();
-                
-                if (error) {
-                    console.error('Error en getUser:', error);
-                    updateDebugInfo(`Auth error: ${error.message}`);
+            if (isDebugMode) {
+                const debugElement = document.getElementById('debugInfo');
+                if (debugElement) {
+                    debugElement.classList.add('show');
+                    const time = new Date().toLocaleTimeString();
+                    const div = document.createElement('div');
+                    div.textContent = `[${time}] ${message}`;
+                    debugElement.appendChild(div);
                     
-                    if (isDebugMode) {
-                        console.warn('DEBUG MODE: Continuando sin autenticación');
-                        updateDebugInfo('DEBUG: Skipping auth for testing');
-                        return { id: 'debug-user', email: 'debug@test.com' };
+                    // Mantener solo las últimas 8 líneas
+                    while (debugElement.children.length > 8) {
+                        debugElement.removeChild(debugElement.firstChild);
                     }
-                    
-                    console.log('Redirigiendo al login por error de auth...');
-                    window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
-                    return null;
                 }
-                
-                if (!user) {
-                    console.log('No hay usuario autenticado');
-                    updateDebugInfo('No authenticated user found');
-                    
-                    if (isDebugMode) {
-                        console.warn('DEBUG MODE: Simulando usuario autenticado');
-                        updateDebugInfo('DEBUG: Simulating authenticated user');
-                        return { id: 'debug-user', email: 'debug@test.com' };
-                    }
-                    
-                    console.log('Redirigiendo al login...');
-                    window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
-                    return null;
-                }
-                
-                console.log('Usuario autenticado:', user.email);
-                updateDebugInfo(`Authenticated: ${user.email}`);
-                currentUser = user;
-                
-                try {
-                    const { data: profile, error: profileError } = await Promise.race([
-                        supabase.from('user_profiles').select('*').eq('user_id', user.id).single(),
-                        new Promise((_, reject) => setTimeout(() => reject(new Error('Profile load timeout')), 5000))
-                    ]);
-                    
-                    if (!profileError && profile) {
-                        const userRole = profile.role || 'OPERATIVO';
-                        document.getElementById('profileName').textContent = profile.full_name || profile.name || user.email;
-                        document.getElementById('profileRole').textContent = userRole;
-                        updateDebugInfo(`Profile loaded: ${userRole}`);
-                        
-                        // Actualizar dashboard según el rol
-                        updateDashboardForRole(userRole);
-                        window.currentUserRole = userRole;
-                    } else {
-                        console.warn('No se pudo cargar el perfil del usuario:', profileError);
-                        updateDebugInfo('Profile load failed, using defaults');
-                        document.getElementById('profileName').textContent = user.email;
-                        document.getElementById('profileRole').textContent = 'OPERATIVO';
-                        updateDashboardForRole('OPERATIVO');
-                        window.currentUserRole = 'OPERATIVO';
-                    }
-                } catch (profileError) {
-                    console.warn('Error cargando perfil:', profileError);
-                    updateDebugInfo('Profile error, using email');
-                    document.getElementById('profileName').textContent = user.email;
-                    document.getElementById('profileRole').textContent = 'User';
-                }
-                
-                return user;
-                
-            } catch (error) {
-                console.error('Error crítico en checkAuth:', error);
-                updateDebugInfo(`Critical auth error: ${error.message}`);
-                
-                if (isDebugMode) {
-                    console.warn('DEBUG MODE: Continuando con error de auth');
-                    return { id: 'debug-user', email: 'debug@test.com' };
-                }
-                
-                alert('Error de autenticación. Redirigiendo al login...');
-                window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
-                return null;
             }
         }
 
-        // ================================================================
-        // SIGN OUT FUNCTION
-        // ================================================================
-        async function handleSignOut() {
-            try {
-                console.log('Iniciando cierre de sesión...');
-                showNotification('Cerrando sesión...', 'success');
-                
-                const { error } = await supabase.auth.signOut();
-                
-                if (error) {
-                    console.error('Error al cerrar sesión en Supabase:', error);
-                }
-                
-                localStorage.clear();
-                sessionStorage.clear();
-                
-                currentUser = null;
-                currentCompany = null;
-                companyBranding = null;
-                userRole = null;
-                
-                setTimeout(() => {
-                    window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
-                }, 500);
-                
-            } catch (error) {
-                console.error('Error en handleSignOut:', error);
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
-            }
+        function detectDebugMode() {
+            return window.location.search.includes('debug=true');
         }
 
-        // ================================================================
-        // COMPANY DETECTION
-        // ================================================================
+        function detectRole() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const roleParam = urlParams.get('role');
+            return roleParam ? roleParam.toUpperCase() : 'ALMACEN';
+        }
+
         function detectCompany() {
             const urlParams = new URLSearchParams(window.location.search);
-            const companyParam = urlParams.get('company');
-            
-            if (companyParam) {
-                console.log('Company from URL parameter:', companyParam);
-                return companyParam;
-            }
-            
-            const path = window.location.pathname;
-            const segments = path.split('/').filter(segment => segment);
-            const lastSegment = segments[segments.length - 1];
-            
-            if (lastSegment === 'template.html' || lastSegment === 'template') {
-                console.log('Template detected, defaulting to demo company');
-                return 'demo';
-            }
-            
-            const companySlug = lastSegment.replace('.html', '');
-            console.log('Detected company slug from filename:', companySlug);
-            return companySlug;
+            return urlParams.get('company') || 'demo';
         }
 
         // ================================================================
-        // DATA LOADING FUNCTIONS
+        // CONFIGURACIÓN DE ROLES Y CONTENIDO
         // ================================================================
-        async function loadCompanyData() {
-            try {
-                const companySlug = detectCompany();
-                
-                if (!companySlug) {
-                    throw new Error('No company identifier found in URL');
-                }
 
-                console.log('Loading company data for:', companySlug);
-                updateDebugInfo(`Loading company: ${companySlug}`);
-
-                const { data: company, error } = await supabase
-                    .from('companies')
-                    .select('*')
-                    .eq('slug', companySlug)
-                    .single();
-
-                if (error) {
-                    console.error('Error loading company:', error);
-                    updateDebugInfo(`Company load error: ${error.message}`);
-                    currentCompany = createDemoCompany(companySlug);
-                } else {
-                    currentCompany = company;
-                    updateDebugInfo(`Company loaded from DB: ${company.name}`);
-                }
-
-                console.log('Company loaded:', currentCompany);
-                
-                if (currentCompany && currentCompany.id) {
-                    await loadCompanyBranding(currentCompany.id);
-                }
-                
-                updateCompanyDisplay();
-
-            } catch (error) {
-                console.error('Error in loadCompanyData:', error);
-                updateDebugInfo(`Data load error: ${error.message}`);
-                currentCompany = createDemoCompany('demo');
-                updateCompanyDisplay();
-            }
-        }
-
-        function createDemoCompany(slug) {
-            const companyMap = {
-                'demo': {
-                    id: '550e8400-e29b-41d4-a716-446655440001',
-                    name: 'Demo Company'
-                },
-                'acme': {
-                    id: '550e8400-e29b-41d4-a716-446655440002',
-                    name: 'ACME Corp'
-                }
-            };
-            
-            const companyData = companyMap[slug] || companyMap['demo'];
-            
-            return {
-                id: companyData.id,
-                name: companyData.name,
-                slug: slug,
-                domain: `${slug}.opsisuite.com`,
-                status: 'active'
-            };
-        }
-
-        function updateCompanyDisplay() {
-            if (!currentCompany) return;
-
-            document.getElementById('loadingCompanyName').textContent = currentCompany.name;
-            document.getElementById('loadingSubtitle').textContent = `Initializing ${currentCompany.name} workspace...`;
-            document.getElementById('companyName').textContent = currentCompany.name;
-            
-            updateDebugInfo(`Display updated: ${currentCompany.name}`);
-        }
-
-        // ================================================================
-        // ROLE-BASED DASHBOARD SYSTEM
-        // ================================================================
-        const ROLE_CONFIGURATIONS = {
-            'ADMIN': {
+        const ROLES_CONFIG = {
+            ADMIN: {
                 title: 'Panel de Administración',
                 subtitle: 'Control total de la empresa y configuraciones del sistema',
-                widgets: ['users', 'financial', 'settings', 'subscription'],
-                actions: ['manage_users', 'company_settings', 'billing', 'reports']
+                widgets: [
+                    { icon: '👥', title: 'Total Users', number: '0', label: 'Active team members' },
+                    { icon: '💰', title: 'Monthly Revenue', number: '$0', label: 'Current billing cycle' },
+                    { icon: '⚙️', title: 'System Health', number: '0%', label: 'All systems operational' },
+                    { icon: '📋', title: 'Plan Status', number: 'Free', label: 'Current plan active' }
+                ],
+                tabs: [
+                    { id: 'admin-users', label: 'Usuarios', icon: '👥' },
+                    { id: 'admin-companies', label: 'Empresas', icon: '🏢' },
+                    { id: 'admin-billing', label: 'Facturación', icon: '💳' },
+                    { id: 'admin-settings', label: 'Configuración', icon: '⚙️' }
+                ]
             },
-            'ALMACEN': {
-                title: 'Centro de Almacén',
-                subtitle: 'Gestión de inventario y control de equipos',
-                widgets: ['inventory', 'stock_alerts', 'movements', 'maintenance'],
-                actions: ['add_equipment', 'stock_check', 'generate_report', 'schedule_maintenance']
+            ALMACEN: {
+                title: 'Gestión de Equipos y Logística',
+                subtitle: 'Control integral de inventario, distribución y ciclo de vida de equipos',
+                widgets: [
+                    { icon: '📦', title: 'Inventario Total', number: '0', label: 'Equipos gestionados' },
+                    { icon: '🚛', title: 'En Campo', number: '0', label: 'Equipos desplegados' },
+                    { icon: '🔄', title: 'Operaciones Hoy', number: '0', label: 'Check-in/out realizados' },
+                    { icon: '🔧', title: 'Mantenimiento', number: '0', label: 'Equipos programados' }
+                ],
+                tabs: [
+                    { id: 'inventory', label: 'Inventario', icon: '📦' },
+                    { id: 'distribution', label: 'Distribución', icon: '🚛' },
+                    { id: 'maintenance', label: 'Mantenimiento', icon: '🔧' },
+                    { id: 'reports', label: 'Reportes', icon: '📊' }
+                ]
             },
-            'OPERATIVO': {
+            OPERATIVO: {
                 title: 'Panel Operativo',
-                subtitle: 'Check-in/out de equipos y gestión de campo',
-                widgets: ['my_equipment', 'quick_checkout', 'incidents', 'schedule'],
-                actions: ['quick_checkout', 'report_incident', 'check_status', 'view_schedule']
+                subtitle: 'Check-in/out y gestión de campo',
+                widgets: [
+                    { icon: '🎯', title: 'Mis Equipos', number: '0', label: 'Actualmente asignados' },
+                    { icon: '⚡', title: 'Acciones Rápidas', number: '0', label: 'Check-outs pendientes' },
+                    { icon: '🚨', title: 'Incidencias', number: '0', label: 'Requieren atención' },
+                    { icon: '📅', title: 'Cronograma Hoy', number: '0', label: 'Tareas programadas' }
+                ],
+                tabs: [
+                    { id: 'my-equipment', label: 'Mis Equipos', icon: '🎯' },
+                    { id: 'checkout', label: 'Check-in/out', icon: '⚡' },
+                    { id: 'incidents', label: 'Incidencias', icon: '🚨' },
+                    { id: 'schedule', label: 'Horario', icon: '📅' }
+                ]
             },
-            'ESTIMADOR': {
+            ESTIMADOR: {
                 title: 'Mesa de Estimaciones',
                 subtitle: 'Cotizaciones, proyectos y análisis de costos',
-                widgets: ['projects', 'quotes', 'costs', 'profitability'],
-                actions: ['new_quote', 'project_analysis', 'cost_calculator', 'view_projects']
+                widgets: [
+                    { icon: '🏗️', title: 'Proyectos Activos', number: '0', label: 'En progreso' },
+                    { icon: '📊', title: 'Cotizaciones', number: '0', label: 'Esperando aprobación' },
+                    { icon: '💵', title: 'Análisis de Costos', number: '$0', label: 'Costo mensual equipos' },
+                    { icon: '📈', title: 'Margen', number: '0%', label: 'Trimestre actual' }
+                ],
+                tabs: [
+                    { id: 'projects', label: 'Proyectos', icon: '🏗️' },
+                    { id: 'quotes', label: 'Cotizaciones', icon: '📊' },
+                    { id: 'costs', label: 'Costos', icon: '💵' },
+                    { id: 'calculator', label: 'Calculadora', icon: '🧮' }
+                ]
             },
-            'SUPERVISOR': {
+            SUPERVISOR: {
                 title: 'Control de Campo',
-                subtitle: 'Supervisión de equipos y equipos de trabajo',
-                widgets: ['field_equipment', 'team_productivity', 'active_projects', 'alerts'],
-                actions: ['assign_equipment', 'team_report', 'project_status', 'field_alerts']
+                subtitle: 'Supervisión de equipos y productividad',
+                widgets: [
+                    { icon: '🚛', title: 'Equipos en Campo', number: '0', label: 'En sitios activos' },
+                    { icon: '⭐', title: 'Eficiencia del Equipo', number: '0%', label: 'Promedio semanal' },
+                    { icon: '🎯', title: 'Sitios Supervisados', number: '0', label: 'Ubicaciones activas' },
+                    { icon: '🔔', title: 'Alertas de Campo', number: '0', label: 'Requieren respuesta' }
+                ],
+                tabs: [
+                    { id: 'field', label: 'Campo', icon: '🚛' },
+                    { id: 'team', label: 'Equipo', icon: '👥' },
+                    { id: 'productivity', label: 'Productividad', icon: '📈' },
+                    { id: 'assignments', label: 'Asignaciones', icon: '🎯' }
+                ]
             }
         };
 
-        function getRoleConfiguration(role) {
-            return ROLE_CONFIGURATIONS[role] || ROLE_CONFIGURATIONS['OPERATIVO'];
-        }
+        const TAB_CONTENT = {
+            // ADMIN tabs
+            'admin-users': {
+                title: 'Gestión de Usuarios',
+                description: 'Administrar usuarios del sistema y asignar roles',
+                content: [
+                    { title: 'Usuarios Activos', desc: '0 usuarios registrados en el sistema' },
+                    { title: 'Roles y Permisos', desc: 'Configurar niveles de acceso por rol' },
+                    { title: 'Invitaciones', desc: 'Gestionar invitaciones pendientes' }
+                ],
+                actions: ['Nuevo Usuario', 'Gestionar Roles', 'Exportar Lista']
+            },
 
-        function updateDashboardForRole(role) {
-            const config = getRoleConfiguration(role);
-            
-            // Actualizar títulos
-            const titleElement = document.querySelector('.header-info h1');
-            const subtitleElement = document.querySelector('.header-info p');
-            
-            if (titleElement) titleElement.textContent = config.title;
-            if (subtitleElement) subtitleElement.textContent = config.subtitle;
-            
-            // Actualizar widgets
-            updateWidgetsForRole(role, config.widgets);
-            
-            // Actualizar acciones
-            updateActionsForRole(role, config.actions);
-            
-            updateDebugInfo(`Dashboard updated for role: ${role}`);
-        }
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            
-            notification.textContent = message;
-            notification.classList.remove('success', 'warning', 'error');
-            notification.classList.add(type);
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
+            // ALMACEN tabs
+            'inventory': {
+                title: 'Control de Inventario',
+                description: 'Gestión completa del inventario de equipos',
+                content: [
+                    { title: 'Equipos Disponibles', desc: '0 equipos listos para préstamo' },
+                    { title: 'Equipos en Campo', desc: '0 equipos actualmente asignados' },
+                    { title: 'Alertas de Stock', desc: '0 equipos necesitan reabastecimiento' }
+                ],
+                actions: ['Agregar Equipo', 'Verificar Stock', 'Generar Reporte']
+            },
+            'distribution': {
+                title: 'Centro de Distribución',
+                description: 'Control de entregas y retornos de equipos',
+                content: [
+                    { title: 'Entregas Programadas', desc: '0 entregas pendientes hoy' },
+                    { title: 'Retornos Esperados', desc: '0 equipos deben regresar hoy' },
+                    { title: 'Rutas Optimizadas', desc: 'Planificación logística automática' }
+                ],
+                actions: ['Programar Entrega', 'Verificar Retornos', 'Optimizar Rutas']
+            },
 
-        function handleStatClick(type) {
-            const messages = {
-                'equipment': 'Loading equipment inventory dashboard...',
-                'loans': 'Opening active loans management...',
-                'maintenance': 'Loading maintenance scheduler...',
-                'overdue': 'Opening overdue tracking system...'
-            };
-            
-            showNotification(messages[type] || 'Loading...', 'success');
-            updateDebugInfo(`Stat clicked: ${type}`);
-            
-            setTimeout(() => {
-                window.location.href = 'https://candewesth.github.io/opsis-suite/built.html';
-            }, 1000);
-        }
+            // OPERATIVO tabs
+            'my-equipment': {
+                title: 'Mis Equipos Asignados',
+                description: 'Equipos actualmente bajo tu responsabilidad',
+                content: [
+                    { title: 'En Mi Posesión', desc: '0 equipos actualmente contigo' },
+                    { title: 'Próximas Entregas', desc: '0 equipos deben ser entregados mañana' },
+                    { title: 'Reportes Pendientes', desc: '0 reportes de incidencia pendientes' }
+                ],
+                actions: ['Check-out Rápido', 'Reportar Estado', 'Ver Cronograma']
+            },
 
-        function handleActionClick(action) {
-            const messages = {
-                'inventory': 'Opening inventory management...',
-                'loans': 'Creating new loan...',
-                'reports': 'Loading reports dashboard...',
-                'maintenance': 'Opening maintenance scheduler...'
-            };
-            
-            showNotification(messages[action] || 'Loading...', 'success');
-            updateDebugInfo(`Action: ${action}`);
-        }
+            // ESTIMADOR tabs
+            'projects': {
+                title: 'Gestión de Proyectos',
+                description: 'Seguimiento de proyectos activos y planificación',
+                content: [
+                    { title: 'Proyectos Activos', desc: '0 proyectos en diferentes fases' },
+                    { title: 'Equipos Requeridos', desc: 'Análisis de necesidades por proyecto' },
+                    { title: 'Cronogramas', desc: 'Planificación temporal de recursos' }
+                ],
+                actions: ['Nuevo Proyecto', 'Análisis de Costos', 'Generar Cronograma']
+            },
 
-        function updateWidgetsForRole(role, widgets) {
-            const statsGrid = document.querySelector('.stats-grid');
-            if (!statsGrid) return;
-            
-            // Limpiar widgets existentes
+            // SUPERVISOR tabs
+            'field': {
+                title: 'Equipos en Campo',
+                description: 'Monitoreo de equipos en sitios de trabajo',
+                content: [
+                    { title: 'Sitios Activos', desc: '0 ubicaciones con equipos asignados' },
+                    { title: 'Estado de Equipos', desc: '0 equipos distribuidos en campo' },
+                    { title: 'Alertas de Campo', desc: '0 situaciones requieren atención' }
+                ],
+                actions: ['Inspección de Sitio', 'Reasignar Equipos', 'Generar Reporte']
+            }
+        };
+
+        // ================================================================
+        // FUNCIONES DE INTERFAZ
+        // ================================================================
+
+        function updateWidgets(role) {
+            const config = ROLES_CONFIG[role];
+            if (!config) return;
+
+            const statsGrid = document.getElementById('statsGrid');
             statsGrid.innerHTML = '';
-            
-            // Crear widgets específicos por rol
-            widgets.forEach(widget => {
-                const widgetConfig = getWidgetConfig(widget, role);
-                if (widgetConfig) {
-                    const widgetElement = createWidget(widgetConfig);
-                    statsGrid.appendChild(widgetElement);
-                }
-            });
-        }
 
-        function getWidgetConfig(widget, role) {
-            const configs = {
-                // Widgets para ADMIN
-                'users': { icon: '👥', title: 'Total Users', number: '15', label: 'Active team members', action: 'users' },
-                'financial': { icon: '💰', title: 'Monthly Revenue', number: '$2,500', label: 'Current billing cycle', action: 'financial' },
-                'settings': { icon: '⚙️', title: 'System Health', number: '98%', label: 'All systems operational', action: 'settings' },
-                'subscription': { icon: '📋', title: 'Plan Status', number: 'Pro', label: 'Warehouse Pro active', action: 'subscription' },
+            config.widgets.forEach((widget, index) => {
+                const card = document.createElement('div');
+                card.className = 'stat-card';
                 
-                // Widgets para ALMACEN
-                'inventory': { icon: '📦', title: 'Total Inventory', number: '247', label: 'Items in warehouse', action: 'inventory' },
-                'stock_alerts': { icon: '⚠️', title: 'Low Stock Alerts', number: '8', label: 'Items need reorder', action: 'stock_alerts' },
-                'movements': { icon: '🔄', title: 'Daily Movements', number: '45', label: 'In/Out today', action: 'movements' },
-                'maintenance': { icon: '🔧', title: 'Pending Maintenance', number: '12', label: 'Items scheduled', action: 'maintenance' },
-                
-                // Widgets para OPERATIVO
-                'my_equipment': { icon: '🎯', title: 'My Equipment', number: '8', label: 'Currently assigned', action: 'my_equipment' },
-                'quick_checkout': { icon: '⚡', title: 'Quick Actions', number: '3', label: 'Pending checkout', action: 'quick_checkout' },
-                'incidents': { icon: '🚨', title: 'Open Incidents', number: '2', label: 'Require attention', action: 'incidents' },
-                'schedule': { icon: '📅', title: 'Today Schedule', number: '6', label: 'Scheduled tasks', action: 'schedule' },
-                
-                // Widgets para ESTIMADOR
-                'projects': { icon: '🏗️', title: 'Active Projects', number: '12', label: 'In progress', action: 'projects' },
-                'quotes': { icon: '📊', title: 'Pending Quotes', number: '7', label: 'Awaiting approval', action: 'quotes' },
-                'costs': { icon: '💵', title: 'Cost Analysis', number: '$45K', label: 'Monthly equipment cost', action: 'costs' },
-                'profitability': { icon: '📈', title: 'Profit Margin', number: '23%', label: 'Current quarter', action: 'profitability' },
-                
-                // Widgets para SUPERVISOR
-                'field_equipment': { icon: '🚛', title: 'Field Equipment', number: '89', label: 'On active sites', action: 'field_equipment' },
-                'team_productivity': { icon: '⭐', title: 'Team Efficiency', number: '94%', label: 'This week average', action: 'team_productivity' },
-                'active_projects': { icon: '🎯', title: 'Supervised Sites', number: '5', label: 'Active locations', action: 'active_projects' },
-                'alerts': { icon: '🔔', title: 'Field Alerts', number: '3', label: 'Require response', action: 'alerts' }
-            };
-            
-            return configs[widget];
-        }
-
-        function createWidget(config) {
-            const widget = document.createElement('div');
-            widget.className = 'stat-card';
-            widget.onclick = () => handleStatClick(config.action);
-            
-            widget.innerHTML = `
-                <div class="stat-header">
-                    <div class="stat-title">${config.title}</div>
-                    <div class="stat-icon">${config.icon}</div>
-                </div>
-                <div class="stat-number">${config.number}</div>
-                <div class="stat-label">${config.label}</div>
-            `;
-            
-            return widget;
-        }
-
-        function updateActionsForRole(role, actions) {
-            const actionsContainer = document.querySelector('.card-body [style*="display: flex"]');
-            if (!actionsContainer) return;
-            
-            // Limpiar acciones existentes
-            actionsContainer.innerHTML = '';
-            
-            // Crear botones específicos por rol
-            actions.forEach(action => {
-                const actionConfig = getActionConfig(action, role);
-                if (actionConfig) {
-                    const button = document.createElement('button');
-                    button.className = `btn ${actionConfig.type}`;
-                    button.onclick = () => handleActionClick(action);
-                    button.innerHTML = actionConfig.label;
-                    actionsContainer.appendChild(button);
-                }
-            });
-        }
-
-        function getActionConfig(action, role) {
-            const configs = {
-                // Acciones para ADMIN
-                'manage_users': { label: '👥 Manage Users', type: 'btn-primary' },
-                'company_settings': { label: '⚙️ Company Settings', type: 'btn-secondary' },
-                'billing': { label: '💳 Billing & Plans', type: 'btn-success' },
-                'reports': { label: '📊 Financial Reports', type: 'btn-secondary' },
-                
-                // Acciones para ALMACEN
-                'add_equipment': { label: '➕ Add Equipment', type: 'btn-primary' },
-                'stock_check': { label: '📋 Stock Check', type: 'btn-secondary' },
-                'generate_report': { label: '📄 Generate Report', type: 'btn-secondary' },
-                'schedule_maintenance': { label: '🔧 Schedule Maintenance', type: 'btn-success' },
-                
-                // Acciones para OPERATIVO
-                'quick_checkout': { label: '⚡ Quick Checkout', type: 'btn-primary' },
-                'report_incident': { label: '🚨 Report Incident', type: 'btn-secondary' },
-                'check_status': { label: '📱 Check Status', type: 'btn-secondary' },
-                'view_schedule': { label: '📅 My Schedule', type: 'btn-success' },
-                
-                // Acciones para ESTIMADOR
-                'new_quote': { label: '📝 New Quote', type: 'btn-primary' },
-                'project_analysis': { label: '📊 Project Analysis', type: 'btn-secondary' },
-                'cost_calculator': { label: '🧮 Cost Calculator', type: 'btn-success' },
-                'view_projects': { label: '🏗️ View Projects', type: 'btn-secondary' },
-                
-                // Acciones para SUPERVISOR
-                'assign_equipment': { label: '🎯 Assign Equipment', type: 'btn-primary' },
-                'team_report': { label: '👥 Team Report', type: 'btn-secondary' },
-                'project_status': { label: '📈 Project Status', type: 'btn-success' },
-                'field_alerts': { label: '🔔 Field Alerts', type: 'btn-secondary' }
-            };
-            
-            return configs[action];
-        }
-
-        // ================================================================
-        // ROLE DETECTION AND SIMULATION
-        // ================================================================
-        function detectUserRole() {
-            // En modo debug, simular diferentes roles
-            if (isDebugMode) {
-                const urlParams = new URLSearchParams(window.location.search);
-                const roleParam = urlParams.get('role');
-                
-                if (roleParam) {
-                    console.log('Role from URL parameter:', roleParam);
-                    return roleParam.toUpperCase();
+                // Determinar clase del icono según el índice
+                let iconClass = '';
+                switch(index) {
+                    case 0: iconClass = 'companies'; break;
+                    case 1: iconClass = 'users'; break;
+                    case 2: iconClass = 'revenue'; break;
+                    case 3: iconClass = 'activity'; break;
                 }
                 
-                // Role por defecto en debug
-                return 'ALMACEN';
-            }
-            
-            // En modo real, obtener del perfil del usuario
-            return userRole || 'OPERATIVO';
-        }
-
-        function setupRoleSelector() {
-            if (!isDebugMode) return;
-            
-            // Agregar selector de roles en modo debug
-            const header = document.querySelector('.header-actions');
-            if (header && !document.getElementById('roleSelector')) {
-                const roleSelector = document.createElement('select');
-                roleSelector.id = 'roleSelector';
-                roleSelector.style.cssText = `
-                    padding: 0.5rem 1rem;
-                    border-radius: 8px;
-                    border: 1px solid var(--border-color);
-                    background: var(--card-color);
-                    margin-right: 1rem;
+                card.innerHTML = `
+                    <div class="stat-header">
+                        <div class="stat-icon ${iconClass}">${widget.icon}</div>
+                        <div class="stat-trend up">↗ +0%</div>
+                    </div>
+                    <div class="stat-title">${widget.title}</div>
+                    <div class="stat-value">${widget.number}</div>
+                    <div class="stat-description">${widget.label}</div>
                 `;
+                statsGrid.appendChild(card);
+            });
+
+            log(`Widgets updated for role: ${role}`);
+        }
+
+        function createTabs(role) {
+            const config = ROLES_CONFIG[role];
+            if (!config) return;
+
+            const tabsHeader = document.getElementById('tabsHeader');
+            const tabsContent = document.getElementById('tabsContent');
+            
+            // Limpiar contenido existente
+            tabsHeader.innerHTML = '';
+            tabsContent.innerHTML = '';
+            
+            // Crear pestañas
+            config.tabs.forEach((tab, index) => {
+                // Crear botón de pestaña
+                const tabButton = document.createElement('button');
+                tabButton.className = `tab ${index === 0 ? 'active' : ''}`;
+                tabButton.innerHTML = `${tab.icon} ${tab.label}`;
+                tabButton.onclick = () => switchTab(tab.id, tabButton);
+                tabsHeader.appendChild(tabButton);
                 
-                const roles = ['ADMIN', 'ALMACEN', 'OPERATIVO', 'ESTIMADOR', 'SUPERVISOR'];
-                const currentRole = detectUserRole();
+                // Crear contenido de pestaña
+                const tabPane = document.createElement('div');
+                tabPane.className = `tab-pane ${index === 0 ? 'active' : ''}`;
+                tabPane.id = tab.id;
                 
-                roleSelector.innerHTML = roles.map(role => 
-                    `<option value="${role}" ${role === currentRole ? 'selected' : ''}>${role}</option>`
-                ).join('');
+                const content = TAB_CONTENT[tab.id];
+                if (content) {
+                    tabPane.innerHTML = `
+                        <h3>${content.title}</h3>
+                        <p>${content.description}</p>
+                        <div class="content-grid">
+                            ${content.content.map(item => `
+                                <div class="content-card">
+                                    <h4>${item.title}</h4>
+                                    <p>${item.desc}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="action-buttons">
+                            ${content.actions.map(action => `
+                                <button class="btn btn-primary" onclick="handleAction('${action}')">${action}</button>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    tabPane.innerHTML = `
+                        <h3>${tab.label}</h3>
+                        <p>Contenido de ${tab.label} en desarrollo</p>
+                        <div class="content-grid">
+                            <div class="content-card">
+                                <h4>Funcionalidad próximamente</h4>
+                                <p>Esta sección estará disponible en futuras actualizaciones</p>
+                            </div>
+                        </div>
+                    `;
+                }
                 
-                roleSelector.onchange = (e) => {
-                    const newRole = e.target.value;
-                    const url = new URL(window.location);
-                    url.searchParams.set('role', newRole.toLowerCase());
-                    window.location.href = url.toString();
-                };
-                
-                header.insertBefore(roleSelector, header.firstChild);
+                tabsContent.appendChild(tabPane);
+            });
+
+            log(`Tabs created for role: ${role}`);
+        }
+
+        function switchTab(tabId, clickedButton) {
+            // Actualizar botones de pestañas
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            clickedButton.classList.add('active');
+            
+            // Actualizar contenido de pestañas
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            const targetPane = document.getElementById(tabId);
+            if (targetPane) {
+                targetPane.classList.add('active');
+            }
+            
+            log(`Switched to tab: ${tabId}`);
+        }
+
+        function updateHeader(role) {
+            const config = ROLES_CONFIG[role];
+            if (!config) return;
+
+            document.getElementById('companyName').textContent = config.title;
+            document.getElementById('companyDescription').textContent = config.subtitle;
+            document.getElementById('profileRole').textContent = role;
+
+            log(`Header updated for role: ${role}`);
+        }
+
+        function setupDebugControls() {
+            if (!isDebugMode) return;
+
+            const debugControls = document.getElementById('debugControls');
+            const roleSelector = document.getElementById('roleSelector');
+            
+            debugControls.style.display = 'block';
+            roleSelector.value = currentRole.toLowerCase();
+            
+            roleSelector.onchange = (e) => {
+                const newRole = e.target.value.toUpperCase();
+                changeRole(newRole);
+            };
+
+            log('Debug controls setup completed');
+        }
+
+        function changeRole(newRole) {
+            currentRole = newRole;
+            updateHeader(newRole);
+            updateWidgets(newRole);
+            createTabs(newRole);
+            log(`Role changed to: ${newRole}`);
+        }
+
+        // ================================================================
+        // FUNCIONES DE EVENTOS
+        // ================================================================
+
+        function handleAction(action) {
+            log(`Action triggered: ${action}`);
+            alert(`Acción: ${action}\nEsta funcionalidad estará disponible próximamente.`);
+        }
+
+        function handleSignOut() {
+            log('Sign out clicked');
+            if (confirm('¿Estás seguro que deseas cerrar sesión?')) {
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 500);
             }
         }
 
         // ================================================================
-        // INITIALIZATION CON MEJOR ERROR HANDLING
+        // INICIALIZACIÓN
         // ================================================================
-        document.addEventListener('DOMContentLoaded', async function() {
-            console.log('Iniciando Company Dashboard - Opsis Suite');
-            
-            if (isDebugMode) {
-                updateDebugInfo('Debug mode enabled');
-                document.getElementById('debugInfo').classList.add('show');
-            }
-            
+
+        function init() {
             try {
-                updateDebugInfo('Starting initialization...');
-                
-                const user = await Promise.race([
-                    checkAuth(),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('Auth timeout')), 8000))
-                ]);
-                
-                if (user) {
-                    updateDebugInfo('User authenticated, loading company data...');
-                    
-                    await Promise.race([
-                        loadCompanyData(),
-                        new Promise((_, reject) => setTimeout(() => reject(new Error('Company load timeout')), 6000))
-                    ]);
-                    
-                    updateDebugInfo('Company data loaded, setting up stats...');
-                    
-                    // Estadísticas de ejemplo
-                    document.getElementById('availableEquipment').textContent = '168';
-                    document.getElementById('activeLoans').textContent = '56';
-                    document.getElementById('inMaintenance').textContent = '23';
-                    document.getElementById('overdueReturns').textContent = '12';
-                    document.getElementById('totalEquipment').textContent = '247';
-                    document.getElementById('activeUsers').textContent = '15';
-                    document.getElementById('monthlyLoans').textContent = '89';
-                    
-                    updateDebugInfo('Stats loaded, hiding loading screen...');
-                    
-                    setTimeout(() => {
-                        document.getElementById('loadingScreen').classList.add('hidden');
-                        showNotification(`Bienvenido a ${currentCompany?.name || 'Opsis Suite'}`, 'success');
-                        updateDebugInfo('Initialization completed successfully');
-                    }, 1200);
+                log('Initializing dashboard');
+
+                // Detectar configuraciones
+                isDebugMode = detectDebugMode();
+                currentRole = detectRole();
+                const company = detectCompany();
+
+                log(`Debug mode: ${isDebugMode}`);
+                log(`Role detected: ${currentRole}`);
+                log(`Company: ${company}`);
+
+                // Configurar interfaz
+                updateHeader(currentRole);
+                updateWidgets(currentRole);
+                createTabs(currentRole);
+                setupDebugControls();
+
+                // Actualizar loading screen
+                const config = ROLES_CONFIG[currentRole];
+                if (config) {
+                    document.getElementById('loadingCompanyName').textContent = config.title;
+                    document.getElementById('loadingSubtitle').textContent = `Iniciando ${config.subtitle.toLowerCase()}...`;
                 }
-                
+
+                // Ocultar loading screen
+                setTimeout(() => {
+                    document.getElementById('loadingScreen').classList.add('hidden');
+                    log('Dashboard initialization completed successfully');
+                }, 1500);
+
             } catch (error) {
-                console.error('Error durante la inicialización:', error);
-                updateDebugInfo(`Initialization error: ${error.message}`);
-                
-                if (isDebugMode) {
-                    console.warn('DEBUG MODE: Continuando con datos de prueba');
-                    updateDebugInfo('DEBUG: Using test data, skipping auth');
-                    
-                    currentCompany = createDemoCompany('demo');
-                    updateCompanyDisplay();
-                    
-                    // Aplicar rol desde URL o usar por defecto
-                    const debugRole = detectUserRole();
-                    updateDashboardForRole(debugRole);
-                    setupRoleSelector();
-                    window.currentUserRole = debugRole;
-                    
-                    document.getElementById('availableEquipment').textContent = '168';
-                    document.getElementById('activeLoans').textContent = '56';
-                    document.getElementById('inMaintenance').textContent = '23';
-                    document.getElementById('overdueReturns').textContent = '12';
-                    document.getElementById('totalEquipment').textContent = '247';
-                    document.getElementById('activeUsers').textContent = '15';
-                    document.getElementById('monthlyLoans').textContent = '89';
-                    
-                    setTimeout(() => {
-                        document.getElementById('loadingScreen').classList.add('hidden');
-                        showNotification('Modo debug: Datos de prueba cargados', 'warning');
-                    }, 1200);
-                } else {
-                    setTimeout(() => {
-                        document.getElementById('loadingScreen').innerHTML = `
-                            <div style="text-align: center; color: white; padding: 2rem;">
-                                <h2>Error de Conexión</h2>
-                                <p>No se pudo conectar con el servidor.</p>
-                                <div style="margin-top: 2rem;">
-                                    <button onclick="window.location.reload()" style="margin: 0.5rem; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; background: #007AFF; color: white; cursor: pointer;">
-                                        Intentar de Nuevo
-                                    </button>
-                                    <button onclick="window.location.href='?debug=true'" style="margin: 0.5rem; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; background: #FF9500; color: white; cursor: pointer;">
-                                        Modo Debug
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                    }, 2000);
-                }
+                log(`Initialization error: ${error.message}`);
+                console.error('Dashboard initialization failed:', error);
             }
-        });
+        }
 
         // ================================================================
-        // AUTH STATE LISTENER
+        // EVENT LISTENERS
         // ================================================================
-        supabase.auth.onAuthStateChange((event, session) => {
-            console.log('Auth state changed:', event);
-            updateDebugInfo(`Auth event: ${event}`);
-            
-            if (event === 'SIGNED_OUT') {
-                console.log('Usuario cerró sesión, redirigiendo...');
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.href = 'https://candewesth.github.io/opsis-suite/login.html';
-            } else if (event === 'SIGNED_IN' && !currentUser) {
-                console.log('Usuario autenticado, recargando...');
-                window.location.reload();
-            }
-        });
 
-        // Debug toggle con Ctrl+D
-        document.addEventListener('keydown', function(e) {
+        document.addEventListener('DOMContentLoaded', init);
+
+        // Atajos de teclado para debug
+        document.addEventListener('keydown', (e) => {
             if (e.ctrlKey && e.key === 'd') {
                 e.preventDefault();
-                isDebugMode = !isDebugMode;
-                const debugElement = document.getElementById('debugInfo');
-                if (isDebugMode) {
-                    debugElement.classList.add('show');
-                    updateDebugInfo('Debug mode activated');
+                const debugInfo = document.getElementById('debugInfo');
+                if (debugInfo.classList.contains('show')) {
+                    debugInfo.classList.remove('show');
                 } else {
-                    debugElement.classList.remove('show');
+                    debugInfo.classList.add('show');
+                    isDebugMode = true;
                 }
             }
         });
 
-        console.log('Company Dashboard Template - Apple 96 Style Ready!');
+        log('Dashboard script loaded');
     </script>
 </body>
 </html>
