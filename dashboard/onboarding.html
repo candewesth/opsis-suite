@@ -1,1 +1,1259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurar Empresa - Opsis Suite</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', Helvetica, Arial, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.5;
+            font-size: 15px;
+            font-weight: 400;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
 
+        :root {
+            --primary-color: #1c7ed6;
+            --primary-hover: #1971c2;
+            --secondary-color: #495057;
+            --success-color: #37b24d;
+            --warning-color: #fd7e14;
+            --danger-color: #e03131;
+            --info-color: #339af0;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --text-tertiary: #adb5bd;
+            --bg-gradient: linear-gradient(135deg, #f8f9fc 0%, #e9ecf1 100%);
+            --bg-card: rgba(255, 255, 255, 0.95);
+            --bg-glass: rgba(255, 255, 255, 0.8);
+            --bg-overlay: rgba(0, 0, 0, 0.02);
+            --border-color: rgba(0, 0, 0, 0.06);
+            --border-light: rgba(0, 0, 0, 0.04);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.12);
+            --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.15);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+        }
+
+        [data-theme="dark"] {
+            --bg-gradient: linear-gradient(135deg, #1a1d29 0%, #2d3748 100%);
+            --bg-card: rgba(45, 55, 72, 0.95);
+            --bg-glass: rgba(45, 55, 72, 0.8);
+            --bg-overlay: rgba(255, 255, 255, 0.02);
+            --text-primary: #f7fafc;
+            --text-secondary: #a0aec0;
+            --text-tertiary: #718096;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-light: rgba(255, 255, 255, 0.04);
+        }
+
+        .onboarding-container {
+            background: var(--bg-card);
+            backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+            max-width: 1000px;
+            width: 100%;
+            overflow: hidden;
+            animation: slideIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .onboarding-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--info-color));
+            color: white;
+            padding: 3rem 2rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .onboarding-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--success-color), var(--warning-color), var(--danger-color));
+            opacity: 0.8;
+        }
+
+        .logo-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.2);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .onboarding-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+            letter-spacing: -0.02em;
+        }
+
+        .onboarding-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+            font-weight: 500;
+        }
+
+        .onboarding-body {
+            padding: 3rem 2rem;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 3rem;
+        }
+
+        .step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-overlay);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            margin: 0 0.5rem;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .step.active {
+            background: var(--primary-color);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 4px 16px rgba(28, 126, 214, 0.25);
+        }
+
+        .step.completed {
+            background: var(--success-color);
+            color: white;
+            box-shadow: 0 2px 8px rgba(55, 178, 77, 0.2);
+        }
+
+        .step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            width: 60px;
+            height: 2px;
+            background: var(--border-color);
+            transform: translateY(-50%);
+        }
+
+        .step.completed::after {
+            background: var(--success-color);
+        }
+
+        .form-section {
+            display: none;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            text-align: center;
+            letter-spacing: -0.01em;
+        }
+
+        .section-subtitle {
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .industry-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .industry-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .industry-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(28, 126, 214, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .industry-card:hover::before {
+            left: 100%;
+        }
+
+        .industry-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary-color);
+        }
+
+        .industry-card.selected {
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, rgba(28, 126, 214, 0.1), rgba(51, 154, 240, 0.05));
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .industry-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .industry-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .industry-description {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .custom-industry-form {
+            background: var(--bg-overlay);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .module-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .module-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--success-color);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .module-card.selected::after {
+            opacity: 1;
+        }
+
+        .module-card.selected {
+            border-color: var(--success-color);
+            background: linear-gradient(135deg, rgba(55, 178, 77, 0.1), rgba(81, 207, 102, 0.05));
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .module-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--success-color);
+        }
+
+        .module-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+
+        .module-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            background: linear-gradient(135deg, var(--success-color), #51cf66);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .module-price {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .module-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .module-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.6rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: var(--bg-glass);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(28, 126, 214, 0.1);
+            background: white;
+        }
+
+        .plan-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .plan-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .plan-card.popular {
+            border-color: var(--primary-color);
+            position: relative;
+        }
+
+        .plan-card.popular::before {
+            content: 'Más Popular';
+            position: absolute;
+            top: -1px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary-color);
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .plan-card.selected {
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, rgba(28, 126, 214, 0.1), rgba(51, 154, 240, 0.05));
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .plan-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .plan-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-price {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .plan-period {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+        }
+
+        .plan-features {
+            text-align: left;
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .plan-features li {
+            padding: 0.4rem 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .plan-features li::before {
+            content: '✓';
+            color: var(--success-color);
+            font-weight: 700;
+            width: 16px;
+            text-align: center;
+        }
+
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn {
+            padding: 0.8rem 2rem;
+            border-radius: var(--radius-md);
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::before { left: 100%; }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--info-color));
+            color: white;
+            box-shadow: 0 2px 8px rgba(28, 126, 214, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(28, 126, 214, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-glass);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .summary-section {
+            background: var(--bg-overlay);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid var(--border-light);
+            font-size: 0.95rem;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            padding-top: 1rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--border-color);
+            border-radius: 3px;
+            margin-bottom: 3rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--info-color));
+            border-radius: 3px;
+            transition: width 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        @media (max-width: 768px) {
+            .onboarding-container {
+                margin: 1rem;
+                max-width: calc(100vw - 2rem);
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .industry-grid,
+            .modules-grid,
+            .plan-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .onboarding-header {
+                padding: 2rem 1rem 1.5rem;
+            }
+            
+            .onboarding-body {
+                padding: 2rem 1rem;
+            }
+            
+            .step-indicator {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            
+            .step {
+                margin: 0.25rem;
+            }
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <div class="onboarding-container">
+        <div class="onboarding-header">
+            <div class="logo-icon">🏢</div>
+            <h1>Opsis Suite</h1>
+            <p>Configura tu empresa en minutos</p>
+        </div>
+
+        <div class="onboarding-body">
+            <div class="step-indicator">
+                <div class="step active" id="step1">1</div>
+                <div class="step" id="step2">2</div>
+                <div class="step" id="step3">3</div>
+                <div class="step" id="step4">4</div>
+                <div class="step" id="step5">5</div>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 20%"></div>
+            </div>
+
+            <!-- Paso 1: Seleccionar Industria -->
+            <div class="form-section active" id="section1">
+                <h2 class="section-title">¿A qué industria pertenece tu empresa?</h2>
+                <p class="section-subtitle">Selecciona la industria para personalizar automáticamente las herramientas</p>
+                
+                <div class="industry-grid">
+                    <div class="industry-card" onclick="selectIndustry('construccion', this)">
+                        <span class="industry-icon">🏗️</span>
+                        <div class="industry-name">Construcción</div>
+                        <div class="industry-description">Obras, proyectos de construcción, materiales y maquinaria pesada</div>
+                    </div>
+                    
+                    <div class="industry-card" onclick="selectIndustry('demolicion', this)">
+                        <span class="industry-icon">🧨</span>
+                        <div class="industry-name">Demolición</div>
+                        <div class="industry-description">Demolición, desmontaje y gestión de residuos especializados</div>
+                    </div>
+                    
+                    <div class="industry-card" onclick="selectIndustry('jardineria', this)">
+                        <span class="industry-icon">🌱</span>
+                        <div class="industry-name">Jardinería</div>
+                        <div class="industry-description">Paisajismo, mantenimiento de jardines y plantas ornamentales</div>
+                    </div>
+                    
+                    <div class="industry-card" onclick="selectIndustry('plomeria', this)">
+                        <span class="industry-icon">🔧</span>
+                        <div class="industry-name">Plomería</div>
+                        <div class="industry-description">Instalaciones hidráulicas, reparaciones y servicios de emergencia</div>
+                    </div>
+                    
+                    <div class="industry-card" onclick="selectIndustry('mudanzas', this)">
+                        <span class="industry-icon">📦</span>
+                        <div class="industry-name">Mudanzas</div>
+                        <div class="industry-description">Servicios de mudanza, logística y transporte de bienes</div>
+                    </div>
+                    
+                    <div class="industry-card" onclick="selectIndustry('mitigaciones', this)">
+                        <span class="industry-icon">🚨</span>
+                        <div class="industry-name">Mitigación</div>
+                        <div class="industry-description">Restauración de daños, mitigación de riesgos y emergencias</div>
+                    </div>
+                    
+                    <div class="industry-card" onclick="selectIndustry('medica', this)">
+                        <span class="industry-icon">🏥</span>
+                        <div class="industry-name">Médica/Clínicas</div>
+                        <div class="industry-description">Equipos médicos, suministros hospitalarios y farmacéuticos</div>
+                    </div>
+                    
+                    <div class="industry-card" onclick="selectIndustry('transporte', this)">
+                        <span class="industry-icon">🚛</span>
+                        <div class="industry-name">Transporte</div>
+                        <div class="industry-description">Flotas vehiculares, logística y distribución</div>
+                    </div>
+                    
+                    <div class="industry-card" onclick="selectIndustry('abarrotes', this)">
+                        <span class="industry-icon">🛒</span>
+                        <div class="industry-name">Abarrotes/Retail</div>
+                        <div class="industry-description">Inventario de productos, ventas y distribución retail</div>
+                    </div>
+                    
+                    <div class="industry-card" onclick="selectIndustry('manufactura', this)">
+                        <span class="industry-icon">🏭</span>
+                        <div class="industry-name">Manufactura</div>
+                        <div class="industry-description">Materias primas, líneas de producción y productos terminados</div>
+                    </div>
+                    
+                    <div class="industry-card" onclick="selectIndustry('restaurantes', this)">
+                        <span class="industry-icon">🍽️</span>
+                        <div class="industry-name">Restaurantes</div>
+                        <div class="industry-description">Inventario de alimentos, bebidas y equipos de cocina</div>
+                    </div>
+                    
+                    <div class="industry-card" onclick="selectIndustry('otros', this)">
+                        <span class="industry-icon">⚙️</span>
+                        <div class="industry-name">Otra Industria</div>
+                        <div class="industry-description">Configuración personalizada para otros sectores</div>
+                    </div>
+                </div>
+                
+                <!-- Formulario personalizado para "Otra Industria" -->
+                <div class="custom-industry-form" id="customIndustryForm" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">Describe tu industria</label>
+                        <input type="text" class="form-control" id="customIndustryName" placeholder="Ej: Veterinaria, Eventos, Talleres mecánicos, etc.">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">¿Qué tipo de inventario manejas?</label>
+                        <textarea class="form-control" id="customInventoryType" rows="3" placeholder="Describe qué productos, materiales o equipos necesitas controlar..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Principales operaciones</label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" name="customOperations" value="inventory"> Control de inventario
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" name="customOperations" value="sales"> Ventas/Facturación
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" name="customOperations" value="services"> Servicios a domicilio
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" name="customOperations" value="equipment"> Equipos/Maquinaria
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" name="customOperations" value="projects"> Proyectos/Obras
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" name="customOperations" value="logistics"> Logística/Envíos
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" name="customOperations" value="maintenance"> Mantenimiento
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" name="customOperations" value="compliance"> Normativas/Compliance
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Paso 2: Seleccionar Módulos -->
+            <div class="form-section" id="section2">
+                <h2 class="section-title">Selecciona los módulos que necesitas</h2>
+                <p class="section-subtitle">Puedes agregar más módulos después</p>
+                
+                <div class="modules-grid" id="modulesGrid">
+                    <!-- Los módulos se cargarán dinámicamente según la industria -->
+                </div>
+            </div>
+
+            <!-- Paso 3: Información de la Empresa -->
+            <div class="form-section" id="section3">
+                <h2 class="section-title">Información de tu empresa</h2>
+                <p class="section-subtitle">Datos básicos para configurar tu cuenta</p>
+                
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label class="form-label">Nombre de la Empresa *</label>
+                        <input type="text" class="form-control" id="companyName" placeholder="Ej: Constructora ABC S.A." required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Número de Empleados</label>
+                        <select class="form-control" id="employeeCount">
+                            <option value="1-10">1-10 empleados</option>
+                            <option value="11-50">11-50 empleados</option>
+                            <option value="51-200">51-200 empleados</option>
+                            <option value="200+">Más de 200 empleados</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">País</label>
+                        <select class="form-control" id="country">
+                            <option value="MX">México</option>
+                            <option value="CO">Colombia</option>
+                            <option value="CL">Chile</option>
+                            <option value="AR">Argentina</option>
+                            <option value="PE">Perú</option>
+                            <option value="US">Estados Unidos</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Tu Nombre Completo *</label>
+                        <input type="text" class="form-control" id="adminName" placeholder="Nombre del administrador" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Email Corporativo *</label>
+                        <input type="email" class="form-control" id="adminEmail" placeholder="admin@empresa.com" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Paso 4: Seleccionar Plan -->
+            <div class="form-section" id="section4">
+                <h2 class="section-title">Elige tu plan</h2>
+                <p class="section-subtitle">Puedes cambiar de plan en cualquier momento</p>
+                
+                <div class="plan-cards">
+                    <div class="plan-card" onclick="selectPlan('trial', this)">
+                        <div class="plan-name">Prueba Gratuita</div>
+                        <div class="plan-price">$0</div>
+                        <div class="plan-period">14 días gratis</div>
+                        <ul class="plan-features">
+                            <li>1 módulo incluido</li>
+                            <li>Hasta 5 usuarios</li>
+                            <li>Soporte por email</li>
+                            <li>5GB de almacenamiento</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="plan-card popular" onclick="selectPlan('starter', this)">
+                        <div class="plan-name">Starter</div>
+                        <div class="plan-price">$99</div>
+                        <div class="plan-period">por mes</div>
+                        <ul class="plan-features">
+                            <li>Hasta 3 módulos</li>
+                            <li>Hasta 15 usuarios</li>
+                            <li>Soporte prioritario</li>
+                            <li>25GB de almacenamiento</li>
+                            <li>Reportes básicos</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="plan-card" onclick="selectPlan('professional', this)">
+                        <div class="plan-name">Professional</div>
+                        <div class="plan-price">$199</div>
+                        <div class="plan-period">por mes</div>
+                        <ul class="plan-features">
+                            <li>Módulos ilimitados</li>
+                            <li>Usuarios ilimitados</li>
+                            <li>Soporte dedicado</li>
+                            <li>100GB de almacenamiento</li>
+                            <li>Reportes avanzados</li>
+                            <li>API personalizada</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Paso 5: Resumen y Confirmación -->
+            <div class="form-section" id="section5">
+                <h2 class="section-title">Confirma tu configuración</h2>
+                <p class="section-subtitle">Revisa los detalles antes de crear tu cuenta</p>
+                
+                <div class="summary-section">
+                    <div class="summary-title">Resumen de tu configuración</div>
+                    <div class="summary-item">
+                        <span>Industria:</span>
+                        <span id="summaryIndustry">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Módulos seleccionados:</span>
+                        <span id="summaryModules">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Empresa:</span>
+                        <span id="summaryCompany">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Plan:</span>
+                        <span id="summaryPlan">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Total mensual:</span>
+                        <span id="summaryTotal">$0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="navigation-buttons">
+                <button class="btn btn-secondary" id="prevBtn" onclick="previousStep()" style="display: none;">
+                    Anterior
+                </button>
+                <button class="btn btn-primary" id="nextBtn" onclick="nextStep()">
+                    Siguiente
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        let selectedIndustry = null;
+        let selectedModules = [];
+        let selectedPlan = null;
+        
+        const industryModules = {
+            'construccion': [
+                {id: 'warehouse', name: 'Warehouse Management', description: 'Gestión de materiales, herramientas y equipos de construcción', price: 49, icon: '📦'},
+                {id: 'equipment', name: 'Equipment Tracking', description: 'Control de maquinaria pesada y herramientas especializadas', price: 59, icon: '🚜'},
+                {id: 'projects', name: 'Project Management', description: 'Gestión de obras y cronogramas de construcción', price: 69, icon: '🏗️'},
+                {id: 'safety', name: 'Safety Compliance', description: 'Control de seguridad y cumplimiento normativo', price: 39, icon: '🦺'}
+            ],
+            'demolicion': [
+                {id: 'warehouse', name: 'Equipment Management', description: 'Gestión de equipos de demolición y herramientas especializadas', price: 49, icon: '🧨'},
+                {id: 'safety', name: 'Safety Protocols', description: 'Protocolos de seguridad para demolición', price: 39, icon: '⚠️'},
+                {id: 'waste', name: 'Waste Management', description: 'Control de residuos y materiales de desecho', price: 35, icon: '♻️'},
+                {id: 'permits', name: 'Permits & Compliance', description: 'Gestión de permisos y cumplimiento legal', price: 29, icon: '📋'}
+            ],
+            'jardineria': [
+                {id: 'warehouse', name: 'Plant & Supply Management', description: 'Gestión de plantas, fertilizantes y herramientas', price: 39, icon: '🌱'},
+                {id: 'scheduling', name: 'Service Scheduling', description: 'Programación de servicios de mantenimiento', price: 29, icon: '📅'},
+                {id: 'clients', name: 'Client Management', description: 'CRM especializado para jardinería y paisajismo', price: 35, icon: '👥'},
+                {id: 'seasonal', name: 'Seasonal Planning', description: 'Planificación por temporadas y clima', price: 25, icon: '🌿'}
+            ],
+            'plomeria': [
+                {id: 'warehouse', name: 'Parts & Tools', description: 'Inventario de repuestos y herramientas de plomería', price: 35, icon: '🔧'},
+                {id: 'dispatch', name: 'Emergency Dispatch', description: 'Sistema de despacho para emergencias', price: 45, icon: '🚨'},
+                {id: 'clients', name: 'Client Portal', description: 'Portal de clientes y seguimiento de servicios', price: 29, icon: '👨‍🔧'},
+                {id: 'mobile', name: 'Mobile Workforce', description: 'App móvil para técnicos en campo', price: 39, icon: '📱'}
+            ],
+            'mudanzas': [
+                {id: 'warehouse', name: 'Packing Materials', description: 'Gestión de materiales de embalaje', price: 29, icon: '📦'},
+                {id: 'fleet', name: 'Fleet Management', description: 'Control de vehículos y rutas', price: 49, icon: '🚚'},
+                {id: 'booking', name: 'Booking System', description: 'Sistema de reservas y cotizaciones', price: 35, icon: '📅'},
+                {id: 'tracking', name: 'Shipment Tracking', description: 'Seguimiento de mudanzas en tiempo real', price: 39, icon: '📍'}
+            ],
+            'mitigaciones': [
+                {id: 'warehouse', name: 'Emergency Equipment', description: 'Equipos de mitigación y restauración', price: 45, icon: '🚨'},
+                {id: 'claims', name: 'Insurance Claims', description: 'Gestión de reclamos de seguros', price: 55, icon: '📋'},
+                {id: 'documentation', name: 'Damage Documentation', description: 'Documentación fotográfica y reportes', price: 35, icon: '📷'},
+                {id: 'emergency', name: 'Emergency Response', description: 'Protocolo de respuesta a emergencias', price: 49, icon: '⚡'}
+            ],
+            'medica': [
+                {id: 'warehouse', name: 'Medical Supply Management', description: 'Inventario de suministros médicos y farmacéuticos', price: 59, icon: '💊'},
+                {id: 'equipment', name: 'Medical Equipment', description: 'Control de equipos médicos especializados', price: 69, icon: '🏥'},
+                {id: 'compliance', name: 'Healthcare Compliance', description: 'Cumplimiento de normativas sanitarias', price: 45, icon: '📋'},
+                {id: 'appointments', name: 'Appointment Management', description: 'Gestión de citas y programación', price: 35, icon: '📅'}
+            ],
+            'transporte': [
+                {id: 'fleet', name: 'Fleet Management', description: 'Control integral de flotas vehiculares', price: 55, icon: '🚛'},
+                {id: 'warehouse', name: 'Parts & Maintenance', description: 'Repuestos y mantenimiento de vehículos', price: 39, icon: '🔧'},
+                {id: 'logistics', name: 'Logistics Management', description: 'Gestión de rutas y envíos', price: 49, icon: '📦'},
+                {id: 'tracking', name: 'GPS Tracking', description: 'Seguimiento en tiempo real de vehículos', price: 35, icon: '📍'}
+            ],
+            'abarrotes': [
+                {id: 'warehouse', name: 'Product Inventory', description: 'Control de inventario de productos retail', price: 35, icon: '🛒'},
+                {id: 'pos', name: 'Point of Sale', description: 'Sistema de punto de venta integrado', price: 29, icon: '💳'},
+                {id: 'suppliers', name: 'Supplier Management', description: 'Gestión de proveedores y compras', price: 25, icon: '🏪'},
+                {id: 'analytics', name: 'Sales Analytics', description: 'Análisis de ventas y tendencias', price: 39, icon: '📊'}
+            ],
+            'manufactura': [
+                {id: 'warehouse', name: 'Raw Materials', description: 'Control de materias primas', price: 45, icon: '🏭'},
+                {id: 'production', name: 'Production Planning', description: 'Planificación de líneas de producción', price: 59, icon: '⚙️'},
+                {id: 'quality', name: 'Quality Control', description: 'Control de calidad y trazabilidad', price: 49, icon: '✅'},
+                {id: 'maintenance', name: 'Equipment Maintenance', description: 'Mantenimiento preventivo de maquinaria', price: 39, icon: '🔧'}
+            ],
+            'restaurantes': [
+                {id: 'warehouse', name: 'Food Inventory', description: 'Control de inventario de alimentos y bebidas', price: 35, icon: '🍽️'},
+                {id: 'menu', name: 'Menu Management', description: 'Gestión de menús y recetas', price: 25, icon: '📋'},
+                {id: 'suppliers', name: 'Supplier Network', description: 'Red de proveedores de alimentos', price: 29, icon: '🚚'},
+                {id: 'pos', name: 'Restaurant POS', description: 'Sistema de punto de venta para restaurantes', price: 39, icon: '💳'}
+            ],
+            'otros': [
+                {id: 'warehouse', name: 'Inventory Management', description: 'Sistema de inventario personalizable', price: 39, icon: '📦'},
+                {id: 'tracking', name: 'Asset Tracking', description: 'Seguimiento de activos y equipos', price: 35, icon: '📍'},
+                {id: 'clients', name: 'Customer Management', description: 'CRM básico para clientes', price: 29, icon: '👥'},
+                {id: 'reports', name: 'Custom Reports', description: 'Reportes personalizables', price: 25, icon: '📊'}
+            ]
+        };
+
+        function selectIndustry(industry, element) {
+            // Remover selección anterior
+            document.querySelectorAll('.industry-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Seleccionar nueva industria
+            element.classList.add('selected');
+            selectedIndustry = industry;
+            
+            // Mostrar/ocultar formulario personalizado
+            const customForm = document.getElementById('customIndustryForm');
+            if (industry === 'otros') {
+                customForm.style.display = 'block';
+            } else {
+                customForm.style.display = 'none';
+            }
+            
+            // Cargar módulos correspondientes
+            loadModulesForIndustry(industry);
+            
+            console.log('Industria seleccionada:', industry);
+        }
+        
+        function loadModulesForIndustry(industry) {
+            const modulesGrid = document.getElementById('modulesGrid');
+            const modules = industryModules[industry] || [];
+            
+            modulesGrid.innerHTML = modules.map(module => `
+                <div class="module-card" onclick="toggleModule('${module.id}', this)">
+                    <div class="module-header">
+                        <div class="module-icon">${module.icon}</div>
+                        <div class="module-price">$${module.price}/mes</div>
+                    </div>
+                    <div class="module-name">${module.name}</div>
+                    <div class="module-description">${module.description}</div>
+                </div>
+            `).join('');
+        }
+        
+        function toggleModule(moduleId, element) {
+            element.classList.toggle('selected');
+            
+            if (selectedModules.includes(moduleId)) {
+                selectedModules = selectedModules.filter(id => id !== moduleId);
+            } else {
+                selectedModules.push(moduleId);
+            }
+            
+            console.log('Módulos seleccionados:', selectedModules);
+        }
+        
+        function selectPlan(plan, element) {
+            document.querySelectorAll('.plan-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            element.classList.add('selected');
+            selectedPlan = plan;
+            
+            console.log('Plan seleccionado:', plan);
+        }
+        
+        function nextStep() {
+            if (currentStep < 5) {
+                if (validateCurrentStep()) {
+                    // Ocultar paso actual
+                    document.getElementById(`section${currentStep}`).classList.remove('active');
+                    
+                    // Marcar paso como completado
+                    document.getElementById(`step${currentStep}`).classList.remove('active');
+                    document.getElementById(`step${currentStep}`).classList.add('completed');
+                    
+                    // Avanzar al siguiente paso
+                    currentStep++;
+                    
+                    // Mostrar siguiente paso
+                    document.getElementById(`section${currentStep}`).classList.add('active');
+                    document.getElementById(`step${currentStep}`).classList.add('active');
+                    
+                    // Actualizar progreso
+                    document.getElementById('progressFill').style.width = `${(currentStep / 5) * 100}%`;
+                    
+                    // Actualizar botones
+                    document.getElementById('prevBtn').style.display = currentStep > 1 ? 'inline-flex' : 'none';
+                    document.getElementById('nextBtn').textContent = currentStep === 5 ? 'Crear Cuenta' : 'Siguiente';
+                    
+                    // Si es el último paso, actualizar resumen
+                    if (currentStep === 5) {
+                        updateSummary();
+                    }
+                }
+            } else {
+                // Crear cuenta
+                createAccount();
+            }
+        }
+        
+        function previousStep() {
+            if (currentStep > 1) {
+                // Ocultar paso actual
+                document.getElementById(`section${currentStep}`).classList.remove('active');
+                document.getElementById(`step${currentStep}`).classList.remove('active');
+                
+                // Retroceder al paso anterior
+                currentStep--;
+                
+                // Mostrar paso anterior
+                document.getElementById(`section${currentStep}`).classList.add('active');
+                document.getElementById(`step${currentStep}`).classList.remove('completed');
+                document.getElementById(`step${currentStep}`).classList.add('active');
+                
+                // Actualizar progreso
+                document.getElementById('progressFill').style.width = `${(currentStep / 5) * 100}%`;
+                
+                // Actualizar botones
+                document.getElementById('prevBtn').style.display = currentStep > 1 ? 'inline-flex' : 'none';
+                document.getElementById('nextBtn').textContent = 'Siguiente';
+            }
+        }
+        
+        function validateCurrentStep() {
+            switch (currentStep) {
+                case 1:
+                    if (!selectedIndustry) {
+                        alert('Por favor selecciona una industria');
+                        return false;
+                    }
+                    if (selectedIndustry === 'otros') {
+                        const customName = document.getElementById('customIndustryName').value;
+                        const customInventory = document.getElementById('customInventoryType').value;
+                        if (!customName || !customInventory) {
+                            alert('Por favor completa la información de tu industria personalizada');
+                            return false;
+                        }
+                    }
+                    break;
+                case 2:
+                    if (selectedModules.length === 0) {
+                        alert('Por favor selecciona al menos un módulo');
+                        return false;
+                    }
+                    break;
+                case 3:
+                    const companyName = document.getElementById('companyName').value;
+                    const adminName = document.getElementById('adminName').value;
+                    const adminEmail = document.getElementById('adminEmail').value;
+                    
+                    if (!companyName || !adminName || !adminEmail) {
+                        alert('Por favor completa todos los campos obligatorios');
+                        return false;
+                    }
+                    break;
+                case 4:
+                    if (!selectedPlan) {
+                        alert('Por favor selecciona un plan');
+                        return false;
+                    }
+                    break;
+            }
+            return true;
+        }
+        
+        function updateSummary() {
+            const industryNames = {
+                'construccion': 'Construcción',
+                'demolicion': 'Demolición',
+                'jardineria': 'Jardinería',
+                'plomeria': 'Plomería',
+                'mudanzas': 'Mudanzas',
+                'mitigaciones': 'Mitigación',
+                'medica': 'Médica/Clínicas',
+                'transporte': 'Transporte',
+                'abarrotes': 'Abarrotes/Retail',
+                'manufactura': 'Manufactura',
+                'restaurantes': 'Restaurantes',
+                'otros': document.getElementById('customIndustryName')?.value || 'Personalizada'
+            };
+            
+            const planNames = {
+                'trial': 'Prueba Gratuita',
+                'starter': 'Starter ($99/mes)',
+                'professional': 'Professional ($199/mes)'
+            };
+            
+            document.getElementById('summaryIndustry').textContent = industryNames[selectedIndustry] || selectedIndustry;
+            document.getElementById('summaryModules').textContent = selectedModules.length + ' módulos';
+            document.getElementById('summaryCompany').textContent = document.getElementById('companyName').value;
+            document.getElementById('summaryPlan').textContent = planNames[selectedPlan] || selectedPlan;
+            
+            // Calcular total
+            let total = 0;
+            if (selectedPlan === 'starter') total = 99;
+            else if (selectedPlan === 'professional') total = 199;
+            
+            document.getElementById('summaryTotal').textContent = `$${total}`;
+        }
+        
+        function createAccount() {
+            const config = {
+                industry: selectedIndustry,
+                customIndustry: selectedIndustry === 'otros' ? {
+                    name: document.getElementById('customIndustryName').value,
+                    inventoryType: document.getElementById('customInventoryType').value,
+                    operations: Array.from(document.querySelectorAll('input[name="customOperations"]:checked')).map(cb => cb.value)
+                } : null,
+                modules: selectedModules,
+                plan: selectedPlan,
+                company: {
+                    name: document.getElementById('companyName').value,
+                    employeeCount: document.getElementById('employeeCount').value,
+                    country: document.getElementById('country').value
+                },
+                admin: {
+                    name: document.getElementById('adminName').value,
+                    email: document.getElementById('adminEmail').value
+                }
+            };
+            
+            console.log('Configuración final:', config);
+            
+            // Simular creación de cuenta
+            alert('Cuenta creada exitosamente. Te redirigiremos a tu dashboard personalizado.');
+            
+            // En un escenario real, aquí se haría la llamada a la API
+            // window.location.href = `https://app.opsisuite.com/${companySlug}/dashboard`;
+        }
+
+        // Cargar módulos por defecto al inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cargar módulos genéricos por defecto
+            loadModulesForIndustry('otros');
+        });
+    </script>
+</body>
+</html>
