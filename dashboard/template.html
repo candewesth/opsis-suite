@@ -1195,18 +1195,757 @@
 
     <script>
         // ================================================================
-        // VARIABLES GLOBALES Y CONFIGURACIÓN
+        // DATOS SIMULADOS REALISTAS
         // ================================================================
-        
-        let currentRole = 'ALMACEN';
-        let currentCompany = null;
-        let isDebugMode = false;
-        let notifications = [];
-        let currentTheme = 'light';
 
-        // Configuración de Supabase (simulada para demo)
-        const SUPABASE_URL = 'https://lmmlhncwdwjgtkdqaycv.supabase.co';
-        const SUPABASE_KEY = 'demo-key-for-testing';
+        // Base de datos simulada en memoria
+        let simulatedDatabase = {
+            equipments: [
+                {
+                    id: '1',
+                    code: 'EXC-001',
+                    name: 'Excavadora Hidráulica CAT 320D',
+                    type: 'Excavadora',
+                    category: 'Construcción',
+                    brand: 'Caterpillar',
+                    model: '320D',
+                    status: 'available',
+                    condition: 'excellent',
+                    qr_code: 'QR-EXC001-2024',
+                    gps_enabled: true,
+                    iot_enabled: true,
+                    location: 'Almacén Principal - Sector A',
+                    usage_hours: 1250,
+                    last_maintenance: '2024-01-15',
+                    next_maintenance: '2024-03-15',
+                    purchase_date: '2023-05-10',
+                    purchase_price: 125000,
+                    current_value: 110000,
+                    latitude: 25.6866,
+                    longitude: -100.3161,
+                    fuel_level: 85,
+                    battery_level: 92
+                },
+                {
+                    id: '2',
+                    code: 'GRU-002',
+                    name: 'Grúa Torre Liebherr 85EC-B',
+                    type: 'Grúa',
+                    category: 'Construcción',
+                    brand: 'Liebherr',
+                    model: '85EC-B',
+                    status: 'in_use',
+                    condition: 'good',
+                    qr_code: 'QR-GRU002-2024',
+                    gps_enabled: true,
+                    iot_enabled: true,
+                    location: 'Obra San Pedro - Torre Norte',
+                    usage_hours: 2100,
+                    last_maintenance: '2023-12-20',
+                    next_maintenance: '2024-02-20',
+                    purchase_date: '2022-08-15',
+                    purchase_price: 95000,
+                    current_value: 82000,
+                    latitude: 25.6950,
+                    longitude: -100.3200,
+                    fuel_level: 60,
+                    battery_level: 88
+                },
+                {
+                    id: '3',
+                    code: 'BUL-003',
+                    name: 'Bulldozer Komatsu D65PX',
+                    type: 'Bulldozer',
+                    category: 'Movimiento Tierras',
+                    brand: 'Komatsu',
+                    model: 'D65PX',
+                    status: 'maintenance',
+                    condition: 'fair',
+                    qr_code: 'QR-BUL003-2024',
+                    gps_enabled: true,
+                    iot_enabled: false,
+                    location: 'Taller de Mantenimiento',
+                    usage_hours: 3200,
+                    last_maintenance: '2024-01-08',
+                    next_maintenance: '2024-02-08',
+                    purchase_date: '2021-11-22',
+                    purchase_price: 85000,
+                    current_value: 65000,
+                    latitude: 25.6820,
+                    longitude: -100.3150,
+                    fuel_level: 25,
+                    battery_level: 45
+                },
+                {
+                    id: '4',
+                    code: 'CAM-004',
+                    name: 'Camión Volquete Volvo FMX450',
+                    type: 'Camión',
+                    category: 'Transporte',
+                    brand: 'Volvo',
+                    model: 'FMX450',
+                    status: 'available',
+                    condition: 'good',
+                    qr_code: 'QR-CAM004-2024',
+                    gps_enabled: true,
+                    iot_enabled: true,
+                    location: 'Almacén Principal - Sector B',
+                    usage_hours: 1800,
+                    last_maintenance: '2024-01-25',
+                    next_maintenance: '2024-04-25',
+                    purchase_date: '2023-02-14',
+                    purchase_price: 75000,
+                    current_value: 68000,
+                    latitude: 25.6880,
+                    longitude: -100.3170,
+                    fuel_level: 95,
+                    battery_level: 100
+                },
+                {
+                    id: '5',
+                    code: 'MOT-005',
+                    name: 'Motoniveladora John Deere 672G',
+                    type: 'Motoniveladora',
+                    category: 'Nivelación',
+                    brand: 'John Deere',
+                    model: '672G',
+                    status: 'in_use',
+                    condition: 'excellent',
+                    qr_code: 'QR-MOT005-2024',
+                    gps_enabled: true,
+                    iot_enabled: true,
+                    location: 'Proyecto Carretera Norte',
+                    usage_hours: 950,
+                    last_maintenance: '2023-12-10',
+                    next_maintenance: '2024-03-10',
+                    purchase_date: '2023-09-05',
+                    purchase_price: 140000,
+                    current_value: 135000,
+                    latitude: 25.7100,
+                    longitude: -100.2900,
+                    fuel_level: 72,
+                    battery_level: 95
+                },
+                {
+                    id: '6',
+                    code: 'COM-006',
+                    name: 'Compactador Dynapac CA2500D',
+                    type: 'Compactador',
+                    category: 'Compactación',
+                    brand: 'Dynapac',
+                    model: 'CA2500D',
+                    status: 'available',
+                    condition: 'good',
+                    qr_code: 'QR-COM006-2024',
+                    gps_enabled: false,
+                    iot_enabled: false,
+                    location: 'Almacén Secundario',
+                    usage_hours: 1450,
+                    last_maintenance: '2023-11-30',
+                    next_maintenance: '2024-02-28',
+                    purchase_date: '2022-04-18',
+                    purchase_price: 45000,
+                    current_value: 38000,
+                    latitude: null,
+                    longitude: null,
+                    fuel_level: null,
+                    battery_level: null
+                }
+            ],
+            maintenances: [
+                {
+                    id: '1',
+                    equipment_id: '3',
+                    type: 'corrective',
+                    status: 'in_progress',
+                    scheduled_date: '2024-01-08',
+                    description: 'Reparación sistema hidráulico',
+                    technician: 'Juan Pérez',
+                    estimated_cost: 2500,
+                    estimated_hours: 8
+                },
+                {
+                    id: '2',
+                    equipment_id: '1',
+                    type: 'preventive',
+                    status: 'scheduled',
+                    scheduled_date: '2024-03-15',
+                    description: 'Mantenimiento preventivo 1250h',
+                    technician: 'María González',
+                    estimated_cost: 800,
+                    estimated_hours: 4
+                },
+                {
+                    id: '3',
+                    equipment_id: '6',
+                    type: 'preventive',
+                    status: 'scheduled',
+                    scheduled_date: '2024-02-28',
+                    description: 'Cambio de aceite y filtros',
+                    technician: 'Carlos López',
+                    estimated_cost: 350,
+                    estimated_hours: 2
+                }
+            ],
+            alerts: [
+                {
+                    id: '1',
+                    equipment_id: '2',
+                    type: 'maintenance_due',
+                    severity: 'medium',
+                    title: 'Mantenimiento próximo',
+                    description: 'Grúa GRU-002 necesita mantenimiento en 5 días',
+                    ai_confidence: 85,
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: '2',
+                    equipment_id: '3',
+                    type: 'fuel_low',
+                    severity: 'low',
+                    title: 'Combustible bajo',
+                    description: 'Bulldozer BUL-003 tiene 25% de combustible',
+                    ai_confidence: 95,
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: '3',
+                    equipment_id: '1',
+                    type: 'efficiency_drop',
+                    severity: 'medium',
+                    title: 'Eficiencia reducida',
+                    description: 'Excavadora EXC-001 muestra 15% menos eficiencia',
+                    ai_confidence: 72,
+                    created_at: new Date().toISOString()
+                }
+            ],
+            checkins: [
+                {
+                    id: '1',
+                    equipment_id: '2',
+                    user_id: 'user_001',
+                    type: 'checkout',
+                    location: 'Obra San Pedro',
+                    condition: 'good',
+                    notes: 'Equipo en perfectas condiciones para obra',
+                    timestamp: new Date(Date.now() - 86400000 * 2).toISOString() // 2 días atrás
+                },
+                {
+                    id: '2',
+                    equipment_id: '5',
+                    user_id: 'user_002',
+                    type: 'checkout',
+                    location: 'Proyecto Carretera Norte',
+                    condition: 'excellent',
+                    notes: 'Motoniveladora lista para trabajo de precisión',
+                    timestamp: new Date(Date.now() - 86400000).toISOString() // 1 día atrás
+                }
+            ],
+            analytics: {
+                utilization: {
+                    total_equipment: 6,
+                    in_use: 2,
+                    available: 3,
+                    maintenance: 1,
+                    utilization_rate: 33.3
+                },
+                roi: {
+                    total_investment: 565000,
+                    current_value: 498000,
+                    depreciation: 67000,
+                    roi_percentage: -11.9
+                },
+                efficiency: {
+                    avg_usage_hours: 1775,
+                    preventive_maintenances: 2,
+                    corrective_maintenances: 1,
+                    efficiency_score: 78.5
+                }
+            },
+            warehouseLayout: {
+                sections: [
+                    {
+                        id: '1',
+                        name: 'Sector A',
+                        type: 'storage',
+                        capacity: 10,
+                        current_occupancy: 2,
+                        efficiency_score: 85,
+                        equipment_types: ['Excavadora', 'Bulldozer']
+                    },
+                    {
+                        id: '2',
+                        name: 'Sector B',
+                        type: 'storage',
+                        capacity: 8,
+                        current_occupancy: 1,
+                        efficiency_score: 65,
+                        equipment_types: ['Camión', 'Compactador']
+                    },
+                    {
+                        id: '3',
+                        name: 'Taller',
+                        type: 'maintenance',
+                        capacity: 3,
+                        current_occupancy: 1,
+                        efficiency_score: 90,
+                        equipment_types: ['Todos']
+                    }
+                ]
+        // Datos específicos para ADMIN
+        adminData: {
+            users: [
+                { id: '1', name: 'Juan Pérez', role: 'supervisor', status: 'active', last_login: '2024-01-28', email: 'juan.perez@empresa.com' },
+                { id: '2', name: 'María González', role: 'operativo', status: 'active', last_login: '2024-01-28', email: 'maria.gonzalez@empresa.com' },
+                { id: '3', name: 'Carlos López', role: 'almacen', status: 'active', last_login: '2024-01-27', email: 'carlos.lopez@empresa.com' },
+                { id: '4', name: 'Ana Martínez', role: 'estimador', status: 'inactive', last_login: '2024-01-25', email: 'ana.martinez@empresa.com' }
+            ],
+            systemHealth: {
+                database: { status: 'healthy', response_time: '45ms', connections: 23 },
+                api: { status: 'healthy', response_time: '120ms', requests_min: 450 },
+                storage: { status: 'warning', usage: '78%', available: '2.1TB' },
+                backup: { status: 'healthy', last_backup: '2024-01-28 03:00', next: '2024-01-29 03:00' }
+            },
+            security: {
+                failed_logins: 12,
+                active_sessions: 28,
+                security_score: 94,
+                last_audit: '2024-01-20',
+                certificates_status: 'valid'
+            },
+            billing: {
+                current_plan: 'Enterprise',
+                monthly_cost: 3245,
+                users_included: 50,
+                users_active: 28,
+                storage_used: '45GB',
+                storage_limit: '100GB',
+                api_calls_used: 12500,
+                api_calls_limit: 50000
+            }
+        }
+
+        // ================================================================
+        // FUNCIONES COMPLETAS DE NEGOCIO
+        // ================================================================
+
+        // Función completa para escanear QR
+        function completeQRScan() {
+            const progressBar = document.getElementById('qrProgress');
+            let progress = 0;
+            
+            const interval = setInterval(() => {
+                progress += 15;
+                progressBar.style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    
+                    // Simular escaneo de código QR aleatorio
+                    const randomEquipment = simulatedDatabase.equipments[
+                        Math.floor(Math.random() * simulatedDatabase.equipments.length)
+                    ];
+                    
+                    setTimeout(() => {
+                        showNotification(
+                            `✅ ${randomEquipment.name} (${randomEquipment.code}) escaneado correctamente`, 
+                            'success'
+                        );
+                        showNotification(
+                            `📍 Ubicación: ${randomEquipment.location}`, 
+                            'success'
+                        );
+                        showNotification(
+                            `🔋 Estado: ${getStatusText(randomEquipment.status)} | Condición: ${getConditionText(randomEquipment.condition)}`, 
+                            'success'
+                        );
+                        
+                        closeModal('qrScannerModal');
+                        
+                        // Actualizar widget después del escaneo
+                        updateInventoryWidgets();
+                    }, 500);
+                }
+            }, 150);
+        }
+
+        // Función completa para cargar GPS tracking
+        function completeGPSTracking() {
+            showNotification('Conectando con sensores GPS...', 'warning');
+            
+            setTimeout(() => {
+                const gpsContainer = document.getElementById('gpsEquipmentList');
+                if (gpsContainer) {
+                    const gpsEquipments = simulatedDatabase.equipments.filter(eq => eq.gps_enabled);
+                    
+                    const equipmentCards = gpsEquipments.map(equipment => {
+                        const statusColor = equipment.status === 'in_use' ? '#22c55e' : 
+                                          equipment.status === 'available' ? '#f59e0b' : '#ef4444';
+                        const statusText = getStatusText(equipment.status);
+                        
+                        return `
+                            <div style="text-align: center; padding: 1rem; background: var(--card-bg); border-radius: 6px; border: 1px solid var(--border-color);">
+                                <div style="width: 12px; height: 12px; background: ${statusColor}; border-radius: 50%; margin: 0 auto; animation: pulse 2s infinite;"></div>
+                                <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem; font-weight: 600;">${equipment.code}</p>
+                                <p style="margin: 0; font-size: 0.75rem; color: var(--text-secondary);">${statusText}</p>
+                                <p style="margin: 0.25rem 0 0 0; font-size: 0.7rem; color: var(--text-tertiary);">🔋 ${equipment.battery_level || 0}% | ⛽ ${equipment.fuel_level || 0}%</p>
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    gpsContainer.querySelector('div').innerHTML = equipmentCards;
+                }
+                
+                showNotification(`📡 ${gpsEquipments.length} equipos con GPS conectados`, 'success');
+                showModal('gpsTrackerModal');
+            }, 1500);
+        }
+
+        // Función completa para generar predicciones IA
+        function completeAIPredictions() {
+            showNotification('🤖 Analizando datos con algoritmos de Machine Learning...', 'warning');
+            
+            setTimeout(() => {
+                const alerts = simulatedDatabase.alerts;
+                const newPredictions = [];
+                
+                // Generar predicciones basadas en datos reales
+                simulatedDatabase.equipments.forEach(equipment => {
+                    // Predicción de mantenimiento
+                    if (equipment.usage_hours > 2000) {
+                        newPredictions.push({
+                            equipment: equipment.name,
+                            type: 'Alto uso detectado',
+                            description: `${equipment.usage_hours}h de uso. Considerar mantenimiento preventivo`,
+                            confidence: 85 + Math.floor(Math.random() * 15),
+                            priority: 'Alta'
+                        });
+                    }
+                    
+                    // Predicción de eficiencia
+                    if (equipment.fuel_level && equipment.fuel_level < 30) {
+                        newPredictions.push({
+                            equipment: equipment.name,
+                            type: 'Combustible bajo',
+                            description: `Nivel actual: ${equipment.fuel_level}%. Planificar recarga`,
+                            confidence: 95,
+                            priority: 'Media'
+                        });
+                    }
+                    
+                    // Predicción de falla
+                    if (equipment.condition === 'fair' || equipment.condition === 'poor') {
+                        newPredictions.push({
+                            equipment: equipment.name,
+                            type: 'Riesgo de falla',
+                            description: `Condición ${equipment.condition}. Inspección requerida`,
+                            confidence: 70 + Math.floor(Math.random() * 20),
+                            priority: 'Alta'
+                        });
+                    }
+                });
+                
+                // Mostrar predicciones
+                if (newPredictions.length > 0) {
+                    showNotification(`🎯 ${newPredictions.length} predicciones generadas con IA`, 'success');
+                    
+                    newPredictions.forEach((prediction, index) => {
+                        setTimeout(() => {
+                            const priorityColor = prediction.priority === 'Alta' ? 'error' : 'warning';
+                            showNotification(
+                                `${prediction.equipment}: ${prediction.type} (${prediction.confidence}% confianza)`,
+                                priorityColor,
+                                6000
+                            );
+                        }, index * 1200);
+                    });
+                } else {
+                    showNotification('✅ Todos los equipos funcionan dentro de parámetros normales', 'success');
+                }
+            }, 2500);
+        }
+
+        // Función completa para optimización de layout
+        function completeLayoutOptimization() {
+            showNotification('🏗️ Ejecutando algoritmos de optimización de espacios...', 'warning');
+            
+            setTimeout(() => {
+                const layout = simulatedDatabase.warehouseLayout;
+                const optimizationResults = [];
+                
+                layout.sections.forEach(section => {
+                    const utilizationRate = (section.current_occupancy / section.capacity) * 100;
+                    let suggestion = '';
+                    let newEfficiency = section.efficiency_score;
+                    
+                    if (utilizationRate > 80) {
+                        suggestion = `Sector ${section.name}: Sobrecargado (${utilizationRate}%) - Redistribuir equipos`;
+                        newEfficiency = Math.max(section.efficiency_score - 15, 60);
+                    } else if (utilizationRate < 30) {
+                        suggestion = `Sector ${section.name}: Subutilizado (${utilizationRate}%) - Consolidar espacios`;
+                        newEfficiency = Math.min(section.efficiency_score + 10, 100);
+                    } else {
+                        suggestion = `Sector ${section.name}: Utilización óptima (${utilizationRate}%)`;
+                        newEfficiency = Math.min(section.efficiency_score + 5, 100);
+                    }
+                    
+                    optimizationResults.push({
+                        section: section.name,
+                        suggestion: suggestion,
+                        oldEfficiency: section.efficiency_score,
+                        newEfficiency: newEfficiency,
+                        utilizationRate: utilizationRate
+                    });
+                    
+                    // Actualizar eficiencia simulada
+                    section.efficiency_score = newEfficiency;
+                });
+                
+                // Mostrar resultados
+                showNotification('🎯 Optimización de layout completada', 'success');
+                
+                optimizationResults.forEach((result, index) => {
+                    setTimeout(() => {
+                        const improvement = result.newEfficiency > result.oldEfficiency ? '📈' : '📊';
+                        showNotification(
+                            `${improvement} ${result.section}: ${result.newEfficiency}% eficiencia (${result.utilizationRate.toFixed(1)}% ocupación)`,
+                            'success',
+                            5000
+                        );
+                    }, index * 1500);
+                });
+                
+                setTimeout(() => {
+                    const avgEfficiency = optimizationResults.reduce((sum, r) => sum + r.newEfficiency, 0) / optimizationResults.length;
+                    showNotification(
+                        `🏆 Eficiencia promedio del almacén: ${avgEfficiency.toFixed(1)}%`,
+                        'success',
+                        6000
+                    );
+                }, optimizationResults.length * 1500 + 1000);
+            }, 2000);
+        }
+
+        // Función completa para analytics avanzados
+        function completeAdvancedAnalytics() {
+            showNotification('📊 Calculando métricas de negocio avanzadas...', 'warning');
+            
+            setTimeout(() => {
+                const analytics = simulatedDatabase.analytics;
+                
+                // Calcular métricas dinámicamente
+                const totalEquipment = simulatedDatabase.equipments.length;
+                const inUse = simulatedDatabase.equipments.filter(eq => eq.status === 'in_use').length;
+                const available = simulatedDatabase.equipments.filter(eq => eq.status === 'available').length;
+                const maintenance = simulatedDatabase.equipments.filter(eq => eq.status === 'maintenance').length;
+                
+                const utilizationRate = ((inUse / totalEquipment) * 100).toFixed(1);
+                const availabilityRate = ((available / totalEquipment) * 100).toFixed(1);
+                const maintenanceRate = ((maintenance / totalEquipment) * 100).toFixed(1);
+                
+                // Calcular ROI
+                const totalInvestment = simulatedDatabase.equipments.reduce((sum, eq) => sum + eq.purchase_price, 0);
+                const currentValue = simulatedDatabase.equipments.reduce((sum, eq) => sum + eq.current_value, 0);
+                const depreciation = totalInvestment - currentValue;
+                const roiPercentage = (((currentValue - totalInvestment) / totalInvestment) * 100).toFixed(1);
+                
+                // Calcular eficiencia operativa
+                const totalUsage = simulatedDatabase.equipments.reduce((sum, eq) => sum + eq.usage_hours, 0);
+                const avgUsageHours = (totalUsage / totalEquipment).toFixed(0);
+                const preventiveMaintenance = simulatedDatabase.maintenances.filter(m => m.type === 'preventive').length;
+                const correctiveMaintenance = simulatedDatabase.maintenances.filter(m => m.type === 'corrective').length;
+                const maintenanceEfficiency = preventiveMaintenance / (preventiveMaintenance + correctiveMaintenance) * 100;
+                
+                // Mostrar analytics
+                const analyticsResults = [
+                    `📊 Utilización de Flota: ${utilizationRate}% (${inUse}/${totalEquipment} equipos activos)`,
+                    `💰 ROI Actual: ${roiPercentage}% (Valor: ${currentValue.toLocaleString()})`,
+                    `⚙️ Disponibilidad: ${availabilityRate}% (${available} equipos disponibles)`,
+                    `🔧 Eficiencia de Mantenimiento: ${maintenanceEfficiency.toFixed(1)}% preventivo`,
+                    `⏱️ Uso Promedio: ${avgUsageHours}h por equipo`,
+                    `📈 Score de Productividad: ${((parseFloat(utilizationRate) + parseFloat(availabilityRate) + maintenanceEfficiency) / 3).toFixed(1)}/100`
+                ];
+                
+                showNotification('🎯 Analytics generados exitosamente', 'success');
+                
+                analyticsResults.forEach((result, index) => {
+                    setTimeout(() => {
+                        showNotification(result, 'success', 6000);
+                    }, index * 1000);
+                });
+                
+                // Actualizar widgets con datos calculados
+                setTimeout(() => {
+                    updateAdvancedWidgets({
+                        utilization: utilizationRate,
+                        roi: roiPercentage,
+                        efficiency: maintenanceEfficiency.toFixed(1),
+                        availability: availabilityRate
+                    });
+                }, analyticsResults.length * 1000);
+            }, 2500);
+        }
+
+        // Función completa para importación masiva
+        function completeBulkImport() {
+            showNotification('📦 Iniciando proceso de importación masiva...', 'warning');
+            
+            setTimeout(() => {
+                const importResults = {
+                    processed: 25,
+                    successful: 23,
+                    errors: 2,
+                    duplicates: 1
+                };
+                
+                showNotification(
+                    `✅ Importación completada: ${importResults.successful}/${importResults.processed} equipos procesados`,
+                    'success'
+                );
+                
+                setTimeout(() => {
+                    if (importResults.errors > 0) {
+                        showNotification(
+                            `⚠️ ${importResults.errors} errores encontrados - Revisar archivo de log`,
+                            'warning',
+                            5000
+                        );
+                    }
+                    if (importResults.duplicates > 0) {
+                        showNotification(
+                            `🔄 ${importResults.duplicates} duplicados omitidos`,
+                            'warning',
+                            4000
+                        );
+                    }
+                }, 1500);
+                
+                // Actualizar inventario después de la importación
+                setTimeout(() => {
+                    updateInventoryWidgets();
+                    showNotification('📊 Inventario actualizado automáticamente', 'success');
+                }, 3000);
+            }, 3000);
+        }
+
+        // ================================================================
+        // FUNCIONES DE UTILIDAD MEJORADAS
+        // ================================================================
+
+        function getStatusText(status) {
+            const statusMap = {
+                'available': 'Disponible',
+                'in_use': 'En Uso',
+                'maintenance': 'Mantenimiento',
+                'damaged': 'Dañado',
+                'retired': 'Retirado'
+            };
+            return statusMap[status] || status;
+        }
+
+        function getConditionText(condition) {
+            const conditionMap = {
+                'excellent': 'Excelente',
+                'good': 'Buena',
+                'fair': 'Regular',
+                'poor': 'Mala',
+                'damaged': 'Dañada'
+            };
+            return conditionMap[condition] || condition;
+        }
+
+        function updateAdminWidgets() {
+            if (currentRole !== 'ADMIN') return;
+            
+            const adminData = simulatedDatabase.adminData;
+            const activeUsers = adminData.users.filter(user => user.status === 'active').length;
+            const systemHealth = ((adminData.systemHealth.database.status === 'healthy' ? 1 : 0) +
+                                (adminData.systemHealth.api.status === 'healthy' ? 1 : 0) +
+                                (adminData.systemHealth.storage.status !== 'error' ? 0.8 : 0) +
+                                (adminData.systemHealth.backup.status === 'healthy' ? 1 : 0)) / 4 * 100;
+            
+            // Actualizar widgets específicos del admin
+            updateWidgetValue('Total Usuarios', activeUsers, 'up');
+            updateWidgetValue('Configuraciones', '15', 'neutral');
+            updateWidgetValue('Costos Mensuales', `${adminData.billing.monthly_cost.toLocaleString()}`, 'down');
+            updateWidgetValue('Estado del Sistema', `${systemHealth.toFixed(1)}%`, systemHealth > 95 ? 'up' : 'neutral');
+            updateWidgetValue('Score Seguridad', `${adminData.security.security_score}/100`, adminData.security.security_score > 90 ? 'up' : 'warning');
+            updateWidgetValue('Uso de API', `${(adminData.billing.api_calls_used/1000).toFixed(1)}K`, 'up');
+        }
+
+        function updateInventoryWidgets() {
+            if (currentRole === 'ADMIN') {
+                updateAdminWidgets();
+                return;
+            }
+            
+            const equipments = simulatedDatabase.equipments;
+            const totalEquipments = equipments.length;
+            const inFieldEquipments = equipments.filter(eq => eq.status === 'in_use').length;
+            const maintenanceEquipments = equipments.filter(eq => eq.status === 'maintenance').length;
+            const gpsEnabledEquipments = equipments.filter(eq => eq.gps_enabled).length;
+            const availableEquipments = equipments.filter(eq => eq.status === 'available').length;
+            const avgEfficiency = equipments.reduce((sum, eq) => sum + (eq.usage_hours / 100), 0) / totalEquipments;
+            
+            // Actualizar valores en la interfaz según el rol
+            if (currentRole === 'ALMACEN') {
+                updateWidgetValue('Inventario Total', totalEquipments, 'up');
+                updateWidgetValue('En Campo', inFieldEquipments, inFieldEquipments > 2 ? 'up' : 'neutral');
+                updateWidgetValue('Operaciones Hoy', Math.floor(Math.random() * 15) + 5, 'up');
+                updateWidgetValue('Mantenimiento', maintenanceEquipments, maintenanceEquipments > 0 ? 'down' : 'up');
+                updateWidgetValue('Eficiencia', `${avgEfficiency.toFixed(1)}%`, avgEfficiency > 15 ? 'up' : 'neutral');
+                updateWidgetValue('GPS Activos', gpsEnabledEquipments, 'up');
+            } else if (currentRole === 'OPERATIVO') {
+                updateWidgetValue('Mis Equipos', Math.floor(Math.random() * 4) + 1, 'neutral');
+                updateWidgetValue('Acciones Rápidas', Math.floor(Math.random() * 3), 'neutral');
+                updateWidgetValue('Incidencias', Math.floor(Math.random() * 2), 'neutral');
+                updateWidgetValue('Cronograma Hoy', Math.floor(Math.random() * 5) + 2, 'up');
+                updateWidgetValue('Horas Trabajadas', `${Math.floor(Math.random() * 4) + 6}h`, 'up');
+                updateWidgetValue('Check-ins Móvil', Math.floor(Math.random() * 8) + 3, 'up');
+            } else if (currentRole === 'ESTIMADOR') {
+                updateWidgetValue('Proyectos Activos', Math.floor(Math.random() * 8) + 5, 'up');
+                updateWidgetValue('Cotizaciones', Math.floor(Math.random() * 12) + 8, 'up');
+                updateWidgetValue('Análisis de Costos', `${(Math.random() * 50000 + 25000).toFixed(0)}`, 'neutral');
+                updateWidgetValue('Margen', `${(Math.random() * 20 + 15).toFixed(1)}%`, 'up');
+                updateWidgetValue('Tasa Conversión', `${(Math.random() * 30 + 60).toFixed(1)}%`, 'up');
+                updateWidgetValue('IA Predictions', Math.floor(Math.random() * 25) + 15, 'up');
+            } else if (currentRole === 'SUPERVISOR') {
+                updateWidgetValue('Equipos en Campo', inFieldEquipments, 'up');
+                updateWidgetValue('Eficiencia del Equipo', `${(Math.random() * 20 + 70).toFixed(1)}%`, 'up');
+                updateWidgetValue('Sitios Supervisados', Math.floor(Math.random() * 6) + 3, 'neutral');
+                updateWidgetValue('Alertas de Campo', Math.floor(Math.random() * 4) + 1, 'down');
+                updateWidgetValue('IoT Sensores', gpsEnabledEquipments, 'up');
+                updateWidgetValue('Comunicaciones', Math.floor(Math.random() * 15) + 8, 'up');
+            }
+        }
+
+        function updateAdvancedWidgets(metrics) {
+            updateWidgetValue('Eficiencia', `${metrics.efficiency}%`, parseFloat(metrics.efficiency) > 70 ? 'up' : 'down');
+            updateWidgetValue('Total Users', metrics.utilization + '%', parseFloat(metrics.utilization) > 30 ? 'up' : 'neutral');
+            updateWidgetValue('Monthly Revenue', `${metrics.roi}%`, parseFloat(metrics.roi) > 0 ? 'up' : 'down');
+            updateWidgetValue('System Health', `${metrics.availability}%`, parseFloat(metrics.availability) > 80 ? 'up' : 'neutral');
+        }
+
+        function updateWidgetValue(widgetTitle, value, trend = 'neutral') {
+            const widgets = document.querySelectorAll('.stat-card');
+            widgets.forEach(widget => {
+                const titleElement = widget.querySelector('.stat-title');
+                if (titleElement && titleElement.textContent === widgetTitle) {
+                    const valueElement = widget.querySelector('.stat-value');
+                    const trendElement = widget.querySelector('.stat-trend');
+                    
+                    if (valueElement) {
+                        valueElement.textContent = value;
+                    }
+                    
+                    if (trendElement) {
+                        trendElement.className = `stat-trend ${trend}`;
+                        const trendIcon = trend === 'up' ? '↗ +5%' : trend === 'down' ? '↘ -2%' : '→ 0%';
+                        trendElement.textContent = trendIcon;
+                    }
+                }
+            });
+        }
 
         // ================================================================
         // FUNCIONES DE UTILIDAD
@@ -1281,21 +2020,23 @@
 
         const ROLES_CONFIG = {
             ADMIN: {
-                title: 'Panel de Administración',
-                subtitle: 'Control total de la empresa y configuraciones del sistema',
+                title: 'Panel de Administración Empresarial',
+                subtitle: 'Control total del sistema, usuarios, configuraciones y políticas de la empresa',
                 widgets: [
-                    { icon: '👥', title: 'Total Users', number: '0', label: 'Active team members', trend: 'neutral' },
-                    { icon: '💰', title: 'Monthly Revenue', number: '$0', label: 'Current billing cycle', trend: 'neutral' },
-                    { icon: '⚙️', title: 'System Health', number: '0%', label: 'All systems operational', trend: 'neutral' },
-                    { icon: '📋', title: 'Plan Status', number: 'Free', label: 'Current plan active', trend: 'neutral' },
-                    { icon: '🔒', title: 'Security Score', number: '0/100', label: 'Security compliance', trend: 'neutral' },
-                    { icon: '📊', title: 'API Calls', number: '0', label: 'This month usage', trend: 'neutral' }
+                    { icon: '👥', title: 'Total Usuarios', number: '28', label: 'Miembros activos del equipo', trend: 'up' },
+                    { icon: '🏢', title: 'Configuraciones', number: '15', label: 'Módulos configurados', trend: 'neutral' },
+                    { icon: '💰', title: 'Costos Mensuales', number: '$3,245', label: 'Gastos operativos actuales', trend: 'down' },
+                    { icon: '⚙️', title: 'Estado del Sistema', number: '99.2%', label: 'Uptime todos los servicios', trend: 'up' },
+                    { icon: '🔒', title: 'Score Seguridad', number: '94/100', label: 'Cumplimiento de políticas', trend: 'up' },
+                    { icon: '📊', title: 'Uso de API', number: '12.5K', label: 'Llamadas este mes', trend: 'up' }
                 ],
                 tabs: [
-                    { id: 'admin-users', label: 'Usuarios', icon: '👥' },
-                    { id: 'admin-companies', label: 'Configuración', icon: '🏢' },
+                    { id: 'admin-users', label: 'Gestión Usuarios', icon: '👥' },
+                    { id: 'admin-company', label: 'Configuración Empresa', icon: '🏢' },
+                    { id: 'admin-system', label: 'Sistema', icon: '⚙️' },
+                    { id: 'admin-security', label: 'Seguridad', icon: '🔒' },
                     { id: 'admin-billing', label: 'Facturación', icon: '💳' },
-                    { id: 'admin-security', label: 'Seguridad', icon: '🔒' }
+                    { id: 'admin-reports', label: 'Reportes Admin', icon: '📊' }
                 ]
             },
             ALMACEN: {
@@ -1373,32 +2114,84 @@
         };
 
         const TAB_CONTENT = {
-            // ADMIN tabs expandidas
+            // ADMIN tabs completas y específicas
             'admin-users': {
-                title: 'Gestión Avanzada de Usuarios',
-                description: 'Administrar usuarios con control de permisos granular y analytics de actividad',
+                title: 'Gestión Completa de Usuarios',
+                description: 'Administración de usuarios con control de permisos granular, roles y analytics de actividad',
                 content: [
-                    { title: 'Usuarios Activos', desc: '0 usuarios registrados con roles específicos' },
-                    { title: 'Control de Permisos', desc: 'Matriz de permisos por rol y funcionalidad' },
-                    { title: 'Invitaciones Pendientes', desc: '0 invitaciones enviadas y tracking' },
-                    { title: 'Analytics de Actividad', desc: 'Monitoreo de uso y patrones de acceso' },
-                    { title: 'Sesiones Activas', desc: 'Control de sesiones concurrentes por usuario' },
-                    { title: 'Auditoría de Seguridad', desc: 'Logs de intentos de acceso y cambios' }
+                    { title: 'Usuarios Activos (28)', desc: 'Control completo de cuentas, roles y permisos por módulo' },
+                    { title: 'Matriz de Permisos', desc: 'Configuración granular de accesos por rol y funcionalidad' },
+                    { title: 'Invitaciones Pendientes (3)', desc: 'Seguimiento de invitaciones enviadas y estado de activación' },
+                    { title: 'Sesiones Concurrentes', desc: 'Monitoreo de sesiones activas y control de acceso simultáneo' },
+                    { title: 'Logs de Actividad', desc: 'Auditoría completa de acciones por usuario y timestamp' },
+                    { title: 'Configuración 2FA', desc: 'Políticas de autenticación de dos factores por departamento' }
                 ],
-                actions: ['Nuevo Usuario', 'Matriz Permisos', 'Exportar Audit', 'Dashboard Analytics', 'Configurar 2FA', 'Bulk Operations']
+                actions: ['Nuevo Usuario', 'Editar Permisos', 'Bulk Operations', 'Export Users', 'Security Audit', 'Role Builder']
             },
-            'admin-companies': {
-                title: 'Configuración Empresarial Avanzada',
-                description: 'Centro de control para configuración completa de la empresa',
+            'admin-company': {
+                title: 'Configuración Empresarial Master',
+                description: 'Centro de control para configuración completa de la empresa y personalización del sistema',
                 content: [
-                    { title: 'Información Corporativa', desc: 'Datos legales, contactos y certificaciones' },
-                    { title: 'Módulos y Funcionalidades', desc: 'Activar/desactivar características por plan' },
-                    { title: 'Políticas de Negocio', desc: 'Reglas automáticas y flujos de aprobación' },
-                    { title: 'Integraciones API', desc: 'Conexiones con sistemas ERP y externos' },
-                    { title: 'Branding Corporativo', desc: 'Logos, colores y personalización visual' },
-                    { title: 'Compliance y Normas', desc: 'Configuración de cumplimiento regulatorio' }
+                    { title: 'Información Legal', desc: 'Razón social, RFC, domicilio fiscal y datos registrales' },
+                    { title: 'Módulos Activos', desc: 'Warehouse, HR, TimeSync, Finance - Configuración por módulo' },
+                    { title: 'Políticas de Negocio', desc: 'Reglas automáticas, flujos de aprobación y límites operativos' },
+                    { title: 'Branding Corporativo', desc: 'Logo, colores, tipografías y personalización de interfaz' },
+                    { title: 'Integraciones API', desc: 'Conexiones con ERP, contabilidad y sistemas externos' },
+                    { title: 'Configuración Regional', desc: 'Moneda, idioma, zona horaria y formatos locales' }
                 ],
-                actions: ['Editar Empresa', 'Configurar Módulos', 'Políticas Custom', 'Test APIs', 'Upload Branding', 'Compliance Check']
+                actions: ['Editar Empresa', 'Configurar Módulos', 'Upload Branding', 'Test APIs', 'Regional Settings', 'Backup Config']
+            },
+            'admin-system': {
+                title: 'Administración del Sistema',
+                description: 'Monitoreo, configuración y mantenimiento de la infraestructura del sistema',
+                content: [
+                    { title: 'Estado de Servicios', desc: 'Monitoreo en tiempo real de base de datos, API y servicios' },
+                    { title: 'Performance Metrics', desc: 'Uso de CPU, memoria, almacenamiento y tiempos de respuesta' },
+                    { title: 'Configuración de Backups', desc: 'Programación automática de respaldos y políticas de retención' },
+                    { title: 'Límites del Sistema', desc: 'Configuración de quotas por usuario y limites de API' },
+                    { title: 'Logs del Sistema', desc: 'Registros de errores, accesos y eventos críticos del sistema' },
+                    { title: 'Actualizaciones', desc: 'Gestión de versiones, patches y mantenimiento programado' }
+                ],
+                actions: ['System Health', 'Performance Monitor', 'Configure Backups', 'View Logs', 'Schedule Maintenance', 'Update System']
+            },
+            'admin-security': {
+                title: 'Centro de Seguridad Avanzado',
+                description: 'Gestión integral de seguridad, compliance y políticas de protección de datos',
+                content: [
+                    { title: 'Políticas de Contraseñas', desc: 'Configuración de complejidad, rotación y políticas de acceso' },
+                    { title: 'Autenticación 2FA', desc: 'Configuración obligatoria por rol y métodos disponibles' },
+                    { title: 'Control de IPs', desc: 'Lista blanca/negra de direcciones IP permitidas por ubicación' },
+                    { title: 'Logs de Seguridad', desc: 'Intentos fallidos, accesos sospechosos y alertas de seguridad' },
+                    { title: 'Compliance GDPR', desc: 'Configuración de privacidad y cumplimiento regulatorio' },
+                    { title: 'Certificados SSL', desc: 'Gestión de certificados de seguridad y encriptación de datos' }
+                ],
+                actions: ['Security Scan', 'Configure 2FA', 'IP Management', 'Compliance Report', 'SSL Manager', 'Incident Response']
+            },
+            'admin-billing': {
+                title: 'Administración de Facturación',
+                description: 'Control completo de suscripciones, pagos y análisis financiero del sistema',
+                content: [
+                    { title: 'Plan Actual: Enterprise', desc: 'Suscripción activa con 50 usuarios incluidos hasta Feb 2025' },
+                    { title: 'Uso de Recursos', desc: 'Almacenamiento: 45GB/100GB | API calls: 12.5K/50K mensuales' },
+                    { title: 'Historial de Pagos', desc: 'Facturas pagadas, métodos de pago y próximos vencimientos' },
+                    { title: 'Análisis de Costos', desc: 'Costo por usuario, ROI del sistema y proyecciones anuales' },
+                    { title: 'Métodos de Pago', desc: 'Tarjetas registradas, transferencias y configuración automática' },
+                    { title: 'Centro de Facturas', desc: 'Descarga de facturas, comprobantes fiscales y reportes contables' }
+                ],
+                actions: ['View Invoices', 'Payment Methods', 'Usage Analytics', 'Upgrade Plan', 'Cost Center', 'Tax Documents']
+            },
+            'admin-reports': {
+                title: 'Reportes Administrativos Ejecutivos',
+                description: 'Business intelligence y reportes ejecutivos para toma de decisiones estratégicas',
+                content: [
+                    { title: 'Dashboard Ejecutivo', desc: 'KPIs empresariales consolidados con drill-down por departamento' },
+                    { title: 'Análisis de Adopción', desc: 'Métricas de uso por módulo, usuario y funcionalidad' },
+                    { title: 'ROI del Sistema', desc: 'Retorno de inversión, ahorros operativos y análisis costo-beneficio' },
+                    { title: 'Reportes de Compliance', desc: 'Cumplimiento regulatorio, auditorías y certificaciones' },
+                    { title: 'Análisis Predictivo', desc: 'Proyecciones de crecimiento, necesidades futuras y scaling' },
+                    { title: 'Benchmarking Sectorial', desc: 'Comparativas con estándares de la industria de construcción' }
+                ],
+                actions: ['Executive Dashboard', 'ROI Analysis', 'Compliance Reports', 'Predictive Analytics', 'Industry Benchmark', 'Custom Reports']
             },
 
             // ALMACEN tabs súper expandidas
@@ -1700,19 +2493,236 @@
         }
 
         // ================================================================
-        // FUNCIONES AVANZADAS DE ACCIONES
+        // FUNCIONES AVANZADAS DE ACCIONES - VERSIÓN COMPLETA
         // ================================================================
 
         function handleAdvancedAction(action) {
             log(`Advanced action triggered: ${action}`);
             
             const actionMap = {
-                'Escanear QR': () => showModal('qrScannerModal'),
-                'Ver Mapa GPS': () => showModal('gpsTrackerModal'),
-                'Digital Check-out': () => showModal('checkinModal'),
-                'AI Predictions': () => simulateAIPredictions(),
-                'IoT Dashboard': () => simulateIoTDashboard(),
-                'Performance Analytics': () => simulateAnalytics()
+                // Acciones de Inventario
+                'Escanear QR': () => {
+                    showModal('qrScannerModal');
+                },
+                'Ver Mapa GPS': () => {
+                    completeGPSTracking();
+                },
+                'IA Predictions': () => {
+                    completeAIPredictions();
+                },
+                'Optimize Layout': () => {
+                    completeLayoutOptimization();
+                },
+                'Generate Analytics': () => {
+                    completeAdvancedAnalytics();
+                },
+                'Bulk Import': () => {
+                    completeBulkImport();
+                },
+                
+                // Acciones de Distribución
+                'Planificar Rutas IA': () => {
+                    showNotification('Optimizando rutas con algoritmos avanzados...', 'warning');
+                    setTimeout(() => {
+                        showNotification('3 rutas optimizadas - Ahorro estimado: 22% en combustible', 'success');
+                    }, 2000);
+                },
+                'Seguimiento Live': () => {
+                    showNotification('Activando seguimiento en tiempo real...', 'warning');
+                    setTimeout(() => {
+                        completeGPSTracking();
+                    }, 1000);
+                },
+                'Firmas Digitales': () => {
+                    showNotification('Sistema de firmas digitales activado', 'success');
+                    showModal('checkinModal');
+                },
+                'Fleet Management': () => {
+                    showNotification('Accediendo al módulo de gestión de flota...', 'warning');
+                    setTimeout(() => {
+                        showNotification('6 vehículos activos | 2 en mantenimiento | 1 en ruta', 'success');
+                    }, 1500);
+                },
+                'Demand Forecast': () => {
+                    showNotification('Analizando patrones de demanda históricos...', 'warning');
+                    setTimeout(() => {
+                        showNotification('Predicción: Incremento del 15% en demanda próximos 30 días', 'success');
+                    }, 2500);
+                },
+                'Performance Analytics': () => {
+                    completeAdvancedAnalytics();
+                },
+                
+                // Acciones de Mantenimiento
+                'AI Predictions': () => {
+                    completeAIPredictions();
+                },
+                'Schedule Optimization': () => {
+                    showNotification('Optimizando calendario de mantenimientos...', 'warning');
+                    setTimeout(() => {
+                        showNotification('Calendario optimizado: 5 mantenimientos reprogramados eficientemente', 'success');
+                    }, 2000);
+                },
+                'Find Technicians': () => {
+                    showNotification('Buscando técnicos certificados en la red...', 'warning');
+                    setTimeout(() => {
+                        showNotification('8 técnicos disponibles en un radio de 25km', 'success');
+                    }, 1500);
+                },
+                'Cost Analysis': () => {
+                    showNotification('Calculando análisis de costos de mantenimiento...', 'warning');
+                    setTimeout(() => {
+                        showNotification('Preventivo: $12,500 | Correctivo: $18,200 | Ahorro potencial: 31%', 'success');
+                    }, 2500);
+                },
+                'Blockchain History': () => {
+                    showNotification('Accediendo al historial inmutable de mantenimientos...', 'warning');
+                    setTimeout(() => {
+                        showNotification('156 registros verificados en blockchain | 100% integridad', 'success');
+                    }, 2000);
+                },
+                'Alert Config': () => {
+                    showNotification('Configuración de alertas disponible', 'success');
+                },
+                
+                // Acciones de Reportes
+                'Executive Dashboard': () => {
+                    showNotification('Generando dashboard ejecutivo...', 'warning');
+                    setTimeout(() => {
+                        completeAdvancedAnalytics();
+                    }, 1000);
+                },
+                'Industry Benchmark': () => {
+                    showNotification('Comparando con estándares de la industria...', 'warning');
+                    setTimeout(() => {
+                        showNotification('Rendimiento: 15% superior al promedio de la industria', 'success');
+                    }, 2500);
+                },
+                'Regulatory Reports': () => {
+                    showNotification('Generando reportes de cumplimiento regulatorio...', 'warning');
+                    setTimeout(() => {
+                        showNotification('Reportes generados: OSHA, EPA, DOT | 100% cumplimiento', 'success');
+                    }, 2000);
+                },
+                'Custom Builder': () => {
+                    showNotification('Constructor de dashboards personalizados activado', 'success');
+                },
+                'Auto Export': () => {
+                    showNotification('Configurando exportación automática de reportes...', 'warning');
+                    setTimeout(() => {
+                        showNotification('Reportes programados: PDF diario, Excel semanal, CSV mensual', 'success');
+                    }, 1500);
+                },
+                
+                // Acciones Operativas
+                'Digital Check-out': () => {
+                    showModal('checkinModal');
+                },
+                'Open Mobile App': () => {
+                    showNotification('Redirigiendo a aplicación móvil...', 'success');
+                },
+                'AR Scanner': () => {
+                    showNotification('Activando escáner de realidad aumentada...', 'warning');
+                    setTimeout(() => {
+                        showNotification('AR listo: Apunta la cámara al equipo para información detallada', 'success');
+                    }, 1500);
+                },
+                'GPS Check-in': () => {
+                    showNotification('Obteniendo ubicación GPS para check-in...', 'warning');
+                    setTimeout(() => {
+                        showNotification('Check-in completado en: Lat 25.6866, Lng -100.3161', 'success');
+                    }, 1000);
+                },
+                'Auto Timesheet': () => {
+                    showNotification('Timesheet automático basado en geolocalización activado', 'success');
+                },
+                'Team Chat': () => {
+                    showNotification('Abriendo chat con supervisores y almacén...', 'success');
+                },
+                'My Achievements': () => {
+                    showNotification('Logros desbloqueados: Puntualidad 100%, Eficiencia 95%', 'success');
+                },
+                
+                // Acciones específicas de ADMIN
+                'Nuevo Usuario': () => {
+                    showNotification('Abriendo formulario de nuevo usuario...', 'warning');
+                    setTimeout(() => {
+                        showNotification('Usuario Carlos Rodríguez agregado como Operativo', 'success');
+                        simulatedDatabase.adminData.users.push({
+                            id: Date.now().toString(),
+                            name: 'Carlos Rodríguez',
+                            role: 'operativo',
+                            status: 'pending',
+                            last_login: null,
+                            email: 'carlos.rodriguez@empresa.com'
+                        });
+                        updateWidgetValue('Total Usuarios', simulatedDatabase.adminData.users.length);
+                    }, 2000);
+                },
+                'Editar Permisos': () => {
+                    showNotification('Accediendo a matriz de permisos...', 'warning');
+                    setTimeout(() => {
+                        showNotification('Permisos actualizados: Supervisores pueden aprobar mantenimientos', 'success');
+                    }, 1500);
+                },
+                'System Health': () => {
+                    const health = simulatedDatabase.adminData.systemHealth;
+                    showNotification('Verificando estado del sistema...', 'warning');
+                    setTimeout(() => {
+                        showNotification(`Base de datos: ${health.database.status} (${health.database.response_time})`, 'success');
+                        showNotification(`API: ${health.api.status} (${health.api.requests_min} req/min)`, 'success');
+                        showNotification(`Almacenamiento: ${health.storage.usage} usado de ${health.storage.available}`, health.storage.status === 'warning' ? 'warning' : 'success');
+                    }, 1500);
+                },
+                'Security Scan': () => {
+                    showNotification('Ejecutando análisis de seguridad completo...', 'warning');
+                    setTimeout(() => {
+                        const security = simulatedDatabase.adminData.security;
+                        showNotification(`Análisis completado - Score: ${security.security_score}/100`, 'success');
+                        showNotification(`${security.failed_logins} intentos fallidos detectados en 24h`, security.failed_logins > 10 ? 'warning' : 'success');
+                        showNotification(`${security.active_sessions} sesiones activas monitoreadas`, 'success');
+                    }, 3000);
+                },
+                'Usage Analytics': () => {
+                    const billing = simulatedDatabase.adminData.billing;
+                    showNotification('Generando análisis de uso de recursos...', 'warning');
+                    setTimeout(() => {
+                        showNotification(`Usuarios: ${billing.users_active}/${billing.users_included} (${((billing.users_active/billing.users_included)*100).toFixed(1)}%)`, 'success');
+                        showNotification(`Almacenamiento: ${billing.storage_used}/${billing.storage_limit} (${((45/100)*100).toFixed(1)}%)`, 'success');
+                        showNotification(`API Calls: ${billing.api_calls_used.toLocaleString()}/${billing.api_calls_limit.toLocaleString()} (${((billing.api_calls_used/billing.api_calls_limit)*100).toFixed(1)}%)`, 'success');
+                    }, 2000);
+                },
+                'ROI Analysis': () => {
+                    showNotification('Calculando retorno de inversión del sistema...', 'warning');
+                    setTimeout(() => {
+                        showNotification('ROI anualizado: +156% vs procesos manuales', 'success');
+                        showNotification('Ahorro en costos operativos: $47,200 anuales', 'success');
+                        showNotification('Tiempo ahorrado: 1,240 horas/mes del equipo', 'success');
+                        showNotification('Payback period: 8.2 meses desde implementación', 'success');
+                    }, 2500);
+                },
+                'Executive Dashboard': () => {
+                    showNotification('Cargando dashboard ejecutivo...', 'warning');
+                    setTimeout(() => {
+                        completeAdvancedAnalytics();
+                    }, 1000);
+                },
+                'Compliance Reports': () => {
+                    showNotification('Generando reportes de cumplimiento...', 'warning');
+                    setTimeout(() => {
+                        showNotification('Reporte ISO 27001: 94% cumplimiento', 'success');
+                        showNotification('Auditoría GDPR: Sin incidencias detectadas', 'success');
+                        showNotification('Compliance SOX: Controles verificados', 'success');
+                    }, 2500);
+                },
+                'Configure Backups': () => {
+                    showNotification('Configurando política de respaldos...', 'warning');
+                    setTimeout(() => {
+                        showNotification('Backup diario automático programado a las 03:00', 'success');
+                        showNotification('Retención configurada: 30 días locales, 90 días en la nube', 'success');
+                        showNotification('Verificación de integridad: Habilitada', 'success');
+                    }, 2000);
+                },
             };
 
             if (actionMap[action]) {
@@ -1722,92 +2732,9 @@
             }
         }
 
-        function handleContentCardClick(cardTitle) {
-            log(`Content card clicked: ${cardTitle}`);
-            showNotification(`Abriendo ${cardTitle}`, 'success');
-        }
-
-        function showModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.classList.add('show');
-                log(`Modal opened: ${modalId}`);
-            }
-        }
-
-        function closeModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.classList.remove('show');
-                log(`Modal closed: ${modalId}`);
-            }
-        }
-
-        // ================================================================
-        // SIMULACIONES DE FUNCIONALIDADES AVANZADAS
-        // ================================================================
-
+        // Función mejorada de escaneo QR
         function simulateQRScan() {
-            const progressBar = document.getElementById('qrProgress');
-            let progress = 0;
-            
-            const interval = setInterval(() => {
-                progress += 20;
-                progressBar.style.width = progress + '%';
-                
-                if (progress >= 100) {
-                    clearInterval(interval);
-                    setTimeout(() => {
-                        showNotification('Equipo EXC-001 escaneado correctamente', 'success');
-                        closeModal('qrScannerModal');
-                    }, 500);
-                }
-            }, 200);
-        }
-
-        function simulateAIPredictions() {
-            showNotification('Generando predicciones con IA...', 'warning');
-            
-            setTimeout(() => {
-                const predictions = [
-                    'Equipo EXC-001: Mantenimiento recomendado en 5 días',
-                    'Grúa GRU-002: Riesgo de falla en sistema hidráulico (72%)',
-                    'Bulldozer BUL-003: Optimización de ruta puede ahorrar 15% combustible'
-                ];
-                
-                predictions.forEach((prediction, index) => {
-                    setTimeout(() => {
-                        showNotification(prediction, 'success', 5000);
-                    }, index * 1000);
-                });
-            }, 2000);
-        }
-
-        function simulateIoTDashboard() {
-            showNotification('Conectando con sensores IoT...', 'warning');
-            
-            setTimeout(() => {
-                showModal('gpsTrackerModal');
-                showNotification('Dashboard IoT actualizado', 'success');
-            }, 1500);
-        }
-
-        function simulateAnalytics() {
-            showNotification('Generando analytics avanzados...', 'warning');
-            
-            setTimeout(() => {
-                const analytics = [
-                    'Eficiencia promedio del equipo: 87%',
-                    'Tiempo de inactividad reducido: 23%',
-                    'ROI de mantenimiento predictivo: +156%'
-                ];
-                
-                analytics.forEach((analytic, index) => {
-                    setTimeout(() => {
-                        showNotification(analytic, 'success', 4000);
-                    }, index * 800);
-                });
-            }, 2000);
+            completeQRScan();
         }
 
         function processCheckIn() {
@@ -1928,12 +2855,12 @@
         }
 
         // ================================================================
-        // INICIALIZACIÓN
+        // INICIALIZACIÓN COMPLETA
         // ================================================================
 
         function init() {
             try {
-                log('Initializing advanced dashboard');
+                log('Initializing advanced dashboard with complete functionality');
 
                 isDebugMode = detectDebugMode();
                 currentRole = detectRole();
@@ -1951,6 +2878,9 @@
                 createTabs(currentRole);
                 setupDebugControls();
 
+                // Cargar datos iniciales del inventario simulado
+                updateInventoryWidgets();
+
                 const config = ROLES_CONFIG[currentRole];
                 if (config) {
                     document.getElementById('loadingCompanyName').textContent = config.title;
@@ -1960,7 +2890,14 @@
                 setTimeout(() => {
                     document.getElementById('loadingScreen').classList.add('hidden');
                     log('Advanced dashboard initialization completed');
-                    showNotification('Dashboard cargado correctamente', 'success');
+                    showNotification('Dashboard cargado con funcionalidades completas', 'success');
+                    
+                    // Mostrar estadísticas iniciales
+                    setTimeout(() => {
+                        const totalEquipments = simulatedDatabase.equipments.length;
+                        const activeEquipments = simulatedDatabase.equipments.filter(eq => eq.status === 'in_use').length;
+                        showNotification(`Sistema listo: ${totalEquipments} equipos registrados, ${activeEquipments} activos`, 'success');
+                    }, 2000);
                 }, 1500);
 
             } catch (error) {
@@ -1969,6 +2906,50 @@
                 showNotification('Error al cargar dashboard', 'error');
             }
         }
+
+        // ================================================================
+        // FUNCIONES DE UTILIDAD ADICIONALES
+        // ================================================================
+
+        function handleContentCardClick(cardTitle) {
+            log(`Content card clicked: ${cardTitle}`);
+            showNotification(`Abriendo ${cardTitle}...`, 'warning');
+            
+            // Simular carga de contenido específico
+            setTimeout(() => {
+                showNotification(`${cardTitle} cargado exitosamente`, 'success');
+            }, 1000);
+        }
+
+        function showModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('show');
+                log(`Modal opened: ${modalId}`);
+            }
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('show');
+                log(`Modal closed: ${modalId}`);
+            }
+        }
+
+        // ================================================================
+        // CONFIGURACIÓN GLOBAL Y VARIABLES
+        // ================================================================
+        
+        let currentRole = 'ALMACEN';
+        let currentCompany = null;
+        let isDebugMode = false;
+        let notifications = [];
+        let currentTheme = 'light';
+
+        // Configuración de Supabase (para conexión futura)
+        const SUPABASE_URL = 'https://lmmlhncwdwjgtkdqaycv.supabase.co';
+        const SUPABASE_KEY = 'demo-key-for-testing';
 
         // ================================================================
         // EVENT LISTENERS
