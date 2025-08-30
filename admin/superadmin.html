@@ -4,18 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Super Admin Panel - Opsis Suite</title>
-    
-    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Chart.js para gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
@@ -23,7 +15,7 @@
             color: var(--text-primary);
             min-height: 100vh;
             line-height: 1.6;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            transition: all 0.3s ease;
         }
 
         /* Apple 97 Design System Variables */
@@ -41,6 +33,7 @@
             --danger-red-hover: #dc2626;
             --warning-orange: #f59e0b;
             --info-blue: #3b82f6;
+            --success-color: #37b24d;
             --purple: #8b5cf6;
             --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
             --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -60,11 +53,7 @@
             --hover-bg: #334155;
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
 
         /* Header Premium Apple Style */
         .header {
@@ -77,25 +66,28 @@
             justify-content: space-between;
             align-items: center;
             border: 1px solid var(--border-color);
-            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
 
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-green), var(--info-blue), var(--purple));
+            background-size: 200% 200%;
+            animation: gradientShift 3s ease-in-out infinite;
         }
+
+        .header-left { display: flex; align-items: center; gap: 1rem; }
 
         .logo-container {
-            position: relative;
-            width: 48px;
-            height: 48px;
-            border-radius: var(--border-radius);
-            padding: 2px;
-            background: linear-gradient(45deg, var(--primary-green), #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3, #54a0ff, #5f27cd, #00d2d3, #ff9f43, #10ac84, #ee5a6f, var(--primary-green));
-            background-size: 400% 400%;
-            animation: gradientShift 4s ease-in-out infinite;
-            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+            width: 48px; height: 48px; border-radius: var(--border-radius);
+            padding: 2px; background: linear-gradient(45deg, var(--primary-green), #4ecdc4, #45b7d1, #feca57);
+            background-size: 400% 400%; animation: gradientShift 4s ease-in-out infinite;
         }
 
         @keyframes gradientShift {
@@ -104,167 +96,102 @@
         }
 
         .logo-icon {
-            width: 44px;
-            height: 44px;
-            background: linear-gradient(135deg, #495057, #6c757d);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            color: white;
-            position: relative;
-        }
-
-        .logo-icon::after {
-            content: '◉';
-            animation: winkEye 4s ease-in-out infinite;
-        }
-
-        @keyframes winkEye {
-            0%, 90%, 100% { content: '◉'; }
-            95% { content: '◉'; }
-        }
-
-        .header-title {
-            display: flex;
-            flex-direction: column;
+            width: 44px; height: 44px; background: linear-gradient(135deg, #495057, #6c757d);
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            font-size: 18px; color: white; font-weight: bold;
         }
 
         .header-title h1 {
-            font-size: 1.875rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 0.25rem;
+            font-size: 1.875rem; font-weight: 700; color: var(--text-primary);
+            margin-bottom: 0.25rem; background: linear-gradient(135deg, var(--primary-green), var(--info-blue));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .header-subtitle {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            font-weight: 500;
+        .header-subtitle { 
+            font-size: 0.875rem; color: var(--text-secondary); font-weight: 500;
         }
 
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .btn-new-company {
-            background: linear-gradient(135deg, var(--primary-green), #16a34a);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: var(--border-radius);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
-        }
-
-        .btn-new-company:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(34, 197, 94, 0.4);
-        }
+        .header-right { display: flex; align-items: center; gap: 1rem; }
 
         .user-info {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            background: var(--hover-bg);
-            border-radius: var(--border-radius);
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            transition: all 0.3s ease;
+            display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem;
+            background: var(--hover-bg); border-radius: var(--border-radius);
+            font-size: 0.875rem; color: var(--text-secondary); font-weight: 500;
+            border: 1px solid var(--border-color);
+        }
+
+        .theme-toggle {
+            background: var(--hover-bg); border: 1px solid var(--border-color);
+            border-radius: var(--border-radius); padding: 0.6rem; cursor: pointer;
+            transition: all 0.3s ease; color: var(--text-secondary); font-size: 1.2rem;
+        }
+
+        .theme-toggle:hover {
+            background: var(--primary-green); color: white; transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
         }
 
         .logout-btn {
-            padding: 0.5rem 1rem;
-            background: var(--danger-red);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 0.875rem;
+            padding: 0.5rem 1rem; background: var(--danger-red); color: white; border: none;
+            border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 0.875rem;
             transition: all 0.2s ease;
         }
 
-        .logout-btn:hover {
-            background: var(--danger-red-hover);
-            transform: translateY(-1px);
+        .logout-btn:hover { 
+            background: var(--danger-red-hover); transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
         }
 
         /* Navigation Tabs */
         .nav-tabs {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            background: var(--card-bg);
-            padding: 0.5rem;
-            border-radius: var(--border-radius);
-            border: 1px solid var(--border-color);
-            overflow-x: auto;
-            transition: all 0.3s ease;
+            display: flex; gap: 1rem; margin-bottom: 2rem; background: var(--card-bg);
+            padding: 0.5rem; border-radius: var(--border-radius); border: 1px solid var(--border-color);
+            overflow-x: auto; box-shadow: var(--shadow-sm);
         }
 
         .nav-tab {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            background: transparent;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            color: var(--text-secondary);
-            white-space: nowrap;
-            position: relative;
+            padding: 0.75rem 1.5rem; border: none; background: transparent; border-radius: 8px;
+            cursor: pointer; font-weight: 500; transition: all 0.2s ease; color: var(--text-secondary);
+            white-space: nowrap; position: relative; overflow: hidden;
         }
 
         .nav-tab.active {
-            background: var(--primary-green);
-            color: white;
+            background: var(--primary-green); color: white;
             box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+            transform: translateY(-1px);
         }
 
-        .nav-tab:not(.active):hover {
-            background: var(--hover-bg);
-            color: var(--text-primary);
+        .nav-tab:not(.active):hover { 
+            background: var(--hover-bg); color: var(--text-primary); 
+            transform: translateY(-1px);
         }
 
-        /* Stats Grid */
+        /* Stats Grid Enhanced */
         .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem; margin-bottom: 2rem;
         }
 
         .stat-card {
-            background: var(--card-bg);
-            border-radius: var(--border-radius-lg);
-            padding: 1.5rem;
-            border: 1px solid var(--border-color);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            position: relative;
+            background: var(--card-bg); border-radius: var(--border-radius-lg); padding: 1.5rem;
+            border: 1px solid var(--border-color); transition: all 0.3s ease; cursor: pointer;
+            position: relative; overflow: hidden;
         }
 
         .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: var(--stat-color);
-            border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: var(--stat-color); border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+        }
+
+        .stat-card::after {
+            content: ''; position: absolute; top: 0; right: 0; width: 100px; height: 100px;
+            background: radial-gradient(circle, var(--stat-color)20, transparent 70%);
+            opacity: 0.1; transform: translate(30px, -30px);
         }
 
         .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
+            transform: translateY(-2px); box-shadow: var(--shadow-md); 
             border-color: var(--stat-color);
         }
 
@@ -274,345 +201,414 @@
         .stat-card.activity { --stat-color: var(--purple); }
 
         .stat-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1rem;
+            display: flex; align-items: center; justify-content: space-between; 
+            margin-bottom: 1rem; position: relative; z-index: 2;
         }
 
         .stat-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            color: white;
-            background: var(--stat-color);
+            width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center;
+            justify-content: center; font-size: 1.25rem; color: white; background: var(--stat-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
 
         .stat-trend {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 6px;
-            font-weight: 500;
+            font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 6px; font-weight: 600;
         }
 
-        .stat-trend.neutral {
-            background: #f1f5f9;
-            color: #64748b;
-        }
+        .stat-trend.up { background: #dcfce7; color: #166534; }
+        .stat-trend.down { background: #fef2f2; color: #991b1b; }
 
         .stat-title {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-            margin-bottom: 0.5rem;
+            font-size: 0.875rem; color: var(--text-secondary); font-weight: 500; 
+            margin-bottom: 0.5rem; position: relative; z-index: 2;
         }
 
         .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 0.25rem;
+            font-size: 2rem; font-weight: 700; color: var(--text-primary); 
+            margin-bottom: 0.25rem; position: relative; z-index: 2;
         }
 
-        .stat-description {
-            font-size: 0.75rem;
-            color: var(--text-tertiary);
+        .stat-description { 
+            font-size: 0.75rem; color: var(--text-tertiary); position: relative; z-index: 2;
         }
 
         /* Content Area */
         .content-area {
-            background: var(--card-bg);
-            border-radius: var(--border-radius-lg);
-            border: 1px solid var(--border-color);
-            min-height: 600px;
-            position: relative;
-            transition: all 0.3s ease;
+            background: var(--card-bg); border-radius: var(--border-radius-lg);
+            border: 1px solid var(--border-color); min-height: 600px;
+            box-shadow: var(--shadow-sm); overflow: hidden;
         }
 
         .content-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 1.5rem; border-bottom: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: center;
+            background: linear-gradient(135deg, var(--hover-bg), var(--card-bg));
         }
 
-        .content-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--text-primary);
+        .content-title { 
+            font-size: 1.25rem; font-weight: 600; color: var(--text-primary); 
+        }
+        .content-body { padding: 1.5rem; }
+
+        /* Enhanced Buttons */
+        .btn {
+            padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer;
+            font-weight: 500; font-size: 0.875rem; transition: all 0.2s ease;
+            text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;
+            position: relative; overflow: hidden;
         }
 
-        .content-body {
-            padding: 1.5rem;
+        .btn::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
         }
 
-        /* Empty state */
-        .empty-state {
+        .btn:hover::before { left: 100%; }
+
+        .btn-primary { 
+            background: var(--primary-green); color: white;
+            box-shadow: 0 2px 4px rgba(34, 197, 94, 0.2);
+        }
+        .btn-primary:hover { 
+            background: var(--primary-green-hover); transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        }
+        .btn-secondary { background: var(--hover-bg); color: var(--text-secondary); }
+        .btn-secondary:hover { background: var(--border-color); }
+        .btn-danger { 
+            background: var(--danger-red); color: white;
+            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+        }
+        .btn-danger:hover {
+            background: var(--danger-red-hover);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+        .btn-sm { padding: 0.25rem 0.75rem; font-size: 0.75rem; }
+
+        /* Industry Filter Tags */
+        .industry-filter {
+            display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;
+        }
+
+        .industry-tag {
+            padding: 0.5rem 1rem; background: var(--hover-bg); border: 1px solid var(--border-color);
+            border-radius: var(--border-radius); font-size: 0.8rem; cursor: pointer;
+            transition: all 0.2s ease; display: flex; align-items: center; gap: 0.5rem;
+            font-weight: 500;
+        }
+
+        .industry-tag.active {
+            background: var(--primary-green); color: white; border-color: var(--primary-green);
+            box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+        }
+
+        .industry-tag:hover:not(.active) { 
+            background: var(--border-color); transform: translateY(-1px);
+        }
+
+        /* Enhanced Tables */
+        .table-container { 
+            overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+        table { width: 100%; border-collapse: collapse; background: var(--card-bg); }
+        th {
+            padding: 0.75rem 1rem; text-align: left; background: var(--hover-bg);
+            font-weight: 600; color: var(--text-secondary); font-size: 0.75rem;
+            text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-color);
+        }
+        td { 
+            padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9; 
+            color: var(--text-primary); vertical-align: middle;
+        }
+        tr:hover { background: var(--hover-bg); }
+        tr:last-child td { border-bottom: none; }
+
+        /* Industry Icons */
+        .industry-icon {
+            width: 32px; height: 32px; border-radius: 6px; display: inline-flex;
+            align-items: center; justify-content: center; font-size: 1rem; margin-right: 0.5rem;
+            font-weight: bold;
+        }
+        .industry-construccion { background: #fef3c7; color: #d97706; }
+        .industry-medica { background: #ecfdf5; color: #059669; }
+        .industry-transporte { background: #fef7ff; color: #a855f7; }
+        .industry-abarrotes { background: #fff7ed; color: #ea580c; }
+        .industry-jardineria { background: #dcfce7; color: #16a34a; }
+        .industry-tecnologia { background: #eff6ff; color: #2563eb; }
+        .industry-educacion { background: #fdf4ff; color: #c026d3; }
+        .industry-restaurante { background: #fef2f2; color: #dc2626; }
+        .industry-financiera { background: #f0fdf4; color: #15803d; }
+        .industry-inmobiliaria { background: #fffbeb; color: #d97706; }
+        .industry-automotriz { background: #f8fafc; color: #475569; }
+        .industry-otros { background: #f8fafc; color: #64748b; }
+
+        /* Module badges */
+        .modules-list { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+        .module-badge {
+            padding: 0.25rem 0.5rem; background: var(--hover-bg); border-radius: 4px;
+            font-size: 0.7rem; color: var(--text-secondary); font-weight: 500;
+            border: 1px solid var(--border-color);
+        }
+
+        .module-badge.warehouse { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+        .module-badge.timesync { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
+        .module-badge.hr { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+        .module-badge.finance { background: #fdf2f8; color: #be185d; border-color: #fce7f3; }
+
+        /* Status badges */
+        .status-active { color: var(--primary-green); font-weight: 600; }
+        .status-trial { color: var(--warning-orange); font-weight: 600; }
+        .status-inactive { color: var(--danger-red); font-weight: 600; }
+
+        /* Enhanced Modal */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(8px); z-index: 1000; 
+            overflow-y: auto; animation: fadeIn 0.3s ease;
+        }
+        .modal.show { 
+            display: flex; align-items: flex-start; justify-content: center; padding: 2rem;
+        }
+        .modal-content {
+            background: var(--card-bg); border-radius: var(--border-radius-lg); 
+            max-width: 1200px; width: 100%; max-height: 90vh; overflow-y: auto; 
+            box-shadow: var(--shadow-lg); margin: 2rem 0;
+            animation: slideUp 0.3s ease;
+        }
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 1.5rem; border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(135deg, var(--hover-bg), var(--card-bg));
+        }
+        .modal-title { font-size: 1.25rem; font-weight: 600; color: var(--text-primary); }
+        .modal-close {
+            background: none; border: none; font-size: 1.5rem; cursor: pointer;
+            color: var(--text-secondary); padding: 0.25rem; border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        .modal-close:hover { 
+            background: var(--hover-bg); color: var(--text-primary); 
+            transform: scale(1.1);
+        }
+
+        /* Tab Content */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Onboarding Steps */
+        .onboarding-container {
+            padding: 2rem;
+        }
+
+        .onboarding-step {
+            display: none;
+        }
+
+        .onboarding-step.active {
+            display: block;
+            animation: fadeInSlide 0.4s ease;
+        }
+
+        .step-header {
             text-align: center;
-            padding: 4rem 2rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
         }
 
-        .empty-state-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            opacity: 0.3;
-        }
-
-        .empty-state-title {
+        .step-title {
             font-size: 1.5rem;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text-primary);
             margin-bottom: 0.5rem;
         }
 
-        .empty-state-description {
+        .step-subtitle {
             color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .step-progress {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
             margin-bottom: 2rem;
         }
 
-        /* Industry Filter */
-        .industry-filter {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .industry-tag {
-            padding: 0.5rem 1rem;
-            background: var(--hover-bg);
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .industry-tag.active {
-            background: var(--primary-green);
-            color: white;
-            border-color: var(--primary-green);
-        }
-
-        .industry-tag:hover:not(.active) {
-            background: var(--border-color);
-        }
-
-        /* Buttons */
-        .btn {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 0.875rem;
-            transition: all 0.2s ease;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn-primary {
-            background: var(--primary-green);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-green-hover);
-            transform: translateY(-1px);
-        }
-
-        .btn-secondary {
-            background: var(--hover-bg);
-            color: var(--text-secondary);
-        }
-
-        .btn-secondary:hover {
-            background: var(--border-color);
-        }
-
-        .btn-danger {
-            background: var(--danger-red);
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: var(--danger-red-hover);
-        }
-
-        .btn-sm {
-            padding: 0.25rem 0.75rem;
-            font-size: 0.75rem;
-        }
-
-        /* Table Styles */
-        .table-container {
-            overflow-x: auto;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: var(--card-bg);
-        }
-
-        th {
-            padding: 0.75rem 1rem;
-            text-align: left;
-            background: var(--hover-bg);
-            font-weight: 600;
-            color: var(--text-secondary);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        td {
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid #f1f5f9;
-            color: var(--text-primary);
-        }
-
-        tr:hover {
-            background: var(--hover-bg);
-        }
-
-        /* Product badges */
-        .products-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.25rem;
-        }
-
-        .product-badge {
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            color: white;
-            font-weight: 600;
-        }
-
-        .product-warehouse { background: #059669; }
-        .product-timesync { background: #7c3aed; }
-        .product-hr { background: #dc2626; }
-        .product-finance { background: #ea580c; }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
-            z-index: 1000;
-        }
-
-        .modal.show {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-fullscreen {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-        }
-
-        .modal-content-fullscreen {
-            width: 100%;
-            max-width: 1200px;
-            height: 90vh;
-            background: var(--card-bg);
-            border-radius: var(--border-radius-lg);
-            overflow: hidden;
-            box-shadow: var(--shadow-lg);
-            position: relative;
-        }
-
-        .modal-iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            border-radius: var(--border-radius-lg);
-        }
-
-        .modal-close-btn {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: rgba(255, 255, 255, 0.9);
-            border: none;
-            width: 40px;
-            height: 40px;
+        .progress-dot {
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            z-index: 10;
+            background: var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .progress-dot.active {
+            background: var(--primary-green);
+            transform: scale(1.2);
+        }
+
+        .progress-dot.completed {
+            background: var(--success-color);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
             color: var(--text-primary);
         }
 
-        .modal-close-btn:hover {
-            background: white;
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            background: var(--card-bg);
+            color: var(--text-primary);
         }
 
-        /* Hide content areas initially */
-        .tab-content {
-            display: none;
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
         }
 
-        .tab-content.active {
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .product-card {
+            padding: 1.5rem;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--card-bg);
+        }
+
+        .product-card:hover {
+            border-color: var(--primary-green);
+            transform: translateY(-2px);
+        }
+
+        .product-card.selected {
+            border-color: var(--primary-green);
+            background: rgba(34, 197, 94, 0.05);
+        }
+
+        .product-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
             display: block;
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-            
-            .header {
-                flex-direction: column;
-                gap: 1rem;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .nav-tabs {
-                overflow-x: auto;
-                scrollbar-width: none;
-                -ms-overflow-style: none;
-            }
-            
-            .nav-tabs::-webkit-scrollbar {
-                display: none;
-            }
+        .product-name {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
 
-            .industry-filter {
-                justify-content: center;
+        .product-description {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .product-price {
+            font-weight: 600;
+            color: var(--primary-green);
+        }
+
+        .step-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--primary-green);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            z-index: 10000;
+            font-weight: 500;
+            animation: slideInRight 0.3s ease;
+        }
+
+        .toast.success { background: var(--primary-green); }
+        .toast.error { background: var(--danger-red); }
+        .toast.warning { background: var(--warning-orange); }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeInSlide {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .header { flex-direction: column; gap: 1rem; }
+            .header-right { width: 100%; justify-content: space-between; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .nav-tabs { 
+                flex-direction: column; 
+                align-items: stretch; 
+            }
+            .nav-tab { 
+                text-align: center; 
+                width: 100%; 
+            }
+            .products-grid { grid-template-columns: 1fr; }
+            .modal-content { 
+                margin: 1rem; 
+                max-width: calc(100% - 2rem); 
+            }
+        }
+
+        @media (max-width: 480px) {
+            .step-navigation { 
+                flex-direction: column; 
+                gap: 1rem; 
+            }
+            .step-navigation .btn { 
+                width: 100%; 
+                justify-content: center; 
             }
         }
     </style>
@@ -623,31 +619,31 @@
         <header class="header">
             <div class="header-left">
                 <div class="logo-container">
-                    <div class="logo-icon"></div>
+                    <div class="logo-icon">O</div>
                 </div>
                 <div class="header-title">
                     <h1>Opsis Suite</h1>
-                    <p class="header-subtitle">Panel de Super Administrador Multi-Producto</p>
+                    <p class="header-subtitle">Panel de Super Administrador Multi-Industria</p>
                 </div>
             </div>
             <div class="header-right">
-                <button class="btn-new-company" onclick="openNewCompanyModal()">+ Nueva Empresa</button>
                 <div class="user-info">
+                    <span>👤</span>
                     <span>admin@opsis-suite.com</span>
                 </div>
+                <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle" title="Cambiar tema">🌙</button>
                 <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
             </div>
         </header>
 
-        <!-- Navigation Tabs -->
+        <!-- Navigation -->
         <nav class="nav-tabs">
-            <button class="nav-tab active" onclick="showTab('dashboard')">Dashboard</button>
-            <button class="nav-tab" onclick="showTab('companies')">Empresas</button>
-            <button class="nav-tab" onclick="showTab('users')">Usuarios</button>
-            <button class="nav-tab" onclick="showTab('industries')">Industrias</button>
-            <button class="nav-tab" onclick="showTab('products')">Productos</button>
-            <button class="nav-tab" onclick="showTab('analytics')">Analytics</button>
-            <button class="nav-tab" onclick="showTab('settings')">Configuración</button>
+            <button class="nav-tab active" onclick="showTab('dashboard')">📊 Dashboard</button>
+            <button class="nav-tab" onclick="showTab('companies')">🏢 Empresas</button>
+            <button class="nav-tab" onclick="showTab('users')">👥 Usuarios</button>
+            <button class="nav-tab" onclick="showTab('industries')">🏭 Industrias</button>
+            <button class="nav-tab" onclick="showTab('analytics')">📈 Analytics</button>
+            <button class="nav-tab" onclick="showTab('settings')">⚙️ Configuración</button>
         </nav>
 
         <!-- Stats Grid -->
@@ -655,40 +651,37 @@
             <div class="stat-card companies" onclick="showTab('companies')">
                 <div class="stat-header">
                     <div class="stat-icon">🏢</div>
-                    <div class="stat-trend neutral">—</div>
+                    <div class="stat-trend up">↗ +24%</div>
                 </div>
                 <div class="stat-title">Empresas Totales</div>
-                <div class="stat-value" id="totalCompanies">0</div>
-                <div class="stat-description">12 industrias, 4 productos</div>
+                <div class="stat-value" id="totalCompanies">5</div>
+                <div class="stat-description">6 industrias diferentes</div>
             </div>
-
             <div class="stat-card users" onclick="showTab('users')">
                 <div class="stat-header">
                     <div class="stat-icon">👥</div>
-                    <div class="stat-trend neutral">—</div>
+                    <div class="stat-trend up">↗ +18%</div>
                 </div>
                 <div class="stat-title">Usuarios Activos</div>
-                <div class="stat-value" id="totalUsers">0</div>
+                <div class="stat-value" id="totalUsers">97</div>
                 <div class="stat-description">Usuarios en el sistema</div>
             </div>
-
             <div class="stat-card revenue" onclick="showTab('analytics')">
                 <div class="stat-header">
                     <div class="stat-icon">💰</div>
-                    <div class="stat-trend neutral">—</div>
+                    <div class="stat-trend up">↗ +31%</div>
                 </div>
                 <div class="stat-title">Ingresos Mensuales</div>
-                <div class="stat-value" id="monthlyRevenue">$0</div>
-                <div class="stat-description">ARR: $0</div>
+                <div class="stat-value" id="monthlyRevenue">$1,355</div>
+                <div class="stat-description">ARR: $16.2K</div>
             </div>
-
             <div class="stat-card activity">
                 <div class="stat-header">
                     <div class="stat-icon">📊</div>
-                    <div class="stat-trend neutral">—</div>
+                    <div class="stat-trend up">↗ +12%</div>
                 </div>
                 <div class="stat-title">Productos Activos</div>
-                <div class="stat-value" id="activeProducts">0</div>
+                <div class="stat-value" id="activeModules">12</div>
                 <div class="stat-description">Instancias de productos</div>
             </div>
         </div>
@@ -698,61 +691,39 @@
             <!-- Dashboard Tab -->
             <div id="dashboard-content" class="tab-content active">
                 <div class="content-header">
-                    <h2 class="content-title">Resumen Multi-Producto Multi-Industria</h2>
-                    <button class="btn btn-primary" onclick="generateReport()">Generar Reporte</button>
+                    <h2 class="content-title">📊 Resumen Multi-Industria</h2>
+                    <button class="btn btn-primary" onclick="generateReport()">
+                        📄 Generar Reporte
+                    </button>
                 </div>
                 <div class="content-body">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">🚀</div>
-                        <h3 class="empty-state-title">¡Bienvenido a Opsis Suite!</h3>
-                        <p class="empty-state-description">
-                            Comienza creando tu primera empresa multi-producto.<br>
-                            Gestiona múltiples industrias desde un solo panel de control.
+                    <div style="text-align: center; padding: 3rem;">
+                        <h3 style="color: var(--text-primary); margin-bottom: 1rem;">
+                            Panel de Control Multi-Industria
+                        </h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 1.1rem;">
+                            Gestión centralizada de empresas de diferentes sectores
                         </p>
-                        <button class="btn btn-primary" onclick="openNewCompanyModal()">
-                            Crear Primera Empresa
-                        </button>
-                    </div>
-                    
-                    <div id="dashboard-stats" style="display: none;">
-                        <div class="industry-filter">
-                            <div class="industry-tag active" onclick="filterByIndustry('all', this)">
-                                <span>🌐</span> Todas las Industrias
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; max-width: 800px; margin: 0 auto;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🏗️</div>
+                                <h4>Construcción</h4>
+                                <p style="font-size: 0.8rem; color: var(--text-tertiary);">2 empresas</p>
                             </div>
-                            <div class="industry-tag" onclick="filterByIndustry('construccion', this)">
-                                <span>🏗️</span> Construcción
+                            <div style="text-align: center;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🏥</div>
+                                <h4>Médica</h4>
+                                <p style="font-size: 0.8rem; color: var(--text-tertiary);">1 empresa</p>
                             </div>
-                            <div class="industry-tag" onclick="filterByIndustry('medica', this)">
-                                <span>🏥</span> Médica
+                            <div style="text-align: center;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🚛</div>
+                                <h4>Transporte</h4>
+                                <p style="font-size: 0.8rem; color: var(--text-tertiary);">1 empresa</p>
                             </div>
-                            <div class="industry-tag" onclick="filterByIndustry('transporte', this)">
-                                <span>🚛</span> Transporte
-                            </div>
-                            <div class="industry-tag" onclick="filterByIndustry('abarrotes', this)">
-                                <span>🛒</span> Retail
-                            </div>
-                        </div>
-                        
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                            <div style="background: var(--hover-bg); padding: 1.5rem; border-radius: var(--border-radius);">
-                                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📦</div>
-                                <div style="font-weight: 600;" id="warehouseCompanies">0 Empresas</div>
-                                <div style="font-size: 0.8rem; color: var(--text-secondary);">Warehouse</div>
-                            </div>
-                            <div style="background: var(--hover-bg); padding: 1.5rem; border-radius: var(--border-radius);">
-                                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">⏱️</div>
-                                <div style="font-weight: 600;" id="timesyncCompanies">0 Empresas</div>
-                                <div style="font-size: 0.8rem; color: var(--text-secondary);">TimeSync</div>
-                            </div>
-                            <div style="background: var(--hover-bg); padding: 1.5rem; border-radius: var(--border-radius);">
-                                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">👥</div>
-                                <div style="font-weight: 600;" id="hrCompanies">0 Empresas</div>
-                                <div style="font-size: 0.8rem; color: var(--text-secondary);">HR</div>
-                            </div>
-                            <div style="background: var(--hover-bg); padding: 1.5rem; border-radius: var(--border-radius);">
-                                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">💰</div>
-                                <div style="font-weight: 600;" id="financeCompanies">0 Empresas</div>
-                                <div style="font-size: 0.8rem; color: var(--text-secondary);">Finance</div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🛒</div>
+                                <h4>Retail</h4>
+                                <p style="font-size: 0.8rem; color: var(--text-tertiary);">1 empresa</p>
                             </div>
                         </div>
                     </div>
@@ -762,221 +733,185 @@
             <!-- Companies Tab -->
             <div id="companies-content" class="tab-content">
                 <div class="content-header">
-                    <h2 class="content-title">Gestión de Empresas Multi-Producto</h2>
-                    <button class="btn btn-primary" onclick="openNewCompanyModal()">+ Nueva Empresa</button>
+                    <h2 class="content-title">🏢 Gestión de Empresas</h2>
+                    <button class="btn btn-primary" onclick="showOnboardingModal()">
+                        ➕ Nueva Empresa
+                    </button>
                 </div>
                 <div class="content-body">
-                    <div id="companies-empty" class="empty-state">
-                        <div class="empty-state-icon">🏢</div>
-                        <h3 class="empty-state-title">No hay empresas registradas</h3>
-                        <p class="empty-state-description">
-                            Crea tu primera empresa para comenzar a gestionar múltiples productos e industrias.
-                        </p>
-                        <button class="btn btn-primary" onclick="openNewCompanyModal()">
-                            Crear Primera Empresa
-                        </button>
+                    <div class="industry-filter">
+                        <div class="industry-tag active" onclick="filterCompanies('all', this)">
+                            <span>🌐</span> Todas
+                        </div>
+                        <div class="industry-tag" onclick="filterCompanies('construccion', this)">
+                            <span>🏗️</span> Construcción
+                        </div>
+                        <div class="industry-tag" onclick="filterCompanies('medica', this)">
+                            <span>🏥</span> Médica
+                        </div>
+                        <div class="industry-tag" onclick="filterCompanies('transporte', this)">
+                            <span>🚛</span> Transporte
+                        </div>
+                        <div class="industry-tag" onclick="filterCompanies('abarrotes', this)">
+                            <span>🛒</span> Retail
+                        </div>
+                        <div class="industry-tag" onclick="filterCompanies('jardineria', this)">
+                            <span>🌱</span> Jardinería
+                        </div>
                     </div>
 
-                    <div id="companies-list" style="display: none;">
-                        <div class="industry-filter" id="companyIndustryFilter">
-                            <div class="industry-tag active" onclick="filterCompanies('all', this)">
-                                <span>🌐</span> Todas
-                            </div>
-                            <div class="industry-tag" onclick="filterCompanies('construccion', this)">
-                                <span>🏗️</span> Construcción
-                            </div>
-                            <div class="industry-tag" onclick="filterCompanies('medica', this)">
-                                <span>🏥</span> Médica
-                            </div>
-                            <div class="industry-tag" onclick="filterCompanies('transporte', this)">
-                                <span>🚛</span> Transporte
-                            </div>
-                            <div class="industry-tag" onclick="filterCompanies('abarrotes', this)">
-                                <span>🛒</span> Retail
-                            </div>
-                            <div class="industry-tag" onclick="filterCompanies('jardineria', this)">
-                                <span>🌱</span> Jardinería
-                            </div>
-                            <div class="industry-tag" onclick="filterCompanies('otros', this)">
-                                <span>⚙️</span> Otros
-                            </div>
-                        </div>
-
-                        <div class="table-container">
-                            <table id="companiesTable">
-                                <thead>
-                                    <tr>
-                                        <th>Empresa</th>
-                                        <th>Industria</th>
-                                        <th>Plan</th>
-                                        <th>Productos</th>
-                                        <th>Estado</th>
-                                        <th>Usuarios</th>
-                                        <th>MRR</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="companiesTableBody">
-                                    <!-- Data will be populated by JavaScript -->
-                                </tbody>
-                            </table>
-                        </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Empresa</th>
+                                    <th>Industria</th>
+                                    <th>Plan</th>
+                                    <th>Productos</th>
+                                    <th>Estado</th>
+                                    <th>Usuarios</th>
+                                    <th>MRR</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="companiesTableBody">
+                                <!-- Populated by JavaScript -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Products Tab -->
-            <div id="products-content" class="tab-content">
-                <div class="content-header">
-                    <h2 class="content-title">Productos de la Suite</h2>
-                    <button class="btn btn-primary" onclick="exportProductReport()">Exportar Reporte</button>
-                </div>
-                <div class="content-body">
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
-                        <div style="background: var(--hover-bg); padding: 2rem; border-radius: var(--border-radius-lg);">
-                            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                                <div style="width: 48px; height: 48px; background: #059669; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem;">📦</div>
-                                <div>
-                                    <h3>Opsis Warehouse</h3>
-                                    <p style="color: var(--text-secondary); font-size: 0.9rem;">Inventario y equipos</p>
-                                </div>
-                            </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <div>
-                                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary-green);" id="warehouseStats">0</div>
-                                    <div style="font-size: 0.8rem; color: var(--text-secondary);">Empresas</div>
-                                </div>
-                                <div>
-                                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--info-blue);">$99</div>
-                                    <div style="font-size: 0.8rem; color: var(--text-secondary);">Precio base</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div style="background: var(--hover-bg); padding: 2rem; border-radius: var(--border-radius-lg);">
-                            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                                <div style="width: 48px; height: 48px; background: #7c3aed; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem;">⏱️</div>
-                                <div>
-                                    <h3>Opsis TimeSync</h3>
-                                    <p style="color: var(--text-secondary); font-size: 0.9rem;">Tiempo y proyectos</p>
-                                </div>
-                            </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <div>
-                                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary-green);" id="timesyncStats">0</div>
-                                    <div style="font-size: 0.8rem; color: var(--text-secondary);">Empresas</div>
-                                </div>
-                                <div>
-                                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--info-blue);">$79</div>
-                                    <div style="font-size: 0.8rem; color: var(--text-secondary);">Precio base</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div style="background: var(--hover-bg); padding: 2rem; border-radius: var(--border-radius-lg);">
-                            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                                <div style="width: 48px; height: 48px; background: #dc2626; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem;">👥</div>
-                                <div>
-                                    <h3>Opsis HR</h3>
-                                    <p style="color: var(--text-secondary); font-size: 0.9rem;">Recursos humanos</p>
-                                </div>
-                            </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <div>
-                                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary-green);" id="hrStats">0</div>
-                                    <div style="font-size: 0.8rem; color: var(--text-secondary);">Empresas</div>
-                                </div>
-                                <div>
-                                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--info-blue);">$89</div>
-                                    <div style="font-size: 0.8rem; color: var(--text-secondary);">Precio base</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div style="background: var(--hover-bg); padding: 2rem; border-radius: var(--border-radius-lg);">
-                            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                                <div style="width: 48px; height: 48px; background: #ea580c; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem;">💰</div>
-                                <div>
-                                    <h3>Opsis Finance</h3>
-                                    <p style="color: var(--text-secondary); font-size: 0.9rem;">Gestión financiera</p>
-                                </div>
-                            </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <div>
-                                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary-green);" id="financeStats">0</div>
-                                    <div style="font-size: 0.8rem; color: var(--text-secondary);">Empresas</div>
-                                </div>
-                                <div>
-                                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--info-blue);">$109</div>
-                                    <div style="font-size: 0.8rem; color: var(--text-secondary);">Precio base</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Other tabs content with empty states -->
+            <!-- Users Tab -->
             <div id="users-content" class="tab-content">
                 <div class="content-header">
-                    <h2 class="content-title">Gestión de Usuarios</h2>
+                    <h2 class="content-title">👥 Usuarios del Sistema</h2>
+                    <button class="btn btn-primary" onclick="showAddSystemUserModal()">
+                        ➕ Agregar Usuario
+                    </button>
                 </div>
                 <div class="content-body">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">👥</div>
-                        <h3 class="empty-state-title">No hay usuarios registrados</h3>
-                        <p class="empty-state-description">Los usuarios aparecerán aquí cuando creates empresas.</p>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Email</th>
+                                    <th>Rol</th>
+                                    <th>Estado</th>
+                                    <th>Última Conexión</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="systemUsersTableBody">
+                                <!-- Populated by JavaScript -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
 
+            <!-- Industries Tab -->
             <div id="industries-content" class="tab-content">
                 <div class="content-header">
-                    <h2 class="content-title">Análisis por Industrias</h2>
+                    <h2 class="content-title">🏭 Gestión de Industrias</h2>
+                    <button class="btn btn-primary" onclick="showAddIndustryModal()">
+                        ➕ Agregar Industria
+                    </button>
                 </div>
                 <div class="content-body">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">🏭</div>
-                        <h3 class="empty-state-title">No hay datos por industria</h3>
-                        <p class="empty-state-description">Los análisis aparecerán cuando tengas empresas registradas.</p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;" id="industriesGrid">
+                        <!-- Populated by JavaScript -->
                     </div>
                 </div>
             </div>
 
+            <!-- Analytics Tab -->
             <div id="analytics-content" class="tab-content">
                 <div class="content-header">
-                    <h2 class="content-title">Analytics Multi-Producto</h2>
+                    <h2 class="content-title">📈 Analytics</h2>
+                    <button class="btn btn-primary" onclick="exportAnalytics()">
+                        📊 Exportar Datos
+                    </button>
                 </div>
                 <div class="content-body">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📊</div>
-                        <h3 class="empty-state-title">No hay datos para analizar</h3>
-                        <p class="empty-state-description">Los analytics aparecerán cuando tengas empresas activas.</p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                        <div style="background: var(--hover-bg); border-radius: var(--border-radius-lg); padding: 2rem; text-align: center;">
+                            <h3 style="margin-bottom: 1rem;">📊 Crecimiento Mensual</h3>
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--primary-green); margin-bottom: 0.5rem;">+24%</div>
+                            <p style="color: var(--text-secondary);">Comparado con el mes anterior</p>
+                        </div>
+                        <div style="background: var(--hover-bg); border-radius: var(--border-radius-lg); padding: 2rem; text-align: center;">
+                            <h3 style="margin-bottom: 1rem;">💰 ARR Total</h3>
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--info-blue); margin-bottom: 0.5rem;">$16.2K</div>
+                            <p style="color: var(--text-secondary);">Ingresos anuales recurrentes</p>
+                        </div>
+                        <div style="background: var(--hover-bg); border-radius: var(--border-radius-lg); padding: 2rem; text-align: center;">
+                            <h3 style="margin-bottom: 1rem;">🏢 Retención</h3>
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--warning-orange); margin-bottom: 0.5rem;">94%</div>
+                            <p style="color: var(--text-secondary);">Tasa de retención mensual</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Settings Tab -->
             <div id="settings-content" class="tab-content">
                 <div class="content-header">
-                    <h2 class="content-title">Configuración del Sistema</h2>
+                    <h2 class="content-title">⚙️ Configuración</h2>
+                    <button class="btn btn-primary" onclick="createBackup()">
+                        💾 Crear Backup
+                    </button>
                 </div>
                 <div class="content-body">
-                    <div style="max-width: 600px;">
-                        <h4 style="margin-bottom: 1rem;">Configuración General</h4>
-                        <div style="background: var(--hover-bg); padding: 1.5rem; border-radius: var(--border-radius); margin-bottom: 1rem;">
-                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                                <input type="checkbox" checked> Notificaciones por email
-                            </label>
+                    <div style="display: grid; gap: 2rem;">
+                        <div style="background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); padding: 2rem;">
+                            <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                                🎨 Configuración Visual
+                            </h3>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                                <div>
+                                    <label class="form-label">Color Primario</label>
+                                    <input type="color" value="#22c55e" onchange="updatePrimaryColor(this.value)" 
+                                           style="width: 100%; height: 45px; border: none; border-radius: 8px; cursor: pointer;">
+                                </div>
+                                <div>
+                                    <label class="form-label">Nombre del Sistema</label>
+                                    <input type="text" value="Opsis Suite" onchange="updateSystemName(this.value)" 
+                                           class="form-input">
+                                </div>
+                                <div>
+                                    <label class="form-label">Tema Predeterminado</label>
+                                    <select class="form-select" onchange="setDefaultTheme(this.value)">
+                                        <option value="light">Claro</option>
+                                        <option value="dark">Oscuro</option>
+                                        <option value="auto">Automático</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                        <div style="background: var(--hover-bg); padding: 1.5rem; border-radius: var(--border-radius); margin-bottom: 1rem;">
-                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                                <input type="checkbox" checked> Backup automático
-                            </label>
-                        </div>
-                        <div style="background: var(--hover-bg); padding: 1.5rem; border-radius: var(--border-radius);">
-                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                                <input type="checkbox"> Modo mantenimiento
-                            </label>
+                        
+                        <div style="background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); padding: 2rem;">
+                            <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                                🔧 Configuración del Sistema
+                            </h3>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                                <div>
+                                    <label class="form-label">Límite de Empresas</label>
+                                    <input type="number" value="100" class="form-input" onchange="updateCompanyLimit(this.value)">
+                                </div>
+                                <div>
+                                    <label class="form-label">Período de Prueba (días)</label>
+                                    <input type="number" value="30" class="form-input" onchange="updateTrialPeriod(this.value)">
+                                </div>
+                                <div>
+                                    <label class="form-label">Notificaciones Email</label>
+                                    <select class="form-select" onchange="updateEmailNotifications(this.value)">
+                                        <option value="enabled">Habilitadas</option>
+                                        <option value="disabled">Deshabilitadas</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -984,312 +919,1192 @@
         </div>
     </div>
 
-    <!-- Modal para Nueva Empresa -->
-    <div id="newCompanyModal" class="modal">
-        <div class="modal-fullscreen">
-            <div class="modal-content-fullscreen">
-                <button class="modal-close-btn" onclick="closeNewCompanyModal()">&times;</button>
-                <iframe id="onboardingIframe" class="modal-iframe" src="../dashboard/onboarding-multiproduct.html"></iframe>
+    <!-- Modal para Onboarding Multi-Producto -->
+    <div id="onboardingModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">🚀 Nueva Empresa - Onboarding Multi-Producto</h2>
+                <button class="modal-close" onclick="closeOnboardingModal()">&times;</button>
+            </div>
+            <div class="onboarding-container">
+                <!-- Step Progress Indicator -->
+                <div class="step-progress">
+                    <div class="progress-dot active" data-step="1"></div>
+                    <div class="progress-dot" data-step="2"></div>
+                    <div class="progress-dot" data-step="3"></div>
+                    <div class="progress-dot" data-step="4"></div>
+                    <div class="progress-dot" data-step="5"></div>
+                </div>
+
+                <!-- Step 1: Industry Selection -->
+                <div class="onboarding-step active" id="step-1">
+                    <div class="step-header">
+                        <h3 class="step-title">Seleccionar Industria</h3>
+                        <p class="step-subtitle">¿A qué sector pertenece tu empresa?</p>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;" id="industryGrid">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Step 2: Products Selection -->
+                <div class="onboarding-step" id="step-2">
+                    <div class="step-header">
+                        <h3 class="step-title">Seleccionar Productos</h3>
+                        <p class="step-subtitle">¿Qué productos necesita tu empresa?</p>
+                    </div>
+                    <div class="products-grid">
+                        <div class="product-card" data-product="warehouse" onclick="toggleProduct('warehouse')">
+                            <div class="product-icon">📦</div>
+                            <h4 class="product-name">Opsis Warehouse</h4>
+                            <p class="product-description">Gestión de inventarios, equipos y logística</p>
+                            <p class="product-price">Desde $99/mes</p>
+                        </div>
+                        <div class="product-card" data-product="timesync" onclick="toggleProduct('timesync')">
+                            <div class="product-icon">⏱️</div>
+                            <h4 class="product-name">Opsis TimeSync</h4>
+                            <p class="product-description">Control de tiempo y gestión de proyectos</p>
+                            <p class="product-price">Desde $79/mes</p>
+                        </div>
+                        <div class="product-card" data-product="hr" onclick="toggleProduct('hr')">
+                            <div class="product-icon">👥</div>
+                            <h4 class="product-name">Opsis HR</h4>
+                            <p class="product-description">Recursos humanos y gestión de personal</p>
+                            <p class="product-price">Desde $129/mes</p>
+                        </div>
+                        <div class="product-card" data-product="finance" onclick="toggleProduct('finance')">
+                            <div class="product-icon">💰</div>
+                            <h4 class="product-name">Opsis Finance</h4>
+                            <p class="product-description">Contabilidad y gestión financiera</p>
+                            <p class="product-price">Desde $149/mes</p>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 2rem; padding: 1rem; background: var(--hover-bg); border-radius: var(--border-radius);">
+                        <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">💡 Total estimado mensual:</p>
+                        <p id="totalPrice" style="font-size: 1.5rem; font-weight: 700; color: var(--primary-green);">$0/mes</p>
+                    </div>
+                </div>
+
+                <!-- Step 3: Company Information -->
+                <div class="onboarding-step" id="step-3">
+                    <div class="step-header">
+                        <h3 class="step-title">Información de la Empresa</h3>
+                        <p class="step-subtitle">Datos básicos de tu organización</p>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Nombre de la Empresa *</label>
+                            <input type="text" id="companyName" class="form-input" required 
+                                   placeholder="Ej: Constructora ABC S.A.">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Dominio Personalizado</label>
+                            <input type="text" id="companyDomain" class="form-input" 
+                                   placeholder="abc-constructora">
+                            <small style="color: var(--text-tertiary);">Will be: abc-constructora.opsis-suite.com</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email del Administrador *</label>
+                            <input type="email" id="adminEmail" class="form-input" required 
+                                   placeholder="admin@empresa.com">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Teléfono</label>
+                            <input type="tel" id="companyPhone" class="form-input" 
+                                   placeholder="+1 (555) 123-4567">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Dirección</label>
+                        <input type="text" id="companyAddress" class="form-input" 
+                               placeholder="123 Calle Principal, Ciudad, Estado">
+                    </div>
+                </div>
+
+                <!-- Step 4: Plan Selection -->
+                <div class="onboarding-step" id="step-4">
+                    <div class="step-header">
+                        <h3 class="step-title">Seleccionar Plan</h3>
+                        <p class="step-subtitle">Elige el plan que mejor se adapte a tus necesidades</p>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                        <div class="product-card" data-plan="trial" onclick="selectPlan('trial')">
+                            <div class="product-icon">🆓</div>
+                            <h4 class="product-name">Prueba Gratuita</h4>
+                            <p class="product-description">30 días gratis, hasta 5 usuarios</p>
+                            <p class="product-price">$0/mes</p>
+                            <ul style="text-align: left; margin-top: 1rem; font-size: 0.8rem; color: var(--text-secondary);">
+                                <li>✅ Acceso a todos los productos</li>
+                                <li>✅ Soporte básico</li>
+                                <li>✅ 1GB almacenamiento</li>
+                                <li>❌ Sin integraciones avanzadas</li>
+                            </ul>
+                        </div>
+                        <div class="product-card" data-plan="starter" onclick="selectPlan('starter')">
+                            <div class="product-icon">🚀</div>
+                            <h4 class="product-name">Starter</h4>
+                            <p class="product-description">Perfecto para equipos pequeños</p>
+                            <p class="product-price">15% descuento aplicado</p>
+                            <ul style="text-align: left; margin-top: 1rem; font-size: 0.8rem; color: var(--text-secondary);">
+                                <li>✅ Hasta 15 usuarios</li>
+                                <li>✅ Soporte prioritario</li>
+                                <li>✅ 10GB almacenamiento</li>
+                                <li>✅ Integraciones básicas</li>
+                            </ul>
+                        </div>
+                        <div class="product-card" data-plan="professional" onclick="selectPlan('professional')">
+                            <div class="product-icon">💼</div>
+                            <h4 class="product-name">Professional</h4>
+                            <p class="product-description">Para empresas en crecimiento</p>
+                            <p class="product-price">20% descuento aplicado</p>
+                            <ul style="text-align: left; margin-top: 1rem; font-size: 0.8rem; color: var(--text-secondary);">
+                                <li>✅ Usuarios ilimitados</li>
+                                <li>✅ Soporte 24/7</li>
+                                <li>✅ 100GB almacenamiento</li>
+                                <li>✅ Todas las integraciones</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 5: Summary -->
+                <div class="onboarding-step" id="step-5">
+                    <div class="step-header">
+                        <h3 class="step-title">Resumen de Configuración</h3>
+                        <p class="step-subtitle">Revisa los detalles antes de crear la empresa</p>
+                    </div>
+                    <div style="background: var(--hover-bg); border-radius: var(--border-radius-lg); padding: 2rem;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                            <div>
+                                <h4 style="margin-bottom: 1rem; color: var(--text-primary);">📋 Información General</h4>
+                                <div id="summaryCompanyInfo">
+                                    <!-- Populated by JavaScript -->
+                                </div>
+                            </div>
+                            <div>
+                                <h4 style="margin-bottom: 1rem; color: var(--text-primary);">💰 Facturación</h4>
+                                <div id="summaryBilling">
+                                    <!-- Populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                            <h4 style="margin-bottom: 1rem; color: var(--text-primary);">🛍️ Productos Seleccionados</h4>
+                            <div id="summaryProducts">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <div class="step-navigation">
+                    <button type="button" class="btn btn-secondary" id="prevBtn" onclick="previousStep()" style="display: none;">
+                        ⬅️ Anterior
+                    </button>
+                    <div style="flex: 1;"></div>
+                    <button type="button" class="btn btn-primary" id="nextBtn" onclick="nextStep()">
+                        Siguiente ➡️
+                    </button>
+                    <button type="button" class="btn btn-primary" id="createBtn" onclick="createCompanyFromOnboarding()" style="display: none;">
+                        🚀 Crear Empresa
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Global state para el dashboard
-        let dashboardData = {
-            companies: [],
-            totalUsers: 0,
-            monthlyRevenue: 0,
-            activeProducts: 0
+        // ============================================================================
+        // DATA DEFINITIONS
+        // ============================================================================
+        
+        // Companies Data
+        const companiesData = [
+            { 
+                id: 1, 
+                name: "Constructora ABC S.A.", 
+                industry: "construccion", 
+                plan: "Professional", 
+                products: ["Warehouse", "TimeSync", "Finance"], 
+                status: "active", 
+                users: 24, 
+                mrr: 299,
+                domain: "abc-constructora",
+                createdAt: "2024-01-15"
+            },
+            { 
+                id: 2, 
+                name: "Clínica San José", 
+                industry: "medica", 
+                plan: "Enterprise", 
+                products: ["Warehouse", "HR", "Finance"], 
+                status: "active", 
+                users: 35, 
+                mrr: 399,
+                domain: "clinica-sanjose",
+                createdAt: "2024-02-10"
+            },
+            { 
+                id: 3, 
+                name: "Transportes Rápidos", 
+                industry: "transporte", 
+                plan: "Professional", 
+                products: ["Warehouse", "TimeSync"], 
+                status: "active", 
+                users: 18, 
+                mrr: 199,
+                domain: "transportes-rapidos",
+                createdAt: "2024-03-05"
+            },
+            { 
+                id: 4, 
+                name: "Supermercado La Esquina", 
+                industry: "abarrotes", 
+                plan: "Starter", 
+                products: ["Warehouse"], 
+                status: "trial", 
+                users: 8, 
+                mrr: 0,
+                domain: "super-esquina",
+                createdAt: "2024-08-20"
+            },
+            { 
+                id: 5, 
+                name: "Jardines Verdes", 
+                industry: "jardineria", 
+                plan: "Professional", 
+                products: ["Warehouse", "TimeSync", "HR"], 
+                status: "active", 
+                users: 12, 
+                mrr: 259,
+                domain: "jardines-verdes",
+                createdAt: "2024-06-12"
+            }
+        ];
+
+        // System Users Data
+        const systemUsers = [
+            { 
+                id: 1, 
+                name: 'Admin Principal', 
+                email: 'admin@opsis-suite.com', 
+                role: 'super_admin', 
+                status: 'active',
+                lastLogin: '2024-08-29 10:30'
+            },
+            { 
+                id: 2, 
+                name: 'María González', 
+                email: 'maria@opsis-suite.com', 
+                role: 'support_admin', 
+                status: 'active',
+                lastLogin: '2024-08-29 09:15'
+            },
+            { 
+                id: 3, 
+                name: 'Carlos Mendoza', 
+                email: 'carlos@opsis-suite.com', 
+                role: 'data_analyst', 
+                status: 'active',
+                lastLogin: '2024-08-28 16:45'
+            },
+            { 
+                id: 4, 
+                name: 'Ana Rodríguez', 
+                email: 'ana@opsis-suite.com', 
+                role: 'billing_admin', 
+                status: 'active',
+                lastLogin: '2024-08-29 08:20'
+            }
+        ];
+
+        // Expanded Industry Catalog
+        const expandedIndustryCatalog = {
+            'construccion': { 
+                name: 'Construcción y Obras', 
+                icon: '🏗️', 
+                description: 'Construcción, obras civiles, infraestructura',
+                companies: 2
+            },
+            'medica': { 
+                name: 'Médica y Salud', 
+                icon: '🏥', 
+                description: 'Clínicas, consultorios, centros médicos',
+                companies: 1
+            },
+            'transporte': { 
+                name: 'Transporte y Logística', 
+                icon: '🚛', 
+                description: 'Flotas, distribución, logística',
+                companies: 1
+            },
+            'abarrotes': { 
+                name: 'Retail y Comercio', 
+                icon: '🛒', 
+                description: 'Tiendas, supermercados, retail',
+                companies: 1
+            },
+            'jardineria': { 
+                name: 'Jardinería y Paisajismo', 
+                icon: '🌱', 
+                description: 'Diseño de jardines, mantenimiento',
+                companies: 1
+            },
+            'tecnologia': { 
+                name: 'Tecnología', 
+                icon: '💻', 
+                description: 'Software, desarrollo, IT',
+                companies: 0
+            },
+            'educacion': { 
+                name: 'Educación', 
+                icon: '🎓', 
+                description: 'Escuelas, universidades, capacitación',
+                companies: 0
+            },
+            'restaurante': { 
+                name: 'Restaurantes y Hoteles', 
+                icon: '🍽️', 
+                description: 'Gastronomía, hotelería, turismo',
+                companies: 0
+            },
+            'financiera': { 
+                name: 'Servicios Financieros', 
+                icon: '🏦', 
+                description: 'Bancos, seguros, consultorías',
+                companies: 0
+            },
+            'inmobiliaria': { 
+                name: 'Bienes Raíces', 
+                icon: '🏠', 
+                description: 'Inmobiliarias, desarrolladoras',
+                companies: 0
+            },
+            'automotriz': { 
+                name: 'Automotriz', 
+                icon: '🚗', 
+                description: 'Concesionarios, talleres, repuestos',
+                companies: 0
+            },
+            'otros': { 
+                name: 'Otras Industrias', 
+                icon: '⚙️', 
+                description: 'Industrias no listadas, personalización',
+                companies: 0
+            }
         };
 
-        // Funciones de navegación
+        // Products Configuration
+        const productsConfig = {
+            warehouse: {
+                name: 'Opsis Warehouse',
+                icon: '📦',
+                description: 'Gestión de inventarios, equipos y logística',
+                basePrice: 99,
+                features: ['Inventario en tiempo real', 'Gestión de equipos', 'Reportes avanzados']
+            },
+            timesync: {
+                name: 'Opsis TimeSync',
+                icon: '⏱️',
+                description: 'Control de tiempo y gestión de proyectos',
+                basePrice: 79,
+                features: ['Control de tiempo', 'Gestión de proyectos', 'Planificación de recursos']
+            },
+            hr: {
+                name: 'Opsis HR',
+                icon: '👥',
+                description: 'Recursos humanos y gestión de personal',
+                basePrice: 129,
+                features: ['Gestión de empleados', 'Nómina', 'Evaluaciones de desempeño']
+            },
+            finance: {
+                name: 'Opsis Finance',
+                icon: '💰',
+                description: 'Contabilidad y gestión financiera',
+                basePrice: 149,
+                features: ['Contabilidad completa', 'Reportes financieros', 'Presupuestos']
+            }
+        };
+
+        // Plan Configuration
+        const plansConfig = {
+            trial: {
+                name: 'Prueba Gratuita',
+                icon: '🆓',
+                price: 0,
+                discount: 0,
+                duration: 30,
+                features: ['30 días gratis', 'Hasta 5 usuarios', 'Soporte básico']
+            },
+            starter: {
+                name: 'Starter',
+                icon: '🚀',
+                discount: 15,
+                features: ['Hasta 15 usuarios', 'Soporte prioritario', '10GB almacenamiento']
+            },
+            professional: {
+                name: 'Professional',
+                icon: '💼',
+                discount: 20,
+                features: ['Usuarios ilimitados', 'Soporte 24/7', '100GB almacenamiento']
+            },
+            enterprise: {
+                name: 'Enterprise',
+                icon: '🏢',
+                discount: 25,
+                features: ['Todo incluido', 'Soporte dedicado', 'Almacenamiento ilimitado']
+            }
+        };
+
+        // Onboarding State
+        let onboardingState = {
+            currentStep: 1,
+            selectedIndustry: null,
+            selectedProducts: [],
+            selectedPlan: null,
+            companyInfo: {},
+            totalPrice: 0
+        };
+
+        // ============================================================================
+        // MAIN FUNCTIONS
+        // ============================================================================
+        
         function showTab(tabName) {
-            // Hide all tab contents
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
+            // Remove active class from all tabs and content
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
             
-            // Remove active class from all nav tabs
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
+            // Add active class to selected tab and content
+            const tabContent = document.getElementById(tabName + '-content');
+            const navTab = event?.target || document.querySelector(`[onclick="showTab('${tabName}')"]`);
             
-            // Show selected tab
-            document.getElementById(tabName + '-content').classList.add('active');
+            if (tabContent) tabContent.classList.add('active');
+            if (navTab) navTab.classList.add('active');
             
-            // Add active class to clicked nav tab
-            event.target.classList.add('active');
-            
-            // Load data for specific tabs
-            if (tabName === 'companies') {
-                loadCompaniesTable();
+            // Load specific content for certain tabs
+            switch(tabName) {
+                case 'companies':
+                    loadCompaniesTable();
+                    break;
+                case 'users':
+                    loadSystemUsersTable();
+                    break;
+                case 'industries':
+                    loadIndustriesGrid();
+                    break;
+                case 'analytics':
+                    loadAnalytics();
+                    break;
             }
         }
 
-        // Función para abrir modal de nueva empresa
-        function openNewCompanyModal() {
-            const modal = document.getElementById('newCompanyModal');
-            modal.classList.add('show');
-            
-            // Listen for messages from the iframe
-            window.addEventListener('message', handleOnboardingComplete, false);
-        }
-
-        // Función para cerrar modal
-        function closeNewCompanyModal() {
-            const modal = document.getElementById('newCompanyModal');
-            modal.classList.remove('show');
-            
-            // Remove event listener
-            window.removeEventListener('message', handleOnboardingComplete, false);
-        }
-
-        // Manejar completado del onboarding
-        function handleOnboardingComplete(event) {
-            if (event.data && event.data.type === 'onboarding_complete') {
-                const newCompanyData = event.data.data;
-                console.log('Nueva empresa creada:', newCompanyData);
-                
-                // Agregar empresa a los datos globales
-                addNewCompany(newCompanyData);
-                
-                // Cerrar modal
-                closeNewCompanyModal();
-                
-                // Mostrar mensaje de éxito
-                alert('Empresa creada exitosamente');
-                
-                // Actualizar vista
-                updateDashboardStats();
-                loadCompaniesTable();
-            }
-        }
-
-        // Agregar nueva empresa
-        function addNewCompany(companyData) {
-            const newCompany = {
-                id: dashboardData.companies.length + 1,
-                name: companyData.company?.name || 'Nueva Empresa',
-                industry: companyData.industry || 'otros',
-                plan: companyData.plan || 'starter',
-                products: companyData.products || ['warehouse'],
-                status: 'active',
-                users: 1,
-                mrr: getPlanPrice(companyData.plan || 'starter'),
-                createdAt: new Date().toISOString().split('T')[0]
-            };
-            
-            dashboardData.companies.push(newCompany);
-            updateDashboardStats();
-        }
-
-        // Obtener precio del plan
-        function getPlanPrice(plan) {
-            const prices = {
-                'trial': 0,
-                'starter': 99,
-                'professional': 199,
-                'enterprise': 299
-            };
-            return prices[plan] || 0;
-        }
-
-        // Actualizar estadísticas del dashboard
-        function updateDashboardStats() {
-            const totalCompanies = dashboardData.companies.length;
-            const totalUsers = dashboardData.companies.reduce((sum, company) => sum + company.users, 0);
-            const monthlyRevenue = dashboardData.companies.reduce((sum, company) => sum + company.mrr, 0);
-            const activeProducts = dashboardData.companies.reduce((sum, company) => sum + company.products.length, 0);
-
-            // Actualizar stats cards
-            document.getElementById('totalCompanies').textContent = totalCompanies;
-            document.getElementById('totalUsers').textContent = totalUsers;
-            document.getElementById('monthlyRevenue').textContent = `$${monthlyRevenue.toLocaleString()}`;
-            document.getElementById('activeProducts').textContent = activeProducts;
-
-            // Mostrar/ocultar estados vacíos
-            if (totalCompanies > 0) {
-                document.querySelector('#dashboard-content .empty-state').style.display = 'none';
-                document.getElementById('dashboard-stats').style.display = 'block';
-                document.getElementById('companies-empty').style.display = 'none';
-                document.getElementById('companies-list').style.display = 'block';
-            } else {
-                document.querySelector('#dashboard-content .empty-state').style.display = 'block';
-                document.getElementById('dashboard-stats').style.display = 'none';
-                document.getElementById('companies-empty').style.display = 'block';
-                document.getElementById('companies-list').style.display = 'none';
-            }
-
-            // Actualizar contadores por producto
-            updateProductStats();
-        }
-
-        // Actualizar estadísticas por producto
-        function updateProductStats() {
-            const productCounts = {
-                warehouse: 0,
-                timesync: 0,
-                hr: 0,
-                finance: 0
-            };
-
-            dashboardData.companies.forEach(company => {
-                company.products.forEach(product => {
-                    if (productCounts.hasOwnProperty(product)) {
-                        productCounts[product]++;
-                    }
-                });
-            });
-
-            // Actualizar dashboard
-            document.getElementById('warehouseCompanies').textContent = `${productCounts.warehouse} Empresas`;
-            document.getElementById('timesyncCompanies').textContent = `${productCounts.timesync} Empresas`;
-            document.getElementById('hrCompanies').textContent = `${productCounts.hr} Empresas`;
-            document.getElementById('financeCompanies').textContent = `${productCounts.finance} Empresas`;
-
-            // Actualizar products tab
-            document.getElementById('warehouseStats').textContent = productCounts.warehouse;
-            document.getElementById('timesyncStats').textContent = productCounts.timesync;
-            document.getElementById('hrStats').textContent = productCounts.hr;
-            document.getElementById('financeStats').textContent = productCounts.finance;
-        }
-
-        // Cargar tabla de empresas
+        // ============================================================================
+        // COMPANIES MANAGEMENT
+        // ============================================================================
+        
         function loadCompaniesTable() {
             const tbody = document.getElementById('companiesTableBody');
-            tbody.innerHTML = '';
+            if (!tbody) return;
             
-            dashboardData.companies.forEach(company => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
+            tbody.innerHTML = companiesData.map(company => `
+                <tr data-industry="${company.industry}">
                     <td>
-                        <strong>${company.name}</strong><br>
-                        <small style="color: var(--text-secondary);">ID: ${company.id}</small>
+                        <strong style="color: var(--text-primary);">${company.name}</strong>
+                        <br>
+                        <small style="color: var(--text-secondary);">ID: ${company.id} • ${company.domain}.opsis-suite.com</small>
                     </td>
-                    <td>${getIndustryName(company.industry)}</td>
-                    <td><strong>${getPlanName(company.plan)}</strong></td>
                     <td>
-                        <div class="products-list">
-                            ${company.products.map(product => `<span class="product-badge product-${product}">${getProductName(product)}</span>`).join('')}
+                        <div style="display: flex; align-items: center;">
+                            <div class="industry-icon industry-${company.industry}">${getIndustryIcon(company.industry)}</div>
+                            <span>${expandedIndustryCatalog[company.industry]?.name || company.industry}</span>
+                        </div>
+                    </td>
+                    <td><strong style="color: var(--primary-green);">${company.plan}</strong></td>
+                    <td>
+                        <div class="modules-list">
+                            ${company.products.map(p => `<span class="module-badge ${p.toLowerCase()}">${p}</span>`).join('')}
                         </div>
                     </td>
                     <td><span class="status-${company.status}">${getStatusName(company.status)}</span></td>
-                    <td><strong>${company.users}</strong></td>
-                    <td><strong>$${company.mrr}</strong></td>
+                    <td><strong>${company.users}</strong> usuarios</td>
+                    <td><strong style="color: var(--primary-green);">${company.mrr}</strong></td>
                     <td>
-                        <button class="btn btn-sm btn-secondary" onclick="viewCompany(${company.id})">Ver</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteCompany(${company.id})">Eliminar</button>
+                        <div style="display: flex; gap: 0.25rem;">
+                            <button class="btn btn-sm btn-secondary" onclick="editCompany(${company.id})" title="Editar">
+                                ✏️
+                            </button>
+                            <button class="btn btn-sm btn-primary" onclick="viewCompanyDashboard(${company.id})" title="Ver Dashboard">
+                                👁️
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteCompany(${company.id})" title="Eliminar">
+                                🗑️
+                            </button>
+                        </div>
                     </td>
-                `;
-                tbody.appendChild(row);
+                </tr>
+            `).join('');
+        }
+
+        function filterCompanies(industry, element) {
+            // Update active filter
+            document.querySelectorAll('.industry-tag').forEach(tag => tag.classList.remove('active'));
+            element.classList.add('active');
+            
+            // Filter table rows
+            const rows = document.querySelectorAll('#companiesTableBody tr');
+            rows.forEach(row => {
+                const rowIndustry = row.getAttribute('data-industry');
+                if (industry === 'all' || rowIndustry === industry) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
             });
         }
 
-        // Funciones auxiliares
-        function getIndustryName(industry) {
-            const names = {
-                'construccion': 'Construcción',
-                'medica': 'Médica',
-                'transporte': 'Transporte',
-                'abarrotes': 'Retail',
-                'jardineria': 'Jardinería',
-                'otros': 'Otros'
-            };
-            return names[industry] || industry;
+        // ============================================================================
+        // SYSTEM USERS MANAGEMENT
+        // ============================================================================
+        
+        function loadSystemUsersTable() {
+            const tbody = document.getElementById('systemUsersTableBody');
+            if (!tbody) return;
+            
+            tbody.innerHTML = systemUsers.map(user => `
+                <tr>
+                    <td>
+                        <strong style="color: var(--text-primary);">${user.name}</strong>
+                        <br>
+                        <small style="color: var(--text-secondary);">ID: ${user.id}</small>
+                    </td>
+                    <td>${user.email}</td>
+                    <td>
+                        <span class="module-badge" style="background: ${getRoleColor(user.role)}; color: white; padding: 0.3rem 0.6rem;">
+                            ${getRoleName(user.role)}
+                        </span>
+                    </td>
+                    <td><span class="status-${user.status}">${getStatusName(user.status)}</span></td>
+                    <td><small style="color: var(--text-secondary);">${user.lastLogin}</small></td>
+                    <td>
+                        <div style="display: flex; gap: 0.25rem;">
+                            <button class="btn btn-sm btn-secondary" onclick="editSystemUser(${user.id})" title="Editar">
+                                ✏️
+                            </button>
+                            ${user.role !== 'super_admin' ? `
+                                <button class="btn btn-sm btn-danger" onclick="deleteSystemUser(${user.id})" title="Eliminar">
+                                    🗑️
+                                </button>
+                            ` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
         }
 
-        function getPlanName(plan) {
-            const names = {
-                'trial': 'Prueba',
-                'starter': 'Starter',
-                'professional': 'Professional',
-                'enterprise': 'Enterprise'
-            };
-            return names[plan] || plan;
+        // ============================================================================
+        // INDUSTRIES MANAGEMENT
+        // ============================================================================
+        
+        function loadIndustriesGrid() {
+            const grid = document.getElementById('industriesGrid');
+            if (!grid) return;
+            
+            grid.innerHTML = Object.entries(expandedIndustryCatalog).map(([key, industry]) => `
+                <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); padding: 1.5rem; transition: all 0.3s ease;" 
+                     onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='var(--shadow-md)'" 
+                     onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                        <div style="font-size: 2rem;">${industry.icon}</div>
+                        <div style="flex: 1;">
+                            <h3 style="margin-bottom: 0.25rem; color: var(--text-primary);">${industry.name}</h3>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">${industry.description}</p>
+                            <small style="color: var(--text-tertiary);">${industry.companies} empresa${industry.companies !== 1 ? 's' : ''}</small>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                        <button class="btn btn-sm btn-secondary" onclick="editIndustry('${key}')" title="Editar">
+                            ✏️ Editar
+                        </button>
+                        ${key !== 'otros' ? `
+                            <button class="btn btn-sm btn-danger" onclick="deleteIndustry('${key}')" title="Eliminar">
+                                🗑️ Eliminar
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
         }
 
-        function getProductName(product) {
-            const names = {
-                'warehouse': 'Warehouse',
-                'timesync': 'TimeSync',
-                'hr': 'HR',
-                'finance': 'Finance'
+        // ============================================================================
+        // ANALYTICS
+        // ============================================================================
+        
+        function loadAnalytics() {
+            // This would typically load real analytics data
+            // For now, we'll just refresh the displayed metrics
+            updateStats();
+        }
+
+        // ============================================================================
+        // ONBOARDING MODAL FUNCTIONS
+        // ============================================================================
+        
+        function showOnboardingModal() {
+            resetOnboardingState();
+            document.getElementById('onboardingModal').classList.add('show');
+            loadIndustryGrid();
+            updateStepProgress();
+        }
+
+        function closeOnboardingModal() {
+            document.getElementById('onboardingModal').classList.remove('show');
+            resetOnboardingState();
+        }
+
+        function resetOnboardingState() {
+            onboardingState = {
+                currentStep: 1,
+                selectedIndustry: null,
+                selectedProducts: [],
+                selectedPlan: null,
+                companyInfo: {},
+                totalPrice: 0
             };
-            return names[product] || product;
+            
+            // Reset all steps
+            document.querySelectorAll('.onboarding-step').forEach(step => {
+                step.classList.remove('active');
+            });
+            document.getElementById('step-1').classList.add('active');
+            
+            // Reset form inputs
+            document.querySelectorAll('.form-input').forEach(input => {
+                input.value = '';
+            });
+            
+            // Reset product selections
+            document.querySelectorAll('.product-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            updateStepProgress();
+        }
+
+        function loadIndustryGrid() {
+            const grid = document.getElementById('industryGrid');
+            if (!grid) return;
+            
+            grid.innerHTML = Object.entries(expandedIndustryCatalog).map(([key, industry]) => `
+                <div class="product-card" data-industry="${key}" onclick="selectIndustry('${key}')">
+                    <div class="product-icon">${industry.icon}</div>
+                    <h4 class="product-name">${industry.name}</h4>
+                    <p class="product-description">${industry.description}</p>
+                    <p style="font-size: 0.8rem; color: var(--text-tertiary);">${industry.companies} empresa${industry.companies !== 1 ? 's' : ''} registrada${industry.companies !== 1 ? 's' : ''}</p>
+                </div>
+            `).join('');
+        }
+
+        function selectIndustry(industry) {
+            onboardingState.selectedIndustry = industry;
+            
+            // Update visual selection
+            document.querySelectorAll('#industryGrid .product-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelector(`[data-industry="${industry}"]`).classList.add('selected');
+        }
+
+        function toggleProduct(product) {
+            const index = onboardingState.selectedProducts.indexOf(product);
+            const card = document.querySelector(`[data-product="${product}"]`);
+            
+            if (index > -1) {
+                onboardingState.selectedProducts.splice(index, 1);
+                card.classList.remove('selected');
+            } else {
+                onboardingState.selectedProducts.push(product);
+                card.classList.add('selected');
+            }
+            
+            updateTotalPrice();
+        }
+
+        function selectPlan(plan) {
+            onboardingState.selectedPlan = plan;
+            
+            // Update visual selection
+            document.querySelectorAll('#step-4 .product-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelector(`[data-plan="${plan}"]`).classList.add('selected');
+        }
+
+        function updateTotalPrice() {
+            const total = onboardingState.selectedProducts.reduce((sum, product) => {
+                return sum + productsConfig[product].basePrice;
+            }, 0);
+            
+            onboardingState.totalPrice = total;
+            
+            const priceElement = document.getElementById('totalPrice');
+            if (priceElement) {
+                priceElement.textContent = `${total}/mes`;
+            }
+        }
+
+        function nextStep() {
+            // Validate current step
+            if (!validateCurrentStep()) return;
+            
+            // Save current step data
+            saveCurrentStepData();
+            
+            // Move to next step
+            if (onboardingState.currentStep < 5) {
+                onboardingState.currentStep++;
+                showCurrentStep();
+                updateStepProgress();
+                updateStepNavigation();
+                
+                // Load specific step content
+                if (onboardingState.currentStep === 5) {
+                    loadSummary();
+                }
+            }
+        }
+
+        function previousStep() {
+            if (onboardingState.currentStep > 1) {
+                onboardingState.currentStep--;
+                showCurrentStep();
+                updateStepProgress();
+                updateStepNavigation();
+            }
+        }
+
+        function validateCurrentStep() {
+            switch(onboardingState.currentStep) {
+                case 1:
+                    if (!onboardingState.selectedIndustry) {
+                        showToast('Por favor selecciona una industria', 'warning');
+                        return false;
+                    }
+                    break;
+                case 2:
+                    if (onboardingState.selectedProducts.length === 0) {
+                        showToast('Por favor selecciona al menos un producto', 'warning');
+                        return false;
+                    }
+                    break;
+                case 3:
+                    const companyName = document.getElementById('companyName').value;
+                    const adminEmail = document.getElementById('adminEmail').value;
+                    if (!companyName || !adminEmail) {
+                        showToast('Por favor completa los campos requeridos', 'warning');
+                        return false;
+                    }
+                    break;
+                case 4:
+                    if (!onboardingState.selectedPlan) {
+                        showToast('Por favor selecciona un plan', 'warning');
+                        return false;
+                    }
+                    break;
+            }
+            return true;
+        }
+
+        function saveCurrentStepData() {
+            switch(onboardingState.currentStep) {
+                case 3:
+                    onboardingState.companyInfo = {
+                        name: document.getElementById('companyName').value,
+                        domain: document.getElementById('companyDomain').value,
+                        email: document.getElementById('adminEmail').value,
+                        phone: document.getElementById('companyPhone').value,
+                        address: document.getElementById('companyAddress').value
+                    };
+                    break;
+            }
+        }
+
+        function showCurrentStep() {
+            document.querySelectorAll('.onboarding-step').forEach(step => {
+                step.classList.remove('active');
+            });
+            document.getElementById(`step-${onboardingState.currentStep}`).classList.add('active');
+        }
+
+        function updateStepProgress() {
+            document.querySelectorAll('.progress-dot').forEach((dot, index) => {
+                dot.classList.remove('active', 'completed');
+                if (index + 1 === onboardingState.currentStep) {
+                    dot.classList.add('active');
+                } else if (index + 1 < onboardingState.currentStep) {
+                    dot.classList.add('completed');
+                }
+            });
+        }
+
+        function updateStepNavigation() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const createBtn = document.getElementById('createBtn');
+            
+            // Show/hide previous button
+            prevBtn.style.display = onboardingState.currentStep > 1 ? 'inline-flex' : 'none';
+            
+            // Show/hide next vs create button
+            if (onboardingState.currentStep === 5) {
+                nextBtn.style.display = 'none';
+                createBtn.style.display = 'inline-flex';
+            } else {
+                nextBtn.style.display = 'inline-flex';
+                createBtn.style.display = 'none';
+            }
+        }
+
+        function loadSummary() {
+            // Company Info Summary
+            const companyInfoHtml = `
+                <div style="space-y: 0.5rem;">
+                    <p><strong>Empresa:</strong> ${onboardingState.companyInfo.name}</p>
+                    <p><strong>Industria:</strong> ${expandedIndustryCatalog[onboardingState.selectedIndustry].name}</p>
+                    <p><strong>Dominio:</strong> ${onboardingState.companyInfo.domain || 'auto-generado'}.opsis-suite.com</p>
+                    <p><strong>Email Admin:</strong> ${onboardingState.companyInfo.email}</p>
+                    ${onboardingState.companyInfo.phone ? `<p><strong>Teléfono:</strong> ${onboardingState.companyInfo.phone}</p>` : ''}
+                </div>
+            `;
+            document.getElementById('summaryCompanyInfo').innerHTML = companyInfoHtml;
+            
+            // Billing Summary
+            const discount = plansConfig[onboardingState.selectedPlan]?.discount || 0;
+            const subtotal = onboardingState.totalPrice;
+            const discountAmount = subtotal * (discount / 100);
+            const total = subtotal - discountAmount;
+            
+            const billingHtml = `
+                <div style="space-y: 0.5rem;">
+                    <p><strong>Plan:</strong> ${plansConfig[onboardingState.selectedPlan].name}</p>
+                    <p><strong>Subtotal:</strong> ${subtotal}/mes</p>
+                    ${discount > 0 ? `<p style="color: var(--primary-green);"><strong>Descuento (${discount}%):</strong> -${discountAmount.toFixed(2)}</p>` : ''}
+                    <p style="font-size: 1.2rem;"><strong>Total:</strong> ${onboardingState.selectedPlan === 'trial' ? '0' : total.toFixed(2)}/mes</p>
+                    ${onboardingState.selectedPlan === 'trial' ? '<p style="color: var(--text-secondary); font-size: 0.9rem;">30 días gratuitos</p>' : ''}
+                </div>
+            `;
+            document.getElementById('summaryBilling').innerHTML = billingHtml;
+            
+            // Products Summary
+            const productsHtml = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    ${onboardingState.selectedProducts.map(productKey => {
+                        const product = productsConfig[productKey];
+                        return `
+                            <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem;">
+                                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">${product.icon}</div>
+                                <h5 style="margin-bottom: 0.5rem;">${product.name}</h5>
+                                <p style="font-size: 0.8rem; color: var(--text-secondary);">${product.description}</p>
+                                <p style="font-weight: 600; color: var(--primary-green); margin-top: 0.5rem;">${product.basePrice}/mes</p>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+            document.getElementById('summaryProducts').innerHTML = productsHtml;
+        }
+
+        function createCompanyFromOnboarding() {
+            // Generate new company data from onboarding
+            const newCompany = {
+                id: Date.now(),
+                name: onboardingState.companyInfo.name,
+                industry: onboardingState.selectedIndustry,
+                plan: plansConfig[onboardingState.selectedPlan].name,
+                products: onboardingState.selectedProducts.map(p => productsConfig[p].name.replace('Opsis ', '')),
+                status: onboardingState.selectedPlan === 'trial' ? 'trial' : 'active',
+                users: 1,
+                mrr: onboardingState.selectedPlan === 'trial' ? 0 : onboardingState.totalPrice,
+                domain: onboardingState.companyInfo.domain || generateDomainFromName(onboardingState.companyInfo.name),
+                createdAt: new Date().toISOString().split('T')[0]
+            };
+            
+            // Add to companies data
+            companiesData.push(newCompany);
+            
+            // Update industry companies count
+            expandedIndustryCatalog[onboardingState.selectedIndustry].companies++;
+            
+            // Update UI
+            updateStats();
+            if (document.getElementById('companies-content').classList.contains('active')) {
+                loadCompaniesTable();
+            }
+            
+            // Close modal and show success
+            closeOnboardingModal();
+            showToast(`Empresa "${newCompany.name}" creada exitosamente`, 'success');
+            
+            // Switch to companies tab to show the new company
+            showTab('companies');
+        }
+
+        // ============================================================================
+        // UTILITY FUNCTIONS
+        // ============================================================================
+        
+        function getIndustryIcon(industry) {
+            return expandedIndustryCatalog[industry]?.icon || '🏢';
         }
 
         function getStatusName(status) {
-            const names = {
-                'active': 'Activo',
-                'trial': 'Prueba',
-                'inactive': 'Inactivo'
+            const names = { 
+                'active': 'Activo', 
+                'trial': 'Prueba', 
+                'inactive': 'Inactivo',
+                'suspended': 'Suspendido'
             };
             return names[status] || status;
         }
 
-        // Funciones de acción
-        function viewCompany(id) {
-            console.log('Viewing company:', id);
-            // Aquí abriríamos el dashboard específico de la empresa
-            window.open(`../dashboard/template.html?company=${id}`, '_blank');
+        function getRoleColor(role) {
+            const colors = { 
+                'super_admin': 'var(--danger-red)', 
+                'support_admin': 'var(--warning-orange)', 
+                'data_analyst': 'var(--info-blue)',
+                'billing_admin': 'var(--purple)'
+            };
+            return colors[role] || 'var(--text-secondary)';
         }
 
-        function deleteCompany(id) {
-            if (confirm('¿Estás seguro de eliminar esta empresa?')) {
-                dashboardData.companies = dashboardData.companies.filter(company => company.id !== id);
-                updateDashboardStats();
-                loadCompaniesTable();
-                console.log('Company deleted:', id);
+        function getRoleName(role) {
+            const names = { 
+                'super_admin': 'Super Admin', 
+                'support_admin': 'Admin Soporte', 
+                'data_analyst': 'Analista',
+                'billing_admin': 'Admin Facturación'
+            };
+            return names[role] || role;
+        }
+
+        function generateDomainFromName(companyName) {
+            return companyName
+                .toLowerCase()
+                .replace(/[^a-z0-9\s]/g, '')
+                .replace(/\s+/g, '-')
+                .substring(0, 30);
+        }
+
+        function updateStats() {
+            const activeCompanies = companiesData.filter(c => c.status === 'active').length;
+            const totalUsers = companiesData.reduce((sum, c) => sum + c.users, 0);
+            const monthlyRevenue = companiesData.reduce((sum, c) => sum + c.mrr, 0);
+            const activeModules = companiesData.reduce((sum, c) => sum + c.products.length, 0);
+            
+            document.getElementById('totalCompanies').textContent = companiesData.length;
+            document.getElementById('totalUsers').textContent = totalUsers;
+            document.getElementById('monthlyRevenue').textContent = `${monthlyRevenue.toLocaleString()}`;
+            document.getElementById('activeModules').textContent = activeModules;
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // ============================================================================
+        // THEME AND UI FUNCTIONS
+        // ============================================================================
+        
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', newTheme);
+            document.getElementById('themeToggle').textContent = newTheme === 'dark' ? '☀️' : '🌙';
+            localStorage.setItem('opsis-theme', newTheme);
+            showToast(`Tema cambiado a ${newTheme === 'dark' ? 'oscuro' : 'claro'}`, 'success');
+        }
+
+        function updatePrimaryColor(color) {
+            document.documentElement.style.setProperty('--primary-green', color);
+            document.documentElement.style.setProperty('--primary-green-hover', adjustBrightness(color, -20));
+            localStorage.setItem('opsis-primary-color', color);
+            showToast('Color primario actualizado', 'success');
+        }
+
+        function updateSystemName(name) {
+            localStorage.setItem('opsis-system-name', name);
+            document.querySelector('.header-title h1').textContent = name;
+            showToast('Nombre del sistema actualizado', 'success');
+        }
+
+        function setDefaultTheme(theme) {
+            localStorage.setItem('opsis-default-theme', theme);
+            if (theme !== 'auto') {
+                document.body.setAttribute('data-theme', theme);
+                document.getElementById('themeToggle').textContent = theme === 'dark' ? '☀️' : '🌙';
+            }
+            showToast(`Tema predeterminado configurado: ${theme}`, 'success');
+        }
+
+        function updateCompanyLimit(limit) {
+            localStorage.setItem('opsis-company-limit', limit);
+            showToast(`Límite de empresas actualizado: ${limit}`, 'success');
+        }
+
+        function updateTrialPeriod(days) {
+            localStorage.setItem('opsis-trial-period', days);
+            showToast(`Período de prueba actualizado: ${days} días`, 'success');
+        }
+
+        function updateEmailNotifications(status) {
+            localStorage.setItem('opsis-email-notifications', status);
+            showToast(`Notificaciones email ${status === 'enabled' ? 'habilitadas' : 'deshabilitadas'}`, 'success');
+        }
+
+        function adjustBrightness(hex, percent) {
+            const num = parseInt(hex.replace("#", ""), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = (num >> 16) + amt;
+            const G = (num >> 8 & 0x00FF) + amt;
+            const B = (num & 0x0000FF) + amt;
+            return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+                (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+                (B < 255 ? B < 1 ? 0 : B : 255))
+                .toString(16).slice(1);
+        }
+
+        // ============================================================================
+        // PLACEHOLDER FUNCTIONS (TO BE IMPLEMENTED)
+        // ============================================================================
+        
+        function editCompany(id) { 
+            showToast(`Editar empresa ID: ${id} - Funcionalidad en desarrollo`, 'warning'); 
+        }
+        
+        function viewCompanyDashboard(id) { 
+            const company = companiesData.find(c => c.id === id);
+            if (company) {
+                showToast(`Abriendo dashboard de ${company.name}...`, 'success');
+                // Here you would typically redirect to ../dashboard/template.html with company context
+                // window.location.href = `../dashboard/template.html?company=${company.domain}`;
+            }
+        }
+        
+        function deleteCompany(id) { 
+            const company = companiesData.find(c => c.id === id);
+            if (company && confirm(`¿Estás seguro de eliminar "${company.name}"?`)) {
+                const index = companiesData.findIndex(c => c.id === id);
+                if (index > -1) {
+                    companiesData.splice(index, 1);
+                    expandedIndustryCatalog[company.industry].companies--;
+                    updateStats();
+                    loadCompaniesTable();
+                    showToast(`Empresa "${company.name}" eliminada`, 'success');
+                }
+            }
+        }
+        
+        function editIndustry(key) { 
+            showToast(`Editar industria: ${expandedIndustryCatalog[key].name} - Funcionalidad en desarrollo`, 'warning'); 
+        }
+        
+        function deleteIndustry(key) { 
+            if (confirm(`¿Eliminar industria "${expandedIndustryCatalog[key].name}"?`)) {
+                showToast('Industria eliminada - Funcionalidad en desarrollo', 'warning'); 
+            }
+        }
+        
+        function editSystemUser(id) { 
+            const user = systemUsers.find(u => u.id === id);
+            showToast(`Editar usuario: ${user?.name} - Funcionalidad en desarrollo`, 'warning'); 
+        }
+        
+        function deleteSystemUser(id) { 
+            const user = systemUsers.find(u => u.id === id);
+            if (user && confirm(`¿Eliminar usuario "${user.name}"?`)) {
+                const index = systemUsers.findIndex(u => u.id === id);
+                if (index > -1) {
+                    systemUsers.splice(index, 1);
+                    loadSystemUsersTable();
+                    showToast(`Usuario "${user.name}" eliminado`, 'success');
+                }
+            }
+        }
+        
+        function showAddIndustryModal() {
+            showToast('Agregar nueva industria - Funcionalidad en desarrollo', 'warning');
+        }
+        
+        function showAddSystemUserModal() {
+            showToast('Agregar nuevo usuario del sistema - Funcionalidad en desarrollo', 'warning');
+        }
+        
+        function generateReport() { 
+            showToast('Generando reporte del sistema...', 'success'); 
+        }
+        
+        function exportAnalytics() { 
+            showToast('Exportando datos de analytics...', 'success'); 
+        }
+        
+        function createBackup() { 
+            showToast('Creando backup del sistema...', 'success'); 
+        }
+        
+        function logout() { 
+            if (confirm('¿Cerrar sesión del Super Admin Panel?')) {
+                showToast('Cerrando sesión...', 'success');
+                setTimeout(() => {
+                    // window.location.href = '../index.html';
+                }, 1500);
             }
         }
 
-        function filterByIndustry(industry, element) {
-            // Remove active class from all filter tags
-            document.querySelectorAll('#dashboard-content .industry-tag').forEach(tag => {
-                tag.classList.remove('active');
-            });
-            
-            // Add active class to clicked element
-            element.classList.add('active');
-            
-            console.log('Filtering by industry:', industry);
-        }
-
-        function filterCompanies(industry, element) {
-            // Remove active class from all filter tags
-            document.querySelectorAll('#companyIndustryFilter .industry-tag').forEach(tag => {
-                tag.classList.remove('active');
-            });
-            
-            // Add active class to clicked element
-            element.classList.add('active');
-            
-            console.log('Filtering companies by industry:', industry);
-        }
-
-        function generateReport() {
-            console.log('Generating multi-product report');
-            alert('Generando reporte multi-producto...');
-        }
-
-        function exportProductReport() {
-            console.log('Exporting product report');
-            alert('Exportando reporte de productos...');
-        }
-
-        function logout() {
-            if (confirm('¿Cerrar sesión?')) {
-                console.log('Logging out');
-                window.location.href = '../index.html';
-            }
-        }
-
-        // Initialize
+        // ============================================================================
+        // INITIALIZATION
+        // ============================================================================
+        
         document.addEventListener('DOMContentLoaded', function() {
-            updateDashboardStats();
-            console.log('Super Admin Panel Multi-Producto inicializado');
-            console.log('Estado inicial:', dashboardData);
+            // Load saved theme
+            const savedTheme = localStorage.getItem('opsis-theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+            document.getElementById('themeToggle').textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+            
+            // Load saved primary color
+            const savedColor = localStorage.getItem('opsis-primary-color');
+            if (savedColor) {
+                updatePrimaryColor(savedColor);
+            }
+            
+            // Load saved system name
+            const savedName = localStorage.getItem('opsis-system-name');
+            if (savedName) {
+                document.querySelector('.header-title h1').textContent = savedName;
+            }
+            
+            // Initialize data
+            updateStats();
+            loadCompaniesTable();
+            
+            // Setup modal click-outside-to-close
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('modal')) {
+                    e.target.classList.remove('show');
+                }
+            });
+            
+            console.log('🚀 Opsis Suite Super Admin Panel loaded successfully');
+            console.log('📊 Companies:', companiesData.length);
+            console.log('👥 System Users:', systemUsers.length);
+            console.log('🏭 Industries:', Object.keys(expandedIndustryCatalog).length);
         });
     </script>
 </body>
