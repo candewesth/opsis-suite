@@ -53,16 +53,75 @@
             --radius-xl: 20px;
         }
 
-        [data-theme="dark"] {
-            --bg-gradient: linear-gradient(135deg, #1a1d29 0%, #2d3748 100%);
-            --bg-card: rgba(45, 55, 72, 0.95);
-            --bg-glass: rgba(45, 55, 72, 0.8);
-            --bg-overlay: rgba(255, 255, 255, 0.02);
-            --text-primary: #f7fafc;
-            --text-secondary: #a0aec0;
-            --text-tertiary: #718096;
-            --border-color: rgba(255, 255, 255, 0.08);
-            --border-light: rgba(255, 255, 255, 0.04);
+        /* Loading Overlay */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-overlay.active { display: flex; }
+
+        .loading-content {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            padding: 3rem;
+            text-align: center;
+            box-shadow: var(--shadow-xl);
+            animation: slideIn 0.5s ease;
+        }
+
+        .loading-spinner {
+            width: 64px;
+            height: 64px;
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .loading-subtext {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Error Message */
+        .error-banner {
+            display: none;
+            background: linear-gradient(135deg, #e03131, #c92a2a);
+            color: white;
+            padding: 1rem 2rem;
+            margin-bottom: 2rem;
+            border-radius: var(--radius-lg);
+            animation: slideDown 0.5s ease;
+        }
+
+        .error-banner.active { display: block; }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .onboarding-container {
@@ -119,8 +178,6 @@
             align-items: center;
             justify-content: center;
             font-size: 2rem;
-            position: relative;
-            z-index: 1;
         }
 
         .suite-products {
@@ -147,22 +204,16 @@
             font-size: 2.5rem;
             font-weight: 700;
             margin-bottom: 0.5rem;
-            position: relative;
-            z-index: 1;
             letter-spacing: -0.02em;
         }
 
         .onboarding-header p {
             font-size: 1.1rem;
             opacity: 0.9;
-            position: relative;
-            z-index: 1;
             font-weight: 500;
         }
 
-        .onboarding-body {
-            padding: 3rem 2rem;
-        }
+        .onboarding-body { padding: 3rem 2rem; }
 
         .step-indicator {
             display: flex;
@@ -210,18 +261,14 @@
             transform: translateY(-50%);
         }
 
-        .step.completed::after {
-            background: var(--success-color);
-        }
+        .step.completed::after { background: var(--success-color); }
 
         .form-section {
             display: none;
             animation: fadeInUp 0.5s ease;
         }
 
-        .form-section.active {
-            display: block;
-        }
+        .form-section.active { display: block; }
 
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
@@ -245,7 +292,6 @@
             font-weight: 500;
         }
 
-        /* Industry Selection */
         .industry-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -297,7 +343,6 @@
             line-height: 1.4;
         }
 
-        /* Products Selection */
         .products-intro {
             background: var(--bg-overlay);
             border: 1px solid var(--border-light);
@@ -416,7 +461,6 @@
             font-weight: 700;
         }
 
-        /* Modules Configuration */
         .modules-section {
             background: var(--bg-overlay);
             border: 1px solid var(--border-light);
@@ -472,7 +516,6 @@
             line-height: 1.4;
         }
 
-        /* Company Information */
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -480,13 +523,8 @@
             margin-bottom: 2rem;
         }
 
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group.full-width { grid-column: 1 / -1; }
 
         .form-label {
             display: block;
@@ -514,7 +552,6 @@
             background: white;
         }
 
-        /* Plan Selection */
         .plan-cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -583,7 +620,6 @@
             font-weight: 500;
         }
 
-        /* Summary */
         .summary-section {
             background: var(--bg-overlay);
             border: 1px solid var(--border-light);
@@ -599,9 +635,7 @@
             margin-bottom: 1.5rem;
         }
 
-        .summary-products {
-            margin-bottom: 1.5rem;
-        }
+        .summary-products { margin-bottom: 1.5rem; }
 
         .summary-product {
             display: flex;
@@ -646,7 +680,6 @@
             padding-top: 1rem;
         }
 
-        /* Navigation */
         .navigation-buttons {
             display: flex;
             justify-content: space-between;
@@ -724,7 +757,6 @@
             transition: width 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
-        /* Selected Products Summary */
         .selected-products-summary {
             background: var(--bg-overlay);
             border-radius: var(--radius-lg);
@@ -781,27 +813,27 @@
                 max-width: calc(100vw - 2rem);
             }
             
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
+            .form-grid { grid-template-columns: 1fr; }
             
             .industry-grid,
             .products-grid,
-            .plan-cards {
-                grid-template-columns: 1fr;
-            }
+            .plan-cards { grid-template-columns: 1fr; }
             
-            .onboarding-header {
-                padding: 2rem 1rem 1.5rem;
-            }
-            
-            .onboarding-body {
-                padding: 2rem 1rem;
-            }
+            .onboarding-header { padding: 2rem 1rem 1.5rem; }
+            .onboarding-body { padding: 2rem 1rem; }
         }
     </style>
 </head>
 <body data-theme="light">
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text" id="loadingText">Creando tu empresa...</div>
+            <div class="loading-subtext" id="loadingSubtext">Por favor espera un momento</div>
+        </div>
+    </div>
+
     <div class="onboarding-container">
         <div class="onboarding-header">
             <div class="logo-container">
@@ -818,6 +850,8 @@
         </div>
 
         <div class="onboarding-body">
+            <div class="error-banner" id="errorBanner"></div>
+
             <div class="step-indicator">
                 <div class="step active" id="step1">1</div>
                 <div class="step" id="step2">2</div>
@@ -831,7 +865,7 @@
                 <div class="progress-fill" id="progressFill" style="width: 16.67%"></div>
             </div>
 
-            <!-- Paso 1: Seleccionar Industria -->
+            <!-- PASO 1: Industria -->
             <div class="form-section active" id="section1">
                 <h2 class="section-title">¿A qué industria pertenece tu empresa?</h2>
                 <p class="section-subtitle">Selecciona la industria para personalizar automáticamente las herramientas</p>
@@ -875,7 +909,7 @@
                 </div>
             </div>
 
-            <!-- Paso 2: Seleccionar Productos -->
+            <!-- PASO 2: Productos -->
             <div class="form-section" id="section2">
                 <h2 class="section-title">¿Qué productos necesita tu empresa?</h2>
                 <p class="section-subtitle">Selecciona los productos que mejor se adapten a tus necesidades</p>
@@ -956,17 +990,15 @@
                 </div>
             </div>
 
-            <!-- Paso 3: Configurar Módulos por Producto -->
+            <!-- PASO 3: Módulos -->
             <div class="form-section" id="section3">
                 <h2 class="section-title">Configurar Módulos</h2>
                 <p class="section-subtitle">Personaliza cada producto según tus necesidades específicas</p>
                 
-                <div id="modulesConfigContainer">
-                    <!-- Se generará dinámicamente según productos seleccionados -->
-                </div>
+                <div id="modulesConfigContainer"></div>
             </div>
 
-            <!-- Paso 4: Información de la Empresa -->
+            <!-- PASO 4: Empresa -->
             <div class="form-section" id="section4">
                 <h2 class="section-title">Información de tu empresa</h2>
                 <p class="section-subtitle">Datos básicos para configurar tu cuenta</p>
@@ -1008,10 +1040,15 @@
                         <label class="form-label">Email Corporativo *</label>
                         <input type="email" class="form-control" id="adminEmail" placeholder="admin@empresa.com" required>
                     </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Contraseña *</label>
+                        <input type="password" class="form-control" id="adminPassword" placeholder="Mínimo 8 caracteres" required minlength="8">
+                    </div>
                 </div>
             </div>
 
-            <!-- Paso 5: Seleccionar Plan -->
+            <!-- PASO 5: Plan -->
             <div class="form-section" id="section5">
                 <h2 class="section-title">Elige tu plan</h2>
                 <p class="section-subtitle">Selecciona el plan que mejor se adapte al tamaño de tu empresa</p>
@@ -1057,7 +1094,7 @@
                 </div>
             </div>
 
-            <!-- Paso 6: Resumen Final -->
+            <!-- PASO 6: Resumen -->
             <div class="form-section" id="section6">
                 <h2 class="section-title">Confirma tu configuración</h2>
                 <p class="section-subtitle">Revisa todos los detalles antes de crear tu cuenta</p>
@@ -1076,7 +1113,6 @@
                     
                     <div class="summary-products" id="summaryProducts">
                         <h4 style="margin: 1rem 0; color: var(--text-primary); font-weight: 600;">Productos Seleccionados:</h4>
-                        <!-- Se generará dinámicamente -->
                     </div>
                     
                     <div class="summary-item">
@@ -1092,24 +1128,32 @@
 
             <div class="navigation-buttons">
                 <button class="btn btn-secondary" id="prevBtn" onclick="previousStep()" style="display: none;">
-                    Anterior
+                    ← Anterior
                 </button>
                 <button class="btn btn-primary" id="nextBtn" onclick="nextStep()">
-                    Siguiente
+                    Siguiente →
                 </button>
             </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <script>
+        // CONFIGURACIÓN
+        const SUPABASE_CONFIG = {
+            url: 'https://lmmlhncwdwjgtkdqaycv.supabase.co',
+            key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxtbWxobmN3ZHdqZ3RrZHFheWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU0MDE4ODYsImV4cCI6MjA3MDk3Nzg4Nn0.vhL5E-o9RtjEtrYTOdFCvhXs5mu5fuuAtB13LCd6dJQ'
+        };
+
+        const supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.key);
+
         let currentStep = 1;
         let selectedIndustry = null;
         let selectedProducts = new Set();
         let selectedModules = {};
         let selectedPlan = null;
-        let planDiscounts = { starter: 0, professional: 0.20, enterprise: 0.30 };
 
-        // Configuración de productos con módulos específicos por industria
         const productConfigs = {
             warehouse: {
                 name: 'Opsis Warehouse',
@@ -1122,11 +1166,6 @@
                         { id: 'equipment', name: 'Equipos y Maquinaria', description: 'Gestión de maquinaria pesada' },
                         { id: 'tools', name: 'Herramientas', description: 'Control de herramientas especializadas' },
                         { id: 'safety', name: 'Equipos de Seguridad', description: 'EPP y equipos de protección' }
-                    ],
-                    medica: [
-                        { id: 'medical_supplies', name: 'Suministros Médicos', description: 'Medicamentos y suministros' },
-                        { id: 'medical_equipment', name: 'Equipos Médicos', description: 'Equipos especializados' },
-                        { id: 'consumables', name: 'Consumibles', description: 'Material descartable' }
                     ],
                     default: [
                         { id: 'inventory', name: 'Inventario General', description: 'Control de inventario básico' },
@@ -1143,13 +1182,11 @@
                 modules: {
                     construccion: [
                         { id: 'project_time', name: 'Tiempo por Proyecto', description: 'Control de horas por obra' },
-                        { id: 'crew_schedule', name: 'Horarios de Cuadrillas', description: 'Programación de equipos' },
-                        { id: 'equipment_time', name: 'Uso de Maquinaria', description: 'Tiempo de uso de equipos' }
+                        { id: 'crew_schedule', name: 'Horarios de Cuadrillas', description: 'Programación de equipos' }
                     ],
                     default: [
                         { id: 'time_tracking', name: 'Control de Tiempo', description: 'Registro de horas trabajadas' },
-                        { id: 'project_mgmt', name: 'Gestión de Proyectos', description: 'Planificación y seguimiento' },
-                        { id: 'schedules', name: 'Horarios', description: 'Programación de turnos' }
+                        { id: 'project_mgmt', name: 'Gestión de Proyectos', description: 'Planificación y seguimiento' }
                     ]
                 }
             },
@@ -1161,13 +1198,11 @@
                 modules: {
                     construccion: [
                         { id: 'worker_records', name: 'Expedientes Obreros', description: 'Historiales de trabajadores' },
-                        { id: 'safety_training', name: 'Capacitación Seguridad', description: 'Certificaciones obligatorias' },
-                        { id: 'payroll_construction', name: 'Nómina Construcción', description: 'Cálculos especializados' }
+                        { id: 'safety_training', name: 'Capacitación Seguridad', description: 'Certificaciones obligatorias' }
                     ],
                     default: [
                         { id: 'employee_records', name: 'Expedientes', description: 'Información de empleados' },
-                        { id: 'payroll', name: 'Nómina', description: 'Cálculo de sueldos' },
-                        { id: 'performance', name: 'Evaluaciones', description: 'Desempeño laboral' }
+                        { id: 'payroll', name: 'Nómina', description: 'Cálculo de sueldos' }
                     ]
                 }
             },
@@ -1179,27 +1214,47 @@
                 modules: {
                     construccion: [
                         { id: 'project_accounting', name: 'Contabilidad por Proyecto', description: 'Costos por obra' },
-                        { id: 'progress_billing', name: 'Facturación por Avance', description: 'Estimaciones de obra' },
-                        { id: 'subcontractor_mgmt', name: 'Gestión Subcontratistas', description: 'Pagos a terceros' }
+                        { id: 'progress_billing', name: 'Facturación por Avance', description: 'Estimaciones de obra' }
                     ],
                     default: [
                         { id: 'accounting', name: 'Contabilidad', description: 'Registro contable completo' },
-                        { id: 'invoicing', name: 'Facturación', description: 'Emisión de facturas' },
-                        { id: 'reports', name: 'Reportes Financieros', description: 'Estados financieros' }
+                        { id: 'invoicing', name: 'Facturación', description: 'Emisión de facturas' }
                     ]
                 }
             }
         };
 
+        const planDiscounts = { starter: 0, professional: 0.20, enterprise: 0.30 };
+        const industryNames = {
+            'construccion': 'Construcción',
+            'medica': 'Médica/Clínicas',
+            'transporte': 'Transporte',
+            'abarrotes': 'Retail/Abarrotes',
+            'jardineria': 'Jardinería',
+            'otros': 'Otros'
+        };
+        const planNames = {
+            'starter': 'Starter (Prueba gratuita)',
+            'professional': 'Professional (-20% descuento)',
+            'enterprise': 'Enterprise (-30% descuento)'
+        };
+
+        function getRGBFromVar(cssVar) {
+            const colorMap = {
+                'var(--warehouse-color)': '253, 126, 20',
+                'var(--timesync-color)': '124, 58, 237',
+                'var(--hr-color)': '5, 150, 105',
+                'var(--finance-color)': '220, 38, 38'
+            };
+            return colorMap[cssVar] || '28, 126, 214';
+        }
+
+        // FUNCIONES DE SELECCIÓN
         function selectIndustry(industry, element) {
-            document.querySelectorAll('.industry-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-            
+            document.querySelectorAll('.industry-card').forEach(card => card.classList.remove('selected'));
             element.classList.add('selected');
             selectedIndustry = industry;
-            
-            console.log('Industria seleccionada:', industry);
+            console.log('✅ Industria seleccionada:', industry);
         }
 
         function toggleProduct(productId, element) {
@@ -1210,15 +1265,12 @@
             } else {
                 selectedProducts.add(productId);
                 element.classList.add('selected');
-                // Inicializar módulos por defecto
                 const industry = selectedIndustry || 'default';
                 const productConfig = productConfigs[productId];
                 const availableModules = productConfig.modules[industry] || productConfig.modules.default;
                 selectedModules[productId] = availableModules.map(m => m.id);
             }
-            
             updateProductsSummary();
-            console.log('Productos seleccionados:', Array.from(selectedProducts));
         }
 
         function updateProductsSummary() {
@@ -1232,14 +1284,12 @@
             }
             
             summaryEl.style.display = 'block';
-            
             let totalPrice = 0;
             let html = '';
             
             selectedProducts.forEach(productId => {
                 const config = productConfigs[productId];
                 totalPrice += config.basePrice;
-                
                 html += `
                     <div class="selected-product-item">
                         <div class="selected-product-icon ${productId}" style="background: ${config.color};">
@@ -1261,7 +1311,7 @@
             const container = document.getElementById('modulesConfigContainer');
             
             if (selectedProducts.size === 0) {
-                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">Selecciona al menos un producto en el paso anterior.</p>';
+                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">Selecciona al menos un producto en el paso anterior.</p>';
                 return;
             }
             
@@ -1279,13 +1329,13 @@
                                 ${config.icon}
                             </div>
                             <div>
-                                <h3>${config.name}</h3>
-                                <p style="color: var(--text-secondary); font-size: 0.9rem;">Selecciona los módulos que necesites</p>
+                                <h3 style="color: var(--text-primary); margin: 0;">${config.name}</h3>
+                                <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0;">Selecciona los módulos que necesites</p>
                             </div>
                         </div>
                         <div class="modules-grid">
                             ${availableModules.map(module => `
-                                <div class="module-card selected" onclick="toggleModule('${productId}', '${module.id}', this)" style="--module-color: ${config.color};">
+                                <div class="module-card selected" onclick="toggleModule('${productId}', '${module.id}', this)">
                                     <div class="module-name">${module.name}</div>
                                     <div class="module-description">${module.description}</div>
                                 </div>
@@ -1298,78 +1348,40 @@
             container.innerHTML = html;
         }
 
-        function getRGBFromVar(cssVar) {
-            // Simplified - in real app you'd convert CSS variables to RGB
-            const colorMap = {
-                'var(--warehouse-color)': '253, 126, 20',
-                'var(--timesync-color)': '124, 58, 237',
-                'var(--hr-color)': '5, 150, 105',
-                'var(--finance-color)': '220, 38, 38'
-            };
-            return colorMap[cssVar] || '28, 126, 214';
-        }
-
         function toggleModule(productId, moduleId, element) {
             element.classList.toggle('selected');
-            
-            if (!selectedModules[productId]) {
-                selectedModules[productId] = [];
-            }
-            
+            if (!selectedModules[productId]) selectedModules[productId] = [];
             const index = selectedModules[productId].indexOf(moduleId);
             if (index > -1) {
                 selectedModules[productId].splice(index, 1);
             } else {
                 selectedModules[productId].push(moduleId);
             }
-            
-            console.log('Módulos seleccionados:', selectedModules);
         }
 
         function selectPlan(plan, element) {
-            document.querySelectorAll('.plan-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-            
+            document.querySelectorAll('.plan-card').forEach(card => card.classList.remove('selected'));
             element.classList.add('selected');
             selectedPlan = plan;
-            
-            console.log('Plan seleccionado:', plan);
         }
 
+        // NAVEGACIÓN
         function nextStep() {
             if (currentStep < 6) {
                 if (validateCurrentStep()) {
-                    // Ocultar paso actual
                     document.getElementById(`section${currentStep}`).classList.remove('active');
-                    
-                    // Marcar paso como completado
                     document.getElementById(`step${currentStep}`).classList.remove('active');
                     document.getElementById(`step${currentStep}`).classList.add('completed');
-                    
-                    // Avanzar al siguiente paso
                     currentStep++;
-                    
-                    // Preparar contenido específico del paso
-                    if (currentStep === 3) {
-                        generateModulesConfig();
-                    } else if (currentStep === 6) {
-                        updateFinalSummary();
-                    }
-                    
-                    // Mostrar siguiente paso
+                    if (currentStep === 3) generateModulesConfig();
+                    else if (currentStep === 6) updateFinalSummary();
                     document.getElementById(`section${currentStep}`).classList.add('active');
                     document.getElementById(`step${currentStep}`).classList.add('active');
-                    
-                    // Actualizar progreso
                     document.getElementById('progressFill').style.width = `${(currentStep / 6) * 100}%`;
-                    
-                    // Actualizar botones
                     document.getElementById('prevBtn').style.display = currentStep > 1 ? 'inline-flex' : 'none';
-                    document.getElementById('nextBtn').textContent = currentStep === 6 ? 'Crear Cuenta' : 'Siguiente';
+                    document.getElementById('nextBtn').textContent = currentStep === 6 ? '🚀 Crear Cuenta' : 'Siguiente →';
                 }
             } else {
-                // Crear cuenta
                 createAccount();
             }
         }
@@ -1378,84 +1390,75 @@
             if (currentStep > 1) {
                 document.getElementById(`section${currentStep}`).classList.remove('active');
                 document.getElementById(`step${currentStep}`).classList.remove('active');
-                
                 currentStep--;
-                
                 document.getElementById(`section${currentStep}`).classList.add('active');
                 document.getElementById(`step${currentStep}`).classList.remove('completed');
                 document.getElementById(`step${currentStep}`).classList.add('active');
-                
                 document.getElementById('progressFill').style.width = `${(currentStep / 6) * 100}%`;
                 document.getElementById('prevBtn').style.display = currentStep > 1 ? 'inline-flex' : 'none';
-                document.getElementById('nextBtn').textContent = 'Siguiente';
+                document.getElementById('nextBtn').textContent = 'Siguiente →';
             }
         }
 
         function validateCurrentStep() {
             switch (currentStep) {
                 case 1:
-                    if (!selectedIndustry) {
-                        alert('Por favor selecciona una industria');
-                        return false;
-                    }
+                    if (!selectedIndustry) { showError('Por favor selecciona una industria'); return false; }
                     break;
                 case 2:
-                    if (selectedProducts.size === 0) {
-                        alert('Por favor selecciona al menos un producto');
-                        return false;
-                    }
+                    if (selectedProducts.size === 0) { showError('Por favor selecciona al menos un producto'); return false; }
                     break;
                 case 3:
-                    // Validar que cada producto tenga al menos un módulo
                     for (let productId of selectedProducts) {
                         if (!selectedModules[productId] || selectedModules[productId].length === 0) {
-                            alert(`Por favor selecciona al menos un módulo para ${productConfigs[productId].name}`);
+                            showError(`Por favor selecciona al menos un módulo para ${productConfigs[productId].name}`);
                             return false;
                         }
                     }
                     break;
                 case 4:
-                    const companyName = document.getElementById('companyName').value;
-                    const adminName = document.getElementById('adminName').value;
-                    const adminEmail = document.getElementById('adminEmail').value;
-                    
-                    if (!companyName || !adminName || !adminEmail) {
-                        alert('Por favor completa todos los campos obligatorios');
+                    const companyName = document.getElementById('companyName').value.trim();
+                    const adminName = document.getElementById('adminName').value.trim();
+                    const adminEmail = document.getElementById('adminEmail').value.trim();
+                    const adminPassword = document.getElementById('adminPassword').value;
+                    if (!companyName || !adminName || !adminEmail || !adminPassword) {
+                        showError('Por favor completa todos los campos obligatorios');
+                        return false;
+                    }
+                    if (adminPassword.length < 8) {
+                        showError('La contraseña debe tener al menos 8 caracteres');
+                        return false;
+                    }
+                    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(adminEmail)) {
+                        showError('Por favor ingresa un email válido');
                         return false;
                     }
                     break;
                 case 5:
-                    if (!selectedPlan) {
-                        alert('Por favor selecciona un plan');
-                        return false;
-                    }
+                    if (!selectedPlan) { showError('Por favor selecciona un plan'); return false; }
                     break;
             }
+            hideError();
             return true;
         }
 
+        function showError(message) {
+            const errorBanner = document.getElementById('errorBanner');
+            errorBanner.textContent = '❌ ' + message;
+            errorBanner.classList.add('active');
+            setTimeout(() => hideError(), 5000);
+        }
+
+        function hideError() {
+            document.getElementById('errorBanner').classList.remove('active');
+        }
+
         function updateFinalSummary() {
-            // Actualizar información básica
             const companyName = document.getElementById('companyName').value;
-            const industryNames = {
-                'construccion': 'Construcción',
-                'medica': 'Médica/Clínicas',
-                'transporte': 'Transporte',
-                'abarrotes': 'Retail/Abarrotes',
-                'jardineria': 'Jardinería',
-                'otros': 'Otros'
-            };
-            const planNames = {
-                'starter': 'Starter (Prueba gratuita)',
-                'professional': 'Professional (-20% descuento)',
-                'enterprise': 'Enterprise (-30% descuento)'
-            };
-            
             document.getElementById('summaryCompany').textContent = companyName;
             document.getElementById('summaryIndustry').textContent = industryNames[selectedIndustry];
             document.getElementById('summaryPlan').textContent = planNames[selectedPlan];
             
-            // Generar resumen de productos
             const productsContainer = document.getElementById('summaryProducts');
             let productsHtml = '';
             let totalPrice = 0;
@@ -1479,7 +1482,6 @@
             
             productsContainer.innerHTML = '<h4 style="margin: 1rem 0; color: var(--text-primary); font-weight: 600;">Productos Seleccionados:</h4>' + productsHtml;
             
-            // Aplicar descuento del plan
             const discount = planDiscounts[selectedPlan] || 0;
             const discountedPrice = totalPrice * (1 - discount);
             const finalPrice = selectedPlan === 'starter' ? 0 : discountedPrice;
@@ -1489,31 +1491,166 @@
                 `$${Math.round(finalPrice)}/mes ${discount > 0 ? `(${Math.round(discount * 100)}% descuento aplicado)` : ''}`;
         }
 
-        function createAccount() {
-            const config = {
-                industry: selectedIndustry,
-                products: Array.from(selectedProducts),
-                modules: selectedModules,
-                plan: selectedPlan,
-                company: {
-                    name: document.getElementById('companyName').value,
-                    employeeCount: document.getElementById('employeeCount').value,
-                    country: document.getElementById('country').value
-                },
-                admin: {
-                    name: document.getElementById('adminName').value,
-                    email: document.getElementById('adminEmail').value
-                }
-            };
+        async function createAccount() {
+            showLoading('Creando tu empresa...', 'Configurando productos y módulos');
             
-            console.log('Configuración final:', config);
-            
-            alert('Configuración completada. En un entorno real, esto se enviaría a Supabase y se crearían los dashboards correspondientes para cada producto seleccionado.');
+            try {
+                const companyName = document.getElementById('companyName').value.trim();
+                const slug = await generateUniqueSlug(companyName);
+                
+                console.log('📝 Slug generado:', slug);
+                
+                const adminEmail = document.getElementById('adminEmail').value.trim();
+                const domain = adminEmail.split('@')[1];
+                
+                showLoading('Creando usuario administrador...', 'Esto puede tomar unos segundos');
+                
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email: adminEmail,
+                    password: document.getElementById('adminPassword').value,
+                    options: {
+                        data: {
+                            full_name: document.getElementById('adminName').value.trim(),
+                            company_name: companyName
+                        }
+                    }
+                });
+
+                if (authError) throw new Error(`Error al crear usuario: ${authError.message}`);
+
+                const userId = authData.user.id;
+                console.log('✅ Usuario creado:', userId);
+                
+                showLoading('Configurando empresa...', 'Guardando información corporativa');
+                
+                const companyData = {
+                    name: companyName,
+                    slug: slug,
+                    domain: domain,
+                    sector: selectedIndustry,
+                    employee_count: document.getElementById('employeeCount').value,
+                    country: document.getElementById('country').value,
+                    plan: selectedPlan,
+                    status: 'active',
+                    products: Array.from(selectedProducts),
+                    modules_config: selectedModules,
+                    created_at: new Date().toISOString()
+                };
+
+                const { data: company, error: companyError } = await supabase
+                    .from('companies')
+                    .insert([companyData])
+                    .select()
+                    .single();
+
+                if (companyError) throw new Error(`Error al crear empresa: ${companyError.message}`);
+
+                console.log('✅ Empresa creada:', company.id);
+                
+                showLoading('Configurando perfil...', 'Asignando permisos de administrador');
+                
+                const profileData = {
+                    user_id: userId,
+                    company_id: company.id,
+                    email: adminEmail,
+                    name: document.getElementById('adminName').value.trim(),
+                    full_name: document.getElementById('adminName').value.trim(),
+                    role: 'admin',
+                    status: 'active',
+                    created_at: new Date().toISOString()
+                };
+
+                const { error: profileError } = await supabase
+                    .from('user_profiles')
+                    .insert([profileData]);
+
+                if (profileError) throw new Error(`Error al crear perfil: ${profileError.message}`);
+
+                console.log('✅ Perfil creado');
+                
+                showLoading('¡Todo listo! 🎉', 'Redirigiendo a tu dashboard...');
+                
+                localStorage.setItem('userRole', 'admin');
+                localStorage.setItem('companySlug', slug);
+                localStorage.setItem('userName', document.getElementById('adminName').value.trim());
+                localStorage.setItem('companyName', companyName);
+                
+                console.log('✅ EMPRESA CREADA EXITOSAMENTE:', {
+                    companyId: company.id,
+                    slug: slug,
+                    domain: domain,
+                    sector: selectedIndustry,
+                    products: Array.from(selectedProducts),
+                    modules: selectedModules,
+                    plan: selectedPlan
+                });
+
+                setTimeout(() => {
+                    window.location.href = `https://candewesth.github.io/opsis-suite/dashboard/template.html?company=${slug}`;
+                }, 2000);
+
+            } catch (error) {
+                console.error('❌ Error al crear cuenta:', error);
+                hideLoading();
+                showError(error.message || 'Error al crear la cuenta. Por favor intenta de nuevo.');
+            }
         }
 
-        // Inicialización
+        async function generateUniqueSlug(companyName) {
+            let slug = companyName
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9\s-]/g, '')
+                .trim()
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-');
+
+            let finalSlug = slug;
+            let counter = 1;
+            let exists = true;
+
+            while (exists) {
+                const { data, error } = await supabase
+                    .from('companies')
+                    .select('slug')
+                    .eq('slug', finalSlug)
+                    .single();
+
+                if (error && error.code === 'PGRST116') {
+                    exists = false;
+                } else if (data) {
+                    finalSlug = `${slug}-${counter}`;
+                    counter++;
+                } else if (error) {
+                    throw error;
+                }
+            }
+
+            return finalSlug;
+        }
+
+        function showLoading(title, subtitle) {
+            const overlay = document.getElementById('loadingOverlay');
+            document.getElementById('loadingText').textContent = title;
+            document.getElementById('loadingSubtext').textContent = subtitle;
+            overlay.classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Onboarding Multi-Producto Opsis Suite cargado');
+            console.log('🚀 Onboarding Multi-Producto Opsis Suite cargado');
+            console.log('📦 Supabase conectado:', SUPABASE_CONFIG.url);
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const fromAdmin = urlParams.get('admin');
+            
+            if (fromAdmin === 'true') {
+                console.log('✅ Iniciado desde Super Admin Panel');
+            }
         });
     </script>
 </body>
