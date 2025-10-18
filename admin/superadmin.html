@@ -1542,8 +1542,6 @@
         // ============================================================================
         
         function loadAnalytics() {
-            // This would typically load real analytics data
-            // For now, we'll just refresh the displayed metrics
             updateStats();
         }
 
@@ -1573,18 +1571,15 @@
                 totalPrice: 0
             };
             
-            // Reset all steps
             document.querySelectorAll('.onboarding-step').forEach(step => {
                 step.classList.remove('active');
             });
             document.getElementById('step-1').classList.add('active');
             
-            // Reset form inputs
             document.querySelectorAll('.form-input').forEach(input => {
                 input.value = '';
             });
             
-            // Reset product selections
             document.querySelectorAll('.product-card').forEach(card => {
                 card.classList.remove('selected');
             });
@@ -1609,7 +1604,6 @@
         function selectIndustry(industry) {
             onboardingState.selectedIndustry = industry;
             
-            // Update visual selection
             document.querySelectorAll('#industryGrid .product-card').forEach(card => {
                 card.classList.remove('selected');
             });
@@ -1634,7 +1628,6 @@
         function selectPlan(plan) {
             onboardingState.selectedPlan = plan;
             
-            // Update visual selection
             document.querySelectorAll('#step-4 .product-card').forEach(card => {
                 card.classList.remove('selected');
             });
@@ -1655,20 +1648,16 @@
         }
 
         function nextStep() {
-            // Validate current step
             if (!validateCurrentStep()) return;
             
-            // Save current step data
             saveCurrentStepData();
             
-            // Move to next step
             if (onboardingState.currentStep < 5) {
                 onboardingState.currentStep++;
                 showCurrentStep();
                 updateStepProgress();
                 updateStepNavigation();
                 
-                // Load specific step content
                 if (onboardingState.currentStep === 5) {
                     loadSummary();
                 }
@@ -1753,10 +1742,8 @@
             const nextBtn = document.getElementById('nextBtn');
             const createBtn = document.getElementById('createBtn');
             
-            // Show/hide previous button
             prevBtn.style.display = onboardingState.currentStep > 1 ? 'inline-flex' : 'none';
             
-            // Show/hide next vs create button
             if (onboardingState.currentStep === 5) {
                 nextBtn.style.display = 'none';
                 createBtn.style.display = 'inline-flex';
@@ -1767,7 +1754,6 @@
         }
 
         function loadSummary() {
-            // Company Info Summary
             const companyInfoHtml = `
                 <div style="space-y: 0.5rem;">
                     <p><strong>Empresa:</strong> ${onboardingState.companyInfo.name}</p>
@@ -1779,7 +1765,6 @@
             `;
             document.getElementById('summaryCompanyInfo').innerHTML = companyInfoHtml;
             
-            // Billing Summary
             const discount = plansConfig[onboardingState.selectedPlan]?.discount || 0;
             const subtotal = onboardingState.totalPrice;
             const discountAmount = subtotal * (discount / 100);
@@ -1796,7 +1781,6 @@
             `;
             document.getElementById('summaryBilling').innerHTML = billingHtml;
             
-            // Products Summary
             const productsHtml = `
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
                     ${onboardingState.selectedProducts.map(productKey => {
@@ -1816,7 +1800,6 @@
         }
 
         function createCompanyFromOnboarding() {
-            // Generate new company data from onboarding
             const newCompany = {
                 id: Date.now(),
                 name: onboardingState.companyInfo.name,
@@ -1830,23 +1813,16 @@
                 createdAt: new Date().toISOString().split('T')[0]
             };
             
-            // Add to companies data
             companiesData.push(newCompany);
-            
-            // Update industry companies count
             expandedIndustryCatalog[onboardingState.selectedIndustry].companies++;
             
-            // Update UI
             updateStats();
             if (document.getElementById('companies-content').classList.contains('active')) {
                 loadCompaniesTable();
             }
             
-            // Close modal and show success
             closeOnboardingModal();
             showToast(`Empresa "${newCompany.name}" creada exitosamente`, 'success');
-            
-            // Switch to companies tab to show the new company
             showTab('companies');
         }
 
@@ -1982,7 +1958,7 @@
         }
 
         // ============================================================================
-        // PLACEHOLDER FUNCTIONS (TO BE IMPLEMENTED)
+        // PLACEHOLDER FUNCTIONS
         // ============================================================================
         
         function editCompany(id) { 
@@ -1993,8 +1969,6 @@
             const company = companiesData.find(c => c.id === id);
             if (company) {
                 showToast(`Abriendo dashboard de ${company.name}...`, 'success');
-                // Here you would typically redirect to ../dashboard/template.html with company context
-                // window.location.href = `../dashboard/template.html?company=${company.domain}`;
             }
         }
         
@@ -2073,28 +2047,23 @@
         // ============================================================================
         
         document.addEventListener('DOMContentLoaded', function() {
-            // Load saved theme
             const savedTheme = localStorage.getItem('opsis-theme') || 'light';
             document.body.setAttribute('data-theme', savedTheme);
             document.getElementById('themeToggle').textContent = savedTheme === 'dark' ? '☀️' : '🌙';
             
-            // Load saved primary color
             const savedColor = localStorage.getItem('opsis-primary-color');
             if (savedColor) {
                 updatePrimaryColor(savedColor);
             }
             
-            // Load saved system name
             const savedName = localStorage.getItem('opsis-system-name');
             if (savedName) {
                 document.querySelector('.header-title h1').textContent = savedName;
             }
             
-            // Initialize data
             updateStats();
             loadCompaniesTable();
             
-            // Setup modal click-outside-to-close
             document.addEventListener('click', function(e) {
                 if (e.target.classList.contains('modal')) {
                     e.target.classList.remove('show');
