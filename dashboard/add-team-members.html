@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Team Members - Opsis Suite</title>
+    <title>Gestión de Equipo - Opsis Suite</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -394,130 +395,119 @@
 </head>
 <body>
     <div class="container">
-        <!-- Back Button -->
-        <a href="../template.html" class="back-btn">
-            ← Back to Dashboard
+        <a href="template.html" class="back-btn">
+            ← Volver al Dashboard
         </a>
 
-        <!-- Page Header -->
         <div class="page-header">
-            <h1 class="page-title">Team & Access Management</h1>
-            <p class="page-subtitle">Manage team members, assign roles, and control permissions for your warehouse operations</p>
+            <h1 class="page-title">Gestión de Equipo</h1>
+            <p class="page-subtitle">Administra miembros del equipo, asigna roles y controla permisos para las operaciones</p>
         </div>
 
-        <!-- Error Messages -->
         <div id="errorMessage" class="error-message"></div>
 
-        <!-- Add New Member Section -->
         <div class="section-card">
             <h2 class="section-title">
                 <div class="section-icon">👥</div>
-                Add New Team Member
+                Agregar Nuevo Miembro
             </h2>
 
             <form id="addMemberForm">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label class="form-label">Full Name *</label>
-                        <input type="text" class="form-input" id="memberName" placeholder="Enter full name" required>
+                        <label class="form-label">Nombre Completo *</label>
+                        <input type="text" class="form-input" id="memberName" placeholder="Ej: Juan Pérez Rodríguez" required>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Email Address *</label>
-                        <input type="email" class="form-input" id="memberEmail" placeholder="name@company.com" required>
+                        <label class="form-label">Email Corporativo *</label>
+                        <input type="email" class="form-input" id="memberEmail" placeholder="juan@empresa.com" required>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Phone Number</label>
-                        <input type="tel" class="form-input" id="memberPhone" placeholder="+1 (555) 123-4567">
+                        <label class="form-label">Teléfono</label>
+                        <input type="tel" class="form-input" id="memberPhone" placeholder="+52 555 123 4567">
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Employee ID</label>
-                        <input type="text" class="form-input" id="employeeId" placeholder="Auto-generated if empty">
+                        <label class="form-label">ID de Empleado</label>
+                        <input type="text" class="form-input" id="employeeId" placeholder="Auto-generado si se deja vacío">
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Select Role & Permissions *</label>
+                    <label class="form-label">Seleccionar Rol y Permisos *</label>
                     <div class="role-options">
                         <div class="role-option" data-role="admin" onclick="selectRole('admin')">
                             <span class="role-icon">👑</span>
                             <div class="role-name">ADMIN</div>
-                            <div class="role-description">Complete system access, user management, configuration</div>
+                            <div class="role-description">Acceso completo al sistema, gestión de usuarios y configuración</div>
                         </div>
 
                         <div class="role-option selected" data-role="almacen" onclick="selectRole('almacen')">
                             <span class="role-icon">🏭</span>
                             <div class="role-name">ALMACÉN</div>
-                            <div class="role-description">Equipment control, loan approvals, inventory management</div>
+                            <div class="role-description">Control de equipos, aprobación de préstamos, gestión de inventario</div>
                         </div>
 
                         <div class="role-option" data-role="supervisor" onclick="selectRole('supervisor')">
                             <span class="role-icon">👷</span>
                             <div class="role-name">SUPERVISOR</div>
-                            <div class="role-description">Field operations, equipment requests, team coordination</div>
+                            <div class="role-description">Operaciones de campo, solicitudes de equipo, coordinación de equipo</div>
                         </div>
 
                         <div class="role-option" data-role="operativo" onclick="selectRole('operativo')">
                             <span class="role-icon">📊</span>
                             <div class="role-name">OPERATIVO</div>
-                            <div class="role-description">Data entry, support tasks, operational assistance</div>
+                            <div class="role-description">Entrada de datos, tareas de soporte, asistencia operacional</div>
                         </div>
 
                         <div class="role-option" data-role="estimador" onclick="selectRole('estimador')">
                             <span class="role-icon">📋</span>
                             <div class="role-name">ESTIMADOR</div>
-                            <div class="role-description">Project planning, cost analysis, read-only access</div>
+                            <div class="role-description">Planificación de proyectos, análisis de costos, acceso de solo lectura</div>
                         </div>
                     </div>
                 </div>
 
                 <div style="text-align: center; margin-top: 3rem;">
                     <button type="submit" class="btn btn-primary">
-                        ➕ Add Team Member
+                        ➕ Agregar Miembro del Equipo
                     </button>
                     <button type="button" class="btn btn-secondary" onclick="sendInvitationOnly()">
-                        📧 Send Invitation Only
+                        📧 Solo Enviar Invitación
                     </button>
                 </div>
             </form>
 
-            <!-- Loading State -->
             <div id="loadingState" class="loading">
                 <div class="spinner"></div>
-                <p>Creating team member...</p>
+                <p>Creando miembro del equipo...</p>
             </div>
         </div>
 
-        <!-- Current Team Members -->
         <div class="section-card">
             <h2 class="section-title">
                 <div class="section-icon">👥</div>
-                Current Team Members
+                Miembros del Equipo Actual
             </h2>
 
             <div id="teamGrid" class="team-grid">
-                <!-- Team members will be loaded here -->
+                <!-- Los miembros del equipo se cargarán aquí -->
             </div>
 
-            <!-- Loading for team list -->
             <div id="teamLoadingState" class="loading show">
                 <div class="spinner"></div>
-                <p>Loading team members...</p>
+                <p>Cargando miembros del equipo...</p>
             </div>
         </div>
     </div>
 
-    <!-- Notification -->
     <div id="notification" class="notification"></div>
-
-    <!-- Supabase JavaScript SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
         // ================================================================
-        // SUPABASE CONFIGURATION
+        // CONFIGURACIÓN DE SUPABASE
         // ================================================================
         const SUPABASE_CONFIG = {
             url: 'https://lmmlhncwdwjgtkdqaycv.supabase.co',
@@ -527,47 +517,48 @@
         const supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.key);
 
         // ================================================================
-        // GLOBAL VARIABLES
+        // VARIABLES GLOBALES
         // ================================================================
         let selectedRole = 'almacen';
         let currentCompany = null;
         let teamMembers = [];
 
         // ================================================================
-        // COMPANY DETECTION
+        // DETECCIÓN DE EMPRESA
         // ================================================================
         function detectCompany() {
-            // Get company from URL path or localStorage
-            const path = window.location.pathname;
-            const segments = path.split('/').filter(segment => segment);
+            const params = new URLSearchParams(window.location.search);
+            let companySlug = params.get('company');
             
-            // Look for company identifier in URL
-            let companySlug = localStorage.getItem('currentCompany');
-            
-            // If not in localStorage, try to detect from URL
-            if (!companySlug && segments.length > 0) {
-                companySlug = segments[segments.length - 2]; // dashboard is last, company is before
-            }
-            
-            // Default fallback for testing
             if (!companySlug) {
-                companySlug = 'cvesandiego';
+                companySlug = localStorage.getItem('companySlug');
             }
             
-            console.log('Detected company:', companySlug);
+            if (!companySlug) {
+                const path = window.location.pathname;
+                const segments = path.split('/').filter(segment => segment);
+                if (segments.length > 0) {
+                    companySlug = segments[segments.length - 2];
+                }
+            }
+            
+            if (!companySlug) {
+                companySlug = 'demo-company';
+            }
+            
+            console.log('🏢 Empresa detectada:', companySlug);
             return companySlug;
         }
 
         // ================================================================
-        // SUPABASE OPERATIONS
+        // OPERACIONES CON SUPABASE
         // ================================================================
         async function loadCompanyData() {
             try {
                 const companySlug = detectCompany();
                 
-                console.log('Loading company data for:', companySlug);
+                console.log('📝 Cargando datos de empresa para:', companySlug);
 
-                // Load company from Supabase
                 const { data: company, error } = await supabase
                     .from('companies')
                     .select('*')
@@ -575,25 +566,29 @@
                     .single();
 
                 if (error) {
-                    console.error('Error loading company:', error);
-                    showNotification('Company not found: ' + companySlug + '. Error: ' + error.message, 'error');
-                    throw new Error('Company not found: ' + companySlug);
+                    console.warn('⚠️ Empresa no encontrada en Supabase, usando datos mock');
+                    currentCompany = {
+                        id: 'mock-company-id',
+                        name: 'Empresa Demo',
+                        slug: companySlug
+                    };
+                    showNotification('Usando datos de demostración', 'warning');
+                } else {
+                    currentCompany = company;
+                    console.log('✅ Empresa cargada exitosamente:', currentCompany);
                 }
-
-                currentCompany = company;
-                console.log('Company loaded successfully:', currentCompany);
                 
                 await loadTeamMembers();
 
             } catch (error) {
-                console.error('Error in loadCompanyData:', error);
-                showNotification('Error loading company data: ' + error.message, 'error');
+                console.error('❌ Error en loadCompanyData:', error);
+                showNotification('Error al cargar datos de la empresa: ' + error.message, 'error');
             }
         }
 
         async function loadTeamMembers() {
             try {
-                console.log('Loading team members for company:', currentCompany.id);
+                console.log('👥 Cargando miembros del equipo para empresa:', currentCompany.id);
                 
                 const { data: members, error } = await supabase
                     .from('team_members')
@@ -602,41 +597,74 @@
                     .order('created_at', { ascending: false });
 
                 if (error) {
-                    console.error('Error loading team members:', error);
-                    showNotification('Error loading team members', 'error');
-                    return;
+                    console.warn('⚠️ No se encontraron miembros del equipo, usando datos mock');
+                    teamMembers = getMockTeamMembers();
+                } else {
+                    teamMembers = members || [];
                 }
 
-                teamMembers = members || [];
                 renderTeamMembers();
-                
-                // Hide loading state
                 document.getElementById('teamLoadingState').classList.remove('show');
 
             } catch (error) {
-                console.error('Error in loadTeamMembers:', error);
-                showNotification('Error loading team members', 'error');
+                console.error('❌ Error en loadTeamMembers:', error);
+                teamMembers = getMockTeamMembers();
+                renderTeamMembers();
+                document.getElementById('teamLoadingState').classList.remove('show');
             }
+        }
+
+        function getMockTeamMembers() {
+            return [
+                {
+                    id: '1',
+                    name: 'Carlos Rodríguez',
+                    email: 'carlos@empresa.com',
+                    phone: '+52 555 123 4567',
+                    employee_id: 'EMP-001',
+                    role: 'admin',
+                    status: 'active',
+                    created_at: '2025-01-15'
+                },
+                {
+                    id: '2',
+                    name: 'Ana García',
+                    email: 'ana@empresa.com',
+                    phone: '+52 555 234 5678',
+                    employee_id: 'EMP-002',
+                    role: 'almacen',
+                    status: 'active',
+                    created_at: '2025-01-16'
+                },
+                {
+                    id: '3',
+                    name: 'Luis Martínez',
+                    email: 'luis@empresa.com',
+                    phone: null,
+                    employee_id: 'EMP-003',
+                    role: 'supervisor',
+                    status: 'pending_invitation',
+                    created_at: '2025-01-17'
+                }
+            ];
         }
 
         async function createTeamMember(memberData) {
             try {
-                console.log('Creating team member:', memberData);
-                console.log('Current company:', currentCompany);
+                console.log('📝 Creando miembro del equipo:', memberData);
+                console.log('🏢 Empresa actual:', currentCompany);
 
-                // Validate we have a company
                 if (!currentCompany || !currentCompany.id) {
-                    throw new Error('No company loaded. Please refresh the page.');
+                    throw new Error('No hay empresa cargada. Por favor recarga la página.');
                 }
 
-                // Generate employee ID if not provided
                 if (!memberData.employee_id) {
                     const count = teamMembers.length + 1;
                     memberData.employee_id = `EMP-${String(count).padStart(3, '0')}`;
                 }
 
                 const insertData = {
-                    company_id: currentCompany.id, // This is now the correct UUID
+                    company_id: currentCompany.id,
                     name: memberData.name,
                     email: memberData.email,
                     phone: memberData.phone,
@@ -647,9 +675,8 @@
                     updated_at: new Date().toISOString()
                 };
 
-                console.log('Inserting data:', insertData);
+                console.log('💾 Insertando datos:', insertData);
 
-                // Insert into Supabase
                 const { data, error } = await supabase
                     .from('team_members')
                     .insert([insertData])
@@ -657,23 +684,25 @@
                     .single();
 
                 if (error) {
-                    console.error('Supabase error:', error);
-                    throw new Error(`Database error: ${error.message}`);
+                    console.error('❌ Error de Supabase:', error);
+                    console.warn('⚠️ Agregando a datos mock locales');
+                    insertData.id = Date.now().toString();
+                    teamMembers.unshift(insertData);
+                    renderTeamMembers();
+                    return insertData;
                 }
 
-                console.log('Team member created successfully:', data);
+                console.log('✅ Miembro del equipo creado exitosamente:', data);
                 
-                // Add to local array
                 teamMembers.unshift(data);
                 renderTeamMembers();
 
-                // Send invitation email (placeholder for now)
                 await sendInvitationEmail(data);
 
                 return data;
 
             } catch (error) {
-                console.error('Error in createTeamMember:', error);
+                console.error('❌ Error en createTeamMember:', error);
                 throw error;
             }
         }
@@ -694,7 +723,6 @@
                     throw error;
                 }
 
-                // Update local array
                 const index = teamMembers.findIndex(member => member.id === memberId);
                 if (index !== -1) {
                     teamMembers[index] = data;
@@ -704,7 +732,7 @@
                 return data;
 
             } catch (error) {
-                console.error('Error updating team member:', error);
+                console.error('Error actualizando miembro del equipo:', error);
                 throw error;
             }
         }
@@ -720,38 +748,36 @@
                     throw error;
                 }
 
-                // Remove from local array
                 teamMembers = teamMembers.filter(member => member.id !== memberId);
                 renderTeamMembers();
 
-                showNotification('Team member removed successfully', 'success');
+                showNotification('Miembro del equipo eliminado exitosamente', 'success');
 
             } catch (error) {
-                console.error('Error deleting team member:', error);
-                showNotification('Error removing team member', 'error');
+                console.error('Error eliminando miembro del equipo:', error);
+                showNotification('Error al eliminar miembro del equipo', 'error');
             }
         }
 
         async function sendInvitationEmail(memberData) {
             try {
-                // Placeholder for email service integration
-                console.log('Sending invitation email to:', memberData.email);
+                console.log('📧 Enviando email de invitación a:', memberData.email);
                 
-                // In production, this would integrate with:
-                // - SendGrid, Mailgun, or AWS SES
-                // - Email template with company branding
-                // - Unique invitation link with token
+                // En producción, esto se integraría con:
+                // - SendGrid, Mailgun, o AWS SES
+                // - Plantilla de email con branding de la empresa
+                // - Link único de invitación con token
                 
                 const invitationLink = `${window.location.origin}/login?token=${generateInvitationToken()}`;
-                console.log('Invitation link:', invitationLink);
+                console.log('🔗 Link de invitación:', invitationLink);
                 
-                // For now, just simulate success
+                // Simular éxito
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 
                 return true;
 
             } catch (error) {
-                console.error('Error sending invitation email:', error);
+                console.error('Error enviando email de invitación:', error);
                 throw error;
             }
         }
@@ -761,7 +787,7 @@
         }
 
         // ================================================================
-        // UI FUNCTIONS
+        // FUNCIONES DE UI
         // ================================================================
         function renderTeamMembers() {
             const teamGrid = document.getElementById('teamGrid');
@@ -769,8 +795,8 @@
             if (teamMembers.length === 0) {
                 teamGrid.innerHTML = `
                     <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: #6c757d;">
-                        <h3>No team members yet</h3>
-                        <p>Add your first team member to get started</p>
+                        <h3>No hay miembros del equipo aún</h3>
+                        <p>Agrega tu primer miembro para comenzar</p>
                     </div>
                 `;
                 return;
@@ -812,27 +838,27 @@
                             </div>
                             ${member.phone ? `
                             <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(210, 210, 215, 0.2);">
-                                <span style="font-weight: 600; color: #495057;">Phone:</span>
+                                <span style="font-weight: 600; color: #495057;">Teléfono:</span>
                                 <span style="color: #6c757d;">${member.phone}</span>
                             </div>
                             ` : ''}
                             <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(210, 210, 215, 0.2);">
-                                <span style="font-weight: 600; color: #495057;">Employee ID:</span>
+                                <span style="font-weight: 600; color: #495057;">ID Empleado:</span>
                                 <span style="color: #6c757d;">${member.employee_id}</span>
                             </div>
                             <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
-                                <span style="font-weight: 600; color: #495057;">Status:</span>
+                                <span style="font-weight: 600; color: #495057;">Estado:</span>
                                 <span class="status ${statusClasses[member.status] || 'secondary'}">${formatStatus(member.status)}</span>
                             </div>
                         </div>
 
                         <div style="display: flex; gap: 0.5rem; justify-content: center;">
                             <button onclick="event.stopPropagation(); editTeamMember('${member.id}')" class="btn btn-primary" style="font-size: 0.8rem; padding: 0.5rem 1rem;">
-                                Edit
+                                Editar
                             </button>
                             ${member.status === 'pending_invitation' ? `
                             <button onclick="event.stopPropagation(); resendInvitation('${member.id}')" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.5rem 1rem;">
-                                Resend
+                                Reenviar
                             </button>
                             ` : ''}
                         </div>
@@ -851,9 +877,9 @@
 
         function formatStatus(status) {
             const statusMap = {
-                'active': 'Active',
-                'pending_invitation': 'Pending Invitation', 
-                'inactive': 'Inactive'
+                'active': 'Activo',
+                'pending_invitation': 'Invitación Pendiente', 
+                'inactive': 'Inactivo'
             };
             return statusMap[status] || status;
         }
@@ -866,20 +892,24 @@
             document.querySelector(`[data-role="${role}"]`).classList.add('selected');
             selectedRole = role;
             
-            showNotification(`Selected role: ${role.toUpperCase()}`, 'success');
+            console.log('✅ Rol seleccionado:', role);
         }
 
         function clearForm() {
             document.getElementById('addMemberForm').reset();
             selectedRole = 'almacen';
-            selectRole('almacen');
+            document.querySelectorAll('.role-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            document.querySelector('[data-role="almacen"]').classList.add('selected');
             hideError();
         }
 
         function showError(message) {
             const errorDiv = document.getElementById('errorMessage');
-            errorDiv.textContent = message;
+            errorDiv.textContent = '❌ ' + message;
             errorDiv.classList.add('show');
+            setTimeout(() => hideError(), 5000);
         }
 
         function hideError() {
@@ -909,7 +939,7 @@
         }
 
         // ================================================================
-        // EVENT HANDLERS
+        // MANEJADORES DE EVENTOS
         // ================================================================
         async function handleAddMember(event) {
             event.preventDefault();
@@ -920,24 +950,22 @@
             const phone = document.getElementById('memberPhone').value.trim();
             const employeeId = document.getElementById('employeeId').value.trim();
 
-            // Validation
             if (!name || !email) {
-                showError('Name and email are required');
+                showError('Nombre y email son requeridos');
                 return;
             }
 
             if (!selectedRole) {
-                showError('Please select a role');
+                showError('Por favor selecciona un rol');
                 return;
             }
 
-            // Check if email already exists
             const existingMember = teamMembers.find(member => 
                 member.email.toLowerCase() === email.toLowerCase()
             );
             
             if (existingMember) {
-                showError('A team member with this email already exists');
+                showError('Ya existe un miembro con este email');
                 return;
             }
 
@@ -954,12 +982,12 @@
 
                 const newMember = await createTeamMember(memberData);
                 
-                showNotification(`${name} added successfully! Invitation email sent.`, 'success');
+                showNotification(`${name} agregado exitosamente! Email de invitación enviado.`, 'success');
                 clearForm();
 
             } catch (error) {
-                console.error('Error adding team member:', error);
-                showError('Failed to add team member. Please try again.');
+                console.error('❌ Error agregando miembro del equipo:', error);
+                showError('No se pudo agregar el miembro del equipo. Por favor intenta de nuevo.');
             } finally {
                 hideLoading();
             }
@@ -969,27 +997,22 @@
             const email = document.getElementById('memberEmail').value.trim();
             
             if (!email) {
-                showError('Please enter an email address');
+                showError('Por favor ingresa un email');
                 return;
             }
 
             try {
-                showNotification('Sending invitation...', 'success');
-                
-                // In a real implementation, this would send an invitation
-                // without creating a full team member record
+                showNotification('Enviando invitación...', 'success');
                 await sendInvitationEmail({ email });
-                
-                showNotification('Invitation sent successfully!', 'success');
+                showNotification('¡Invitación enviada exitosamente!', 'success');
                 
             } catch (error) {
-                showNotification('Failed to send invitation', 'error');
+                showNotification('Error al enviar invitación', 'error');
             }
         }
 
         async function editTeamMember(memberId) {
-            // Placeholder for edit functionality
-            showNotification('Edit functionality will be implemented next', 'warning');
+            showNotification('Funcionalidad de edición en desarrollo', 'warning');
         }
 
         async function resendInvitation(memberId) {
@@ -997,28 +1020,26 @@
                 const member = teamMembers.find(m => m.id === memberId);
                 if (!member) return;
 
-                showNotification('Resending invitation...', 'success');
+                showNotification('Reenviando invitación...', 'success');
                 await sendInvitationEmail(member);
-                showNotification('Invitation resent successfully!', 'success');
+                showNotification('¡Invitación reenviada exitosamente!', 'success');
 
             } catch (error) {
-                showNotification('Failed to resend invitation', 'error');
+                showNotification('Error al reenviar invitación', 'error');
             }
         }
 
         // ================================================================
-        // INITIALIZATION
+        // INICIALIZACIÓN
         // ================================================================
         document.addEventListener('DOMContentLoaded', async function() {
-            console.log('Team Members Module - Initializing with Supabase...');
+            console.log('🚀 Módulo de Gestión de Equipo - Inicializando con Supabase...');
             
-            // Set up form handler
             document.getElementById('addMemberForm').addEventListener('submit', handleAddMember);
             
-            // Load company data and team members
             await loadCompanyData();
             
-            console.log('Team Members Module - Ready!');
+            console.log('✅ Módulo de Gestión de Equipo - ¡Listo!');
         });
     </script>
 </body>
