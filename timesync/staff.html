@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal | TimeSync - Opsis Suite</title>
+    <style>
+        :root {
+            /* Apple 97 Design System */
+            --primary: #007AFF;
+            --primary-hover: #0051D5;
+            --success: #34C759;
+            --warning: #FF9500;
+            --danger: #FF3B30;
+            --info: #5856D6;
+            --purple: #AF52DE;
+            
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F5F5F7;
+            --bg-tertiary: #E8E8ED;
+            
+            --text-primary: #1D1D1F;
+            --text-secondary: #86868B;
+            --text-tertiary: #C7C7CC;
+            
+            --border: #D2D2D7;
+            --shadow: rgba(0, 0, 0, 0.1);
+            
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1C1C1E;
+            --bg-secondary: #2C2C2E;
+            --bg-tertiary: #3A3A3C;
+            --text-primary: #F5F5F7;
+            --text-secondary: #98989D;
+            --text-tertiary: #636366;
+            --border: #38383A;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .back-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: none;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .back-btn:hover {
+            background: var(--bg-tertiary);
+            transform: translateX(-2px);
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        /* View Toggle */
+        .view-toggle {
+            display: flex;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .view-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: var(--transition);
+            font-size: 0.875rem;
+        }
+
+        .view-btn.active {
+            background: var(--bg-primary);
+            color: var(--primary);
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        /* Filters Bar */
+        .filters-bar {
+            background: var(--bg-primary);
+            padding: 1rem 2rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .filter-select {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .filter-select:hover {
+            border-color: var(--primary);
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 2rem;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-primary);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: 0 2px 8px var(--shadow);
+            border-left: 4px solid var(--primary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px var(--shadow);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Grid View */
+        .staff-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .staff-card {
+            background: var(--bg-primary);
+            border-radius: var(--radius);
+            box-shadow: 0 2px 8px var(--shadow);
+            overflow: hidden;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .staff-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px var(--shadow);
+        }
+
+        .staff-card-header {
+            padding: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .staff-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--info));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .staff-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .staff-name {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .staff-role {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-badge.available {
+            background: rgba(52, 199, 89, 0.15);
+            color: var(--success);
+        }
+
+        .status-badge.busy {
+            background: rgba(255, 149, 0, 0.15);
+            color: var(--warning);
+        }
+
+        .status-badge.off {
+            background: rgba(142, 142, 147, 0.15);
+            color: var(--text-secondary);
+        }
+
+        .staff-card-body {
+            padding: 1.5rem;
+        }
+
+        .staff-detail {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .staff-detail-icon {
+            color: var(--primary);
+        }
+
+        .certifications {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .cert-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .cert-badge.expiring {
+            background: rgba(255, 149, 0, 0.15);
+            color: var(--warning);
+        }
+
+        .staff-card-footer {
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .hours-today {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .hours-value {
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* List View */
+        .staff-list {
+            background: var(--bg-primary);
+            border-radius: var(--radius);
+            box-shadow: 0 2px 8px var(--shadow);
+            overflow: hidden;
+        }
+
+        .list-header {
+            display: grid;
+            grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr auto;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 2px solid var(--border);
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .list-row {
+            display: grid;
+            grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr auto;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: var(--transition);
+            align-items: center;
+        }
+
+        .list-row:hover {
+            background: var(--bg-secondary);
+        }
+
+        .list-staff-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .list-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--info));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .list-name-role {
+            min-width: 0;
+        }
+
+        .list-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .list-role {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.875rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+        }
+
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Sidebar */
+        .staff-sidebar {
+            position: fixed;
+            right: -500px;
+            top: 0;
+            width: 500px;
+            height: 100vh;
+            background: var(--bg-primary);
+            box-shadow: -4px 0 20px var(--shadow);
+            transition: var(--transition);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .staff-sidebar.active {
+            right: 0;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: var(--bg-primary);
+            z-index: 10;
+        }
+
+        .sidebar-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .close-sidebar {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: none;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-content {
+            padding: 2rem;
+        }
+
+        .sidebar-profile {
+            text-align: center;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--info));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: 700;
+            color: white;
+            margin: 0 auto 1rem;
+        }
+
+        .sidebar-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-role {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-section {
+            padding: 2rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            font-size: 0.875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            letter-spacing: 0.5px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+        }
+
+        .info-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .info-value {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .cert-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .cert-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        .cert-name {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .cert-expiry {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .sidebar-actions {
+            display: flex;
+            gap: 0.75rem;
+            padding: 1.5rem 2rem;
+            border-top: 1px solid var(--border);
+            background: var(--bg-secondary);
+            position: sticky;
+            bottom: 0;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: var(--transition);
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        /* Hidden views */
+        .staff-grid.hidden,
+        .staff-list.hidden {
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .staff-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .list-header,
+            .list-row {
+                grid-template-columns: 1fr;
+            }
+
+            .list-header {
+                display: none;
+            }
+
+            .filters-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                min-width: 100%;
+            }
+
+            .staff-sidebar {
+                width: 100%;
+                right: -100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <button class="back-btn" onclick="goBack()">←</button>
+            <h1 class="page-title">👥 Personal</h1>
+        </div>
+        <div class="header-actions">
+            <div class="view-toggle">
+                <button class="view-btn active" data-view="grid">Tarjetas</button>
+                <button class="view-btn" data-view="list">Lista</button>
+            </div>
+            <button class="btn btn-primary" onclick="openAddStaff()">+ Agregar Personal</button>
+        </div>
+    </div>
+
+    <!-- Filters Bar -->
+    <div class="filters-bar">
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" placeholder="Buscar por nombre, rol, certificación..." id="searchInput">
+        </div>
+
+        <div class="filter-group">
+            <span class="filter-label">Estado:</span>
+            <select class="filter-select" id="statusFilter">
+                <option value="all">Todos</option>
+                <option value="available">Disponible</option>
+                <option value="busy">En Trabajo</option>
+                <option value="off">Fuera de Servicio</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <span class="filter-label">Rol:</span>
+            <select class="filter-select" id="roleFilter">
+                <option value="all">Todos</option>
+                <option value="supervisor">Supervisor</option>
+                <option value="technician">Técnico</option>
+                <option value="operator">Operador</option>
+                <option value="inspector">Inspector</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <span class="filter-label">Equipo:</span>
+            <select class="filter-select" id="teamFilter">
+                <option value="all">Todos</option>
+                <option value="crew-a">Crew A</option>
+                <option value="crew-b">Crew B</option>
+                <option value="crew-c">Crew C</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card" onclick="filterByStatus('all')">
+                <div class="stat-label">Total Personal</div>
+                <div class="stat-value">24</div>
+            </div>
+            <div class="stat-card" style="border-left-color: var(--success);" onclick="filterByStatus('available')">
+                <div class="stat-label">Disponibles</div>
+                <div class="stat-value">18</div>
+            </div>
+            <div class="stat-card" style="border-left-color: var(--warning);" onclick="filterByStatus('busy')">
+                <div class="stat-label">En Trabajo</div>
+                <div class="stat-value">5</div>
+            </div>
+            <div class="stat-card" style="border-left-color: var(--danger);" onclick="filterByStatus('off')">
+                <div class="stat-label">Fuera de Servicio</div>
+                <div class="stat-value">1</div>
+            </div>
+        </div>
+
+        <!-- Grid View -->
+        <div class="staff-grid" id="staffGrid">
+            <!-- Staff cards will be generated by JS -->
+        </div>
+
+        <!-- List View -->
+        <div class="staff-list hidden" id="staffList">
+            <div class="list-header">
+                <div>Personal</div>
+                <div>Contacto</div>
+                <div>Estado</div>
+                <div>Equipo</div>
+                <div>Horas Hoy</div>
+                <div></div>
+            </div>
+            <div id="listRows">
+                <!-- List rows will be generated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Staff Details Sidebar -->
+    <div class="staff-sidebar" id="staffSidebar">
+        <div class="sidebar-header">
+            <h2 class="sidebar-title">Detalles del Personal</h2>
+            <button class="close-sidebar" onclick="closeSidebar()">✕</button>
+        </div>
+        <div class="sidebar-content">
+            <div class="sidebar-profile">
+                <div class="sidebar-avatar" id="sidebarAvatar">JP</div>
+                <div class="sidebar-name" id="sidebarName">Juan Pérez</div>
+                <div class="sidebar-role" id="sidebarRole">Técnico Senior</div>
+                <span class="status-badge available" id="sidebarStatus">Disponible</span>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="section-title">Información de Contacto</div>
+                <div class="info-row">
+                    <span class="info-label">📧 Email</span>
+                    <span class="info-value" id="sidebarEmail">juan.perez@company.com</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">📱 Teléfono</span>
+                    <span class="info-value" id="sidebarPhone">(619) 555-0123</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">👥 Equipo</span>
+                    <span class="info-value" id="sidebarTeam">Crew A</span>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="section-title">Estadísticas</div>
+                <div class="info-row">
+                    <span class="info-label">⏱️ Horas Hoy</span>
+                    <span class="info-value" id="sidebarHoursToday">8.5h</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">📅 Horas Esta Semana</span>
+                    <span class="info-value" id="sidebarHoursWeek">42h</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">📊 Trabajos Completados</span>
+                    <span class="info-value" id="sidebarJobsCompleted">247</span>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="section-title">Certificaciones</div>
+                <div class="cert-list" id="sidebarCertList">
+                    <div class="cert-item">
+                        <div>
+                            <div class="cert-name">OSHA 40-Hour</div>
+                            <div class="cert-expiry">Vence: 15/03/2026</div>
+                        </div>
+                        <span class="status-badge available">Vigente</span>
+                    </div>
+                    <div class="cert-item">
+                        <div>
+                            <div class="cert-name">Asbestos Supervisor</div>
+                            <div class="cert-expiry">Vence: 08/11/2025</div>
+                        </div>
+                        <span class="status-badge expiring">Por Vencer</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="sidebar-actions">
+            <button class="btn btn-secondary" style="flex: 1;" onclick="editStaff()">✏️ Editar</button>
+            <button class="btn btn-primary" style="flex: 1;" onclick="assignToJob()">📋 Asignar a Trabajo</button>
+        </div>
+    </div>
+
+    <script>
+        // Sample data
+        const staffData = [
+            {
+                id: 1,
+                name: 'Juan Pérez',
+                role: 'Técnico Senior',
+                status: 'available',
+                team: 'Crew A',
+                phone: '(619) 555-0123',
+                email: 'juan.perez@company.com',
+                hoursToday: 8.5,
+                hoursWeek: 42,
+                jobsCompleted: 247,
+                certifications: [
+                    { name: 'OSHA 40-Hour', expiry: '2026-03-15', status: 'valid' },
+                    { name: 'Asbestos Supervisor', expiry: '2025-11-08', status: 'expiring' }
+                ]
+            },
+            {
+                id: 2,
+                name: 'María García',
+                role: 'Supervisora',
+                status: 'busy',
+                team: 'Crew A',
+                phone: '(619) 555-0124',
+                email: 'maria.garcia@company.com',
+                hoursToday: 6.0,
+                hoursWeek: 38,
+                jobsCompleted: 312,
+                certifications: [
+                    { name: 'OSHA 40-Hour', expiry: '2026-08-20', status: 'valid' },
+                    { name: 'Asbestos Inspector', expiry: '2026-01-15', status: 'valid' }
+                ]
+            },
+            {
+                id: 3,
+                name: 'Carlos López',
+                role: 'Operador',
+                status: 'available',
+                team: 'Crew B',
+                phone: '(619) 555-0125',
+                email: 'carlos.lopez@company.com',
+                hoursToday: 0,
+                hoursWeek: 35,
+                jobsCompleted: 189,
+                certifications: [
+                    { name: 'OSHA 10-Hour', expiry: '2025-12-10', status: 'expiring' }
+                ]
+            },
+            {
+                id: 4,
+                name: 'Ana Martínez',
+                role: 'Técnica',
+                status: 'available',
+                team: 'Crew B',
+                phone: '(619) 555-0126',
+                email: 'ana.martinez@company.com',
+                hoursToday: 7.5,
+                hoursWeek: 40,
+                jobsCompleted: 201,
+                certifications: [
+                    { name: 'OSHA 40-Hour', expiry: '2026-05-22', status: 'valid' }
+                ]
+            },
+            {
+                id: 5,
+                name: 'Pedro Sánchez',
+                role: 'Inspector',
+                status: 'off',
+                team: 'Crew C',
+                phone: '(619) 555-0127',
+                email: 'pedro.sanchez@company.com',
+                hoursToday: 0,
+                hoursWeek: 0,
+                jobsCompleted: 156,
+                certifications: [
+                    { name: 'Asbestos Inspector', expiry: '2026-02-28', status: 'valid' }
+                ]
+            },
+            {
+                id: 6,
+                name: 'Luis Gómez',
+                role: 'Técnico',
+                status: 'busy',
+                team: 'Crew C',
+                phone: '(619) 555-0128',
+                email: 'luis.gomez@company.com',
+                hoursToday: 5.0,
+                hoursWeek: 37,
+                jobsCompleted: 178,
+                certifications: [
+                    { name: 'OSHA 40-Hour', expiry: '2025-10-30', status: 'expiring' }
+                ]
+            }
+        ];
+
+        let currentView = 'grid';
+        let filteredData = [...staffData];
+
+        // Initialize
+        function init() {
+            renderStaffGrid();
+            renderStaffList();
+            setupEventListeners();
+        }
+
+        // Render Grid View
+        function renderStaffGrid() {
+            const grid = document.getElementById('staffGrid');
+            grid.innerHTML = '';
+
+            filteredData.forEach(staff => {
+                const initials = staff.name.split(' ').map(n => n[0]).join('');
+                const expiringCerts = staff.certifications.filter(c => c.status === 'expiring').length;
+
+                const card = document.createElement('div');
+                card.className = 'staff-card';
+                card.innerHTML = `
+                    <div class="staff-card-header">
+                        <div class="staff-avatar">${initials}</div>
+                        <div class="staff-info">
+                            <div class="staff-name">${staff.name}</div>
+                            <div class="staff-role">${staff.role}</div>
+                            <span class="status-badge ${staff.status}">${getStatusText(staff.status)}</span>
+                        </div>
+                    </div>
+                    <div class="staff-card-body">
+                        <div class="staff-detail">
+                            <span class="staff-detail-icon">📧</span>
+                            <span>${staff.email}</span>
+                        </div>
+                        <div class="staff-detail">
+                            <span class="staff-detail-icon">📱</span>
+                            <span>${staff.phone}</span>
+                        </div>
+                        <div class="staff-detail">
+                            <span class="staff-detail-icon">👥</span>
+                            <span>${staff.team}</span>
+                        </div>
+                        <div class="certifications">
+                            ${staff.certifications.map(cert => 
+                                `<span class="cert-badge ${cert.status === 'expiring' ? 'expiring' : ''}">${cert.name}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                    <div class="staff-card-footer">
+                        <div class="hours-today">
+                            Horas hoy: <span class="hours-value">${staff.hoursToday}h</span>
+                        </div>
+                        <button class="btn btn-secondary btn-small" onclick="openStaffDetails(${staff.id})">Ver Detalles</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Render List View
+        function renderStaffList() {
+            const listRows = document.getElementById('listRows');
+            listRows.innerHTML = '';
+
+            filteredData.forEach(staff => {
+                const initials = staff.name.split(' ').map(n => n[0]).join('');
+                
+                const row = document.createElement('div');
+                row.className = 'list-row';
+                row.innerHTML = `
+                    <div class="list-staff-info">
+                        <div class="list-avatar">${initials}</div>
+                        <div class="list-name-role">
+                            <div class="list-name">${staff.name}</div>
+                            <div class="list-role">${staff.role}</div>
+                        </div>
+                    </div>
+                    <div style="font-size: 0.875rem;">
+                        <div>${staff.email}</div>
+                        <div style="color: var(--text-secondary); font-size: 0.75rem;">${staff.phone}</div>
+                    </div>
+                    <div>
+                        <span class="status-badge ${staff.status}">${getStatusText(staff.status)}</span>
+                    </div>
+                    <div style="font-size: 0.875rem;">${staff.team}</div>
+                    <div style="font-size: 0.875rem; font-weight: 600;">${staff.hoursToday}h</div>
+                    <div>
+                        <button class="btn btn-secondary btn-icon" onclick="openStaffDetails(${staff.id})">→</button>
+                    </div>
+                `;
+                row.onclick = (e) => {
+                    if (!e.target.closest('button')) {
+                        openStaffDetails(staff.id);
+                    }
+                };
+                listRows.appendChild(row);
+            });
+        }
+
+        // Get status text
+        function getStatusText(status) {
+            const statusMap = {
+                'available': 'Disponible',
+                'busy': 'En Trabajo',
+                'off': 'Fuera de Servicio'
+            };
+            return statusMap[status] || status;
+        }
+
+        // Open staff details
+        function openStaffDetails(id) {
+            const staff = staffData.find(s => s.id === id);
+            if (!staff) return;
+
+            const initials = staff.name.split(' ').map(n => n[0]).join('');
+            
+            document.getElementById('sidebarAvatar').textContent = initials;
+            document.getElementById('sidebarName').textContent = staff.name;
+            document.getElementById('sidebarRole').textContent = staff.role;
+            document.getElementById('sidebarEmail').textContent = staff.email;
+            document.getElementById('sidebarPhone').textContent = staff.phone;
+            document.getElementById('sidebarTeam').textContent = staff.team;
+            document.getElementById('sidebarHoursToday').textContent = staff.hoursToday + 'h';
+            document.getElementById('sidebarHoursWeek').textContent = staff.hoursWeek + 'h';
+            document.getElementById('sidebarJobsCompleted').textContent = staff.jobsCompleted;
+
+            const statusBadge = document.getElementById('sidebarStatus');
+            statusBadge.className = `status-badge ${staff.status}`;
+            statusBadge.textContent = getStatusText(staff.status);
+
+            const certList = document.getElementById('sidebarCertList');
+            certList.innerHTML = staff.certifications.map(cert => `
+                <div class="cert-item">
+                    <div>
+                        <div class="cert-name">${cert.name}</div>
+                        <div class="cert-expiry">Vence: ${formatDate(cert.expiry)}</div>
+                    </div>
+                    <span class="status-badge ${cert.status === 'expiring' ? 'expiring' : 'available'}">
+                        ${cert.status === 'expiring' ? 'Por Vencer' : 'Vigente'}
+                    </span>
+                </div>
+            `).join('');
+
+            document.getElementById('staffSidebar').classList.add('active');
+        }
+
+        // Format date
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        // Close sidebar
+        function closeSidebar() {
+            document.getElementById('staffSidebar').classList.remove('active');
+        }
+
+        // Filter by status
+        function filterByStatus(status) {
+            document.getElementById('statusFilter').value = status;
+            applyFilters();
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const roleFilter = document.getElementById('roleFilter').value;
+            const teamFilter = document.getElementById('teamFilter').value;
+
+            filteredData = staffData.filter(staff => {
+                const matchesSearch = staff.name.toLowerCase().includes(searchTerm) ||
+                                    staff.email.toLowerCase().includes(searchTerm) ||
+                                    staff.role.toLowerCase().includes(searchTerm);
+                const matchesStatus = statusFilter === 'all' || staff.status === statusFilter;
+                const matchesRole = roleFilter === 'all' || staff.role.toLowerCase().includes(roleFilter.toLowerCase());
+                const matchesTeam = teamFilter === 'all' || staff.team.toLowerCase().includes(teamFilter.toLowerCase());
+
+                return matchesSearch && matchesStatus && matchesRole && matchesTeam;
+            });
+
+            renderStaffGrid();
+            renderStaffList();
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Search input
+            document.getElementById('searchInput').addEventListener('input', applyFilters);
+
+            // Filter selects
+            document.getElementById('statusFilter').addEventListener('change', applyFilters);
+            document.getElementById('roleFilter').addEventListener('change', applyFilters);
+            document.getElementById('teamFilter').addEventListener('change', applyFilters);
+
+            // View toggle
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    currentView = this.dataset.view;
+                    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+
+                    if (currentView === 'grid') {
+                        document.getElementById('staffGrid').classList.remove('hidden');
+                        document.getElementById('staffList').classList.add('hidden');
+                    } else {
+                        document.getElementById('staffGrid').classList.add('hidden');
+                        document.getElementById('staffList').classList.remove('hidden');
+                    }
+                });
+            });
+        }
+
+        // Actions
+        function openAddStaff() {
+            alert('Abrir formulario para agregar personal');
+        }
+
+        function editStaff() {
+            alert('Abrir formulario para editar personal');
+        }
+
+        function assignToJob() {
+            alert('Abrir formulario para asignar a trabajo');
+        }
+
+        function goBack() {
+            window.location.href = '../dashboard/template.html';
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
