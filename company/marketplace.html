@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace - Opsis Suite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            color: #495057;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            border-bottom: 1px solid #e9ecef;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-logo-container {
+            width: 54px;
+            height: 54px;
+            border-radius: 14px;
+            padding: 2px;
+            background: linear-gradient(45deg, 
+                #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, 
+                #feca57, #ff9ff3, #54a0ff, #5f27cd, 
+                #00d2d3, #ff9f43, #10ac84, #ee5a6f);
+            background-size: 400% 400%;
+            animation: gradientShift 4s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .nav-logo {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #495057, #6c757d);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .nav-logo::before {
+            content: '◉';
+            animation: winkEye 4s ease-in-out infinite;
+        }
+
+        @keyframes winkEye {
+            0%, 88% { transform: scaleY(1); }
+            90% { transform: scaleY(0.1); }
+            92% { transform: scaleY(1); }
+            94% { transform: scaleY(0.1); }
+            96% { transform: scaleY(1); }
+        }
+
+        .header-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #495057;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-btn {
+            padding: 0.8rem 1.5rem;
+            background: rgba(32, 201, 151, 0.1);
+            border: 1px solid rgba(32, 201, 151, 0.3);
+            border-radius: 16px;
+            color: #20c997;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .nav-btn:hover {
+            background: #20c997;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            color: #6c757d;
+            max-width: 700px;
+            margin: 0 auto 2rem;
+        }
+
+        /* Current Plan Banner */
+        .current-plan-banner {
+            background: linear-gradient(135deg, rgba(32, 201, 151, 0.1), rgba(23, 162, 184, 0.1));
+            border: 2px solid rgba(32, 201, 151, 0.3);
+            border-radius: 24px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .plan-info h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-info p {
+            color: #6c757d;
+            font-size: 1rem;
+        }
+
+        .active-products {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .product-pill {
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .product-pill.active {
+            background: rgba(32, 201, 151, 0.2);
+            color: #20c997;
+        }
+
+        .product-pill.inactive {
+            background: rgba(108, 117, 125, 0.1);
+            color: #6c757d;
+        }
+
+        /* Products Grid */
+        .products-section {
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 32px;
+            padding: 3rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border: 3px solid transparent;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: var(--gradient);
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 80px rgba(0,0,0,0.15);
+        }
+
+        .product-card.featured {
+            border-color: var(--border-color);
+            background: linear-gradient(135deg, var(--bg-light), white);
+        }
+
+        .product-card.owned {
+            border-color: #20c997;
+            background: linear-gradient(135deg, rgba(32, 201, 151, 0.05), white);
+        }
+
+        .product-badge {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-owned {
+            background: #20c997;
+            color: white;
+        }
+
+        .badge-popular {
+            background: linear-gradient(135deg, #ffc107, #ff9800);
+            color: white;
+        }
+
+        .badge-new {
+            background: linear-gradient(135deg, #6610f2, #d63384);
+            color: white;
+        }
+
+        .product-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            background: var(--gradient);
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .product-name {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 1rem;
+        }
+
+        .product-tagline {
+            font-size: 1.1rem;
+            color: #6c757d;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .product-price {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--price-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .product-price span {
+            font-size: 1.2rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .price-note {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 2rem;
+        }
+
+        .features-list {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .features-list li {
+            padding: 0.8rem 0;
+            color: #495057;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .features-list li::before {
+            content: '✓';
+            width: 24px;
+            height: 24px;
+            background: var(--check-bg);
+            color: var(--check-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .product-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .btn-add {
+            padding: 1.2rem;
+            background: var(--gradient);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .btn-add:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px var(--shadow);
+        }
+
+        .btn-details {
+            padding: 1rem;
+            background: white;
+            color: #6c757d;
+            border: 2px solid #e9ecef;
+            border-radius: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-details:hover {
+            border-color: var(--border-hover);
+            color: var(--text-hover);
+        }
+
+        .btn-owned {
+            padding: 1.2rem;
+            background: rgba(32, 201, 151, 0.1);
+            color: #20c997;
+            border: 2px solid #20c997;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: default;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        /* Bundle Offers */
+        .bundles-section {
+            margin-bottom: 4rem;
+        }
+
+        .bundle-card {
+            background: white;
+            border-radius: 32px;
+            padding: 3rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border: 3px solid #6610f2;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bundle-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(135deg, #6610f2, #d63384);
+        }
+
+        .bundle-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .bundle-badge {
+            display: inline-block;
+            padding: 0.6rem 1.5rem;
+            background: linear-gradient(135deg, #6610f2, #d63384);
+            color: white;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 1rem;
+        }
+
+        .bundle-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 1rem;
+        }
+
+        .bundle-description {
+            font-size: 1.1rem;
+            color: #6c757d;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        .bundle-savings {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: rgba(32, 201, 151, 0.1);
+            border: 2px solid #20c997;
+            border-radius: 16px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #20c997;
+        }
+
+        .bundle-products {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .bundle-product-item {
+            text-align: center;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 16px;
+        }
+
+        .bundle-product-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .bundle-product-name {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .bundle-pricing {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .bundle-price-old {
+            font-size: 1.5rem;
+            color: #6c757d;
+            text-decoration: line-through;
+        }
+
+        .bundle-price-new {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #20c997;
+        }
+
+        .bundle-price-new span {
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .bundle-cta {
+            text-align: center;
+        }
+
+        .btn-bundle {
+            padding: 1.5rem 4rem;
+            background: linear-gradient(135deg, #6610f2, #d63384);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .btn-bundle:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 16, 242, 0.3);
+        }
+
+        /* Plan Comparison */
+        .comparison-section {
+            margin-bottom: 4rem;
+        }
+
+        .comparison-table {
+            background: white;
+            border-radius: 32px;
+            padding: 3rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f8f9fa;
+        }
+
+        th {
+            padding: 1.5rem;
+            text-align: center;
+            font-weight: 700;
+            color: #495057;
+            font-size: 1.1rem;
+        }
+
+        th:first-child {
+            text-align: left;
+            border-radius: 12px 0 0 0;
+        }
+
+        th:last-child {
+            border-radius: 0 12px 0 0;
+        }
+
+        td {
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid #f8f9fa;
+            text-align: center;
+        }
+
+        td:first-child {
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .check-mark {
+            color: #20c997;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .cross-mark {
+            color: #dc3545;
+            font-size: 1.2rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .product-card {
+                padding: 2rem;
+            }
+
+            .current-plan-banner {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .bundle-products {
+                grid-template-columns: 1fr;
+            }
+
+            .bundle-pricing {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .comparison-table {
+                padding: 1.5rem;
+            }
+
+            th, td {
+                padding: 0.8rem 0.5rem;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-container">
+                <div class="nav-logo-container">
+                    <div class="nav-logo"></div>
+                </div>
+                <div class="header-title">Marketplace</div>
+            </div>
+            <nav class="nav-links">
+                <a href="/dashboard/template.html" class="nav-btn">← Back to Dashboard</a>
+                <a href="/company/billing.html" class="nav-btn">View Billing</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero">
+            <h1 class="hero-title">Expand Your Suite</h1>
+            <p class="hero-subtitle">Add powerful products to streamline your operations, boost productivity, and scale your business</p>
+        </div>
+
+        <!-- Current Plan Banner -->
+        <div class="current-plan-banner">
+            <div class="plan-info">
+                <h3>Your Current Plan: Professional</h3>
+                <p>You're on the Professional plan with 1 active product • $99/month</p>
+            </div>
+            <div class="active-products">
+                <div class="product-pill active">📦 Warehouse ✓</div>
+                <div class="product-pill inactive">⏱️ TimeSync</div>
+                <div class="product-pill inactive">👥 HR</div>
+                <div class="product-pill inactive">💵 Finance</div>
+            </div>
+        </div>
+
+        <!-- Products Section -->
+        <section class="products-section">
+            <h2 class="section-title">Available Products</h2>
+            <div class="products-grid">
+                <!-- Warehouse -->
+                <div class="product-card owned" style="--gradient: linear-gradient(135deg, #20c997, #17a2b8); --check-bg: rgba(32, 201, 151, 0.1); --check-color: #20c997; --bg-light: rgba(32, 201, 151, 0.05);">
+                    <span class="product-badge badge-owned">✓ Owned</span>
+                    <div class="product-icon" style="background: linear-gradient(135deg, #20c997, #17a2b8);">📦</div>
+                    <h3 class="product-name">Opsis Warehouse</h3>
+                    <p class="product-tagline">Complete inventory and equipment management for any industry</p>
+                    <div class="product-price" style="color: #20c997;">$49<span>/month</span></div>
+                    <p class="price-note">Included in your plan</p>
+                    <ul class="features-list">
+                        <li>Unlimited equipment tracking</li>
+                        <li>Real-time inventory updates</li>
+                        <li>Maintenance scheduling</li>
+                        <li>Custom categories & tags</li>
+                        <li>Advanced analytics</li>
+                        <li>Mobile app access</li>
+                    </ul>
+                    <div class="product-actions">
+                        <div class="btn-owned">✓ Active in Your Account</div>
+                        <button class="btn-details" onclick="viewDetails('warehouse')">View Details</button>
+                    </div>
+                </div>
+
+                <!-- TimeSync -->
+                <div class="product-card featured" style="--gradient: linear-gradient(135deg, #6610f2, #d63384); --check-bg: rgba(102, 16, 242, 0.1); --check-color: #6610f2; --bg-light: rgba(102, 16, 242, 0.05); --border-color: #6610f2; --price-color: #6610f2; --shadow: rgba(102, 16, 242, 0.3); --border-hover: #6610f2; --text-hover: #6610f2;">
+                    <span class="product-badge badge-popular">⭐ Popular</span>
+                    <div class="product-icon" style="background: linear-gradient(135deg, #6610f2, #d63384);">⏱️</div>
+                    <h3 class="product-name">Opsis TimeSync</h3>
+                    <p class="product-tagline">Time tracking, project management, and resource planning</p>
+                    <div class="product-price" style="color: #6610f2;">$59<span>/month</span></div>
+                    <p class="price-note">Add to plan for $50/month (save $9!)</p>
+                    <ul class="features-list">
+                        <li>Employee time tracking</li>
+                        <li>Project & task management</li>
+                        <li>Timesheet approvals</li>
+                        <li>Resource allocation</li>
+                        <li>Overtime tracking</li>
+                        <li>Budget vs actual reports</li>
+                    </ul>
+                    <div class="product-actions">
+                        <button class="btn-add" style="background: linear-gradient(135deg, #6610f2, #d63384);" onclick="addProduct('timesync')">Add TimeSync</button>
+                        <button class="btn-details" onclick="viewDetails('timesync')">Learn More</button>
+                    </div>
+                </div>
+
+                <!-- HR -->
+                <div class="product-card" style="--gradient: linear-gradient(135deg, #fd7e14, #dc3545); --check-bg: rgba(253, 126, 20, 0.1); --check-color: #fd7e14; --price-color: #fd7e14; --shadow: rgba(253, 126, 20, 0.3); --border-hover: #fd7e14; --text-hover: #fd7e14;">
+                    <div class="product-icon" style="background: linear-gradient(135deg, #fd7e14, #dc3545);">👥</div>
+                    <h3 class="product-name">Opsis HR</h3>
+                    <p class="product-tagline">Complete human resources and payroll management</p>
+                    <div class="product-price" style="color: #fd7e14;">$69<span>/month</span></div>
+                    <p class="price-note">Add to plan for $55/month (save $14!)</p>
+                    <ul class="features-list">
+                        <li>Employee management</li>
+                        <li>Payroll processing</li>
+                        <li>Leave & attendance</li>
+                        <li>Performance reviews</li>
+                        <li>Document management</li>
+                        <li>Compliance tracking</li>
+                    </ul>
+                    <div class="product-actions">
+                        <button class="btn-add" style="background: linear-gradient(135deg, #fd7e14, #dc3545);" onclick="addProduct('hr')">Add HR</button>
+                        <button class="btn-details" onclick="viewDetails('hr')">Learn More</button>
+                    </div>
+                </div>
+
+                <!-- Finance -->
+                <div class="product-card" style="--gradient: linear-gradient(135deg, #0dcaf0, #6f42c1); --check-bg: rgba(13, 202, 240, 0.1); --check-color: #0dcaf0; --price-color: #0dcaf0; --shadow: rgba(13, 202, 240, 0.3); --border-hover: #0dcaf0; --text-hover: #0dcaf0;">
+                    <span class="product-badge badge-new">✨ New</span>
+                    <div class="product-icon" style="background: linear-gradient(135deg, #0dcaf0, #6f42c1);">💵</div>
+                    <h3 class="product-name">Opsis Finance</h3>
+                    <p class="product-tagline">Accounting, invoicing, and financial management</p>
+                    <div class="product-price" style="color: #0dcaf0;">$79<span>/month</span></div>
+                    <p class="price-note">Add to plan for $60/month (save $19!)</p>
+                    <ul class="features-list">
+                        <li>Accounting & bookkeeping</li>
+                        <li>Invoice & billing</li>
+                        <li>Expense tracking</li>
+                        <li>Financial reports</li>
+                        <li>Budget management</li>
+                        <li>Tax preparation tools</li>
+                    </ul>
+                    <div class="product-actions">
+                        <button class="btn-add" style="background: linear-gradient(135deg, #0dcaf0, #6f42c1);" onclick="addProduct('finance')">Add Finance</button>
+                        <button class="btn-details" onclick="viewDetails('finance')">Learn More</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bundle Offers -->
+        <section class="bundles-section">
+            <h2 class="section-title">Bundle Offers</h2>
+            
+            <div class="bundle-card">
+                <div class="bundle-header">
+                    <span class="bundle-badge">🎁 Best Value</span>
+                    <h3 class="bundle-title">Complete Suite Bundle</h3>
+                    <p class="bundle-description">Get all 4 products and save 25% compared to individual pricing</p>
+                    <div class="bundle-savings">Save $54/month • $648/year</div>
+                </div>
+
+                <div class="bundle-products">
+                    <div class="bundle-product-item">
+                        <div class="bundle-product-icon">📦</div>
+                        <div class="bundle-product-name">Warehouse</div>
+                    </div>
+                    <div class="bundle-product-item">
+                        <div class="bundle-product-icon">⏱️</div>
+                        <div class="bundle-product-name">TimeSync</div>
+                    </div>
+                    <div class="bundle-product-item">
+                        <div class="bundle-product-icon">👥</div>
+                        <div class="bundle-product-name">HR</div>
+                    </div>
+                    <div class="bundle-product-item">
+                        <div class="bundle-product-icon">💵</div>
+                        <div class="bundle-product-name">Finance</div>
+                    </div>
+                </div>
+
+                <div class="bundle-pricing">
+                    <span class="bundle-price-old">$256/month</span>
+                    <span class="bundle-price-new">$199<span>/month</span></span>
+                </div>
+
+                <div class="bundle-cta">
+                    <button class="btn-bundle" onclick="addBundle('complete')">Get Complete Suite</button>
+                </div>
+            </div>
+
+            <div class="bundle-card">
+                <div class="bundle-header">
+                    <span class="bundle-badge">💼 Operations Bundle</span>
+                    <h3 class="bundle-title">Operations Bundle</h3>
+                    <p class="bundle-description">Perfect for managing teams and equipment together</p>
+                    <div class="bundle-savings">Save $18/month • $216/year</div>
+                </div>
+
+                <div class="bundle-products">
+                    <div class="bundle-product-item">
+                        <div class="bundle-product-icon">📦</div>
+                        <div class="bundle-product-name">Warehouse</div>
+                    </div>
+                    <div class="bundle-product-item">
+                        <div class="bundle-product-icon">⏱️</div>
+                        <div class="bundle-product-name">TimeSync</div>
+                    </div>
+                    <div class="bundle-product-item">
+                        <div class="bundle-product-icon">👥</div>
+                        <div class="bundle-product-name">HR</div>
+                    </div>
+                </div>
+
+                <div class="bundle-pricing">
+                    <span class="bundle-price-old">$177/month</span>
+                    <span class="bundle-price-new">$149<span>/month</span></span>
+                </div>
+
+                <div class="bundle-cta">
+                    <button class="btn-bundle" onclick="addBundle('operations')">Get Operations Bundle</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Plan Comparison -->
+        <section class="comparison-section">
+            <h2 class="section-title">Compare Plans</h2>
+            <div class="comparison-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Features</th>
+                            <th>Starter<br>$79/mo</th>
+                            <th>Professional<br>$99/mo</th>
+                            <th>Enterprise<br>Custom</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Number of Users</td>
+                            <td>Up to 10</td>
+                            <td>Up to 25</td>
+                            <td>Unlimited</td>
+                        </tr>
+                        <tr>
+                            <td>Storage</td>
+                            <td>50GB</td>
+                            <td>100GB</td>
+                            <td>Unlimited</td>
+                        </tr>
+                        <tr>
+                            <td>Products Included</td>
+                            <td>1 Product</td>
+                            <td>1-4 Products</td>
+                            <td>All Products</td>
+                        </tr>
+                        <tr>
+                            <td>API Access</td>
+                            <td><span class="cross-mark">✗</span></td>
+                            <td><span class="check-mark">✓</span></td>
+                            <td><span class="check-mark">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Advanced Reports</td>
+                            <td><span class="cross-mark">✗</span></td>
+                            <td><span class="check-mark">✓</span></td>
+                            <td><span class="check-mark">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Priority Support</td>
+                            <td><span class="cross-mark">✗</span></td>
+                            <td><span class="check-mark">✓</span></td>
+                            <td><span class="check-mark">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Custom Integrations</td>
+                            <td><span class="cross-mark">✗</span></td>
+                            <td><span class="cross-mark">✗</span></td>
+                            <td><span class="check-mark">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Dedicated Account Manager</td>
+                            <td><span class="cross-mark">✗</span></td>
+                            <td><span class="cross-mark">✗</span></td>
+                            <td><span class="check-mark">✓</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Add Product
+        function addProduct(productName) {
+            console.log('Adding product:', productName);
+            const productNames = {
+                'timesync': 'Opsis TimeSync',
+                'hr': 'Opsis HR',
+                'finance': 'Opsis Finance'
+            };
+            
+            if (confirm(`Add ${productNames[productName]} to your plan?\n\nYour new monthly total will be calculated with bundle discount.`)) {
+                alert(`${productNames[productName]} added successfully!\n\nRedirecting to billing to confirm...`);
+                // window.location.href = '/company/billing.html';
+            }
+        }
+
+        // Add Bundle
+        function addBundle(bundleName) {
+            console.log('Adding bundle:', bundleName);
+            const bundleInfo = {
+                'complete': {
+                    name: 'Complete Suite Bundle',
+                    price: '$199/month',
+                    products: 'All 4 products'
+                },
+                'operations': {
+                    name: 'Operations Bundle',
+                    price: '$149/month',
+                    products: 'Warehouse + TimeSync + HR'
+                }
+            };
+            
+            const bundle = bundleInfo[bundleName];
+            if (confirm(`Add ${bundle.name}?\n\n${bundle.products}\nTotal: ${bundle.price}\n\nYou'll save significantly with this bundle!`)) {
+                alert(`${bundle.name} added successfully!\n\nRedirecting to billing to confirm...`);
+                // window.location.href = '/company/billing.html';
+            }
+        }
+
+        // View Details
+        function viewDetails(productName) {
+            console.log('Viewing details for:', productName);
+            alert(`Opening detailed information for ${productName}...\n\nThis would show:\n• Full feature list\n• Industry-specific use cases\n• Customer testimonials\n• Video demos`);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Opsis Marketplace initialized');
+        });
+    </script>
+</body>
+</html>
