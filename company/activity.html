@@ -1,1 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Log - Opsis Suite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            color: #495057;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            border-bottom: 1px solid #e9ecef;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-logo-container {
+            width: 54px;
+            height: 54px;
+            border-radius: 14px;
+            padding: 2px;
+            background: linear-gradient(45deg, 
+                #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, 
+                #feca57, #ff9ff3, #54a0ff, #5f27cd, 
+                #00d2d3, #ff9f43, #10ac84, #ee5a6f);
+            background-size: 400% 400%;
+            animation: gradientShift 4s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .nav-logo {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #495057, #6c757d);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .nav-logo::before {
+            content: '◉';
+            animation: winkEye 4s ease-in-out infinite;
+        }
+
+        @keyframes winkEye {
+            0%, 88% { transform: scaleY(1); }
+            90% { transform: scaleY(0.1); }
+            92% { transform: scaleY(1); }
+            94% { transform: scaleY(0.1); }
+            96% { transform: scaleY(1); }
+        }
+
+        .header-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #495057;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-btn {
+            padding: 0.8rem 1.5rem;
+            background: rgba(32, 201, 151, 0.1);
+            border: 1px solid rgba(32, 201, 151, 0.3);
+            border-radius: 16px;
+            color: #20c997;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .nav-btn:hover {
+            background: #20c997;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Page Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title-section h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-title-section p {
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 1rem;
+            background: var(--gradient);
+            color: white;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        /* Main Content */
+        .main-content {
+            background: white;
+            border-radius: 32px;
+            padding: 3rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            padding: 1rem 1.5rem;
+            border: 1px solid #e9ecef;
+            border-radius: 16px;
+            font-size: 1rem;
+            color: #495057;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #20c997;
+            box-shadow: 0 0 0 4px rgba(32, 201, 151, 0.1);
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .filter-select {
+            padding: 1rem 1.5rem;
+            border: 1px solid #e9ecef;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            color: #495057;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #20c997;
+        }
+
+        .date-picker {
+            padding: 1rem 1.5rem;
+            border: 1px solid #e9ecef;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            color: #495057;
+            background: white;
+            cursor: pointer;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, #e9ecef, transparent);
+        }
+
+        .timeline-group {
+            margin-bottom: 2rem;
+        }
+
+        .timeline-date {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 1rem;
+            padding-left: 2rem;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 1.5rem 2rem;
+            margin-bottom: 1rem;
+            border: 1px solid #e9ecef;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            margin-left: 1rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--color);
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px var(--color);
+        }
+
+        .timeline-item:hover {
+            border-color: #20c997;
+            background: rgba(32, 201, 151, 0.02);
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.8rem;
+        }
+
+        .timeline-action {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .action-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            background: var(--bg);
+            color: var(--color);
+            flex-shrink: 0;
+        }
+
+        .action-details h4 {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.3rem;
+        }
+
+        .action-description {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .timeline-meta {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .timeline-changes {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+            font-size: 0.85rem;
+        }
+
+        .change-item {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .change-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .change-label {
+            font-weight: 600;
+            color: #495057;
+            min-width: 80px;
+        }
+
+        .change-value {
+            color: #6c757d;
+        }
+
+        .change-old {
+            text-decoration: line-through;
+            color: #dc3545;
+        }
+
+        .change-new {
+            color: #20c997;
+            font-weight: 600;
+        }
+
+        /* Action Badges */
+        .action-badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-create {
+            background: rgba(32, 201, 151, 0.1);
+            color: #20c997;
+        }
+
+        .badge-update {
+            background: rgba(13, 202, 240, 0.1);
+            color: #0dcaf0;
+        }
+
+        .badge-delete {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+
+        .badge-login {
+            background: rgba(102, 16, 242, 0.1);
+            color: #6610f2;
+        }
+
+        .badge-export {
+            background: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+        }
+
+        .badge-settings {
+            background: rgba(108, 117, 125, 0.1);
+            color: #6c757d;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(32, 201, 151, 0.3);
+        }
+
+        .btn-secondary {
+            padding: 1rem 2rem;
+            background: white;
+            color: #6c757d;
+            border: 2px solid #e9ecef;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            border-color: #20c997;
+            color: #20c997;
+        }
+
+        /* Load More */
+        .load-more {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        /* Export Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 32px;
+            padding: 3rem;
+            max-width: 600px;
+            width: 90%;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            margin-bottom: 2rem;
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-subtitle {
+            color: #6c757d;
+            font-size: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 1rem;
+            color: #495057;
+            transition: all 0.3s ease;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: #20c997;
+            box-shadow: 0 0 0 4px rgba(32, 201, 151, 0.1);
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 1rem;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-item:hover {
+            border-color: #20c997;
+            background: rgba(32, 201, 151, 0.05);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .main-content {
+                padding: 2rem 1.5rem;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .header-actions {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .btn-primary,
+            .btn-secondary {
+                width: 100%;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filters {
+                flex-direction: column;
+            }
+
+            .search-box {
+                min-width: 100%;
+            }
+
+            .filter-group {
+                flex-direction: column;
+            }
+
+            .timeline {
+                padding-left: 1rem;
+            }
+
+            .timeline-item {
+                padding: 1rem;
+                margin-left: 0.5rem;
+            }
+
+            .timeline-item::before {
+                left: -1.5rem;
+            }
+
+            .timeline-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-container">
+                <div class="nav-logo-container">
+                    <div class="nav-logo"></div>
+                </div>
+                <div class="header-title">Activity Log</div>
+            </div>
+            <nav class="nav-links">
+                <a href="/dashboard/template.html" class="nav-btn">← Back to Dashboard</a>
+                <button class="nav-btn" onclick="openExportModal()">📥 Export Log</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="page-title-section">
+                <h1>Activity Log</h1>
+                <p>Complete audit trail of all actions and changes in your organization</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-secondary" onclick="clearFilters()">🔄 Reset Filters</button>
+                <button class="btn-primary" onclick="openExportModal()">
+                    <span>📥</span>
+                    <span>Export</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card" style="--gradient: linear-gradient(135deg, #20c997, #17a2b8)">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #20c997, #17a2b8)">📊</div>
+                <div class="stat-value">1,247</div>
+                <div class="stat-label">Total Actions (30 days)</div>
+            </div>
+            <div class="stat-card" style="--gradient: linear-gradient(135deg, #6610f2, #d63384)">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #6610f2, #d63384)">👥</div>
+                <div class="stat-value">8</div>
+                <div class="stat-label">Active Users</div>
+            </div>
+            <div class="stat-card" style="--gradient: linear-gradient(135deg, #fd7e14, #dc3545)">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #fd7e14, #dc3545)">⚠️</div>
+                <div class="stat-value">12</div>
+                <div class="stat-label">Critical Actions</div>
+            </div>
+            <div class="stat-card" style="--gradient: linear-gradient(135deg, #0dcaf0, #6f42c1)">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #0dcaf0, #6f42c1)">📅</div>
+                <div class="stat-value">42</div>
+                <div class="stat-label">Actions Today</div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Filters -->
+            <div class="filters">
+                <input type="text" class="search-box" placeholder="🔍 Search activities..." id="activitySearch">
+                <div class="filter-group">
+                    <select class="filter-select" id="userFilter">
+                        <option value="all">All Users</option>
+                        <option value="john">John Doe</option>
+                        <option value="jane">Jane Smith</option>
+                        <option value="mike">Mike Brown</option>
+                    </select>
+                    <select class="filter-select" id="actionFilter">
+                        <option value="all">All Actions</option>
+                        <option value="create">Create</option>
+                        <option value="update">Update</option>
+                        <option value="delete">Delete</option>
+                        <option value="login">Login</option>
+                        <option value="export">Export</option>
+                    </select>
+                    <select class="filter-select" id="productFilter">
+                        <option value="all">All Products</option>
+                        <option value="warehouse">Warehouse</option>
+                        <option value="timesync">TimeSync</option>
+                        <option value="hr">HR</option>
+                        <option value="finance">Finance</option>
+                    </select>
+                    <input type="date" class="date-picker" id="dateFilter">
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="timeline">
+                <!-- Today -->
+                <div class="timeline-group">
+                    <div class="timeline-date">Today - October 19, 2025</div>
+
+                    <div class="timeline-item" style="--color: #20c997; --bg: rgba(32, 201, 151, 0.1)">
+                        <div class="timeline-header">
+                            <div class="timeline-action">
+                                <div class="action-icon" style="background: rgba(32, 201, 151, 0.1); color: #20c997;">➕</div>
+                                <div class="action-details">
+                                    <h4>Equipment Added</h4>
+                                    <p class="action-description">John Doe added new equipment "Excavator CAT 320"</p>
+                                </div>
+                            </div>
+                            <span class="action-badge badge-create">Create</span>
+                        </div>
+                        <div class="timeline-meta">
+                            <span class="meta-item">👤 John Doe</span>
+                            <span class="meta-item">📦 Warehouse</span>
+                            <span class="meta-item">🕐 2 hours ago</span>
+                            <span class="meta-item">🌐 192.168.1.100</span>
+                        </div>
+                        <div class="timeline-changes">
+                            <div class="change-item">
+                                <span class="change-label">Equipment ID:</span>
+                                <span class="change-value change-new">EQ-2025-1047</span>
+                            </div>
+                            <div class="change-item">
+                                <span class="change-label">Category:</span>
+                                <span class="change-value change-new">Heavy Machinery</span>
+                            </div>
+                            <div class="change-item">
+                                <span class="change-label">Status:</span>
+                                <span class="change-value change-new">Available</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item" style="--color: #0dcaf0; --bg: rgba(13, 202, 240, 0.1)">
+                        <div class="timeline-header">
+                            <div class="timeline-action">
+                                <div class="action-icon" style="background: rgba(13, 202, 240, 0.1); color: #0dcaf0;">✏️</div>
+                                <div class="action-details">
+                                    <h4>User Profile Updated</h4>
+                                    <p class="action-description">Jane Smith updated her profile information</p>
+                                </div>
+                            </div>
+                            <span class="action-badge badge-update">Update</span>
+                        </div>
+                        <div class="timeline-meta">
+                            <span class="meta-item">👤 Jane Smith</span>
+                            <span class="meta-item">⚙️ Settings</span>
+                            <span class="meta-item">🕐 3 hours ago</span>
+                            <span class="meta-item">🌐 192.168.1.105</span>
+                        </div>
+                        <div class="timeline-changes">
+                            <div class="change-item">
+                                <span class="change-label">Email:</span>
+                                <span class="change-value">
+                                    <span class="change-old">jane.s@acme.com</span> → 
+                                    <span class="change-new">jane.smith@acme.com</span>
+                                </span>
+                            </div>
+                            <div class="change-item">
+                                <span class="change-label">Phone:</span>
+                                <span class="change-value change-new">+1 (555) 123-4567</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item" style="--color: #ffc107; --bg: rgba(255, 193, 7, 0.1)">
+                        <div class="timeline-header">
+                            <div class="timeline-action">
+                                <div class="action-icon" style="background: rgba(255, 193, 7, 0.1); color: #ffc107;">📥</div>
+                                <div class="action-details">
+                                    <h4>Report Exported</h4>
+                                    <p class="action-description">John Doe exported "Monthly Inventory Report"</p>
+                                </div>
+                            </div>
+                            <span class="action-badge badge-export">Export</span>
+                        </div>
+                        <div class="timeline-meta">
+                            <span class="meta-item">👤 John Doe</span>
+                            <span class="meta-item">📊 Reports</span>
+                            <span class="meta-item">🕐 4 hours ago</span>
+                            <span class="meta-item">📄 PDF</span>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item" style="--color: #6610f2; --bg: rgba(102, 16, 242, 0.1)">
+                        <div class="timeline-header">
+                            <div class="timeline-action">
+                                <div class="action-icon" style="background: rgba(102, 16, 242, 0.1); color: #6610f2;">🔐</div>
+                                <div class="action-details">
+                                    <h4>User Login</h4>
+                                    <p class="action-description">Mike Brown logged into the system</p>
+                                </div>
+                            </div>
+                            <span class="action-badge badge-login">Login</span>
+                        </div>
+                        <div class="timeline-meta">
+                            <span class="meta-item">👤 Mike Brown</span>
+                            <span class="meta-item">🔒 Authentication</span>
+                            <span class="meta-item">🕐 5 hours ago</span>
+                            <span class="meta-item">🌐 192.168.1.120</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Yesterday -->
+                <div class="timeline-group">
+                    <div class="timeline-date">Yesterday - October 18, 2025</div>
+
+                    <div class="timeline-item" style="--color: #dc3545; --bg: rgba(220, 53, 69, 0.1)">
+                        <div class="timeline-header">
+                            <div class="timeline-action">
+                                <div class="action-icon" style="background: rgba(220, 53, 69, 0.1); color: #dc3545;">🗑️</div>
+                                <div class="action-details">
+                                    <h4>Equipment Deleted</h4>
+                                    <p class="action-description">Jane Smith removed equipment "Old Generator"</p>
+                                </div>
+                            </div>
+                            <span class="action-badge badge-delete">Delete</span>
+                        </div>
+                        <div class="timeline-meta">
+                            <span class="meta-item">👤 Jane Smith</span>
+                            <span class="meta-item">📦 Warehouse</span>
+                            <span class="meta-item">🕐 1 day ago</span>
+                            <span class="meta-item">🌐 192.168.1.105</span>
+                        </div>
+                        <div class="timeline-changes">
+                            <div class="change-item">
+                                <span class="change-label">Equipment ID:</span>
+                                <span class="change-value change-old">EQ-2020-0542</span>
+                            </div>
+                            <div class="change-item">
+                                <span class="change-label">Reason:</span>
+                                <span class="change-value">End of lifecycle - disposed</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item" style="--color: #6c757d; --bg: rgba(108, 117, 125, 0.1)">
+                        <div class="timeline-header">
+                            <div class="timeline-action">
+                                <div class="action-icon" style="background: rgba(108, 117, 125, 0.1); color: #6c757d;">⚙️</div>
+                                <div class="action-details">
+                                    <h4>Settings Modified</h4>
+                                    <p class="action-description">John Doe updated company branding settings</p>
+                                </div>
+                            </div>
+                            <span class="action-badge badge-settings">Settings</span>
+                        </div>
+                        <div class="timeline-meta">
+                            <span class="meta-item">👤 John Doe</span>
+                            <span class="meta-item">⚙️ Settings</span>
+                            <span class="meta-item">🕐 1 day ago</span>
+                            <span class="meta-item">🌐 192.168.1.100</span>
+                        </div>
+                        <div class="timeline-changes">
+                            <div class="change-item">
+                                <span class="change-label">Primary Color:</span>
+                                <span class="change-value">
+                                    <span class="change-old">#17a2b8</span> → 
+                                    <span class="change-new">#20c997</span>
+                                </span>
+                            </div>
+                            <div class="change-item">
+                                <span class="change-label">Dark Mode:</span>
+                                <span class="change-value">
+                                    <span class="change-old">Disabled</span> → 
+                                    <span class="change-new">Enabled</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item" style="--color: #20c997; --bg: rgba(32, 201, 151, 0.1)">
+                        <div class="timeline-header">
+                            <div class="timeline-action">
+                                <div class="action-icon" style="background: rgba(32, 201, 151, 0.1); color: #20c997;">👥</div>
+                                <div class="action-details">
+                                    <h4>New User Invited</h4>
+                                    <p class="action-description">John Doe invited sarah.j@acme.com to join</p>
+                                </div>
+                            </div>
+                            <span class="action-badge badge-create">Create</span>
+                        </div>
+                        <div class="timeline-meta">
+                            <span class="meta-item">👤 John Doe</span>
+                            <span class="meta-item">👥 Users</span>
+                            <span class="meta-item">🕐 1 day ago</span>
+                            <span class="meta-item">🎭 Role: Estimator</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- October 17 -->
+                <div class="timeline-group">
+                    <div class="timeline-date">October 17, 2025</div>
+
+                    <div class="timeline-item" style="--color: #0dcaf0; --bg: rgba(13, 202, 240, 0.1)">
+                        <div class="timeline-header">
+                            <div class="timeline-action">
+                                <div class="action-icon" style="background: rgba(13, 202, 240, 0.1); color: #0dcaf0;">📦</div>
+                                <div class="action-details">
+                                    <h4>Equipment Status Changed</h4>
+                                    <p class="action-description">Mike Brown updated "Concrete Mixer" status</p>
+                                </div>
+                            </div>
+                            <span class="action-badge badge-update">Update</span>
+                        </div>
+                        <div class="timeline-meta">
+                            <span class="meta-item">👤 Mike Brown</span>
+                            <span class="meta-item">📦 Warehouse</span>
+                            <span class="meta-item">🕐 2 days ago</span>
+                            <span class="meta-item">🌐 192.168.1.120</span>
+                        </div>
+                        <div class="timeline-changes">
+                            <div class="change-item">
+                                <span class="change-label">Status:</span>
+                                <span class="change-value">
+                                    <span class="change-old">Available</span> → 
+                                    <span class="change-new">In Maintenance</span>
+                                </span>
+                            </div>
+                            <div class="change-item">
+                                <span class="change-label">Notes:</span>
+                                <span class="change-value change-new">Scheduled maintenance check</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item" style="--color: #6610f2; --bg: rgba(102, 16, 242, 0.1)">
+                        <div class="timeline-header">
+                            <div class="timeline-action">
+                                <div class="action-icon" style="background: rgba(102, 16, 242, 0.1); color: #6610f2;">🔐</div>
+                                <div class="action-details">
+                                    <h4>Security Settings Updated</h4>
+                                    <p class="action-description">John Doe enabled two-factor authentication</p>
+                                </div>
+                            </div>
+                            <span class="action-badge badge-settings">Settings</span>
+                        </div>
+                        <div class="timeline-meta">
+                            <span class="meta-item">👤 John Doe</span>
+                            <span class="meta-item">🔒 Security</span>
+                            <span class="meta-item">🕐 2 days ago</span>
+                            <span class="meta-item">🌐 192.168.1.100</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Load More -->
+            <div class="load-more">
+                <button class="btn-secondary" onclick="loadMoreActivities()">Load More Activities</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div class="modal-overlay" id="exportModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Export Activity Log</h2>
+                <p class="modal-subtitle">Select the data you want to export</p>
+            </div>
+            <form>
+                <div class="form-group">
+                    <label class="form-label">Date Range</label>
+                    <select class="form-select">
+                        <option>Last 7 days</option>
+                        <option>Last 30 days</option>
+                        <option>Last 3 months</option>
+                        <option>Last 6 months</option>
+                        <option>Last year</option>
+                        <option>Custom range</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Export Format</label>
+                    <select class="form-select">
+                        <option>CSV</option>
+                        <option>Excel (XLSX)</option>
+                        <option>JSON</option>
+                        <option>PDF</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Include Data</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" checked>
+                            <span>User Information</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" checked>
+                            <span>IP Addresses</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" checked>
+                            <span>Change Details</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" checked>
+                            <span>Timestamps</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeExportModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" onclick="exportLog(event)">Export</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Filter Functions
+        function clearFilters() {
+            document.getElementById('activitySearch').value = '';
+            document.getElementById('userFilter').value = 'all';
+            document.getElementById('actionFilter').value = 'all';
+            document.getElementById('productFilter').value = 'all';
+            document.getElementById('dateFilter').value = '';
+            console.log('Filters cleared');
+        }
+
+        // Load More
+        function loadMoreActivities() {
+            console.log('Loading more activities...');
+            alert('Loading older activities...');
+        }
+
+        // Export Modal
+        function openExportModal() {
+            document.getElementById('exportModal').classList.add('active');
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.remove('active');
+        }
+
+        function exportLog(e) {
+            e.preventDefault();
+            console.log('Exporting activity log...');
+            alert('Activity log exported successfully!');
+            closeExportModal();
+        }
+
+        // Close modal on overlay click
+        document.getElementById('exportModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeExportModal();
+            }
+        });
+
+        // Search functionality
+        document.getElementById('activitySearch')?.addEventListener('input', function(e) {
+            console.log('Searching activities:', e.target.value);
+        });
+
+        // Filter change handlers
+        document.getElementById('userFilter')?.addEventListener('change', function(e) {
+            console.log('User filter changed:', e.target.value);
+        });
+
+        document.getElementById('actionFilter')?.addEventListener('change', function(e) {
+            console.log('Action filter changed:', e.target.value);
+        });
+
+        document.getElementById('productFilter')?.addEventListener('change', function(e) {
+            console.log('Product filter changed:', e.target.value);
+        });
+
+        document.getElementById('dateFilter')?.addEventListener('change', function(e) {
+            console.log('Date filter changed:', e.target.value);
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Opsis Activity Log page initialized');
+        });
+    </script>
+</body>
+</html>
