@@ -1,1 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports & Analytics - Opsis Suite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            color: #495057;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            border-bottom: 1px solid #e9ecef;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-logo-container {
+            width: 54px;
+            height: 54px;
+            border-radius: 14px;
+            padding: 2px;
+            background: linear-gradient(45deg, 
+                #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, 
+                #feca57, #ff9ff3, #54a0ff, #5f27cd, 
+                #00d2d3, #ff9f43, #10ac84, #ee5a6f);
+            background-size: 400% 400%;
+            animation: gradientShift 4s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .nav-logo {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #495057, #6c757d);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .nav-logo::before {
+            content: '◉';
+            animation: winkEye 4s ease-in-out infinite;
+        }
+
+        @keyframes winkEye {
+            0%, 88% { transform: scaleY(1); }
+            90% { transform: scaleY(0.1); }
+            92% { transform: scaleY(1); }
+            94% { transform: scaleY(0.1); }
+            96% { transform: scaleY(1); }
+        }
+
+        .header-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #495057;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-btn {
+            padding: 0.8rem 1.5rem;
+            background: rgba(32, 201, 151, 0.1);
+            border: 1px solid rgba(32, 201, 151, 0.3);
+            border-radius: 16px;
+            color: #20c997;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .nav-btn:hover {
+            background: #20c997;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Page Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title-section h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-title-section p {
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* Layout Grid */
+        .reports-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Sidebar */
+        .reports-sidebar {
+            background: white;
+            border-radius: 32px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            height: fit-content;
+            position: sticky;
+            top: 120px;
+        }
+
+        .sidebar-section {
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .category-item {
+            padding: 1rem 1.2rem;
+            margin-bottom: 0.5rem;
+            border-radius: 12px;
+            color: #6c757d;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-weight: 500;
+        }
+
+        .category-item:hover {
+            background: rgba(32, 201, 151, 0.1);
+            color: #20c997;
+        }
+
+        .category-item.active {
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+            color: white;
+        }
+
+        .category-icon {
+            font-size: 1.2rem;
+        }
+
+        .category-count {
+            margin-left: auto;
+            font-size: 0.85rem;
+            padding: 0.2rem 0.6rem;
+            background: rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+
+        /* Main Content */
+        .reports-main {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Card Styles */
+        .card {
+            background: white;
+            border-radius: 32px;
+            padding: 3rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.4s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 80px rgba(0,0,0,0.15);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #f8f9fa;
+        }
+
+        .card-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #495057;
+        }
+
+        /* Report Templates Grid */
+        .templates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .report-template {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 24px;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .report-template::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient);
+        }
+
+        .report-template:hover {
+            border-color: #20c997;
+            box-shadow: 0 10px 30px rgba(32, 201, 151, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .template-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .template-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: var(--gradient);
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .template-info {
+            flex: 1;
+        }
+
+        .template-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+
+        .template-description {
+            font-size: 0.9rem;
+            color: #6c757d;
+            line-height: 1.5;
+        }
+
+        .template-meta {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #f8f9fa;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        .template-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(32, 201, 151, 0.3);
+        }
+
+        .btn-secondary {
+            padding: 0.8rem 1.5rem;
+            background: white;
+            color: #6c757d;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .btn-secondary:hover {
+            border-color: #20c997;
+            color: #20c997;
+        }
+
+        .btn-small {
+            padding: 0.6rem 1.2rem;
+            font-size: 0.85rem;
+        }
+
+        /* Saved Reports Table */
+        .reports-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .reports-table thead {
+            background: #f8f9fa;
+        }
+
+        .reports-table th {
+            padding: 1.2rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .reports-table th:first-child {
+            border-radius: 12px 0 0 12px;
+            padding-left: 1.5rem;
+        }
+
+        .reports-table th:last-child {
+            border-radius: 0 12px 12px 0;
+        }
+
+        .reports-table tbody tr {
+            border-bottom: 1px solid #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+        .reports-table tbody tr:hover {
+            background: rgba(32, 201, 151, 0.05);
+        }
+
+        .reports-table td {
+            padding: 1.2rem 1rem;
+        }
+
+        .reports-table td:first-child {
+            padding-left: 1.5rem;
+        }
+
+        .report-name-cell {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .report-icon-small {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            background: var(--gradient);
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .report-details h4 {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.2rem;
+        }
+
+        .report-details p {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        .badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-scheduled {
+            background: rgba(32, 201, 151, 0.1);
+            color: #20c997;
+        }
+
+        .badge-manual {
+            background: rgba(108, 117, 125, 0.1);
+            color: #6c757d;
+        }
+
+        .badge-daily {
+            background: rgba(13, 202, 240, 0.1);
+            color: #0dcaf0;
+        }
+
+        .badge-weekly {
+            background: rgba(102, 16, 242, 0.1);
+            color: #6610f2;
+        }
+
+        .badge-monthly {
+            background: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            background: white;
+            color: #6c757d;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .action-btn:hover {
+            border-color: #20c997;
+            color: #20c997;
+            background: rgba(32, 201, 151, 0.05);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 32px;
+            padding: 3rem;
+            max-width: 700px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            margin-bottom: 2rem;
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-subtitle {
+            color: #6c757d;
+            font-size: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 1rem;
+            color: #495057;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #20c997;
+            box-shadow: 0 0 0 4px rgba(32, 201, 151, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 1rem;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-item:hover {
+            border-color: #20c997;
+            background: rgba(32, 201, 151, 0.05);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-description {
+            color: #6c757d;
+            margin-bottom: 2rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .reports-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .reports-sidebar {
+                position: static;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 1rem;
+            }
+
+            .sidebar-section {
+                margin-bottom: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .card {
+                padding: 2rem 1.5rem;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .header-actions {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .btn-primary,
+            .btn-secondary {
+                width: 100%;
+            }
+
+            .templates-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+
+            .reports-table {
+                font-size: 0.85rem;
+            }
+
+            .reports-table th,
+            .reports-table td {
+                padding: 0.8rem 0.5rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-container">
+                <div class="nav-logo-container">
+                    <div class="nav-logo"></div>
+                </div>
+                <div class="header-title">Reports & Analytics</div>
+            </div>
+            <nav class="nav-links">
+                <a href="/dashboard/template.html" class="nav-btn">← Back to Dashboard</a>
+                <button class="nav-btn" onclick="openCustomReportModal()">+ Custom Report</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="page-title-section">
+                <h1>Reports & Analytics</h1>
+                <p>Generate, schedule, and export comprehensive business reports</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-secondary" onclick="scheduleReport()">🕐 Schedule Report</button>
+                <button class="btn-primary" onclick="openCustomReportModal()">
+                    <span>+</span>
+                    <span>Create Report</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Reports Grid -->
+        <div class="reports-grid">
+            <!-- Sidebar -->
+            <aside class="reports-sidebar">
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">Categories</h3>
+                    <div class="category-item active" onclick="filterCategory('all')">
+                        <span class="category-icon">📊</span>
+                        <span>All Reports</span>
+                        <span class="category-count">24</span>
+                    </div>
+                    <div class="category-item" onclick="filterCategory('warehouse')">
+                        <span class="category-icon">📦</span>
+                        <span>Warehouse</span>
+                        <span class="category-count">8</span>
+                    </div>
+                    <div class="category-item" onclick="filterCategory('timesync')">
+                        <span class="category-icon">⏱️</span>
+                        <span>TimeSync</span>
+                        <span class="category-count">6</span>
+                    </div>
+                    <div class="category-item" onclick="filterCategory('hr')">
+                        <span class="category-icon">👥</span>
+                        <span>HR</span>
+                        <span class="category-count">5</span>
+                    </div>
+                    <div class="category-item" onclick="filterCategory('finance')">
+                        <span class="category-icon">💵</span>
+                        <span>Finance</span>
+                        <span class="category-count">5</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">Quick Actions</h3>
+                    <div class="category-item" onclick="viewSavedReports()">
+                        <span class="category-icon">💾</span>
+                        <span>Saved Reports</span>
+                    </div>
+                    <div class="category-item" onclick="viewScheduled()">
+                        <span class="category-icon">🕐</span>
+                        <span>Scheduled</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="reports-main">
+                <!-- Report Templates -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Report Templates</h2>
+                        <button class="btn-secondary btn-small" onclick="viewAllTemplates()">View All →</button>
+                    </div>
+
+                    <div class="templates-grid">
+                        <!-- Warehouse Reports -->
+                        <div class="report-template" style="--gradient: linear-gradient(135deg, #20c997, #17a2b8)">
+                            <div class="template-header">
+                                <div class="template-icon" style="background: linear-gradient(135deg, #20c997, #17a2b8)">📦</div>
+                                <div class="template-info">
+                                    <div class="template-name">Inventory Status</div>
+                                    <div class="template-description">Complete overview of current inventory levels, stock movements, and equipment status</div>
+                                </div>
+                            </div>
+                            <div class="template-meta">
+                                <span class="meta-item">📊 Warehouse</span>
+                                <span class="meta-item">⏱️ ~2 min</span>
+                            </div>
+                            <div class="template-actions">
+                                <button class="btn-secondary" onclick="generateReport('inventory')">Generate</button>
+                                <button class="btn-secondary" onclick="previewReport('inventory')">Preview</button>
+                            </div>
+                        </div>
+
+                        <div class="report-template" style="--gradient: linear-gradient(135deg, #20c997, #17a2b8)">
+                            <div class="template-header">
+                                <div class="template-icon" style="background: linear-gradient(135deg, #20c997, #17a2b8)">🔧</div>
+                                <div class="template-info">
+                                    <div class="template-name">Equipment Utilization</div>
+                                    <div class="template-description">Track equipment usage rates, idle time, and maintenance schedules</div>
+                                </div>
+                            </div>
+                            <div class="template-meta">
+                                <span class="meta-item">📦 Warehouse</span>
+                                <span class="meta-item">⏱️ ~3 min</span>
+                            </div>
+                            <div class="template-actions">
+                                <button class="btn-secondary" onclick="generateReport('equipment')">Generate</button>
+                                <button class="btn-secondary" onclick="previewReport('equipment')">Preview</button>
+                            </div>
+                        </div>
+
+                        <!-- TimeSync Reports -->
+                        <div class="report-template" style="--gradient: linear-gradient(135deg, #6610f2, #d63384)">
+                            <div class="template-header">
+                                <div class="template-icon" style="background: linear-gradient(135deg, #6610f2, #d63384)">⏱️</div>
+                                <div class="template-info">
+                                    <div class="template-name">Time Tracking Summary</div>
+                                    <div class="template-description">Employee hours, overtime, project time allocation, and attendance</div>
+                                </div>
+                            </div>
+                            <div class="template-meta">
+                                <span class="meta-item">⏱️ TimeSync</span>
+                                <span class="meta-item">⏱️ ~2 min</span>
+                            </div>
+                            <div class="template-actions">
+                                <button class="btn-secondary" onclick="generateReport('timetracking')">Generate</button>
+                                <button class="btn-secondary" onclick="previewReport('timetracking')">Preview</button>
+                            </div>
+                        </div>
+
+                        <div class="report-template" style="--gradient: linear-gradient(135deg, #6610f2, #d63384)">
+                            <div class="template-header">
+                                <div class="template-icon" style="background: linear-gradient(135deg, #6610f2, #d63384)">📈</div>
+                                <div class="template-info">
+                                    <div class="template-name">Project Performance</div>
+                                    <div class="template-description">Project progress, milestones, budget vs actual, and team productivity</div>
+                                </div>
+                            </div>
+                            <div class="template-meta">
+                                <span class="meta-item">⏱️ TimeSync</span>
+                                <span class="meta-item">⏱️ ~4 min</span>
+                            </div>
+                            <div class="template-actions">
+                                <button class="btn-secondary" onclick="generateReport('project')">Generate</button>
+                                <button class="btn-secondary" onclick="previewReport('project')">Preview</button>
+                            </div>
+                        </div>
+
+                        <!-- HR Reports -->
+                        <div class="report-template" style="--gradient: linear-gradient(135deg, #fd7e14, #dc3545)">
+                            <div class="template-header">
+                                <div class="template-icon" style="background: linear-gradient(135deg, #fd7e14, #dc3545)">👥</div>
+                                <div class="template-info">
+                                    <div class="template-name">Employee Directory</div>
+                                    <div class="template-description">Complete employee list with roles, departments, and contact information</div>
+                                </div>
+                            </div>
+                            <div class="template-meta">
+                                <span class="meta-item">👥 HR</span>
+                                <span class="meta-item">⏱️ ~1 min</span>
+                            </div>
+                            <div class="template-actions">
+                                <button class="btn-secondary" onclick="generateReport('employees')">Generate</button>
+                                <button class="btn-secondary" onclick="previewReport('employees')">Preview</button>
+                            </div>
+                        </div>
+
+                        <div class="report-template" style="--gradient: linear-gradient(135deg, #fd7e14, #dc3545)">
+                            <div class="template-header">
+                                <div class="template-icon" style="background: linear-gradient(135deg, #fd7e14, #dc3545)">💰</div>
+                                <div class="template-info">
+                                    <div class="template-name">Payroll Summary</div>
+                                    <div class="template-description">Salary breakdowns, deductions, bonuses, and payment history</div>
+                                </div>
+                            </div>
+                            <div class="template-meta">
+                                <span class="meta-item">👥 HR</span>
+                                <span class="meta-item">⏱️ ~3 min</span>
+                            </div>
+                            <div class="template-actions">
+                                <button class="btn-secondary" onclick="generateReport('payroll')">Generate</button>
+                                <button class="btn-secondary" onclick="previewReport('payroll')">Preview</button>
+                            </div>
+                        </div>
+
+                        <!-- Finance Reports -->
+                        <div class="report-template" style="--gradient: linear-gradient(135deg, #0dcaf0, #6f42c1)">
+                            <div class="template-header">
+                                <div class="template-icon" style="background: linear-gradient(135deg, #0dcaf0, #6f42c1)">💵</div>
+                                <div class="template-info">
+                                    <div class="template-name">Financial Overview</div>
+                                    <div class="template-description">Revenue, expenses, profit margins, and cash flow analysis</div>
+                                </div>
+                            </div>
+                            <div class="template-meta">
+                                <span class="meta-item">💵 Finance</span>
+                                <span class="meta-item">⏱️ ~5 min</span>
+                            </div>
+                            <div class="template-actions">
+                                <button class="btn-secondary" onclick="generateReport('financial')">Generate</button>
+                                <button class="btn-secondary" onclick="previewReport('financial')">Preview</button>
+                            </div>
+                        </div>
+
+                        <div class="report-template" style="--gradient: linear-gradient(135deg, #0dcaf0, #6f42c1)">
+                            <div class="template-header">
+                                <div class="template-icon" style="background: linear-gradient(135deg, #0dcaf0, #6f42c1)">📊</div>
+                                <div class="template-info">
+                                    <div class="template-name">Budget vs Actual</div>
+                                    <div class="template-description">Compare planned budgets with actual spending across departments</div>
+                                </div>
+                            </div>
+                            <div class="template-meta">
+                                <span class="meta-item">💵 Finance</span>
+                                <span class="meta-item">⏱️ ~4 min</span>
+                            </div>
+                            <div class="template-actions">
+                                <button class="btn-secondary" onclick="generateReport('budget')">Generate</button>
+                                <button class="btn-secondary" onclick="previewReport('budget')">Preview</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Saved Reports -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Recent Reports</h2>
+                        <button class="btn-secondary btn-small" onclick="viewAllReports()">View All →</button>
+                    </div>
+
+                    <table class="reports-table">
+                        <thead>
+                            <tr>
+                                <th>Report</th>
+                                <th>Type</th>
+                                <th>Generated</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="report-name-cell">
+                                        <div class="report-icon-small" style="background: linear-gradient(135deg, #20c997, #17a2b8)">📦</div>
+                                        <div class="report-details">
+                                            <h4>Inventory Status - Oct 2025</h4>
+                                            <p>Generated by John Doe</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="badge badge-manual">Manual</span></td>
+                                <td>2 hours ago</td>
+                                <td><span class="badge badge-scheduled">Ready</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-btn" onclick="downloadReport('inv-oct')">📥 Download</button>
+                                        <button class="action-btn" onclick="viewReport('inv-oct')">👁️ View</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="report-name-cell">
+                                        <div class="report-icon-small" style="background: linear-gradient(135deg, #6610f2, #d63384)">⏱️</div>
+                                        <div class="report-details">
+                                            <h4>Weekly Time Tracking</h4>
+                                            <p>Scheduled report</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="badge badge-weekly">Weekly</span></td>
+                                <td>1 day ago</td>
+                                <td><span class="badge badge-scheduled">Ready</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-btn" onclick="downloadReport('time-week')">📥 Download</button>
+                                        <button class="action-btn" onclick="viewReport('time-week')">👁️ View</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="report-name-cell">
+                                        <div class="report-icon-small" style="background: linear-gradient(135deg, #0dcaf0, #6f42c1)">💵</div>
+                                        <div class="report-details">
+                                            <h4>Monthly Financial Overview</h4>
+                                            <p>Scheduled report</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="badge badge-monthly">Monthly</span></td>
+                                <td>3 days ago</td>
+                                <td><span class="badge badge-scheduled">Ready</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-btn" onclick="downloadReport('fin-month')">📥 Download</button>
+                                        <button class="action-btn" onclick="viewReport('fin-month')">👁️ View</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Custom Report Modal -->
+    <div class="modal-overlay" id="customReportModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Create Custom Report</h2>
+                <p class="modal-subtitle">Build a personalized report with your preferred data and filters</p>
+            </div>
+            <form>
+                <div class="form-group">
+                    <label class="form-label">Report Name</label>
+                    <input type="text" class="form-input" placeholder="e.g., Q4 Equipment Analysis" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Select Products</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" value="warehouse" checked>
+                            <span>📦 Warehouse</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" value="timesync">
+                            <span>⏱️ TimeSync</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" value="hr">
+                            <span>👥 HR</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" value="finance">
+                            <span>💵 Finance</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Date Range</label>
+                    <select class="form-select">
+                        <option>Last 7 days</option>
+                        <option>Last 30 days</option>
+                        <option>Last 3 months</option>
+                        <option>Last 6 months</option>
+                        <option>Last year</option>
+                        <option>Custom range</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Export Format</label>
+                    <select class="form-select">
+                        <option>PDF</option>
+                        <option>Excel (XLSX)</option>
+                        <option>CSV</option>
+                        <option>JSON</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Additional Notes (Optional)</label>
+                    <textarea class="form-textarea" placeholder="Add any specific requirements or notes..."></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeCustomReportModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" onclick="createCustomReport(event)">Generate Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Category Filtering
+        function filterCategory(category) {
+            console.log('Filtering by category:', category);
+            
+            // Update active state
+            document.querySelectorAll('.category-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.category-item').classList.add('active');
+            
+            // Filter logic would go here
+            alert(`Filtering reports by: ${category}`);
+        }
+
+        // Modal Functions
+        function openCustomReportModal() {
+            document.getElementById('customReportModal').classList.add('active');
+        }
+
+        function closeCustomReportModal() {
+            document.getElementById('customReportModal').classList.remove('active');
+        }
+
+        function createCustomReport(e) {
+            e.preventDefault();
+            console.log('Creating custom report...');
+            alert('Custom report generated successfully!');
+            closeCustomReportModal();
+        }
+
+        // Report Actions
+        function generateReport(reportType) {
+            console.log('Generating report:', reportType);
+            alert(`Generating ${reportType} report... This will take a few moments.`);
+        }
+
+        function previewReport(reportType) {
+            console.log('Previewing report:', reportType);
+            alert(`Opening preview for ${reportType} report...`);
+        }
+
+        function downloadReport(reportId) {
+            console.log('Downloading report:', reportId);
+            alert(`Downloading report ${reportId} as PDF...`);
+        }
+
+        function viewReport(reportId) {
+            console.log('Viewing report:', reportId);
+            alert(`Opening report ${reportId} in viewer...`);
+        }
+
+        function scheduleReport() {
+            alert('Schedule report modal would open here');
+        }
+
+        function viewAllTemplates() {
+            console.log('Viewing all templates');
+        }
+
+        function viewAllReports() {
+            console.log('Viewing all saved reports');
+        }
+
+        function viewSavedReports() {
+            alert('Navigating to saved reports...');
+        }
+
+        function viewScheduled() {
+            alert('Showing scheduled reports...');
+        }
+
+        // Close modal on overlay click
+        document.getElementById('customReportModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeCustomReportModal();
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Opsis Reports page initialized');
+        });
+    </script>
+</body>
+</html>
