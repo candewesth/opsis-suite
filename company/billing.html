@@ -1,1 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing & Subscription - Opsis Suite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            color: #495057;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            border-bottom: 1px solid #e9ecef;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-logo-container {
+            width: 54px;
+            height: 54px;
+            border-radius: 14px;
+            padding: 2px;
+            background: linear-gradient(45deg, 
+                #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, 
+                #feca57, #ff9ff3, #54a0ff, #5f27cd, 
+                #00d2d3, #ff9f43, #10ac84, #ee5a6f);
+            background-size: 400% 400%;
+            animation: gradientShift 4s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .nav-logo {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #495057, #6c757d);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .nav-logo::before {
+            content: '◉';
+            animation: winkEye 4s ease-in-out infinite;
+        }
+
+        @keyframes winkEye {
+            0%, 88% { transform: scaleY(1); }
+            90% { transform: scaleY(0.1); }
+            92% { transform: scaleY(1); }
+            94% { transform: scaleY(0.1); }
+            96% { transform: scaleY(1); }
+        }
+
+        .header-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #495057;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-btn {
+            padding: 0.8rem 1.5rem;
+            background: rgba(32, 201, 151, 0.1);
+            border: 1px solid rgba(32, 201, 151, 0.3);
+            border-radius: 16px;
+            color: #20c997;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .nav-btn:hover {
+            background: #20c997;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Page Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .page-title {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 1rem;
+        }
+
+        .page-subtitle {
+            font-size: 1.2rem;
+            color: #6c757d;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Grid Layout */
+        .billing-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Card Styles */
+        .card {
+            background: white;
+            border-radius: 32px;
+            padding: 3rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.4s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 80px rgba(0,0,0,0.15);
+        }
+
+        .card-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #f8f9fa;
+        }
+
+        .card-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-subtitle {
+            color: #6c757d;
+            font-size: 1rem;
+        }
+
+        /* Current Plan Card */
+        .plan-card {
+            background: linear-gradient(135deg, rgba(32, 201, 151, 0.1), rgba(23, 162, 184, 0.1));
+            border: 2px solid rgba(32, 201, 151, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .plan-badge {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+            color: white;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .plan-name {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 1rem;
+        }
+
+        .plan-price {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #20c997;
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-price span {
+            font-size: 1.5rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .plan-details {
+            margin: 2rem 0;
+        }
+
+        .plan-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem 0;
+            color: #495057;
+            font-size: 1rem;
+        }
+
+        .plan-detail-item::before {
+            content: '✓';
+            width: 24px;
+            height: 24px;
+            background: #20c997;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .plan-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        /* Quick Stats */
+        .quick-stats {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .stat-item {
+            padding: 1.5rem;
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            border-color: #20c997;
+            box-shadow: 0 5px 20px rgba(32, 201, 151, 0.1);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #495057;
+        }
+
+        .stat-change {
+            font-size: 0.85rem;
+            color: #20c997;
+            margin-top: 0.3rem;
+        }
+
+        /* Products Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .product-badge {
+            padding: 1rem;
+            background: rgba(32, 201, 151, 0.1);
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .product-badge.active {
+            border-color: #20c997;
+            background: rgba(32, 201, 151, 0.2);
+        }
+
+        .product-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-name {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        /* Payment Method */
+        .payment-method {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 16px;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .payment-method:hover {
+            background: rgba(32, 201, 151, 0.05);
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 40px;
+            background: linear-gradient(135deg, #495057, #6c757d);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .card-details {
+            flex: 1;
+        }
+
+        .card-number {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.3rem;
+        }
+
+        .card-expiry {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        /* Invoice Table */
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+
+        .invoice-table th,
+        .invoice-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        .invoice-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .invoice-table tr:hover {
+            background: rgba(32, 201, 151, 0.05);
+        }
+
+        .invoice-status {
+            padding: 0.4rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-paid {
+            background: rgba(32, 201, 151, 0.1);
+            color: #20c997;
+        }
+
+        .status-pending {
+            background: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+        }
+
+        .status-failed {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+
+        .download-btn {
+            color: #20c997;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            color: #17a2b8;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(32, 201, 151, 0.3);
+        }
+
+        .btn-secondary {
+            padding: 1rem 2rem;
+            background: white;
+            color: #6c757d;
+            border: 2px solid #e9ecef;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .btn-secondary:hover {
+            border-color: #20c997;
+            color: #20c997;
+        }
+
+        .btn-danger {
+            padding: 1rem 2rem;
+            background: white;
+            color: #dc3545;
+            border: 2px solid #dc3545;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-danger:hover {
+            background: #dc3545;
+            color: white;
+        }
+
+        /* Usage Meter */
+        .usage-meter {
+            margin: 2rem 0;
+        }
+
+        .usage-bar {
+            width: 100%;
+            height: 12px;
+            background: #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .usage-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+            transition: width 0.5s ease;
+            border-radius: 12px;
+        }
+
+        .usage-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        /* Alert Box */
+        .alert {
+            padding: 1.5rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .alert-info {
+            background: rgba(13, 202, 240, 0.1);
+            border: 1px solid rgba(13, 202, 240, 0.3);
+            color: #0dcaf0;
+        }
+
+        .alert-warning {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            color: #ffc107;
+        }
+
+        .alert-icon {
+            font-size: 1.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .billing-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .card {
+                padding: 2rem 1.5rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .plan-actions {
+                flex-direction: column;
+            }
+
+            .invoice-table {
+                font-size: 0.85rem;
+            }
+
+            .invoice-table th,
+            .invoice-table td {
+                padding: 0.8rem 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-container">
+                <div class="nav-logo-container">
+                    <div class="nav-logo"></div>
+                </div>
+                <div class="header-title">Billing & Subscription</div>
+            </div>
+            <nav class="nav-links">
+                <a href="/dashboard/template.html" class="nav-btn">← Back to Dashboard</a>
+                <a href="/company/settings.html" class="nav-btn">Settings</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Billing & Subscription</h1>
+            <p class="page-subtitle">Manage your subscription, payment methods, and billing history</p>
+        </div>
+
+        <!-- Next Payment Alert -->
+        <div class="alert alert-info">
+            <div class="alert-icon">💳</div>
+            <div>
+                <strong>Next payment:</strong> $99.00 will be charged on November 19, 2025
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="billing-grid">
+            <!-- Current Plan -->
+            <div class="card plan-card">
+                <span class="plan-badge">Current Plan</span>
+                <div class="plan-name">Professional</div>
+                <div class="plan-price">$99<span>/month</span></div>
+                <p style="color: #6c757d; margin-bottom: 2rem;">Perfect for growing teams</p>
+
+                <div class="plan-details">
+                    <div class="plan-detail-item">Opsis Warehouse included</div>
+                    <div class="plan-detail-item">Up to 25 users</div>
+                    <div class="plan-detail-item">100GB storage</div>
+                    <div class="plan-detail-item">Priority support</div>
+                    <div class="plan-detail-item">Advanced analytics</div>
+                    <div class="plan-detail-item">API access</div>
+                </div>
+
+                <div class="products-grid">
+                    <div class="product-badge active">
+                        <div class="product-icon">📦</div>
+                        <div class="product-name">Warehouse</div>
+                    </div>
+                    <div class="product-badge">
+                        <div class="product-icon">⏱️</div>
+                        <div class="product-name">TimeSync</div>
+                    </div>
+                    <div class="product-badge">
+                        <div class="product-icon">👥</div>
+                        <div class="product-name">HR</div>
+                    </div>
+                    <div class="product-badge">
+                        <div class="product-icon">💵</div>
+                        <div class="product-name">Finance</div>
+                    </div>
+                </div>
+
+                <div class="plan-actions">
+                    <button class="btn-primary" onclick="openUpgradeModal()">Upgrade Plan</button>
+                    <button class="btn-secondary" onclick="openMarketplace()">Add Products</button>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="quick-stats">
+                <div class="stat-item">
+                    <div class="stat-label">Active Users</div>
+                    <div class="stat-value">8 / 25</div>
+                    <div class="stat-change">↑ 2 this month</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Storage Used</div>
+                    <div class="stat-value">34GB / 100GB</div>
+                    <div class="stat-change">34% utilized</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">API Calls</div>
+                    <div class="stat-value">12.4K</div>
+                    <div class="stat-change">This month</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Spent</div>
+                    <div class="stat-value">$792</div>
+                    <div class="stat-change">Last 8 months</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Usage Metrics -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Usage Metrics</h2>
+                <p class="card-subtitle">Monitor your resource consumption</p>
+            </div>
+
+            <div class="usage-meter">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span style="font-weight: 600; color: #495057;">Users</span>
+                    <span style="font-weight: 600; color: #20c997;">8 / 25</span>
+                </div>
+                <div class="usage-bar">
+                    <div class="usage-fill" style="width: 32%;"></div>
+                </div>
+                <div class="usage-info">
+                    <span>32% capacity</span>
+                    <span>17 users available</span>
+                </div>
+            </div>
+
+            <div class="usage-meter">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span style="font-weight: 600; color: #495057;">Storage</span>
+                    <span style="font-weight: 600; color: #20c997;">34GB / 100GB</span>
+                </div>
+                <div class="usage-bar">
+                    <div class="usage-fill" style="width: 34%;"></div>
+                </div>
+                <div class="usage-info">
+                    <span>34% used</span>
+                    <span>66GB remaining</span>
+                </div>
+            </div>
+
+            <div class="usage-meter">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span style="font-weight: 600; color: #495057;">API Calls</span>
+                    <span style="font-weight: 600; color: #20c997;">12.4K / 50K</span>
+                </div>
+                <div class="usage-bar">
+                    <div class="usage-fill" style="width: 25%;"></div>
+                </div>
+                <div class="usage-info">
+                    <span>25% used this month</span>
+                    <span>Resets November 1</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Payment Method</h2>
+                <p class="card-subtitle">Manage your payment information</p>
+            </div>
+
+            <div class="payment-method">
+                <div class="card-icon">VISA</div>
+                <div class="card-details">
+                    <div class="card-number">•••• •••• •••• 4242</div>
+                    <div class="card-expiry">Expires 12/2026</div>
+                </div>
+                <button class="btn-secondary" onclick="editPaymentMethod()">Edit</button>
+            </div>
+
+            <button class="btn-primary" onclick="addPaymentMethod()" style="margin-top: 1rem;">+ Add Payment Method</button>
+        </div>
+
+        <!-- Invoice History -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Invoice History</h2>
+                <p class="card-subtitle">Download your past invoices</p>
+            </div>
+
+            <table class="invoice-table">
+                <thead>
+                    <tr>
+                        <th>Invoice</th>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Download</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>#INV-2025-10</strong></td>
+                        <td>Oct 19, 2025</td>
+                        <td>$99.00</td>
+                        <td><span class="invoice-status status-paid">Paid</span></td>
+                        <td><a href="#" class="download-btn" onclick="downloadInvoice('2025-10')">📥 Download</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>#INV-2025-09</strong></td>
+                        <td>Sep 19, 2025</td>
+                        <td>$99.00</td>
+                        <td><span class="invoice-status status-paid">Paid</span></td>
+                        <td><a href="#" class="download-btn" onclick="downloadInvoice('2025-09')">📥 Download</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>#INV-2025-08</strong></td>
+                        <td>Aug 19, 2025</td>
+                        <td>$99.00</td>
+                        <td><span class="invoice-status status-paid">Paid</span></td>
+                        <td><a href="#" class="download-btn" onclick="downloadInvoice('2025-08')">📥 Download</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>#INV-2025-07</strong></td>
+                        <td>Jul 19, 2025</td>
+                        <td>$99.00</td>
+                        <td><span class="invoice-status status-paid">Paid</span></td>
+                        <td><a href="#" class="download-btn" onclick="downloadInvoice('2025-07')">📥 Download</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>#INV-2025-06</strong></td>
+                        <td>Jun 19, 2025</td>
+                        <td>$99.00</td>
+                        <td><span class="invoice-status status-paid">Paid</span></td>
+                        <td><a href="#" class="download-btn" onclick="downloadInvoice('2025-06')">📥 Download</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="card" style="border: 2px solid rgba(220, 53, 69, 0.3);">
+            <div class="card-header">
+                <h2 class="card-title" style="color: #dc3545;">Danger Zone</h2>
+                <p class="card-subtitle">Irreversible actions for your subscription</p>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; background: rgba(220, 53, 69, 0.05); border-radius: 16px; margin-bottom: 1rem;">
+                <div>
+                    <h4 style="color: #495057; margin-bottom: 0.3rem;">Cancel Subscription</h4>
+                    <p style="color: #6c757d; font-size: 0.9rem;">Your subscription will remain active until Nov 19, 2025</p>
+                </div>
+                <button class="btn-danger" onclick="cancelSubscription()">Cancel Plan</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Upgrade Plan Modal
+        function openUpgradeModal() {
+            alert('Upgrade modal would open here with plan comparison');
+            console.log('Opening upgrade modal...');
+        }
+
+        // Open Marketplace
+        function openMarketplace() {
+            window.location.href = '/marketplace/index.html';
+        }
+
+        // Edit Payment Method
+        function editPaymentMethod() {
+            alert('Payment method editor would open here');
+            console.log('Editing payment method...');
+        }
+
+        // Add Payment Method
+        function addPaymentMethod() {
+            alert('Add payment method form would open here');
+            console.log('Adding payment method...');
+        }
+
+        // Download Invoice
+        function downloadInvoice(invoiceId) {
+            console.log('Downloading invoice:', invoiceId);
+            alert(`Invoice ${invoiceId} would download as PDF`);
+        }
+
+        // Cancel Subscription
+        function cancelSubscription() {
+            const confirmed = confirm('Are you sure you want to cancel your subscription? This action cannot be undone.');
+            if (confirmed) {
+                console.log('Subscription cancelled');
+                alert('Your subscription has been scheduled for cancellation on Nov 19, 2025');
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Opsis Billing page initialized');
+        });
+    </script>
+</body>
+</html>
