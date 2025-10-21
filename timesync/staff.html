@@ -391,7 +391,7 @@
 
         .list-header {
             display: grid;
-            grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr auto;
+            grid-template-columns: 2fr 1.5fr 1fr 1.2fr 1fr auto;
             gap: 1rem;
             padding: 1rem 1.5rem;
             background: var(--bg-secondary);
@@ -403,7 +403,7 @@
 
         .list-row {
             display: grid;
-            grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr auto;
+            grid-template-columns: 2fr 1.5fr 1fr 1.2fr 1fr auto;
             gap: 1rem;
             padding: 1rem 1.5rem;
             border-bottom: 1px solid var(--border);
@@ -650,6 +650,98 @@
             bottom: 0;
         }
 
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .add-staff-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            background: var(--bg-primary);
+            border-radius: var(--radius);
+            box-shadow: 0 20px 60px var(--shadow);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .add-staff-modal.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .modal-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .close-modal {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: none;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .close-modal:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .modal-body {
+            padding: 2rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-footer {
+            padding: 1.5rem 2rem;
+            border-top: 1px solid var(--border);
+            background: var(--bg-secondary);
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+        }
+
         /* Form */
         .form-group {
             margin-bottom: 1.5rem;
@@ -766,12 +858,12 @@
         </div>
 
         <div class="filter-group">
-            <span class="filter-label">Equipo:</span>
-            <select class="filter-select" id="teamFilter">
-                <option value="all">Todos</option>
-                <option value="crew-a">Crew A</option>
-                <option value="crew-b">Crew B</option>
-                <option value="crew-c">Crew C</option>
+            <span class="filter-label">Certificación:</span>
+            <select class="filter-select" id="certFilter">
+                <option value="all">Todas</option>
+                <option value="osha">OSHA</option>
+                <option value="asbestos">Asbestos</option>
+                <option value="supervisor">Supervisor</option>
             </select>
         </div>
     </div>
@@ -809,7 +901,7 @@
                 <div>Personal</div>
                 <div>Contacto</div>
                 <div>Estado</div>
-                <div>Equipo</div>
+                <div>Trabajo Actual</div>
                 <div>Horas Hoy</div>
                 <div></div>
             </div>
@@ -827,7 +919,7 @@
         </div>
         <div class="sidebar-content">
             <div class="sidebar-profile">
-                <div class="sidebar-avatar" id="sidebarAvatar">JP</div>
+                <div class="sidebar-avatar" id="sidebarAvatar" data-staff-id="">JP</div>
                 <div class="sidebar-name" id="sidebarName">Juan Pérez</div>
                 <div class="sidebar-role" id="sidebarRole">Técnico Senior</div>
                 <span class="status-badge available" id="sidebarStatus">Disponible</span>
@@ -844,8 +936,8 @@
                     <span class="info-value" id="sidebarPhone">(619) 555-0123</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">👥 Equipo</span>
-                    <span class="info-value" id="sidebarTeam">Crew A</span>
+                    <span class="info-label">📋 Trabajo Actual</span>
+                    <span class="info-value" id="sidebarCurrentJob">Sin asignar</span>
                 </div>
             </div>
 
@@ -891,6 +983,63 @@
         </div>
     </div>
 
+    <!-- Add/Edit Staff Modal -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal()"></div>
+    <div class="add-staff-modal" id="addStaffModal">
+        <div class="modal-header">
+            <h2 class="modal-title" id="modalTitle">Agregar Personal</h2>
+            <button class="close-modal" onclick="closeModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <form id="staffForm">
+                <div class="form-group">
+                    <label class="form-label">Nombre Completo *</label>
+                    <input type="text" class="form-input" id="staffName" placeholder="Ej: Juan Pérez" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Rol *</label>
+                    <select class="form-select" id="staffRole" required>
+                        <option value="">Seleccionar rol</option>
+                        <option value="supervisor">Supervisor</option>
+                        <option value="tecnico-senior">Técnico Senior</option>
+                        <option value="tecnico">Técnico</option>
+                        <option value="operador">Operador</option>
+                        <option value="inspector">Inspector</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email *</label>
+                    <input type="email" class="form-input" id="staffEmail" placeholder="nombre@company.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Teléfono *</label>
+                    <input type="tel" class="form-input" id="staffPhone" placeholder="(619) 555-0123" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Estado *</label>
+                    <select class="form-select" id="staffStatus" required>
+                        <option value="available">Disponible</option>
+                        <option value="busy">En Trabajo</option>
+                        <option value="off">Fuera de Servicio</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Notas</label>
+                    <textarea class="form-input" id="staffNotes" rows="3" placeholder="Certificaciones adicionales, habilidades especiales, notas..."></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+            <button class="btn btn-primary" id="saveStaffBtn" onclick="saveStaff()">Agregar Personal</button>
+        </div>
+    </div>
+
     <script>
         // Sample data
         const staffData = [
@@ -899,12 +1048,12 @@
                 name: 'Juan Pérez',
                 role: 'Técnico Senior',
                 status: 'available',
-                team: 'Crew A',
                 phone: '(619) 555-0123',
                 email: 'juan.perez@company.com',
                 hoursToday: 8.5,
                 hoursWeek: 42,
                 jobsCompleted: 247,
+                currentJob: null,
                 certifications: [
                     { name: 'OSHA 40-Hour', expiry: '2026-03-15', status: 'valid' },
                     { name: 'Asbestos Supervisor', expiry: '2025-11-08', status: 'expiring' }
@@ -915,12 +1064,12 @@
                 name: 'María García',
                 role: 'Supervisora',
                 status: 'busy',
-                team: 'Crew A',
                 phone: '(619) 555-0124',
                 email: 'maria.garcia@company.com',
                 hoursToday: 6.0,
                 hoursWeek: 38,
                 jobsCompleted: 312,
+                currentJob: 'JOB-2025-001',
                 certifications: [
                     { name: 'OSHA 40-Hour', expiry: '2026-08-20', status: 'valid' },
                     { name: 'Asbestos Inspector', expiry: '2026-01-15', status: 'valid' }
@@ -931,12 +1080,12 @@
                 name: 'Carlos López',
                 role: 'Operador',
                 status: 'available',
-                team: 'Crew B',
                 phone: '(619) 555-0125',
                 email: 'carlos.lopez@company.com',
                 hoursToday: 0,
                 hoursWeek: 35,
                 jobsCompleted: 189,
+                currentJob: null,
                 certifications: [
                     { name: 'OSHA 10-Hour', expiry: '2025-12-10', status: 'expiring' }
                 ]
@@ -946,12 +1095,12 @@
                 name: 'Ana Martínez',
                 role: 'Técnica',
                 status: 'available',
-                team: 'Crew B',
                 phone: '(619) 555-0126',
                 email: 'ana.martinez@company.com',
                 hoursToday: 7.5,
                 hoursWeek: 40,
                 jobsCompleted: 201,
+                currentJob: null,
                 certifications: [
                     { name: 'OSHA 40-Hour', expiry: '2026-05-22', status: 'valid' }
                 ]
@@ -961,12 +1110,12 @@
                 name: 'Pedro Sánchez',
                 role: 'Inspector',
                 status: 'off',
-                team: 'Crew C',
                 phone: '(619) 555-0127',
                 email: 'pedro.sanchez@company.com',
                 hoursToday: 0,
                 hoursWeek: 0,
                 jobsCompleted: 156,
+                currentJob: null,
                 certifications: [
                     { name: 'Asbestos Inspector', expiry: '2026-02-28', status: 'valid' }
                 ]
@@ -976,12 +1125,12 @@
                 name: 'Luis Gómez',
                 role: 'Técnico',
                 status: 'busy',
-                team: 'Crew C',
                 phone: '(619) 555-0128',
                 email: 'luis.gomez@company.com',
                 hoursToday: 5.0,
                 hoursWeek: 37,
                 jobsCompleted: 178,
+                currentJob: 'JOB-2025-002',
                 certifications: [
                     { name: 'OSHA 40-Hour', expiry: '2025-10-30', status: 'expiring' }
                 ]
@@ -1027,10 +1176,12 @@
                             <span class="staff-detail-icon">📱</span>
                             <span>${staff.phone}</span>
                         </div>
+                        ${staff.currentJob ? `
                         <div class="staff-detail">
-                            <span class="staff-detail-icon">👥</span>
-                            <span>${staff.team}</span>
+                            <span class="staff-detail-icon">📋</span>
+                            <span style="color: var(--warning); font-weight: 600;">En: ${staff.currentJob}</span>
                         </div>
+                        ` : ''}
                         <div class="certifications">
                             ${staff.certifications.map(cert => 
                                 `<span class="cert-badge ${cert.status === 'expiring' ? 'expiring' : ''}">${cert.name}</span>`
@@ -1073,7 +1224,9 @@
                     <div>
                         <span class="status-badge ${staff.status}">${getStatusText(staff.status)}</span>
                     </div>
-                    <div style="font-size: 0.875rem;">${staff.team}</div>
+                    <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                        ${staff.currentJob ? `<span style="color: var(--warning); font-weight: 600;">${staff.currentJob}</span>` : 'Sin asignar'}
+                    </div>
                     <div style="font-size: 0.875rem; font-weight: 600;">${staff.hoursToday}h</div>
                     <div>
                         <button class="btn btn-secondary btn-icon" onclick="openStaffDetails(${staff.id})">→</button>
@@ -1105,12 +1258,16 @@
 
             const initials = staff.name.split(' ').map(n => n[0]).join('');
             
-            document.getElementById('sidebarAvatar').textContent = initials;
+            const avatarEl = document.getElementById('sidebarAvatar');
+            avatarEl.textContent = initials;
+            avatarEl.dataset.staffId = id;
+            
             document.getElementById('sidebarName').textContent = staff.name;
             document.getElementById('sidebarRole').textContent = staff.role;
             document.getElementById('sidebarEmail').textContent = staff.email;
             document.getElementById('sidebarPhone').textContent = staff.phone;
-            document.getElementById('sidebarTeam').textContent = staff.team;
+            document.getElementById('sidebarCurrentJob').textContent = staff.currentJob || 'Sin asignar';
+            document.getElementById('sidebarCurrentJob').style.color = staff.currentJob ? 'var(--warning)' : 'var(--text-secondary)';
             document.getElementById('sidebarHoursToday').textContent = staff.hoursToday + 'h';
             document.getElementById('sidebarHoursWeek').textContent = staff.hoursWeek + 'h';
             document.getElementById('sidebarJobsCompleted').textContent = staff.jobsCompleted;
@@ -1157,7 +1314,7 @@
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const statusFilter = document.getElementById('statusFilter').value;
             const roleFilter = document.getElementById('roleFilter').value;
-            const teamFilter = document.getElementById('teamFilter').value;
+            const certFilter = document.getElementById('certFilter').value;
 
             filteredData = staffData.filter(staff => {
                 const matchesSearch = staff.name.toLowerCase().includes(searchTerm) ||
@@ -1165,9 +1322,10 @@
                                     staff.role.toLowerCase().includes(searchTerm);
                 const matchesStatus = statusFilter === 'all' || staff.status === statusFilter;
                 const matchesRole = roleFilter === 'all' || staff.role.toLowerCase().includes(roleFilter.toLowerCase());
-                const matchesTeam = teamFilter === 'all' || staff.team.toLowerCase().includes(teamFilter.toLowerCase());
+                const matchesCert = certFilter === 'all' || 
+                                   staff.certifications.some(c => c.name.toLowerCase().includes(certFilter.toLowerCase()));
 
-                return matchesSearch && matchesStatus && matchesRole && matchesTeam;
+                return matchesSearch && matchesStatus && matchesRole && matchesCert;
             });
 
             renderStaffGrid();
@@ -1182,7 +1340,7 @@
             // Filter selects
             document.getElementById('statusFilter').addEventListener('change', applyFilters);
             document.getElementById('roleFilter').addEventListener('change', applyFilters);
-            document.getElementById('teamFilter').addEventListener('change', applyFilters);
+            document.getElementById('certFilter').addEventListener('change', applyFilters);
 
             // View toggle
             document.querySelectorAll('.view-btn').forEach(btn => {
@@ -1200,15 +1358,87 @@
                     }
                 });
             });
+
+            // Modal overlay click
+            document.getElementById('modalOverlay').addEventListener('click', closeModal);
         }
 
         // Actions
         function openAddStaff() {
-            alert('Abrir formulario para agregar personal');
+            document.getElementById('addStaffModal').classList.add('active');
         }
 
         function editStaff() {
-            alert('Abrir formulario para editar personal');
+            // Pre-fill form with current staff data
+            const staff = staffData.find(s => s.id === parseInt(document.getElementById('sidebarAvatar').dataset.staffId));
+            if (staff) {
+                document.getElementById('staffName').value = staff.name;
+                document.getElementById('staffRole').value = staff.role.toLowerCase().replace(' ', '-');
+                document.getElementById('staffEmail').value = staff.email;
+                document.getElementById('staffPhone').value = staff.phone;
+                document.getElementById('staffStatus').value = staff.status;
+                
+                document.getElementById('modalTitle').textContent = 'Editar Personal';
+                document.getElementById('saveStaffBtn').textContent = 'Guardar Cambios';
+                document.getElementById('addStaffModal').dataset.mode = 'edit';
+                document.getElementById('addStaffModal').dataset.staffId = staff.id;
+                
+                closeSidebar();
+                document.getElementById('addStaffModal').classList.add('active');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('addStaffModal').classList.remove('active');
+            document.getElementById('staffForm').reset();
+            document.getElementById('modalTitle').textContent = 'Agregar Personal';
+            document.getElementById('saveStaffBtn').textContent = 'Agregar Personal';
+            delete document.getElementById('addStaffModal').dataset.mode;
+            delete document.getElementById('addStaffModal').dataset.staffId;
+        }
+
+        function saveStaff() {
+            const form = document.getElementById('staffForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const modal = document.getElementById('addStaffModal');
+            const mode = modal.dataset.mode;
+            const staffId = modal.dataset.staffId;
+
+            const staffInfo = {
+                name: document.getElementById('staffName').value,
+                role: document.getElementById('staffRole').options[document.getElementById('staffRole').selectedIndex].text,
+                email: document.getElementById('staffEmail').value,
+                phone: document.getElementById('staffPhone').value,
+                status: document.getElementById('staffStatus').value,
+                currentJob: null,
+                hoursToday: 0,
+                hoursWeek: 0,
+                jobsCompleted: 0,
+                certifications: []
+            };
+
+            if (mode === 'edit' && staffId) {
+                // Update existing staff
+                const index = staffData.findIndex(s => s.id === parseInt(staffId));
+                if (index !== -1) {
+                    staffData[index] = { ...staffData[index], ...staffInfo };
+                    alert('✓ Personal actualizado exitosamente');
+                }
+            } else {
+                // Add new staff
+                const newId = Math.max(...staffData.map(s => s.id)) + 1;
+                staffData.push({ id: newId, ...staffInfo });
+                alert('✓ Personal agregado exitosamente');
+            }
+
+            filteredData = [...staffData];
+            renderStaffGrid();
+            renderStaffList();
+            closeModal();
         }
 
         function assignToJob() {
