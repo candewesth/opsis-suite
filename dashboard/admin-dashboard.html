@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Opsis Suite</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: white;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-tertiary: #94a3b8;
+            --border-color: #e2e8f0;
+            --hover-bg: #f1f5f9;
+            --primary: #22c55e;
+            --primary-hover: #16a34a;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --success: #37b24d;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.1);
+            --border-radius: 12px;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-tertiary: #94a3b8;
+            --border-color: #334155;
+            --hover-bg: #334155;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .header {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--card-bg);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            background: var(--hover-bg);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .kpi-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-change {
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .kpi-change.positive {
+            color: var(--success);
+        }
+
+        .kpi-change.negative {
+            color: var(--danger);
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .chart-card h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .table-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .table-card h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: var(--hover-bg);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tr:hover {
+            background: var(--hover-bg);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-success {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .theme-toggle {
+            width: 50px;
+            height: 28px;
+            background: var(--border-color);
+            border-radius: 14px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .theme-toggle.dark {
+            background: var(--primary);
+        }
+
+        .theme-toggle::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 12px;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s;
+        }
+
+        .theme-toggle.dark::after {
+            left: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>📊 Admin Dashboard</h1>
+            <p style="color: var(--text-secondary); margin-top: 0.5rem;">Panel administrativo global de Opsis Suite</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-secondary" onclick="refreshData()">🔄 Actualizar</button>
+            <button class="btn btn-secondary" onclick="exportReport()">📥 Exportar</button>
+            <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- KPIs Principales -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Empresas Activas</div>
+                <div class="kpi-value">248</div>
+                <div class="kpi-change positive">↑ 12% vs mes anterior</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-label">Usuarios Totales</div>
+                <div class="kpi-value">3,842</div>
+                <div class="kpi-change positive">↑ 8% vs mes anterior</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-label">MRR (Ingresos Recurrentes)</div>
+                <div class="kpi-value">$125.4K</div>
+                <div class="kpi-change positive">↑ 15% vs mes anterior</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-label">Tasa de Retención</div>
+                <div class="kpi-value">94.2%</div>
+                <div class="kpi-change positive">↑ 2.3% vs mes anterior</div>
+            </div>
+        </div>
+
+        <!-- Gráficas -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>📈 MRR Tendencia</h3>
+                <canvas id="mrrChart"></canvas>
+            </div>
+
+            <div class="chart-card">
+                <h3>📦 Distribución de Productos</h3>
+                <canvas id="productsChart"></canvas>
+            </div>
+
+            <div class="chart-card">
+                <h3>👥 Nuevas Empresas</h3>
+                <canvas id="companiesChart"></canvas>
+            </div>
+
+            <div class="chart-card">
+                <h3>💰 Planes Contratados</h3>
+                <canvas id="plansChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Tabla de Empresas Destacadas -->
+        <div class="table-card">
+            <h3>Top Empresas por MRR</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Empresa</th>
+                        <th>Plan</th>
+                        <th>Usuarios</th>
+                        <th>MRR</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Acme Corporation</strong></td>
+                        <td>Enterprise</td>
+                        <td>245</td>
+                        <td>$12,500</td>
+                        <td><span class="badge badge-success">Activa</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tech Solutions Inc</strong></td>
+                        <td>Professional</td>
+                        <td>87</td>
+                        <td>$8,700</td>
+                        <td><span class="badge badge-success">Activa</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Global Logistics</strong></td>
+                        <td>Professional</td>
+                        <td>156</td>
+                        <td>$7,200</td>
+                        <td><span class="badge badge-success">Activa</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>StartUp Ventures</strong></td>
+                        <td>Starter</td>
+                        <td>12</td>
+                        <td>$1,200</td>
+                        <td><span class="badge badge-warning">Prueba</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Theme Toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const toggle = document.getElementById('themeToggle');
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            
+            html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            toggle.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'light' : 'dark');
+        }
+
+        // Initialize theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        if (savedTheme === 'dark') {
+            document.getElementById('themeToggle').classList.add('dark');
+        }
+
+        // Chart Colors
+        const colors = {
+            primary: '#22c55e',
+            secondary: '#3b82f6',
+            danger: '#ef4444',
+            warning: '#f59e0b'
+        };
+
+        // MRR Chart
+        new Chart(document.getElementById('mrrChart'), {
+            type: 'line',
+            data: {
+                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct'],
+                datasets: [{
+                    label: 'MRR',
+                    data: [65000, 72000, 78000, 85000, 92000, 98000, 105000, 110000, 118000, 125400],
+                    borderColor: colors.primary,
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // Products Chart
+        new Chart(document.getElementById('productsChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Warehouse', 'TimeSync', 'HR', 'Finance'],
+                datasets: [{
+                    data: [45, 30, 15, 10],
+                    backgroundColor: [colors.primary, colors.secondary, colors.warning, colors.danger]
+                }]
+            },
+            options: { responsive: true }
+        });
+
+        // Companies Chart
+        new Chart(document.getElementById('companiesChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
+                datasets: [{
+                    label: 'Nuevas Empresas',
+                    data: [42, 58, 35, 71],
+                    backgroundColor: colors.secondary
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // Plans Chart
+        new Chart(document.getElementById('plansChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Starter', 'Professional', 'Enterprise'],
+                datasets: [{
+                    data: [120, 95, 33],
+                    backgroundColor: [colors.secondary, colors.primary, colors.warning]
+                }]
+            },
+            options: { responsive: true }
+        });
+
+        function refreshData() {
+            alert('📊 Datos actualizados correctamente');
+        }
+
+        function exportReport() {
+            alert('📥 Exportando reporte...');
+        }
+
+        console.log('✅ Admin Dashboard iniciado');
+    </script>
+</body>
+</html>
