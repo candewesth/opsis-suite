@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supervisor Dashboard - Opsis Suite</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary-purple: #A855F7;
+            --background: #F5F5F7;
+            --card-bg: #FFFFFF;
+            --text-primary: #1D1D1F;
+            --text-secondary: #86868B;
+            --border: #D2D2D7;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --success: #34C759;
+            --warning: #FF9500;
+            --danger: #FF3B30;
+        }
+        [data-theme="dark"] {
+            --background: #0F0F0F;
+            --card-bg: #1D1D1F;
+            --text-primary: #F5F5F7;
+            --text-secondary: #A1A1A6;
+            --border: #424245;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; background: var(--background); color: var(--text-primary); }
+        .container { display: flex; min-height: 100vh; }
+        .sidebar { width: 280px; background: var(--card-bg); border-right: 1px solid var(--border); padding: 2rem 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+        .logo-section { display: flex; align-items: center; gap: 1rem; padding: 0 1.5rem; margin-bottom: 2rem; }
+        .logo-icon { width: 45px; height: 45px; background: linear-gradient(135deg, #A855F7, #D946EF); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 22px; }
+        .logo-text .brand { font-size: 1.25rem; font-weight: 800; color: var(--primary-purple); }
+        .logo-text .tagline { font-size: 0.75rem; color: var(--text-secondary); }
+        .nav-item { padding: 0.75rem 1.5rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; color: var(--text-primary); font-weight: 500; }
+        .nav-item.active { background: rgba(168, 85, 247, 0.1); color: var(--primary-purple); border-left: 3px solid var(--primary-purple); padding-left: calc(1.5rem - 3px); }
+        .main-content { flex: 1; padding: 2rem; overflow-y: auto; }
+        .header { display: flex; justify-content: space-between; margin-bottom: 3rem; }
+        .header-title h1 { font-size: 2.5rem; font-weight: 700; }
+        .header-title p { color: var(--text-secondary); }
+        .theme-toggle { width: 50px; height: 28px; background: var(--border); border-radius: 14px; cursor: pointer; position: relative; border: none; }
+        .theme-toggle.active { background: var(--primary-purple); }
+        .theme-toggle::after { content: ''; position: absolute; width: 22px; height: 22px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: left 0.3s; }
+        .theme-toggle.active::after { left: 25px; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .metric-card { background: var(--card-bg); border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border); }
+        .metric-value { font-size: 2.5rem; font-weight: 700; }
+        .metric-label { color: var(--text-secondary); font-size: 0.9rem; }
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .chart-card { background: var(--card-bg); border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border); }
+        .chart-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; }
+        .chart-container { position: relative; height: 300px; }
+        @media (max-width: 768px) { .sidebar { width: 100%; height: auto; border-right: none; } .charts-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo-section">
+                <div class="logo-icon">👔</div>
+                <div class="logo-text">
+                    <div class="brand">Opsis</div>
+                    <div class="tagline">SUPERVISOR</div>
+                </div>
+            </div>
+            <nav style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <div class="nav-item active">📊 Dashboard</div>
+                <div class="nav-item">👥 Mi Equipo</div>
+                <div class="nav-item">✓ Validar Timesheets</div>
+                <div class="nav-item">📈 Reportes</div>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <div class="header">
+                <div class="header-title">
+                    <h1>👔 Supervisor Dashboard</h1>
+                    <p>Gestión de tu equipo</p>
+                </div>
+                <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()"></button>
+            </div>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value">8</div>
+                    <div class="metric-label">Miembros del Equipo</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">7/8</div>
+                    <div class="metric-label">Presentes Hoy</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">3</div>
+                    <div class="metric-label">Timesheets Pendientes</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">64h</div>
+                    <div class="metric-label">Horas Totales Semana</div>
+                </div>
+            </div>
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-title">👥 Asistencia</div>
+                    <div class="chart-container">
+                        <canvas id="attendanceChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">⏱️ Horas por Miembro</div>
+                    <div class="chart-container">
+                        <canvas id="hoursChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+            else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+            document.getElementById('themeToggle').classList.toggle('active');
+        }
+        function loadTheme() {
+            if (localStorage.getItem('theme') === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.getElementById('themeToggle').classList.add('active');
+            }
+        }
+        const cfg = { responsive: true, maintainAspectRatio: false };
+        const attendanceCtx = document.getElementById('attendanceChart').getContext('2d');
+        new Chart(attendanceCtx, { type: 'doughnut', data: { labels: ['Presentes', 'Ausentes', 'Licencia'], datasets: [{ data: [7, 1, 0], backgroundColor: ['#A855F7', '#FF3B30', '#CCCCCC'] }] }, options: cfg });
+        const hoursCtx = document.getElementById('hoursChart').getContext('2d');
+        new Chart(hoursCtx, { type: 'bar', data: { labels: ['Juan', 'María', 'Pedro', 'Ana', 'Luis', 'Sofia', 'Carlos', 'Rosa'], datasets: [{ label: 'Horas', data: [8, 8, 7.5, 8, 6, 8, 8, 8], backgroundColor: '#A855F7' }] }, options: cfg });
+        loadTheme();
+    </script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operations Dashboard - Opsis Suite</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary-blue: #3B82F6;
+            --background: #F5F5F7;
+            --card-bg: #FFFFFF;
+            --text-primary: #1D1D1F;
+            --text-secondary: #86868B;
+            --border: #D2D2D7;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --success: #34C759;
+            --warning: #FF9500;
+            --danger: #FF3B30;
+        }
+        [data-theme="dark"] {
+            --background: #0F0F0F;
+            --card-bg: #1D1D1F;
+            --text-primary: #F5F5F7;
+            --text-secondary: #A1A1A6;
+            --border: #424245;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; background: var(--background); color: var(--text-primary); transition: background 0.3s ease; }
+        .container { display: flex; min-height: 100vh; }
+        .sidebar { width: 280px; background: var(--card-bg); border-right: 1px solid var(--border); padding: 2rem 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+        .logo-section { display: flex; align-items: center; gap: 1rem; padding: 0 1.5rem; margin-bottom: 2rem; }
+        .logo-icon { width: 45px; height: 45px; background: linear-gradient(135deg, #3B82F6, #0EA5E9); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 22px; }
+        .logo-text .brand { font-size: 1.25rem; font-weight: 800; color: var(--primary-blue); }
+        .logo-text .tagline { font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; }
+        .nav-item { padding: 0.75rem 1.5rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: all 0.2s; color: var(--text-primary); font-weight: 500; }
+        .nav-item:hover { background: var(--background); }
+        .nav-item.active { background: rgba(59, 130, 246, 0.1); color: var(--primary-blue); border-left: 3px solid var(--primary-blue); padding-left: calc(1.5rem - 3px); }
+        .main-content { flex: 1; padding: 2rem; overflow-y: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; }
+        .header-title h1 { font-size: 2.5rem; font-weight: 700; }
+        .header-title p { color: var(--text-secondary); }
+        .theme-toggle { width: 50px; height: 28px; background: var(--border); border-radius: 14px; cursor: pointer; position: relative; border: none; transition: all 0.3s; }
+        .theme-toggle.active { background: var(--primary-blue); }
+        .theme-toggle::after { content: ''; position: absolute; width: 22px; height: 22px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: left 0.3s; }
+        .theme-toggle.active::after { left: 25px; }
+        .task-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .task-card { background: var(--card-bg); border-radius: 16px; padding: 1.5rem; border: 2px solid var(--border); transition: all 0.3s; }
+        .task-card:hover { transform: translateY(-4px); border-color: var(--primary-blue); }
+        .task-value { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .task-label { color: var(--text-secondary); font-size: 0.9rem; }
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .chart-card { background: var(--card-bg); border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border); box-shadow: 0 2px 8px var(--shadow); }
+        .chart-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; }
+        .chart-container { position: relative; height: 300px; }
+        @media (max-width: 768px) { .sidebar { width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border); } .charts-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo-section">
+                <div class="logo-icon">⚙️</div>
+                <div class="logo-text">
+                    <div class="brand">Opsis</div>
+                    <div class="tagline">OPERATIONS</div>
+                </div>
+            </div>
+            <nav style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <div class="nav-item active">📊 Dashboard</div>
+                <div class="nav-item">📋 Mis Tareas</div>
+                <div class="nav-item">👥 Mi Equipo</div>
+                <div class="nav-item">⏱️ Tiempo</div>
+                <div class="nav-item">📈 Reportes</div>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <div class="header">
+                <div class="header-title">
+                    <h1>⚙️ Operations Dashboard</h1>
+                    <p>Mis tareas y actividades de hoy</p>
+                </div>
+                <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()"></button>
+            </div>
+            <div class="task-grid">
+                <div class="task-card">
+                    <div class="task-value">12</div>
+                    <div class="task-label">Tareas Asignadas</div>
+                </div>
+                <div class="task-card">
+                    <div class="task-value">7.5h</div>
+                    <div class="task-label">Horas Trabajadas</div>
+                </div>
+                <div class="task-card">
+                    <div class="task-value">3</div>
+                    <div class="task-label">Proyectos Activos</div>
+                </div>
+                <div class="task-card">
+                    <div class="task-value">2</div>
+                    <div class="task-label">Urgencias</div>
+                </div>
+            </div>
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-title">⏱️ Horas por Proyecto</div>
+                    <div class="chart-container">
+                        <canvas id="hoursChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">📊 Progreso de Tareas</div>
+                    <div class="chart-container">
+                        <canvas id="progressChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) { html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); }
+            else { html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); }
+            document.getElementById('themeToggle').classList.toggle('active');
+        }
+        function loadTheme() {
+            if (localStorage.getItem('theme') === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.getElementById('themeToggle').classList.add('active');
+            }
+        }
+        const cfg = { responsive: true, maintainAspectRatio: false };
+        const hoursCtx = document.getElementById('hoursChart').getContext('2d');
+        new Chart(hoursCtx, { type: 'pie', data: { labels: ['Proyecto A', 'Proyecto B', 'Proyecto C'], datasets: [{ data: [3.5, 2.5, 1.5], backgroundColor: ['#3B82F6', '#10B981', '#F59E0B'] }] }, options: cfg });
+        const progressCtx = document.getElementById('progressChart').getContext('2d');
+        new Chart(progressCtx, { type: 'bar', data: { labels: ['Completadas', 'En Progreso', 'Pendientes'], datasets: [{ label: 'Tareas', data: [4, 5, 3], backgroundColor: '#3B82F6' }] }, options: cfg });
+        loadTheme();
+    </script>
+</body>
+</html>

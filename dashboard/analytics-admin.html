@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Admin - Opsis Suite</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --primary: #17a2b8; --background: #F5F5F7; --card-bg: #FFFFFF; --text-primary: #1D1D1F; --text-secondary: #86868B; --border: #D2D2D7; }
+        [data-theme="dark"] { --background: #0F0F0F; --card-bg: #1D1D1F; --text-primary: #F5F5F7; --text-secondary: #A1A1A6; --border: #424245; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; background: var(--background); color: var(--text-primary); }
+        .container { display: flex; min-height: 100vh; }
+        .sidebar { width: 280px; background: var(--card-bg); border-right: 1px solid var(--border); padding: 2rem 0; }
+        .logo-section { display: flex; align-items: center; gap: 1rem; padding: 0 1.5rem; margin-bottom: 2rem; }
+        .logo-icon { width: 45px; height: 45px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; }
+        .logo-text .brand { font-size: 1.25rem; font-weight: 800; color: var(--primary); }
+        .nav-item { padding: 0.75rem 1.5rem; cursor: pointer; }
+        .nav-item.active { background: rgba(23, 162, 184, 0.1); color: var(--primary); border-left: 3px solid var(--primary); }
+        .main-content { flex: 1; padding: 2rem; overflow-y: auto; }
+        .header h1 { font-size: 2rem; margin-bottom: 2rem; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .metric-card { background: var(--card-bg); border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border); }
+        .metric-value { font-size: 2rem; font-weight: 700; }
+        .metric-label { color: var(--text-secondary); font-size: 0.9rem; }
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; }
+        .chart-card { background: var(--card-bg); border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border); }
+        .chart-title { font-weight: 600; margin-bottom: 1rem; }
+        .chart-container { position: relative; height: 300px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo-section">
+                <div class="logo-icon">📊</div>
+                <div class="logo-text">
+                    <div class="brand">Opsis</div>
+                    <div class="tagline">ADMIN</div>
+                </div>
+            </div>
+            <nav style="display: flex; flex-direction: column;">
+                <div class="nav-item">📊 Analytics</div>
+                <div class="nav-item active">📈 Reportes</div>
+                <div class="nav-item">👥 Usuarios</div>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <h1>📊 Analytics del Sistema</h1>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value">156</div>
+                    <div class="metric-label">Usuarios Activos</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">24</div>
+                    <div class="metric-label">Empresas</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">2.1M</div>
+                    <div class="metric-label">Eventos/Día</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">99.7%</div>
+                    <div class="metric-label">Uptime</div>
+                </div>
+            </div>
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-title">📈 Crecimiento de Usuarios</div>
+                    <div class="chart-container">
+                        <canvas id="usersChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">🔄 Sesiones Activas</div>
+                    <div class="chart-container">
+                        <canvas id="sessionsChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">⏱️ Tiempo Promedio Sesión</div>
+                    <div class="chart-container">
+                        <canvas id="timeChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">🌍 Usuarios por Región</div>
+                    <div class="chart-container">
+                        <canvas id="regionsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+        const cfg = { responsive: true, maintainAspectRatio: false };
+        const usersCtx = document.getElementById('usersChart').getContext('2d');
+        new Chart(usersCtx, { type: 'line', data: { labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'], datasets: [{ label: 'Usuarios', data: [45, 62, 85, 105, 132, 156], borderColor: '#17a2b8', backgroundColor: 'rgba(23, 162, 184, 0.1)', tension: 0.4, fill: true }] }, options: cfg });
+        const sessionsCtx = document.getElementById('sessionsChart').getContext('2d');
+        new Chart(sessionsCtx, { type: 'bar', data: { labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sab', 'Dom'], datasets: [{ label: 'Sesiones', data: [120, 150, 130, 160, 140, 60, 40], backgroundColor: '#17a2b8' }] }, options: cfg });
+        const timeCtx = document.getElementById('timeChart').getContext('2d');
+        new Chart(timeCtx, { type: 'doughnut', data: { labels: ['< 1 min', '1-5 min', '5-15 min', '> 15 min'], datasets: [{ data: [12, 35, 40, 13], backgroundColor: ['#FF3B30', '#FF9500', '#17a2b8', '#34C759'] }] }, options: cfg });
+        const regionsCtx = document.getElementById('regionsChart').getContext('2d');
+        new Chart(regionsCtx, { type: 'bar', data: { labels: ['LATAM', 'Norteamérica', 'Europa', 'Asia'], datasets: [{ label: 'Usuarios', data: [85, 45, 20, 6], backgroundColor: '#17a2b8' }] }, options: cfg });
+    </script>
+</body>
+</html>

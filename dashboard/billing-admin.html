@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing Admin - Opsis Suite</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --primary: #17a2b8; --background: #F5F5F7; --card-bg: #FFFFFF; --text-primary: #1D1D1F; --text-secondary: #86868B; --border: #D2D2D7; }
+        [data-theme="dark"] { --background: #0F0F0F; --card-bg: #1D1D1F; --text-primary: #F5F5F7; --text-secondary: #A1A1A6; --border: #424245; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; background: var(--background); color: var(--text-primary); }
+        .container { display: flex; min-height: 100vh; }
+        .sidebar { width: 280px; background: var(--card-bg); border-right: 1px solid var(--border); padding: 2rem 0; }
+        .logo-section { display: flex; align-items: center; gap: 1rem; padding: 0 1.5rem; margin-bottom: 2rem; }
+        .logo-icon { width: 45px; height: 45px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; }
+        .logo-text .brand { font-size: 1.25rem; font-weight: 800; color: var(--primary); }
+        .nav-item { padding: 0.75rem 1.5rem; cursor: pointer; }
+        .nav-item.active { background: rgba(23, 162, 184, 0.1); color: var(--primary); border-left: 3px solid var(--primary); }
+        .main-content { flex: 1; padding: 2rem; overflow-y: auto; }
+        .header h1 { font-size: 2rem; margin-bottom: 2rem; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .metric-card { background: var(--card-bg); border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border); }
+        .metric-value { font-size: 2rem; font-weight: 700; }
+        .metric-label { color: var(--text-secondary); font-size: 0.9rem; }
+        .chart-card { background: var(--card-bg); border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border); margin-bottom: 2rem; }
+        .chart-container { position: relative; height: 300px; }
+        .table-card { background: var(--card-bg); border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; }
+        th { padding: 1rem; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
+        td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); }
+        .status-badge { display: inline-block; padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+        .status-badge.paid { background: rgba(52, 199, 89, 0.2); color: #34C759; }
+        .status-badge.pending { background: rgba(255, 149, 0, 0.2); color: #FF9500; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo-section">
+                <div class="logo-icon">💰</div>
+                <div class="logo-text">
+                    <div class="brand">Opsis</div>
+                    <div class="tagline">ADMIN</div>
+                </div>
+            </div>
+            <nav style="display: flex; flex-direction: column;">
+                <div class="nav-item">🏢 Empresas</div>
+                <div class="nav-item active">💰 Facturación</div>
+                <div class="nav-item">📊 Reportes</div>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <h1>💰 Gestión de Facturación</h1>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value">$48.5K</div>
+                    <div class="metric-label">MRR Total</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">$156.2K</div>
+                    <div class="metric-label">ARR Total</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">24</div>
+                    <div class="metric-label">Suscripciones Activas</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">98.2%</div>
+                    <div class="metric-label">Tasa de Retención</div>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3 style="margin-bottom: 1rem;">MRR (Últimos 6 meses)</h3>
+                <div class="chart-container">
+                    <canvas id="mrrChart"></canvas>
+                </div>
+            </div>
+            <div class="table-card">
+                <h3 style="margin-bottom: 1rem;">Facturas Recientes</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Empresa</th>
+                            <th>Plan</th>
+                            <th>Monto</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>AccelTech Solutions</td>
+                            <td>RUBY</td>
+                            <td>$2,500</td>
+                            <td>2025-10-20</td>
+                            <td><span class="status-badge paid">Pagado</span></td>
+                        </tr>
+                        <tr>
+                            <td>LogisticsPro</td>
+                            <td>JADE</td>
+                            <td>$1,500</td>
+                            <td>2025-10-19</td>
+                            <td><span class="status-badge paid">Pagado</span></td>
+                        </tr>
+                        <tr>
+                            <td>RetailMax</td>
+                            <td>OPAL</td>
+                            <td>$500</td>
+                            <td>2025-10-18</td>
+                            <td><span class="status-badge pending">Pendiente</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+    <script>
+        const cfg = { responsive: true, maintainAspectRatio: false };
+        const mrrCtx = document.getElementById('mrrChart').getContext('2d');
+        new Chart(mrrCtx, { type: 'line', data: { labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'], datasets: [{ label: 'MRR ($K)', data: [28, 32, 35, 40, 44, 48.5], borderColor: '#17a2b8', backgroundColor: 'rgba(23, 162, 184, 0.1)', tension: 0.4, fill: true }] }, options: cfg });
+    </script>
+</body>
+</html>

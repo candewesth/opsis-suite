@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Management - Opsis Suite</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #20c997;
+            --background: #F5F5F7;
+            --card-bg: #FFFFFF;
+            --text-primary: #1D1D1F;
+            --text-secondary: #86868B;
+            --border: #D2D2D7;
+            --danger: #FF3B30;
+        }
+        [data-theme="dark"] {
+            --background: #0F0F0F;
+            --card-bg: #1D1D1F;
+            --text-primary: #F5F5F7;
+            --text-secondary: #A1A1A6;
+            --border: #424245;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; background: var(--background); color: var(--text-primary); }
+        .container { display: flex; min-height: 100vh; }
+        .sidebar { width: 280px; background: var(--card-bg); border-right: 1px solid var(--border); padding: 2rem 0; position: sticky; top: 0; height: 100vh; }
+        .logo-section { display: flex; align-items: center; gap: 1rem; padding: 0 1.5rem; margin-bottom: 2rem; }
+        .logo-icon { width: 45px; height: 45px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 22px; }
+        .logo-text .brand { font-size: 1.25rem; font-weight: 800; color: var(--primary); }
+        .logo-text .tagline { font-size: 0.75rem; color: var(--text-secondary); }
+        .nav-item { padding: 0.75rem 1.5rem; cursor: pointer; color: var(--text-primary); font-weight: 500; }
+        .nav-item.active { background: rgba(32, 201, 151, 0.1); color: var(--primary); border-left: 3px solid var(--primary); }
+        .main-content { flex: 1; padding: 2rem; overflow-y: auto; }
+        .header { display: flex; justify-content: space-between; margin-bottom: 2rem; }
+        .header-title h1 { font-size: 2rem; font-weight: 700; }
+        .btn-add { padding: 0.75rem 1.5rem; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; }
+        .btn-add:hover { opacity: 0.9; }
+        .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+        .team-card { background: var(--card-bg); border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border); text-align: center; }
+        .team-avatar { width: 80px; height: 80px; background: linear-gradient(135deg, var(--primary), #17a2b8); border-radius: 50%; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; }
+        .team-name { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .team-role { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem; }
+        .team-status { display: inline-block; padding: 0.35rem 0.75rem; background: rgba(52, 199, 89, 0.2); color: #34C759; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+        .team-actions { display: flex; gap: 0.5rem; margin-top: 1rem; justify-content: center; }
+        .team-actions button { padding: 0.5rem 1rem; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
+        .btn-edit { background: var(--primary); color: white; }
+        .btn-remove { background: var(--danger); color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo-section">
+                <div class="logo-icon">👥</div>
+                <div class="logo-text">
+                    <div class="brand">Opsis</div>
+                    <div class="tagline">TEAM</div>
+                </div>
+            </div>
+            <nav style="display: flex; flex-direction: column;">
+                <div class="nav-item active">👥 Mi Equipo</div>
+                <div class="nav-item">📋 Roles</div>
+                <div class="nav-item">⚙️ Configuración</div>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <div class="header">
+                <div class="header-title">
+                    <h1>👥 Gestión de Equipo</h1>
+                </div>
+                <button class="btn-add" onclick="addMember()">+ Agregar Miembro</button>
+            </div>
+            <div class="team-grid">
+                <div class="team-card">
+                    <div class="team-avatar">JD</div>
+                    <div class="team-name">Juan Díaz</div>
+                    <div class="team-role">Operativo Senior</div>
+                    <div class="team-status">Activo</div>
+                    <div class="team-actions">
+                        <button class="btn-edit" onclick="editMember(1)">Editar</button>
+                        <button class="btn-remove" onclick="removeMember(1)">Eliminar</button>
+                    </div>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar">MG</div>
+                    <div class="team-name">María García</div>
+                    <div class="team-role">Supervisora</div>
+                    <div class="team-status">Activo</div>
+                    <div class="team-actions">
+                        <button class="btn-edit" onclick="editMember(2)">Editar</button>
+                        <button class="btn-remove" onclick="removeMember(2)">Eliminar</button>
+                    </div>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar">PC</div>
+                    <div class="team-name">Pedro Campos</div>
+                    <div class="team-role">Estimador</div>
+                    <div class="team-status">Activo</div>
+                    <div class="team-actions">
+                        <button class="btn-edit" onclick="editMember(3)">Editar</button>
+                        <button class="btn-remove" onclick="removeMember(3)">Eliminar</button>
+                    </div>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar">AL</div>
+                    <div class="team-name">Ana López</div>
+                    <div class="team-role">Gerente de Almacén</div>
+                    <div class="team-status">Activo</div>
+                    <div class="team-actions">
+                        <button class="btn-edit" onclick="editMember(4)">Editar</button>
+                        <button class="btn-remove" onclick="removeMember(4)">Eliminar</button>
+                    </div>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar">LM</div>
+                    <div class="team-name">Luis Morales</div>
+                    <div class="team-role">Operativo</div>
+                    <div class="team-status">Activo</div>
+                    <div class="team-actions">
+                        <button class="btn-edit" onclick="editMember(5)">Editar</button>
+                        <button class="btn-remove" onclick="removeMember(5)">Eliminar</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+        function addMember() { alert('Abrir modal: Agregar Miembro'); }
+        function editMember(id) { alert('Abrir modal: Editar Miembro ' + id); }
+        function removeMember(id) { if(confirm('¿Eliminar miembro?')) alert('Miembro ' + id + ' eliminado'); }
+    </script>
+</body>
+</html>
