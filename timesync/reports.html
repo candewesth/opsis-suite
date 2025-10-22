@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - Opsis Suite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-teal: #20c997;
+            --primary-blue: #17a2b8;
+            --dark-gray: #495057;
+            --medium-gray: #6c757d;
+            --warehouse-color: #FF9500;
+            --timesync-color: #5856D6;
+            --hr-color: #34C759;
+            --finance-color: #FF3B30;
+            --background: #F5F5F7;
+            --card-bg: #FFFFFF;
+            --text-primary: #1D1D1F;
+            --text-secondary: #86868B;
+            --border: #D2D2D7;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header with Logo */
+        .header {
+            background: white;
+            padding: 2rem;
+            border-radius: 24px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 12px var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-container {
+            position: relative;
+            padding: 4px;
+            border-radius: 16px;
+            background: linear-gradient(
+                45deg,
+                #ff6b6b, #4ecdc4, #45b7d1, #feca57,
+                #ff9ff3, #54a0ff, #5f27cd, #ff6b6b
+            );
+            background-size: 300% 300%;
+            animation: gradientShift 4s ease infinite;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--dark-gray), var(--medium-gray));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-icon::after {
+            content: '◉';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            color: white;
+            animation: winkEye 4s ease-in-out infinite;
+        }
+
+        @keyframes winkEye {
+            0%, 85% { transform: translate(-50%, -50%) scaleY(1); }
+            88% { transform: translate(-50%, -50%) scaleY(0.1); }
+            92% { transform: translate(-50%, -50%) scaleY(1); }
+            94% { transform: translate(-50%, -50%) scaleY(0.1); }
+            97%, 100% { transform: translate(-50%, -50%) scaleY(1); }
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            25% { background-position: 100% 50%; }
+            50% { background-position: 100% 100%; }
+            75% { background-position: 0% 100%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-text .brand {
+            font-size: 1.75rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-teal), var(--primary-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+        }
+
+        .logo-text .tagline {
+            font-size: 0.875rem;
+            color: var(--medium-gray);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-primary);
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .quick-action-btn {
+            padding: 0.75rem 1.5rem;
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .quick-action-btn:hover {
+            border-color: var(--primary-teal);
+            background: linear-gradient(135deg, var(--primary-teal), var(--primary-blue));
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(32, 201, 151, 0.3);
+        }
+
+        /* Filters Bar */
+        .filters-bar {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .filter-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-field label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .filter-field input,
+        .filter-field select {
+            padding: 0.75rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .filter-field input:focus,
+        .filter-field select:focus {
+            outline: none;
+            border-color: var(--primary-teal);
+            box-shadow: 0 0 0 4px rgba(32, 201, 151, 0.1);
+        }
+
+        /* Report Categories */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .category-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px var(--shadow);
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .category-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px var(--shadow);
+            border-color: var(--primary-teal);
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .category-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .category-icon.warehouse { background: linear-gradient(135deg, #FF9500, #FF6B35); }
+        .category-icon.timesync { background: linear-gradient(135deg, #5856D6, #AF52DE); }
+        .category-icon.hr { background: linear-gradient(135deg, #34C759, #30D158); }
+        .category-icon.finance { background: linear-gradient(135deg, #FF3B30, #FF6482); }
+        .category-icon.combined { background: linear-gradient(135deg, #007AFF, #5AC8FA); }
+
+        .category-info h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .category-info p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .reports-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .report-item {
+            padding: 0.75rem;
+            background: #F9F9FB;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .report-item:hover {
+            background: #EFEFEF;
+        }
+
+        .report-name {
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .report-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .report-btn {
+            padding: 0.5rem 0.75rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .report-btn.view {
+            background: linear-gradient(135deg, var(--primary-teal), var(--primary-blue));
+            color: white;
+        }
+
+        .report-btn.view:hover {
+            background: linear-gradient(135deg, #1ba87d, #1591a3);
+            box-shadow: 0 2px 8px rgba(32, 201, 151, 0.3);
+        }
+
+        .report-btn.export {
+            background: white;
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+        }
+
+        .report-btn.export:hover {
+            border-color: var(--primary-teal);
+            color: var(--primary-teal);
+        }
+
+        /* Favorites Section */
+        .favorites-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .favorites-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .favorites-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .favorite-card {
+            padding: 1rem;
+            background: linear-gradient(135deg, #F9F9FB, #FFFFFF);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .favorite-card:hover {
+            border-color: var(--primary-teal);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(32, 201, 151, 0.2);
+        }
+
+        .favorite-card h4 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .favorite-card p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .favorite-stats {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 1200px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-teal), var(--primary-blue));
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .report-preview {
+            background: #F9F9FB;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .preview-placeholder {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .preview-placeholder i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-teal), var(--primary-blue));
+            color: white;
+            box-shadow: 0 4px 12px rgba(32, 201, 151, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #1ba87d, #1591a3);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(32, 201, 151, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: #F9F9FB;
+        }
+
+        /* Scheduled Reports */
+        .scheduled-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .scheduled-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .scheduled-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .scheduled-item {
+            padding: 1rem;
+            background: #F9F9FB;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .scheduled-info h4 {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .scheduled-info p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .scheduled-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .scheduled-badge.active {
+            background: #E8F5E9;
+            color: var(--hr-color);
+        }
+
+        .scheduled-badge.paused {
+            background: #FFF3E0;
+            color: var(--warehouse-color);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .categories-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .quick-actions {
+                flex-direction: column;
+            }
+
+            .quick-action-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header with Opsis Logo -->
+        <div class="header">
+            <div class="logo-section">
+                <div class="logo-container">
+                    <div class="logo-icon"></div>
+                </div>
+                <div class="logo-text">
+                    <div class="brand">Opsis Suite</div>
+                    <div class="tagline">REPORTS CENTER</div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div>
+                    <h1>
+                        <span>📊</span>
+                        <span>Reports</span>
+                    </h1>
+                    <p>Centro de reportes multi-módulo: Warehouse, TimeSync, HR y Finance</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <button class="quick-action-btn" onclick="openCustomReport()">
+                <span>✨</span>
+                <span>Crear Reporte Personalizado</span>
+            </button>
+            <button class="quick-action-btn" onclick="openScheduledReports()">
+                <span>⏰</span>
+                <span>Programar Reporte</span>
+            </button>
+            <button class="quick-action-btn" onclick="exportAll()">
+                <span>📥</span>
+                <span>Exportar Todo</span>
+            </button>
+            <button class="quick-action-btn" onclick="viewHistory()">
+                <span>📜</span>
+                <span>Historial de Reportes</span>
+            </button>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-bar">
+            <div class="filters-grid">
+                <div class="filter-field">
+                    <label>Fecha Inicio</label>
+                    <input type="date" id="startDate">
+                </div>
+                <div class="filter-field">
+                    <label>Fecha Fin</label>
+                    <input type="date" id="endDate">
+                </div>
+                <div class="filter-field">
+                    <label>Módulo</label>
+                    <select id="moduleFilter">
+                        <option value="all">Todos los módulos</option>
+                        <option value="warehouse">📦 Warehouse</option>
+                        <option value="timesync">⏱️ TimeSync</option>
+                        <option value="hr">👥 HR</option>
+                        <option value="finance">💵 Finance</option>
+                    </select>
+                </div>
+                <div class="filter-field">
+                    <label>Formato</label>
+                    <select id="formatFilter">
+                        <option value="pdf">PDF</option>
+                        <option value="excel">Excel</option>
+                        <option value="csv">CSV</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Favorites -->
+        <div class="favorites-section">
+            <h2>
+                <span>⭐</span>
+                <span>Reportes Favoritos</span>
+            </h2>
+            <div class="favorites-grid">
+                <div class="favorite-card" onclick="viewReport('hours-summary')">
+                    <h4>Resumen de Horas Trabajadas</h4>
+                    <p>Total de horas por proyecto y empleado</p>
+                    <div class="favorite-stats">
+                        <span>📅 Último: Hace 2 días</span>
+                        <span>📊 Ejecutado 15 veces</span>
+                    </div>
+                </div>
+                <div class="favorite-card" onclick="viewReport('project-status')">
+                    <h4>Estado de Proyectos</h4>
+                    <p>Progreso y completitud de proyectos activos</p>
+                    <div class="favorite-stats">
+                        <span>📅 Último: Hoy</span>
+                        <span>📊 Ejecutado 42 veces</span>
+                    </div>
+                </div>
+                <div class="favorite-card" onclick="viewReport('equipment-utilization')">
+                    <h4>Utilización de Equipos</h4>
+                    <p>Uso y disponibilidad de maquinaria</p>
+                    <div class="favorite-stats">
+                        <span>📅 Último: Ayer</span>
+                        <span>📊 Ejecutado 28 veces</span>
+                    </div>
+                </div>
+                <div class="favorite-card" onclick="viewReport('payroll-summary')">
+                    <h4>Resumen de Nómina</h4>
+                    <p>Costos laborales y overtime</p>
+                    <div class="favorite-stats">
+                        <span>📅 Último: Hace 1 semana</span>
+                        <span>📊 Ejecutado 12 veces</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Categories -->
+        <div class="categories-grid">
+            <!-- TimeSync Reports -->
+            <div class="category-card">
+                <div class="category-header">
+                    <div class="category-icon timesync">⏱️</div>
+                    <div class="category-info">
+                        <h3>TimeSync</h3>
+                        <p>Reportes de tiempo y proyectos</p>
+                    </div>
+                </div>
+                <div class="reports-list">
+                    <div class="report-item">
+                        <span class="report-name">Horas Trabajadas por Proyecto</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('timesync-hours')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('timesync-hours')">Exportar</button>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <span class="report-name">Timesheet Approvals</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('timesync-approvals')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('timesync-approvals')">Exportar</button>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <span class="report-name">Overtime Analysis</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('timesync-overtime')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('timesync-overtime')">Exportar</button>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <span class="report-name">Project Timeline & Status</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('timesync-timeline')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('timesync-timeline')">Exportar</button>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <span class="report-name">Staff Assignments</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('timesync-assignments')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('timesync-assignments')">Exportar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Warehouse Reports -->
+            <div class="category-card">
+                <div class="category-header">
+                    <div class="category-icon warehouse">📦</div>
+                    <div class="category-info">
+                        <h3>Warehouse</h3>
+                        <p>Reportes de inventario y equipos</p>
+                    </div>
+                </div>
+                <div class="reports-list">
+                    <div class="report-item">
+                        <span class="report-name">Inventario Total</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('warehouse-inventory')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('warehouse-inventory')">Exportar</button>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <span class="report-name">Equipos en Uso vs Disponibles</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('warehouse-usage')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('warehouse-usage')">Exportar</button>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <span class="report-name">Historial de Mantenimientos</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('warehouse-maintenance')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('warehouse-maintenance')">Exportar</button>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <span class="report-name">Asignaciones de Equipos</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('warehouse-assignments')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('warehouse-assignments')">Exportar</button>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <span class="report-name">Depreciación de Activos</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('warehouse-depreciation')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('warehouse-depreciation')">Exportar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HR Reports -->
+            <div class="category-card">
+                <div class="category-header">
+                    <div class="category-icon hr">👥</div>
+                    <div class="category-info">
+                        <h3>HR</h3>
+                        <p>Reportes de personal y nómina</p>
+                    </div>
+                </div>
+                <div class="reports-list">
+                    <div class="report-item">
+                        <span class="report-name">Nómina Mensual</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('hr-payroll')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('hr-payroll')">Exportar</button>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <span class="report-name">Asistencia y Ausencias</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('hr-attendance')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('hr-attendance')">Exportar</button>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <span class="report-name">Vacaciones y Permisos</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('hr-leaves')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('hr-leaves')">Exportar</button>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <span class="report-name">Certificaciones del Personal</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('hr-certifications')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('hr-certifications')">Exportar</button>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <span class="report-name">Performance Reviews</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('hr-performance')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('hr-performance')">Exportar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Finance Reports -->
+            <div class="category-card">
+                <div class="category-header">
+                    <div class="category-icon finance">💵</div>
+                    <div class="category-info">
+                        <h3>Finance</h3>
+                        <p>Reportes financieros y costos</p>
+                    </div>
+                </div>
+                <div class="reports-list">
+                    <div class="report-item">
+                        <span class="report-name">P&L por Proyecto</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('finance-pl')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('finance-pl')">Exportar</button>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <span class="report-name">Costos Laborales</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('finance-labor')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('finance-labor')">Exportar</button>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <span class="report-name">Budget vs Actual</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('finance-budget')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('finance-budget')">Exportar</button>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <span class="report-name">Cash Flow Projection</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('finance-cashflow')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('finance-cashflow')">Exportar</button>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <span class="report-name">Rentabilidad por Cliente</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('finance-profitability')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('finance-profitability')">Exportar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Combined Reports -->
+            <div class="category-card">
+                <div class="category-header">
+                    <div class="category-icon combined">🔗</div>
+                    <div class="category-info">
+                        <h3>Reportes Combinados</h3>
+                        <p>Cross-módulo e integrales</p>
+                    </div>
+                </div>
+                <div class="reports-list">
+                    <div class="report-item">
+                        <span class="report-name">Dashboard Ejecutivo</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('combined-executive')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('combined-executive')">Exportar</button>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <span class="report-name">Utilización Total de Recursos</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('combined-resources')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('combined-resources')">Exportar</button>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <span class="report-name">Costos Totales por Proyecto</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('combined-costs')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('combined-costs')">Exportar</button>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <span class="report-name">KPIs Generales</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('combined-kpis')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('combined-kpis')">Exportar</button>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <span class="report-name">Forecast vs Actual (Todos)</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('combined-forecast')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('combined-forecast')">Exportar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom Reports -->
+            <div class="category-card">
+                <div class="category-header">
+                    <div class="category-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">✨</div>
+                    <div class="category-info">
+                        <h3>Reportes Personalizados</h3>
+                        <p>Tus reportes guardados</p>
+                    </div>
+                </div>
+                <div class="reports-list">
+                    <div class="report-item">
+                        <span class="report-name">Mi Reporte Semanal</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('custom-weekly')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('custom-weekly')">Exportar</button>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <span class="report-name">Análisis de Overtime Q1</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="viewReport('custom-overtime')">Ver</button>
+                            <button class="report-btn export" onclick="exportReport('custom-overtime')">Exportar</button>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <span class="report-name">+ Crear Nuevo Reporte</span>
+                        <div class="report-actions">
+                            <button class="report-btn view" onclick="openCustomReport()">Crear</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scheduled Reports -->
+        <div class="scheduled-section">
+            <h2>
+                <span>⏰</span>
+                <span>Reportes Programados</span>
+            </h2>
+            <div class="scheduled-list">
+                <div class="scheduled-item">
+                    <div class="scheduled-info">
+                        <h4>Resumen Semanal de Horas</h4>
+                        <p>Se envía todos los lunes a las 8:00 AM</p>
+                    </div>
+                    <span class="scheduled-badge active">Activo</span>
+                </div>
+                <div class="scheduled-item">
+                    <div class="scheduled-info">
+                        <h4>Reporte Mensual de Nómina</h4>
+                        <p>Se envía el primer día de cada mes a las 9:00 AM</p>
+                    </div>
+                    <span class="scheduled-badge active">Activo</span>
+                </div>
+                <div class="scheduled-item">
+                    <div class="scheduled-info">
+                        <h4>Dashboard Ejecutivo</h4>
+                        <p>Se envía todos los viernes a las 5:00 PM</p>
+                    </div>
+                    <span class="scheduled-badge paused">Pausado</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Preview Modal -->
+    <div class="modal" id="reportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>
+                    <span>📊</span>
+                    <span id="modalReportTitle">Vista Previa del Reporte</span>
+                </h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="report-preview">
+                    <div class="preview-placeholder">
+                        <i>📈</i>
+                        <h3>Vista Previa del Reporte</h3>
+                        <p>El reporte se generará con los datos seleccionados</p>
+                        <p style="margin-top: 1rem; font-size: 0.875rem;">En producción, aquí se mostrarían tablas, gráficas y datos reales</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="downloadReport()">
+                    <span>📥 Descargar Reporte</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // View Report
+        function viewReport(reportId) {
+            console.log('📊 Abriendo reporte:', reportId);
+            
+            const reportTitles = {
+                'hours-summary': 'Resumen de Horas Trabajadas',
+                'project-status': 'Estado de Proyectos',
+                'equipment-utilization': 'Utilización de Equipos',
+                'payroll-summary': 'Resumen de Nómina',
+                'timesync-hours': 'Horas Trabajadas por Proyecto',
+                'timesync-approvals': 'Timesheet Approvals',
+                'timesync-overtime': 'Overtime Analysis',
+                'timesync-timeline': 'Project Timeline & Status',
+                'timesync-assignments': 'Staff Assignments',
+                'warehouse-inventory': 'Inventario Total',
+                'warehouse-usage': 'Equipos en Uso vs Disponibles',
+                'warehouse-maintenance': 'Historial de Mantenimientos',
+                'warehouse-assignments': 'Asignaciones de Equipos',
+                'warehouse-depreciation': 'Depreciación de Activos',
+                'hr-payroll': 'Nómina Mensual',
+                'hr-attendance': 'Asistencia y Ausencias',
+                'hr-leaves': 'Vacaciones y Permisos',
+                'hr-certifications': 'Certificaciones del Personal',
+                'hr-performance': 'Performance Reviews',
+                'finance-pl': 'P&L por Proyecto',
+                'finance-labor': 'Costos Laborales',
+                'finance-budget': 'Budget vs Actual',
+                'finance-cashflow': 'Cash Flow Projection',
+                'finance-profitability': 'Rentabilidad por Cliente',
+                'combined-executive': 'Dashboard Ejecutivo',
+                'combined-resources': 'Utilización Total de Recursos',
+                'combined-costs': 'Costos Totales por Proyecto',
+                'combined-kpis': 'KPIs Generales',
+                'combined-forecast': 'Forecast vs Actual (Todos)',
+                'custom-weekly': 'Mi Reporte Semanal',
+                'custom-overtime': 'Análisis de Overtime Q1'
+            };
+            
+            const title = reportTitles[reportId] || 'Reporte';
+            document.getElementById('modalReportTitle').textContent = title;
+            document.getElementById('reportModal').classList.add('active');
+            
+            console.log('✅ Modal de reporte abierto:', title);
+        }
+
+        // Export Report
+        function exportReport(reportId) {
+            console.log('📥 Exportando reporte:', reportId);
+            const format = document.getElementById('formatFilter').value;
+            alert(`📥 Exportando reporte en formato ${format.toUpperCase()}\n\nReporte: ${reportId}\n\nEl archivo se descargará automáticamente.`);
+        }
+
+        // Close Modal
+        function closeModal() {
+            document.getElementById('reportModal').classList.remove('active');
+        }
+
+        // Download Report
+        function downloadReport() {
+            const format = document.getElementById('formatFilter').value;
+            alert(`✅ Reporte descargado exitosamente en formato ${format.toUpperCase()}`);
+            closeModal();
+        }
+
+        // Custom Report
+        function openCustomReport() {
+            console.log('✨ Abriendo creador de reportes personalizados');
+            alert('✨ Creador de Reportes Personalizados\n\nEsta función te permitirá:\n• Seleccionar campos específicos\n• Elegir filtros personalizados\n• Crear gráficas customizadas\n• Guardar para uso futuro\n\n(Próximamente)');
+        }
+
+        // Scheduled Reports
+        function openScheduledReports() {
+            console.log('⏰ Abriendo programador de reportes');
+            alert('⏰ Programador de Reportes\n\nConfigura reportes automáticos que se enviarán:\n• Por email\n• En horarios específicos\n• Con frecuencia personalizada\n\n(Próximamente)');
+        }
+
+        // Export All
+        function exportAll() {
+            console.log('📦 Exportando todos los reportes');
+            alert('📦 Exportar Todos los Reportes\n\nSe generará un paquete ZIP con:\n• Todos los reportes seleccionados\n• En el formato elegido\n• Con los filtros aplicados\n\n¿Continuar?');
+        }
+
+        // View History
+        function viewHistory() {
+            console.log('📜 Abriendo historial');
+            alert('📜 Historial de Reportes\n\nVer todos los reportes generados:\n• Fecha de generación\n• Usuario que lo generó\n• Descargar versiones anteriores\n\n(Próximamente)');
+        }
+
+        // Set default dates
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            
+            document.getElementById('startDate').valueAsDate = firstDay;
+            document.getElementById('endDate').valueAsDate = today;
+            
+            console.log('✅ Reports.html inicializado');
+            console.log('📊 Módulos: Warehouse, TimeSync, HR, Finance');
+            console.log('🎯 Reportes cross-módulo disponibles');
+        });
+
+        // Close modal on outside click
+        document.getElementById('reportModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
