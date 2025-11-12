@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portal del Contratista · Opsis Suite</title>
+    <script>
+      (function () {
+        try {
+          var settings = JSON.parse(localStorage.getItem('opsis_settings') || '{}');
+          var theme = settings.theme || 'light';
+          document.documentElement.dataset.theme = theme;
+        } catch (err) {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
+    <link rel="stylesheet" href="portal.css" />
+  </head>
+  <body class="portal-shell">
+    <header class="portal-header">
+      <div class="portal-logo">
+        <div class="logo-icon"></div>
+        <div>
+          <div class="portal-logo-title">Opsis Suite</div>
+          <p class="portal-logo-sub">Portal contratistas · <span id="contractor-company-label">Tu compañía</span></p>
+        </div>
+      </div>
+      <div class="portal-header-actions">
+        <button class="btn btn-ghost theme-toggle" id="contractor-theme-toggle" aria-label="Cambiar tema">🌙</button>
+        <button class="btn btn-secondary" id="btn-contractor-export">Descargar CSV</button>
+        <button class="btn btn-primary" id="btn-contractor-new">Nuevo proyecto</button>
+      </div>
+    </header>
+
+    <main class="portal-main">
+      <section class="portal-hero">
+        <div>
+          <p class="dashboard-kicker">Portal contratista</p>
+          <h1>Operaciones para <span id="contractor-greeting-name">Contratista</span></h1>
+          <p>Coordinando junto a <strong id="contractor-company-name">Tu compañía</strong>.</p>
+        </div>
+        <div class="portal-hero-meta">
+          <div class="portal-meta-card">
+            <span>Cuenta</span>
+            <strong id="contractor-badge">Contratista</strong>
+          </div>
+          <div class="portal-meta-card">
+            <span>Actualizado</span>
+            <strong id="contractor-last-update">Hoy</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="portal-section">
+        <div class="dashboard-summary">
+          <div class="summary-card active">
+            <div class="summary-card-label">Proyectos activos</div>
+            <div class="summary-card-value" id="contractor-kpi-projects">0</div>
+            <div class="summary-card-trend" id="contractor-kpi-projects-hint">—</div>
+            <div class="summary-card-detail">Distribuidos en agenda</div>
+          </div>
+          <div class="summary-card completed">
+            <div class="summary-card-label">Valor en curso</div>
+            <div class="summary-card-value" id="contractor-kpi-value">$0</div>
+            <div class="summary-card-trend" id="contractor-kpi-value-hint">—</div>
+            <div class="summary-card-detail">Importe comprometido</div>
+          </div>
+          <div class="summary-card upcoming">
+            <div class="summary-card-label">Cuadrillas en sitio</div>
+            <div class="summary-card-value" id="contractor-kpi-crew">0</div>
+            <div class="summary-card-trend" id="contractor-kpi-crew-hint">—</div>
+            <div class="summary-card-detail">Personas asignadas</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="portal-section">
+        <div class="section-header">
+          <div>
+            <h2>Órdenes por frentes</h2>
+            <p>Prioriza tus ubicaciones activas.</p>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Estado</th>
+                <th>Monto</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody id="contractor-orders-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="portal-section">
+        <div class="portal-grid">
+          <div>
+            <div class="section-header" style="margin-bottom:12px;">
+              <div>
+                <h2>Detalle del proyecto</h2>
+                <p>Próximos hitos y responsables.</p>
+              </div>
+            </div>
+            <div id="contractor-detail-grid" class="portal-grid" style="grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));"></div>
+            <ul class="portal-timeline" id="contractor-timeline"></ul>
+          </div>
+          <div>
+            <div class="section-header" style="margin-bottom:12px;">
+              <div>
+                <h2>Solicitar cuadrilla</h2>
+                <p>Comparte la información del nuevo frente.</p>
+              </div>
+            </div>
+            <form id="contractor-request-form" class="portal-form" autocomplete="off">
+              <div>
+                <label>Sitio o proyecto</label>
+                <input type="text" name="site" required />
+              </div>
+              <div>
+                <label>Alcance</label>
+                <input type="text" name="scope" placeholder="Ej. Rough-in piso 7" required />
+              </div>
+              <div>
+                <label>Presupuesto estimado</label>
+                <input type="number" name="budget" min="0" step="100" />
+              </div>
+              <div>
+                <label>Urgencia</label>
+                <select name="urgency">
+                  <option value="normal">Normal</option>
+                  <option value="high">Alta</option>
+                  <option value="low">Baja</option>
+                </select>
+              </div>
+              <div>
+                <label>Notas</label>
+                <textarea name="notes" rows="3"></textarea>
+              </div>
+              <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Enviar solicitud</button>
+              </div>
+            </form>
+            <div class="portal-log" id="contractor-request-log"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="portal-shared.js"></script>
+    <script src="contractor-portal.js"></script>
+  </body>
+</html>

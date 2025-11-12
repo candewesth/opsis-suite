@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portal del Cliente · Opsis Suite</title>
+    <script>
+      (function () {
+        try {
+          var settings = JSON.parse(localStorage.getItem('opsis_settings') || '{}');
+          var theme = settings.theme || 'light';
+          document.documentElement.dataset.theme = theme;
+        } catch (err) {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
+    <link rel="stylesheet" href="portal.css" />
+  </head>
+  <body class="portal-shell">
+    <header class="portal-header">
+      <div class="portal-logo">
+        <div class="logo-icon"></div>
+        <div>
+          <div class="portal-logo-title">Opsis Suite</div>
+          <p class="portal-logo-sub">Portal clientes · <span id="portal-company-label">Tu compañía</span></p>
+        </div>
+      </div>
+      <div class="portal-header-actions">
+        <button class="btn btn-ghost theme-toggle" id="client-theme-toggle" aria-label="Cambiar tema">🌙</button>
+        <button class="btn btn-secondary" id="btn-client-support">Soporte</button>
+        <button class="btn btn-primary" id="btn-client-new">Solicitar servicio</button>
+      </div>
+    </header>
+
+    <main class="portal-main">
+      <section class="portal-hero">
+        <div>
+          <p class="dashboard-kicker">Portal cliente</p>
+          <h1>Hola, <span id="client-greeting-name">Cliente</span></h1>
+          <p>Operamos junto a <strong id="portal-company-name">Tu compañía</strong>.</p>
+        </div>
+        <div class="portal-hero-meta">
+          <div class="portal-meta-card">
+            <span>Cuenta</span>
+            <strong id="client-customer-name">—</strong>
+          </div>
+          <div class="portal-meta-card">
+            <span>Actualizado</span>
+            <strong id="client-last-update">Hoy</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="portal-section">
+        <div class="dashboard-summary">
+          <div class="summary-card active">
+            <div class="summary-card-label">Órdenes activas</div>
+            <div class="summary-card-value" id="client-kpi-open">0</div>
+            <div class="summary-card-trend" id="client-kpi-open-hint">—</div>
+            <div class="summary-card-detail">Seguimiento en sitio</div>
+          </div>
+          <div class="summary-card completed">
+            <div class="summary-card-label">Cotizaciones</div>
+            <div class="summary-card-value" id="client-kpi-quote">$0</div>
+            <div class="summary-card-trend" id="client-kpi-quote-hint">—</div>
+            <div class="summary-card-detail">Propuestas enviadas</div>
+          </div>
+          <div class="summary-card upcoming">
+            <div class="summary-card-label">Facturas pendientes</div>
+            <div class="summary-card-value" id="client-kpi-invoice">$0</div>
+            <div class="summary-card-trend" id="client-kpi-invoice-hint">—</div>
+            <div class="summary-card-detail">Próximos pagos</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="portal-section">
+        <div class="section-header">
+          <div>
+            <h2>Órdenes recientes</h2>
+            <p>Estado actualizado en tiempo real.</p>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Orden</th>
+                <th>Estado</th>
+                <th>Ventana</th>
+                <th>Importe</th>
+              </tr>
+            </thead>
+            <tbody id="client-orders-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="portal-section">
+        <div class="portal-grid">
+          <div>
+            <div class="section-header" style="margin-bottom:12px;">
+              <div>
+                <h2>Detalle de la orden</h2>
+                <p>Información operativa y próximas etapas.</p>
+              </div>
+            </div>
+            <div id="client-detail-grid" class="portal-grid" style="grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));"></div>
+            <ul class="portal-timeline" id="client-timeline"></ul>
+          </div>
+          <div>
+            <div class="section-header" style="margin-bottom:12px;">
+              <div>
+                <h2>Solicitar servicio</h2>
+                <p>Describe el trabajo que necesitas.</p>
+              </div>
+            </div>
+            <form id="client-request-form" class="portal-form" autocomplete="off">
+              <div>
+                <label>Dirección o sitio</label>
+                <input type="text" name="address" required />
+              </div>
+              <div>
+                <label>Resumen</label>
+                <input type="text" name="summary" placeholder="Área o tipo de trabajo" required />
+              </div>
+              <div>
+                <label>Fecha tentativa</label>
+                <input type="date" name="preferredDate" />
+              </div>
+              <div>
+                <label>Notas</label>
+                <textarea name="notes" rows="3" placeholder="Instrucciones adicionales"></textarea>
+              </div>
+              <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Enviar solicitud</button>
+              </div>
+            </form>
+            <div class="portal-log" id="client-request-log"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="portal-section">
+        <div class="section-header">
+          <div>
+            <h2>Documentos</h2>
+            <p>Cotizaciones e invoices asociados.</p>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Documento</th>
+                <th>Estado</th>
+                <th>Importe</th>
+                <th>Fecha</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="client-documents-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="portal-shared.js"></script>
+    <script src="client-portal.js"></script>
+  </body>
+</html>
