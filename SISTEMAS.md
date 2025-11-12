@@ -92,7 +92,40 @@ sistemas/
     └── package.json
 ```
 
-## 🚀 Guía Rápida
+## � Autenticación Centralizada
+
+**Todos los sistemas comparten un login único:**
+
+### Acceso a Sistemas
+```
+URL: https://opsis-suite.com/login-central.html
+
+Seleccionar sistema:
+  ├── 🚰 Plomería
+  ├── 🌿 Jardinería
+  ├── 📦 Logística
+  └── 🚚 Mudanza
+
+Credenciales de desarrollo:
+  Email:    dev@opsis-suite.com
+  Password: opsis-dev-2025
+  → Acceso a Super Admin Panel
+```
+
+### Flujo de Autenticación
+1. Usuario entra a `login-central.html`
+2. Selecciona sistema
+3. Ingresa credenciales
+4. Sistema valida y crea token
+5. Routing automático:
+   - **Dev/Admin** → Super Admin Panel (`./admin/superadmin.html`)
+   - **Usuario** → Sistema asignado (`./sistemas/[sistema]/legacy/index.html`)
+
+**Ver:** [AUTHENTICATION.md](./docs/AUTHENTICATION.md) para más detalles
+
+---
+
+## �🚀 Guía Rápida
 
 ### 1. Clonar el repositorio
 ```bash
@@ -100,19 +133,26 @@ git clone https://github.com/candewesth/opsis-suite.git
 cd opsis-suite
 ```
 
-### 2. Instalar dependencias de un sistema
+### 2. Acceder al Super Admin Panel (Desarrollo)
+```
+1. Abre: https://opsis-suite.com/login-central.html
+2. Usa: dev@opsis-suite.com / opsis-dev-2025
+3. Acceso completo a todos los sistemas
+```
+
+### 3. Instalar dependencias de un sistema
 ```bash
 cd sistemas/plomeria/web
 npm install
 ```
 
-### 3. Conectar a Supabase
+### 4. Conectar a Supabase
 - Crear proyecto en Supabase
-- Copiar `supabase/migrations/0002_complete_schema.sql`
+- Copiar `sistemas/plomeria/supabase/migrations/0002_complete_schema.sql`
 - Ejecutar en Supabase SQL Editor
 - Configurar `.env.local` con credenciales
 
-### 4. Ejecutar desarrollo
+### 5. Ejecutar desarrollo
 ```bash
 cd sistemas/plomeria/web
 npm run dev
