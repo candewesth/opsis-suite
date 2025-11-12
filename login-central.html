@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - Opsis Suite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #1d1d1f;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            padding: 2rem;
+            z-index: 10;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo-text {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 0.25rem;
+        }
+
+        .logo-subtitle {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+
+        .system-selector {
+            margin-bottom: 1.5rem;
+        }
+
+        .system-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.75rem;
+        }
+
+        .system-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .system-option {
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .system-option:hover {
+            border-color: #d1d5db;
+            background: #f9fafb;
+        }
+
+        .system-option.selected {
+            border-color: #0066cc;
+            background: #f0f7ff;
+        }
+
+        .system-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .system-name {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 0.75rem;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+        }
+
+        .btn-login:hover {
+            background: #0052a3;
+        }
+
+        .btn-login:active {
+            transform: scale(0.98);
+        }
+
+        .btn-login:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            display: none;
+            padding: 0.75rem;
+            background: #fee2e2;
+            color: #dc2626;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .info-box {
+            background: #f0f7ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.75rem;
+            color: #1e40af;
+        }
+
+        .info-box code {
+            background: white;
+            padding: 0.125rem 0.25rem;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 1.5rem 0;
+            color: #9ca3af;
+            font-size: 0.875rem;
+        }
+
+        .divider::before {
+            content: '';
+            display: inline-block;
+            width: 100%;
+            max-width: 100px;
+            height: 1px;
+            background: #e5e7eb;
+            vertical-align: middle;
+            margin-right: 0.5rem;
+        }
+
+        .divider::after {
+            content: '';
+            display: inline-block;
+            width: 100%;
+            max-width: 100px;
+            height: 1px;
+            background: #e5e7eb;
+            vertical-align: middle;
+            margin-left: 0.5rem;
+        }
+
+        .success-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .success-screen.show {
+            display: block;
+        }
+
+        .success-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: scaleIn 0.3s ease-out;
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .success-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 0.5rem;
+        }
+
+        .success-subtext {
+            color: #6b7280;
+            margin-bottom: 2rem;
+        }
+
+        .home-btn {
+            position: fixed;
+            top: 1.5rem;
+            left: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            color: #374151;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 20;
+        }
+
+        .home-btn:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+
+        .arrow {
+            font-size: 1.25rem;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .login-card {
+                padding: 1.5rem;
+            }
+
+            .system-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="home-btn">
+        <span class="arrow">←</span>
+        <span>Back to Home</span>
+    </a>
+
+    <div class="container">
+        <div class="login-card">
+            <div class="logo-section">
+                <div class="logo-icon">🔐</div>
+                <h1 class="logo-text">Opsis Suite</h1>
+                <p class="logo-subtitle">Enterprise Management Systems</p>
+            </div>
+
+            <div id="loginForm">
+                <div id="errorMessage" class="error-message"></div>
+
+                <!-- Developer Info Box -->
+                <div class="info-box" id="devBox" style="display: none;">
+                    <strong>👨‍💻 Developer Mode</strong><br>
+                    Email: <code>dev@opsis-suite.com</code><br>
+                    Password: <code>opsis-dev-2025</code>
+                </div>
+
+                <!-- System Selector -->
+                <div class="system-selector">
+                    <label class="system-label">Select System</label>
+                    <div class="system-grid">
+                        <div class="system-option selected" data-system="plomeria">
+                            <div class="system-icon">🚰</div>
+                            <div class="system-name">Plomería</div>
+                        </div>
+                        <div class="system-option" data-system="jardineria">
+                            <div class="system-icon">🌿</div>
+                            <div class="system-name">Jardinería</div>
+                        </div>
+                        <div class="system-option" data-system="logistica">
+                            <div class="system-icon">📦</div>
+                            <div class="system-name">Logística</div>
+                        </div>
+                        <div class="system-option" data-system="mudanza">
+                            <div class="system-icon">🚚</div>
+                            <div class="system-name">Mudanza</div>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="authForm" autocomplete="off">
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input
+                            type="email"
+                            id="email"
+                            class="form-input"
+                            placeholder="your@email.com"
+                            required
+                            autocomplete="off"
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <input
+                            type="password"
+                            id="password"
+                            class="form-input"
+                            placeholder="••••••••"
+                            required
+                            autocomplete="off"
+                        />
+                    </div>
+
+                    <button type="submit" class="btn-login" id="loginBtn">Sign In</button>
+                </form>
+            </div>
+
+            <div id="successScreen" class="success-screen">
+                <div class="success-icon">✓</div>
+                <div class="success-text">Welcome!</div>
+                <div class="success-subtext">Redirecting to your workspace...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./js/login-central.js"></script>
+    <script>
+        let selectedSystem = 'plomeria';
+
+        // System selector
+        document.querySelectorAll('.system-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.system-option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedSystem = this.getAttribute('data-system');
+            });
+        });
+
+        // Show dev box if email contains 'dev'
+        document.getElementById('email').addEventListener('input', function() {
+            const devBox = document.getElementById('devBox');
+            if (this.value.includes('dev')) {
+                devBox.style.display = 'block';
+            } else {
+                devBox.style.display = 'none';
+            }
+        });
+
+        // Login form submission
+        document.getElementById('authForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('errorMessage');
+            const loginBtn = document.getElementById('loginBtn');
+
+            // Clear previous errors
+            errorMessage.textContent = '';
+            errorMessage.classList.remove('show');
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Signing in...';
+
+            try {
+                // Authenticate using central auth system
+                const result = OpsiAuth.authenticate(email, password, selectedSystem);
+
+                if (!result.success) {
+                    errorMessage.textContent = result.error;
+                    errorMessage.classList.add('show');
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Sign In';
+                    return;
+                }
+
+                // Show success screen
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('successScreen').classList.add('show');
+
+                // Store selected system
+                OpsiAuth.setCurrentSystem(selectedSystem);
+
+                // Redirect after 1.5 seconds
+                setTimeout(() => {
+                    OpsiAuth.routeAfterLogin(selectedSystem);
+                }, 1500);
+
+            } catch (error) {
+                console.error('Authentication error:', error);
+                errorMessage.textContent = 'An error occurred. Please try again.';
+                errorMessage.classList.add('show');
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Sign In';
+            }
+        });
+
+        // Check if already logged in
+        window.addEventListener('load', () => {
+            if (OpsiAuth.isAuthenticated()) {
+                // Show success and redirect
+                const user = OpsiAuth.getCurrentUser();
+                if (user.role === 'super_admin' || user.role === 'admin') {
+                    window.location.href = './admin/superadmin.html';
+                } else {
+                    window.location.href = OpsiAuth.getRedirectUrl(user, selectedSystem);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
