@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planes de Precios - Plomería Opsis Suite</title>
+    <title>Planes de Precios - Opsis Suite</title>
     <style>
         * {
             margin: 0;
@@ -19,6 +19,7 @@
             --text-dark: #1d1d1f;
             --bg-light: #f8f9fa;
             --border-light: #e0e0e0;
+            --system-color: #0066cc;
         }
 
         body {
@@ -91,7 +92,7 @@
         }
 
         .nav-links a:hover {
-            color: var(--sapphire);
+            color: var(--system-color);
         }
 
         /* HERO SECTION */
@@ -126,7 +127,7 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            background: var(--sapphire);
+            background: var(--system-color);
             color: white;
             border: none;
             padding: 0.5rem 1rem;
@@ -134,6 +135,45 @@
             cursor: pointer;
             font-weight: bold;
             z-index: 999;
+        }
+
+        /* SYSTEM SELECTOR */
+        .system-selector {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem 0 3rem;
+            flex-wrap: wrap;
+        }
+
+        .system-btn {
+            background: white;
+            border: 2px solid var(--border-light);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: var(--text-dark);
+        }
+
+        [data-theme='dark'] .system-btn {
+            background: #2b2f33;
+            border-color: #444;
+            color: #e0e0e0;
+        }
+
+        .system-btn:hover {
+            border-color: var(--system-color);
+            transform: translateY(-2px);
+        }
+
+        .system-btn.active {
+            background: var(--system-color);
+            color: white;
+            border-color: var(--system-color);
+            box-shadow: 0 10px 30px rgba(0, 102, 204, 0.3);
         }
 
         /* PRICING CONTAINER */
@@ -168,7 +208,7 @@
         }
 
         .pricing-card.featured {
-            border-color: var(--sapphire);
+            border-color: var(--system-color);
             border-width: 3px;
             transform: scale(1.05);
             box-shadow: 0 20px 60px rgba(0, 102, 204, 0.15);
@@ -179,7 +219,7 @@
             top: -15px;
             left: 50%;
             transform: translateX(-50%);
-            background: linear-gradient(135deg, var(--sapphire), #0052a3);
+            background: linear-gradient(135deg, var(--system-color), #0052a3);
             color: white;
             padding: 0.5rem 1.5rem;
             border-radius: 50px;
@@ -214,7 +254,7 @@
             font-size: 2.5rem;
             font-weight: 800;
             margin-bottom: 0.5rem;
-            color: var(--text-dark);
+            color: var(--system-color);
         }
 
         .price-period {
@@ -228,7 +268,7 @@
         }
 
         .cta-button {
-            background: linear-gradient(135deg, var(--sapphire), #0052a3);
+            background: linear-gradient(135deg, var(--system-color), #0052a3);
             color: white;
             border: none;
             padding: 1rem 2rem;
@@ -312,7 +352,7 @@
         }
 
         .comparison-table th {
-            background: linear-gradient(135deg, var(--sapphire), #0052a3);
+            background: linear-gradient(135deg, var(--system-color), #0052a3);
             color: white;
             padding: 1.5rem;
             text-align: left;
@@ -322,6 +362,7 @@
         .comparison-table td {
             padding: 1.2rem 1.5rem;
             border-bottom: 1px solid var(--border-light);
+            text-align: center;
         }
 
         [data-theme='dark'] .comparison-table td {
@@ -336,10 +377,7 @@
             font-weight: 600;
             color: var(--text-dark);
             width: 200px;
-        }
-
-        .comparison-table td {
-            text-align: center;
+            text-align: left;
         }
 
         /* FOOTER */
@@ -352,7 +390,7 @@
         }
 
         .footer a {
-            color: var(--sapphire);
+            color: var(--system-color);
             text-decoration: none;
         }
 
@@ -394,6 +432,11 @@
             .pricing-grid {
                 grid-template-columns: 1fr;
             }
+
+            .system-btn {
+                padding: 0.8rem 1rem;
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
@@ -404,11 +447,11 @@
     <!-- Header -->
     <header class="header">
         <div class="header-content">
-            <a href="index.html" class="logo">🚰 Opsis Plomería</a>
+            <a href="index.html" class="logo" id="header-logo">🚰 Opsis Plomería</a>
             <nav class="nav-links">
                 <a href="index.html">Inicio</a>
                 <a href="solutions.html">Soluciones</a>
-                <a href="pricing.html" style="color: var(--sapphire); font-weight: 600;">Precios</a>
+                <a href="pricing.html" style="color: var(--system-color); font-weight: 600;">Precios</a>
                 <a href="contact.html">Contacto</a>
             </nav>
         </div>
@@ -416,93 +459,24 @@
 
     <!-- Hero Section -->
     <section class="hero">
-        <h1 class="hero-title">Planes de Precios para Plomería</h1>
-        <p class="hero-subtitle">Elige el plan perfecto para tu empresa de plomería. Desde startup hasta empresa grande, tenemos la solución adecuada.</p>
+        <h1 class="hero-title">Planes de Precios para <span id="hero-system">Plomería</span></h1>
+        <p class="hero-subtitle">Elige el plan perfecto para tu empresa. Desde startup hasta empresa grande, tenemos la solución adecuada.</p>
+    </section>
+
+    <!-- System Selector -->
+    <section class="pricing-container">
+        <div class="system-selector">
+            <button class="system-btn active" onclick="selectSystem('plomeria', this)">🚰 Plomería</button>
+            <button class="system-btn" onclick="selectSystem('jardineria', this)">🌿 Jardinería</button>
+            <button class="system-btn" onclick="selectSystem('logistica', this)">📦 Logística</button>
+            <button class="system-btn" onclick="selectSystem('mudanza', this)">🚚 Mudanza</button>
+        </div>
     </section>
 
     <!-- Pricing Cards -->
     <section class="pricing-container">
-        <div class="pricing-grid">
-            <!-- OPAL PLAN -->
-            <div class="pricing-card">
-                <div class="plan-icon">💎</div>
-                <h2 class="plan-name">Opal</h2>
-                <p class="plan-description">Perfecto para comenzar. Acceso básico solo para propietario y administrador.</p>
-                <div class="price">$29</div>
-                <p class="price-period">por mes</p>
-                <button class="cta-button" onclick="alert('Iniciar prueba de Opal')">Comenzar Ahora</button>
-                <ul class="features-list">
-                    <li><span class="check-icon">✓</span> Acceso Owner + Admin</li>
-                    <li><span class="check-icon">✓</span> Panel básico de control</li>
-                    <li><span class="check-icon">✓</span> 1 usuario administrativo</li>
-                    <li><span class="check-icon">✓</span> Gestión básica de trabajos</li>
-                    <li><span class="cross-icon">✗</span> Gestión de clientes</li>
-                    <li><span class="cross-icon">✗</span> Integraciones con contratistas</li>
-                    <li><span class="cross-icon">✗</span> Portal de proveedores</li>
-                    <li><span class="cross-icon">✗</span> Reportes avanzados</li>
-                </ul>
-            </div>
-
-            <!-- SAPPHIRE PLAN -->
-            <div class="pricing-card">
-                <div class="plan-icon">👥</div>
-                <h2 class="plan-name">Sapphire</h2>
-                <p class="plan-description">Para empresas en crecimiento. Gestión completa de clientes.</p>
-                <div class="price">$79</div>
-                <p class="price-period">por mes</p>
-                <button class="cta-button" onclick="alert('Iniciar prueba de Sapphire')">Comenzar Ahora</button>
-                <ul class="features-list">
-                    <li><span class="check-icon">✓</span> Acceso Owner + Admin</li>
-                    <li><span class="check-icon">✓</span> Hasta 5 usuarios</li>
-                    <li><span class="check-icon">✓</span> Gestión completa de clientes</li>
-                    <li><span class="check-icon">✓</span> Historial de servicios</li>
-                    <li><span class="check-icon">✓</span> Cotizaciones y presupuestos</li>
-                    <li><span class="cross-icon">✗</span> Integraciones con contratistas</li>
-                    <li><span class="cross-icon">✗</span> Portal de proveedores</li>
-                    <li><span class="cross-icon">✗</span> Reportes avanzados</li>
-                </ul>
-            </div>
-
-            <!-- DIAMOND PLAN -->
-            <div class="pricing-card">
-                <div class="plan-icon">💼</div>
-                <h2 class="plan-name">Diamond</h2>
-                <p class="plan-description">Empresarial con integraciones avanzadas. Gestión de contratistas.</p>
-                <div class="price">$149</div>
-                <p class="price-period">por mes</p>
-                <button class="cta-button" onclick="alert('Iniciar prueba de Diamond')">Comenzar Ahora</button>
-                <ul class="features-list">
-                    <li><span class="check-icon">✓</span> Acceso Owner + Admin + Contractor</li>
-                    <li><span class="check-icon">✓</span> Hasta 15 usuarios</li>
-                    <li><span class="check-icon">✓</span> Gestión completa de clientes</li>
-                    <li><span class="check-icon">✓</span> Gestión de contratistas</li>
-                    <li><span class="check-icon">✓</span> Asignación de trabajos</li>
-                    <li><span class="check-icon">✓</span> Seguimiento en tiempo real</li>
-                    <li><span class="cross-icon">✗</span> Portal de proveedores</li>
-                    <li><span class="cross-icon">✗</span> Integraciones de pago avanzadas</li>
-                </ul>
-            </div>
-
-            <!-- ONYX PLAN (FEATURED) -->
-            <div class="pricing-card featured">
-                <div class="badge">⭐ MÁS POPULAR</div>
-                <div class="plan-icon">👑</div>
-                <h2 class="plan-name">Onyx</h2>
-                <p class="plan-description">Premium. Todas las características + integraciones con proveedores y clientes.</p>
-                <div class="price">$299</div>
-                <p class="price-period">por mes</p>
-                <button class="cta-button" onclick="alert('Iniciar prueba de Onyx')">Comenzar Ahora</button>
-                <ul class="features-list">
-                    <li><span class="check-icon">✓</span> Acceso Owner + Admin + Contractor + Customer</li>
-                    <li><span class="check-icon">✓</span> Usuarios ilimitados</li>
-                    <li><span class="check-icon">✓</span> Gestión completa de clientes</li>
-                    <li><span class="check-icon">✓</span> Gestión de contratistas</li>
-                    <li><span class="check-icon">✓</span> Portal de proveedores</li>
-                    <li><span class="check-icon">✓</span> Integraciones de pago</li>
-                    <li><span class="check-icon">✓</span> Reportes avanzados y analytics</li>
-                    <li><span class="check-icon">✓</span> Soporte prioritario 24/7</li>
-                </ul>
-            </div>
+        <div class="pricing-grid" id="pricing-grid">
+            <!-- Tarjetas se generan dinámicamente -->
         </div>
 
         <!-- Comparison Table -->
@@ -518,77 +492,8 @@
                         <th>Onyx</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td class="feature-name"><strong>Precio</strong></td>
-                        <td>$29/mes</td>
-                        <td>$79/mes</td>
-                        <td>$149/mes</td>
-                        <td>$299/mes</td>
-                    </tr>
-                    <tr>
-                        <td class="feature-name"><strong>Usuarios</strong></td>
-                        <td>1 (Admin)</td>
-                        <td>Hasta 5</td>
-                        <td>Hasta 15</td>
-                        <td>Ilimitados</td>
-                    </tr>
-                    <tr>
-                        <td class="feature-name"><strong>Gestión de Clientes</strong></td>
-                        <td>✗</td>
-                        <td>✓</td>
-                        <td>✓</td>
-                        <td>✓</td>
-                    </tr>
-                    <tr>
-                        <td class="feature-name"><strong>Gestión de Contratistas</strong></td>
-                        <td>✗</td>
-                        <td>✗</td>
-                        <td>✓</td>
-                        <td>✓</td>
-                    </tr>
-                    <tr>
-                        <td class="feature-name"><strong>Portal de Proveedores</strong></td>
-                        <td>✗</td>
-                        <td>✗</td>
-                        <td>✗</td>
-                        <td>✓</td>
-                    </tr>
-                    <tr>
-                        <td class="feature-name"><strong>Asignación de Trabajos</strong></td>
-                        <td>✗</td>
-                        <td>Básica</td>
-                        <td>✓</td>
-                        <td>✓</td>
-                    </tr>
-                    <tr>
-                        <td class="feature-name"><strong>Seguimiento en Tiempo Real</strong></td>
-                        <td>✗</td>
-                        <td>✗</td>
-                        <td>✓</td>
-                        <td>✓</td>
-                    </tr>
-                    <tr>
-                        <td class="feature-name"><strong>Integraciones de Pago</strong></td>
-                        <td>✗</td>
-                        <td>✗</td>
-                        <td>✗</td>
-                        <td>✓</td>
-                    </tr>
-                    <tr>
-                        <td class="feature-name"><strong>Reportes Avanzados</strong></td>
-                        <td>✗</td>
-                        <td>Básicos</td>
-                        <td>Estándar</td>
-                        <td>✓ Avanzados</td>
-                    </tr>
-                    <tr>
-                        <td class="feature-name"><strong>Soporte</strong></td>
-                        <td>Email</td>
-                        <td>Email</td>
-                        <td>Chat</td>
-                        <td>24/7 Prioritario</td>
-                    </tr>
+                <tbody id="comparison-tbody">
+                    <!-- Se genera dinámicamente -->
                 </tbody>
             </table>
         </section>
@@ -596,7 +501,7 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <p>&copy; 2025 Opsis Plomería. Todos los derechos reservados.</p>
+        <p>&copy; 2025 Opsis Suite. Todos los derechos reservados.</p>
         <p>
             <a href="#">Términos de Servicio</a> | 
             <a href="#">Privacidad</a> | 
@@ -604,7 +509,148 @@
         </p>
     </footer>
 
+    <script src="js/pricing-config.js"></script>
     <script>
+        // Variables globales
+        let currentSystem = 'plomeria';
+        const planNames = ['basic', 'professional', 'enterprise', 'premium'];
+        const planDisplayNames = ['Opal', 'Sapphire', 'Diamond', 'Onyx'];
+        const planIcons = ['💎', '👥', '💼', '👑'];
+
+        // Función para cambiar de sistema
+        function selectSystem(system, button) {
+            currentSystem = system;
+
+            // Actualizar botón activo
+            document.querySelectorAll('.system-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            button.classList.add('active');
+
+            // Obtener configuración del sistema
+            const config = pricingConfig[system];
+            const systemColor = config.color;
+
+            // Actualizar variables CSS
+            document.documentElement.style.setProperty('--system-color', systemColor);
+
+            // Actualizar header y hero
+            document.getElementById('header-logo').textContent = `${config.icon} Opsis ${config.name}`;
+            document.getElementById('hero-system').textContent = config.name;
+
+            // Regenerar tarjetas de pricing
+            renderPricingCards();
+
+            // Actualizar tabla de comparación
+            updateComparisonTable();
+        }
+
+        // Función para generar tarjetas dinámicamente
+        function renderPricingCards() {
+            const grid = document.getElementById('pricing-grid');
+            grid.innerHTML = '';
+
+            const config = pricingConfig[currentSystem];
+            
+            planNames.forEach((planKey, index) => {
+                const plan = config.plans[planKey];
+                const displayName = planDisplayNames[index];
+                const icon = planIcons[index];
+                const isFeatured = index === 3; // Onyx/Premium es el más popular
+
+                const card = document.createElement('div');
+                card.className = `pricing-card ${isFeatured ? 'featured' : ''}`;
+
+                let badgeHTML = '';
+                if (isFeatured) {
+                    badgeHTML = '<div class="badge">⭐ MÁS POPULAR</div>';
+                }
+
+                const featuresHTML = plan.features.map(feature => {
+                    const isIncluded = feature.startsWith('✓');
+                    const icon = isIncluded ? '<span class="check-icon">✓</span>' : '<span class="cross-icon">✗</span>';
+                    const text = feature.replace('✓ ', '').replace('✗ ', '');
+                    return `<li>${icon} ${text}</li>`;
+                }).join('');
+
+                card.innerHTML = `
+                    ${badgeHTML}
+                    <div class="plan-icon">${icon}</div>
+                    <h2 class="plan-name">${displayName}</h2>
+                    <p class="plan-description">${plan.description}</p>
+                    <div class="price">$${plan.price}</div>
+                    <p class="price-period">por mes</p>
+                    <button class="cta-button" onclick="alert('Iniciar prueba de ${displayName}')">Comenzar Ahora</button>
+                    <ul class="features-list">
+                        ${featuresHTML}
+                    </ul>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        // Función para actualizar tabla de comparación
+        function updateComparisonTable() {
+            const config = pricingConfig[currentSystem];
+            const tbody = document.getElementById('comparison-tbody');
+            tbody.innerHTML = '';
+
+            // Fila de precios
+            let priceRow = '<tr><td class="feature-name"><strong>Precio</strong></td>';
+            planNames.forEach(planKey => {
+                priceRow += `<td>$${config.plans[planKey].price}/mes</td>`;
+            });
+            priceRow += '</tr>';
+            tbody.innerHTML += priceRow;
+
+            // Fila de usuarios
+            let usersRow = '<tr><td class="feature-name"><strong>Usuarios</strong></td>';
+            usersRow += '<td>1 (Admin)</td>';
+            usersRow += `<td>Hasta ${config.plans.professional.users || 5}</td>`;
+            usersRow += `<td>Hasta ${config.plans.enterprise.users || 15}</td>`;
+            usersRow += '<td>Ilimitados</td>';
+            usersRow += '</tr>';
+            tbody.innerHTML += usersRow;
+
+            // Otras características comunes
+            const features = [
+                'Gestión de Clientes',
+                'Gestión de Contratistas',
+                'Portal de Proveedores',
+                'Asignación de Trabajos',
+                'Seguimiento en Tiempo Real',
+                'Integraciones de Pago',
+                'Reportes Avanzados',
+                'Soporte'
+            ];
+
+            features.forEach((feature, idx) => {
+                let row = `<tr><td class="feature-name"><strong>${feature}</strong></td>`;
+                const featureValues = getFeatureValuesBySystem(feature);
+                featureValues.forEach(value => {
+                    row += `<td>${value}</td>`;
+                });
+                row += '</tr>';
+                tbody.innerHTML += row;
+            });
+        }
+
+        // Función auxiliar para obtener valores de características por sistema
+        function getFeatureValuesBySystem(feature) {
+            const values = {
+                'Gestión de Clientes': ['✗', '✓', '✓', '✓'],
+                'Gestión de Contratistas': ['✗', '✗', '✓', '✓'],
+                'Portal de Proveedores': ['✗', '✗', '✗', '✓'],
+                'Asignación de Trabajos': ['✗', 'Básica', '✓', '✓'],
+                'Seguimiento en Tiempo Real': ['✗', '✗', '✓', '✓'],
+                'Integraciones de Pago': ['✗', '✗', '✗', '✓'],
+                'Reportes Avanzados': ['✗', 'Básicos', 'Estándar', '✓ Avanzados'],
+                'Soporte': ['Email', 'Email', 'Chat', '24/7 Prioritario']
+            };
+            return values[feature] || ['✗', '✗', '✗', '✓'];
+        }
+
         // Dark mode toggle
         function toggleTheme() {
             const html = document.documentElement;
@@ -623,10 +669,15 @@
             document.documentElement.setAttribute('data-theme', savedTheme);
             const button = document.querySelector('.toggle-theme');
             button.textContent = savedTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
+
+            // Inicializar con Plomería
+            renderPricingCards();
+            updateComparisonTable();
         });
 
-        console.log('🎊 Opsis Plomería - Planes de Precios Cargados');
-        console.log('Planes: Opal ($29) → Sapphire ($79) → Diamond ($149) → Onyx ($299)');
+        console.log('🎊 Opsis Suite - Planes de Precios Cargados (Sistema Dinámico)');
+        console.log('Sistemas disponibles: Plomería, Jardinería, Logística, Mudanza');
+        console.log('Planes: Opal → Sapphire → Diamond → Onyx (con precios dinámicos)');
     </script>
 </body>
 </html>
