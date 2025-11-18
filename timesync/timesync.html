@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeSync Dashboard - Opsis Suite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', 'Neue Helvetica', Arial, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            color: #022326;
+            line-height: 1.6;
+        }
+
+        /* ANIMATIONS */
+        @keyframes aire {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* HEADER */
+        .header {
+            background: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid #e9ecef;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1800px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #022326, #034040, #035951, #02735E);
+            background-size: 400% 400%;
+            animation: aire 12s ease-in-out infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .module-badge {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            background: linear-gradient(135deg, #022326, #034040, #035951, #02735E);
+            background-size: 400% 400%;
+            animation: aire 12s ease-in-out infinite;
+            color: white;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-btn {
+            padding: 0.7rem 1.3rem;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            color: #034040;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-btn:hover {
+            border-color: #02735E;
+            color: #02735E;
+            transform: translateY(-2px);
+        }
+
+        .nav-btn-primary {
+            background: linear-gradient(135deg, #022326, #034040, #035951, #02735E);
+            background-size: 400% 400%;
+            animation: aire 12s ease-in-out infinite;
+            border: none;
+            color: white;
+        }
+
+        .nav-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(2, 115, 94, 0.3);
+        }
+
+        /* CONTAINER */
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* PAGE HEADER */
+        .page-header {
+            margin-bottom: 3rem;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #022326;
+        }
+
+        .page-subtitle {
+            color: #034040;
+            font-size: 1.1rem;
+        }
+
+        .company-name {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            background: linear-gradient(135deg, rgba(2, 35, 38, 0.1), rgba(3, 89, 81, 0.1));
+            border-radius: 8px;
+            font-weight: 600;
+            color: #02735E;
+            margin-left: 0.5rem;
+        }
+
+        /* STATS GRID */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(2, 35, 38, 0.08);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.8s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #022326, #034040, #035951, #02735E);
+            background-size: 400% 400%;
+            animation: aire 12s ease-in-out infinite;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(2, 35, 38, 0.15);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            background: linear-gradient(135deg, rgba(2, 35, 38, 0.1), rgba(3, 89, 81, 0.1));
+            margin-bottom: 1rem;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #022326;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #034040;
+            font-size: 0.95rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-change {
+            font-size: 0.85rem;
+            padding: 0.3rem 0.7rem;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-top: 0.8rem;
+            display: inline-block;
+        }
+
+        .change-positive {
+            background: rgba(2, 115, 94, 0.1);
+            color: #02735E;
+        }
+
+        .change-neutral {
+            background: rgba(108, 117, 125, 0.1);
+            color: #6c757d;
+        }
+
+        /* QUICK ACTIONS */
+        .quick-actions {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(2, 35, 38, 0.08);
+            margin-bottom: 3rem;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #022326;
+            margin-bottom: 1.5rem;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .action-card {
+            background: linear-gradient(135deg, rgba(2, 35, 38, 0.05), rgba(3, 89, 81, 0.05));
+            border: 2px solid rgba(2, 115, 94, 0.2);
+            border-radius: 16px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .action-card:hover {
+            background: linear-gradient(135deg, #022326, #034040, #035951, #02735E);
+            background-size: 400% 400%;
+            animation: aire 12s ease-in-out infinite;
+            border-color: transparent;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(2, 115, 94, 0.3);
+        }
+
+        .action-card:hover .action-icon,
+        .action-card:hover .action-title {
+            color: white;
+        }
+
+        .action-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: #02735E;
+            transition: color 0.3s ease;
+        }
+
+        .action-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #022326;
+            transition: color 0.3s ease;
+        }
+
+        /* ACTIVITY SECTION */
+        .activity-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .activity-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(2, 35, 38, 0.08);
+            animation: fadeInUp 1.2s ease-out;
+        }
+
+        .activity-item {
+            padding: 1rem 0;
+            border-bottom: 1px solid #f8f9fa;
+            display: flex;
+            gap: 1rem;
+            align-items: start;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-item-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(2, 35, 38, 0.1), rgba(3, 89, 81, 0.1));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            color: #022326;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-meta {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        /* LOADING STATE */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(2, 115, 94, 0.1);
+            border-top: 4px solid #02735E;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-nav {
+                width: 100%;
+                flex-wrap: wrap;
+            }
+
+            .nav-btn {
+                flex: 1;
+                min-width: 120px;
+                text-align: center;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .activity-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo-text">Opsis Suite</div>
+                <span class="module-badge">TimeSync</span>
+            </div>
+            <nav class="header-nav">
+                <a href="../dashboard/template.html" class="nav-btn">← Dashboard</a>
+                <a href="schedule.html" class="nav-btn">Schedule</a>
+                <a href="staff.html" class="nav-btn">Staff</a>
+                <a href="reports.html" class="nav-btn">Reports</a>
+                <button onclick="logout()" class="nav-btn">Logout</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <div class="container">
+        <!-- PAGE HEADER -->
+        <div class="page-header">
+            <h1 class="page-title">
+                TimeSync Dashboard
+                <span class="company-name" id="companyName">Loading...</span>
+            </h1>
+            <p class="page-subtitle">Time tracking and workforce management overview</p>
+        </div>
+
+        <!-- STATS GRID -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📋</div>
+                <div class="stat-value" id="activeProjects">--</div>
+                <div class="stat-label">Active Projects</div>
+                <div class="stat-change change-positive" id="projectChange">Loading...</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-value" id="activeStaff">--</div>
+                <div class="stat-label">Staff in Field</div>
+                <div class="stat-change change-neutral" id="staffCapacity">Loading...</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">⏱️</div>
+                <div class="stat-value" id="hoursMonth">--</div>
+                <div class="stat-label">Hours This Month</div>
+                <div class="stat-change change-positive" id="hoursChange">Loading...</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-value" id="efficiency">--</div>
+                <div class="stat-label">Completion Rate</div>
+                <div class="stat-change change-positive" id="efficiencyChange">Loading...</div>
+            </div>
+        </div>
+
+        <!-- QUICK ACTIONS -->
+        <div class="quick-actions">
+            <h2 class="section-title">Quick Actions</h2>
+            <div class="actions-grid">
+                <div class="action-card" onclick="window.location.href='projects.html'">
+                    <div class="action-icon">📋</div>
+                    <div class="action-title">Projects</div>
+                </div>
+                <div class="action-card" onclick="window.location.href='timecards.html'">
+                    <div class="action-icon">⏱️</div>
+                    <div class="action-title">Timecards</div>
+                </div>
+                <div class="action-card" onclick="window.location.href='schedule.html'">
+                    <div class="action-icon">📅</div>
+                    <div class="action-title">Schedule</div>
+                </div>
+                <div class="action-card" onclick="window.location.href='staff.html'">
+                    <div class="action-icon">👥</div>
+                    <div class="action-title">Staff</div>
+                </div>
+                <div class="action-card" onclick="window.location.href='reports.html'">
+                    <div class="action-icon">📈</div>
+                    <div class="action-title">Reports</div>
+                </div>
+                <div class="action-card" onclick="window.location.href='assignments.html'">
+                    <div class="action-icon">🔄</div>
+                    <div class="action-title">Assignments</div>
+                </div>
+                <div class="action-card" onclick="window.location.href='timesheet-adjuster.html'">
+                    <div class="action-icon">✏️</div>
+                    <div class="action-title">Adjust Time</div>
+                </div>
+                <div class="action-card" onclick="window.location.href='settings.html'">
+                    <div class="action-icon">⚙️</div>
+                    <div class="action-title">Settings</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACTIVITY SECTION -->
+        <div class="activity-section">
+            <!-- Today's Activity -->
+            <div class="activity-card">
+                <h3 class="section-title">Today's Activity</h3>
+                <div id="todayActivity">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading activity...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Staff Status -->
+            <div class="activity-card">
+                <h3 class="section-title">Staff Status</h3>
+                <div id="staffStatus">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading staff status...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="activity-card">
+            <h3 class="section-title">Recent Activity</h3>
+            <div id="recentActivity">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading recent activity...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ================================================================
+        // SUPABASE CONFIGURATION
+        // ================================================================
+        const SUPABASE_CONFIG = {
+            url: 'https://lmmlhncwdwjgtkdqaycv.supabase.co',
+            key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxtbWxobmN3ZHdqZ3RrZHFheWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU0MDE4ODYsImV4cCI6MjA3MDk3Nzg4Nn0.vhL5E-o9RtjEtrYTOdFCvhXs5mu5fuuAtB13LCd6dJQ'
+        };
+
+        const supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.key);
+
+        let currentCompany = null;
+        let currentUser = null;
+
+        // ================================================================
+        // INITIALIZATION
+        // ================================================================
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('TimeSync Dashboard initializing...');
+            
+            // DEMO MODE - Skip authentication for now
+            // TODO: Enable authentication in production
+            
+            // Mock company data for demo
+            currentCompany = {
+                id: '1',
+                name: 'Demo Company',
+                slug: 'demo-company'
+            };
+            
+            document.getElementById('companyName').textContent = currentCompany.name;
+            console.log('Demo mode - Company:', currentCompany.name);
+            
+            // Load dashboard data
+            await loadDashboardData();
+        });
+
+        // ================================================================
+        // LOAD USER PROFILE
+        // ================================================================
+        async function loadUserProfile() {
+            try {
+                const { data: profile, error } = await supabase
+                    .from('user_profiles')
+                    .select('*, companies(*)')
+                    .eq('user_id', currentUser.id)
+                    .single();
+                
+                if (error) throw error;
+                
+                if (profile && profile.companies) {
+                    currentCompany = profile.companies;
+                    document.getElementById('companyName').textContent = currentCompany.name;
+                    console.log('Company loaded:', currentCompany.name);
+                }
+            } catch (error) {
+                console.error('Error loading user profile:', error);
+                document.getElementById('companyName').textContent = 'Company';
+            }
+        }
+
+        // ================================================================
+        // LOAD COMPANY DATA
+        // ================================================================
+        async function loadCompanyData(slug) {
+            try {
+                const { data: company, error } = await supabase
+                    .from('companies')
+                    .select('*')
+                    .eq('slug', slug)
+                    .single();
+                
+                if (error) throw error;
+                
+                currentCompany = company;
+                document.getElementById('companyName').textContent = company.name;
+                console.log('Company loaded:', company.name);
+            } catch (error) {
+                console.error('Error loading company:', error);
+                document.getElementById('companyName').textContent = 'Company';
+            }
+        }
+
+        // ================================================================
+        // LOAD DASHBOARD DATA
+        // ================================================================
+        async function loadDashboardData() {
+            try {
+                // For now using mock data - TODO: Replace with real Supabase queries
+                const mockData = {
+                    activeProjects: 12,
+                    projectChange: '↑ 3 this week',
+                    activeStaff: '24/30',
+                    staffCapacity: '80% capacity',
+                    hoursMonth: 856,
+                    hoursChange: '↑ 12% vs last month',
+                    efficiency: '92%',
+                    efficiencyChange: '↑ 5% improvement'
+                };
+
+                // Update stats
+                document.getElementById('activeProjects').textContent = mockData.activeProjects;
+                document.getElementById('projectChange').textContent = mockData.projectChange;
+                document.getElementById('activeStaff').textContent = mockData.activeStaff;
+                document.getElementById('staffCapacity').textContent = mockData.staffCapacity;
+                document.getElementById('hoursMonth').textContent = mockData.hoursMonth;
+                document.getElementById('hoursChange').textContent = mockData.hoursChange;
+                document.getElementById('efficiency').textContent = mockData.efficiency;
+                document.getElementById('efficiencyChange').textContent = mockData.efficiencyChange;
+
+                // Load activity data
+                loadTodayActivity();
+                loadStaffStatus();
+                loadRecentActivity();
+
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        // ================================================================
+        // LOAD TODAY'S ACTIVITY
+        // ================================================================
+        function loadTodayActivity() {
+            const container = document.getElementById('todayActivity');
+            container.innerHTML = `
+                <div class="activity-item">
+                    <div class="activity-item-icon">📋</div>
+                    <div class="activity-content">
+                        <div class="activity-title">North Plaza Construction</div>
+                        <div class="activity-meta">8:00 AM - 5:00 PM • Team: John's Crew</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-item-icon">📋</div>
+                    <div class="activity-content">
+                        <div class="activity-title">Hospital Renovation - Phase 2</div>
+                        <div class="activity-meta">7:00 AM - 4:00 PM • Team: Maria's Team</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-item-icon">📋</div>
+                    <div class="activity-content">
+                        <div class="activity-title">Office Building Inspection</div>
+                        <div class="activity-meta">9:00 AM - 12:00 PM • Team: Carlos Solo</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ================================================================
+        // LOAD STAFF STATUS
+        // ================================================================
+        function loadStaffStatus() {
+            const container = document.getElementById('staffStatus');
+            container.innerHTML = `
+                <div class="activity-item">
+                    <div class="activity-item-icon">✅</div>
+                    <div class="activity-content">
+                        <div class="activity-title">24 Staff Available</div>
+                        <div class="activity-meta">Ready for assignment</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-item-icon">🔧</div>
+                    <div class="activity-content">
+                        <div class="activity-title">18 Currently Assigned</div>
+                        <div class="activity-meta">Working on active projects</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-item-icon">📅</div>
+                    <div class="activity-content">
+                        <div class="activity-title">6 On Leave</div>
+                        <div class="activity-meta">Vacation, training, or off-duty</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ================================================================
+        // LOAD RECENT ACTIVITY
+        // ================================================================
+        function loadRecentActivity() {
+            const container = document.getElementById('recentActivity');
+            container.innerHTML = `
+                <div class="activity-item">
+                    <div class="activity-item-icon">⏱️</div>
+                    <div class="activity-content">
+                        <div class="activity-title">Time logged for North Plaza project</div>
+                        <div class="activity-meta">2 minutes ago • John Pérez logged 8 hours</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-item-icon">📋</div>
+                    <div class="activity-content">
+                        <div class="activity-title">New project created</div>
+                        <div class="activity-meta">15 minutes ago • "Downtown Office Remodel" by Admin</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-item-icon">✅</div>
+                    <div class="activity-content">
+                        <div class="activity-title">Project completed</div>
+                        <div class="activity-meta">1 hour ago • "Warehouse Inspection" marked complete</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-item-icon">👥</div>
+                    <div class="activity-content">
+                        <div class="activity-title">Staff assigned to project</div>
+                        <div class="activity-meta">2 hours ago • Maria González assigned to Hospital Renovation</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ================================================================
+        // LOGOUT
+        // ================================================================
+        async function logout() {
+            await supabase.auth.signOut();
+            localStorage.setItem('logout', 'true');
+            window.location.href = '../login.html?logout=true';
+        }
+    </script>
+</body>
+</html>

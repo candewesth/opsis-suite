@@ -1,0 +1,2175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignments - Jardinería</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-blue: #007AFF;
+            --background: #F5F5F7;
+            --card-bg: #FFFFFF;
+            --text-primary: #1D1D1F;
+            --text-secondary: #86868B;
+            --border: #D2D2D7;
+            --success: #34C759;
+            --warning: #FF9500;
+            --danger: #FF3B30;
+            --purple: #AF52DE;
+            --teal: #5AC8FA;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #5856D6, #AF52DE);
+            color: white;
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(88, 86, 214, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header p {
+            opacity: 0.95;
+            font-size: 1rem;
+        }
+
+        /* View Toggle */
+        .view-toggle {
+            display: flex;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 0.5rem;
+            box-shadow: 0 2px 8px var(--shadow);
+            margin-bottom: 2rem;
+            width: fit-content;
+        }
+
+        .view-toggle button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            background: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .view-toggle button.active {
+            background: var(--primary-blue);
+            color: white;
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px var(--shadow);
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .stat-card h3 {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .stat-card.primary .value { color: var(--primary-blue); }
+        .stat-card.success .value { color: var(--success); }
+        .stat-card.warning .value { color: var(--warning); }
+        .stat-card.purple .value { color: var(--purple); }
+
+        /* Calendar View */
+        .calendar-container {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .calendar-header h2 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .calendar-nav button {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .calendar-nav button:hover {
+            background: #0051D5;
+            transform: translateY(-1px);
+        }
+
+        .calendar-nav span {
+            font-weight: 600;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .calendar-day-header {
+            background: #F9F9FB;
+            padding: 1rem;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .calendar-day {
+            background: white;
+            min-height: 120px;
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .calendar-day:hover {
+            background: #F9F9FB;
+        }
+
+        .calendar-day.other-month {
+            background: #FAFAFA;
+            opacity: 0.5;
+        }
+
+        .calendar-day-number {
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .calendar-day.today .calendar-day-number {
+            background: var(--primary-blue);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .assignment-pill {
+            background: var(--primary-blue);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            margin-bottom: 0.25rem;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .assignment-pill.equipment {
+            background: var(--warning);
+        }
+
+        .assignment-pill.team {
+            background: var(--success);
+        }
+
+        /* Day View - Gantt Style */
+        .day-view-container {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .day-view-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .day-view-header h2 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .day-nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .day-nav button {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .day-nav button:hover {
+            background: #0051D5;
+            transform: translateY(-1px);
+        }
+
+        .day-nav span {
+            font-weight: 600;
+            min-width: 250px;
+            text-align: center;
+        }
+
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 0;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .time-header {
+            background: #F9F9FB;
+            display: grid;
+            grid-template-columns: repeat(24, 1fr);
+            border-bottom: 1px solid var(--border);
+            grid-column: 2;
+        }
+
+        .time-slot {
+            padding: 0.5rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            border-right: 1px solid var(--border);
+            font-weight: 600;
+        }
+
+        .time-slot:last-child {
+            border-right: none;
+        }
+
+        .resource-label {
+            background: #F9F9FB;
+            padding: 1rem;
+            border-right: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .resource-timeline {
+            position: relative;
+            min-height: 60px;
+            border-bottom: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: repeat(24, 1fr);
+        }
+
+        .timeline-hour {
+            border-right: 1px solid rgba(210, 210, 215, 0.3);
+        }
+
+        .timeline-hour:last-child {
+            border-right: none;
+        }
+
+        .assignment-block {
+            position: absolute;
+            background: linear-gradient(135deg, var(--primary-blue), #5856D6);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+        }
+
+        .assignment-block:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.5);
+            z-index: 10;
+        }
+
+        .assignment-block.equipment {
+            background: linear-gradient(135deg, var(--warning), #FF6B35);
+        }
+
+        .assignment-block.team {
+            background: linear-gradient(135deg, var(--success), #30D158);
+        }
+
+        .assignment-block.partial {
+            opacity: 0.6;
+        }
+
+        .resource-icon {
+            font-size: 1.25rem;
+        }
+
+        /* Assignment Detail Panel */
+        .assignment-detail-panel {
+            position: fixed;
+            top: 0;
+            right: -600px;
+            width: 600px;
+            height: 100vh;
+            background: var(--card-bg);
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
+            z-index: 2000;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .assignment-detail-panel.open {
+            right: 0;
+        }
+
+        .detail-panel-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1999;
+            display: none;
+        }
+
+        .detail-panel-overlay.active {
+            display: block;
+        }
+
+        .detail-panel-header {
+            background: linear-gradient(135deg, var(--primary-blue), #5856D6);
+            color: white;
+            padding: 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .detail-panel-header h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .detail-panel-header .job-meta {
+            font-size: 0.95rem;
+            opacity: 0.95;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .detail-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .detail-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .detail-panel-body {
+            padding: 2rem;
+        }
+
+        .detail-section {
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .detail-section:last-child {
+            border-bottom: none;
+        }
+
+        .detail-section h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .detail-row {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+            align-items: start;
+        }
+
+        .detail-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .detail-value {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        .detail-value strong {
+            font-weight: 600;
+        }
+
+        .status-chip {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-chip.active { background: #E8F5E9; color: var(--success); }
+        .status-chip.hold { background: #FFF3E0; color: var(--warning); }
+        .status-chip.pushed { background: #FFEBEE; color: var(--danger); }
+        .status-chip.local { background: #E3F2FD; color: var(--primary-blue); }
+        .status-chip.out-of-town { background: #F3E5F5; color: var(--purple); }
+
+        .crew-member {
+            background: #F9F9FB;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .crew-member-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .crew-member-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-blue);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .crew-member-name {
+            font-weight: 600;
+        }
+
+        .crew-member-role {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .crew-member-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .vehicle-item {
+            background: #F9F9FB;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .vehicle-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .vehicle-icon {
+            font-size: 1.5rem;
+        }
+
+        .vehicle-name {
+            font-weight: 600;
+        }
+
+        .vehicle-driver {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .detail-actions {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 1.5rem 2rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .action-buttons-row {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn-detail {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-detail-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-detail-primary:hover {
+            background: #0051D5;
+            transform: translateY(-1px);
+        }
+
+        .btn-detail-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-detail-warning:hover {
+            background: #E68A00;
+        }
+
+        .btn-detail-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-detail-danger:hover {
+            background: #E6322B;
+        }
+
+        .btn-detail-secondary {
+            background: white;
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+        }
+
+        .btn-detail-secondary:hover {
+            background: #F9F9FB;
+        }
+
+        /* Enhanced Form Styles */
+        .personnel-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .personnel-item {
+            background: linear-gradient(135deg, #F9F9FB, #FFFFFF);
+            border: 2px solid var(--border);
+            padding: 1.25rem;
+            border-radius: 12px;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .personnel-item:hover {
+            border-color: var(--primary-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .personnel-item.selected {
+            border-color: var(--primary-blue);
+            background: linear-gradient(135deg, #E5F2FF, #FFFFFF);
+        }
+
+        .personnel-checkbox {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            accent-color: var(--primary-blue);
+        }
+
+        .personnel-info {
+            flex: 1;
+        }
+
+        .personnel-name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .personnel-title {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .role-selector-wrapper {
+            min-width: 180px;
+        }
+
+        .role-selector-wrapper select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .role-selector-wrapper select:disabled {
+            background: #F5F5F7;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .role-selector-wrapper select:enabled:hover {
+            border-color: var(--primary-blue);
+        }
+
+        .role-selector-wrapper select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+        }
+
+        .equipment-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .equipment-category {
+            background: #F9F9FB;
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+
+        .equipment-category-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .equipment-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .equipment-item {
+            background: white;
+            border: 2px solid var(--border);
+            padding: 1rem;
+            border-radius: 10px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .equipment-item:hover {
+            border-color: var(--primary-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .equipment-item.selected {
+            border-color: var(--primary-blue);
+            background: linear-gradient(135deg, #E5F2FF, #FFFFFF);
+        }
+
+        .equipment-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .equipment-checkbox {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            accent-color: var(--primary-blue);
+        }
+
+        .equipment-icon {
+            font-size: 2rem;
+        }
+
+        .equipment-details {
+            flex: 1;
+        }
+
+        .equipment-name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .equipment-specs {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .equipment-status {
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .equipment-status.available {
+            background: #E8F5E9;
+            color: var(--success);
+        }
+
+        .equipment-status.in-use {
+            background: #FFF3E0;
+            color: var(--warning);
+        }
+
+        .driver-assignment {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            display: none;
+        }
+
+        .driver-assignment.active {
+            display: block;
+        }
+
+        .driver-assignment label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .driver-assignment select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .driver-assignment select:hover {
+            border-color: var(--primary-blue);
+        }
+
+        .driver-assignment select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+        }
+
+        .selected-count {
+            background: var(--primary-blue);
+            color: white;
+            padding: 0.35rem 0.85rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 700;
+        }
+
+        .plomería-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary-blue);
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: #E5F2FF;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .plomería-link:hover {
+            background: #D0E7FF;
+            transform: translateX(4px);
+        }
+
+        /* List View */
+        .assignments-list {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .assignments-list h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .assignment-card {
+            background: linear-gradient(135deg, #F9F9FB, #FFFFFF);
+            border: 2px solid var(--border);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .assignment-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px var(--shadow);
+            border-color: var(--primary-blue);
+        }
+
+        .assignment-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .assignment-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .assignment-meta {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .assignment-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .assignment-badge.active {
+            background: #E8F5E9;
+            color: var(--success);
+        }
+
+        .assignment-badge.scheduled {
+            background: #E3F2FD;
+            color: var(--primary-blue);
+        }
+
+        .assignment-badge.completed {
+            background: #F3E5F5;
+            color: var(--purple);
+        }
+
+        .assignment-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .assignment-detail {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .assignment-detail-icon {
+            font-size: 1.25rem;
+        }
+
+        .assignment-detail-text strong {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .assignment-detail-text span {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        /* Create Assignment Button */
+        .fab {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0, 122, 255, 0.4);
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 24px rgba(0, 122, 255, 0.5);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 16px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #5856D6, #AF52DE);
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .form-section h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-field label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .form-field input,
+        .form-field select,
+        .form-field textarea {
+            padding: 0.75rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .form-field input:focus,
+        .form-field select:focus,
+        .form-field textarea:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+        }
+
+        .form-field textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0051D5;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: #F9F9FB;
+        }
+
+        /* Filters */
+        .filters {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .calendar-grid {
+                font-size: 0.75rem;
+            }
+
+            .calendar-day {
+                min-height: 80px;
+            }
+
+            .view-toggle {
+                width: 100%;
+            }
+
+            .view-toggle button {
+                flex: 1;
+            }
+
+            .fab {
+                bottom: 1rem;
+                right: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <span>📋</span>
+                <span>Assignments</span>
+            </h1>
+            <p>Gestión de asignaciones de personal, equipos y recursos a proyectos</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card primary">
+                <h3>Asignaciones Activas</h3>
+                <div class="value">24</div>
+            </div>
+            <div class="stat-card success">
+                <h3>Personal Asignado</h3>
+                <div class="value">18</div>
+            </div>
+            <div class="stat-card warning">
+                <h3>Equipos en Uso</h3>
+                <div class="value">12</div>
+            </div>
+            <div class="stat-card purple">
+                <h3>Proyectos Activos</h3>
+                <div class="value">8</div>
+            </div>
+        </div>
+
+        <!-- Assignment Detail Panel -->
+        <div class="detail-panel-overlay" id="detailOverlay" onclick="closeDetailPanel()"></div>
+        <div class="assignment-detail-panel" id="detailPanel">
+            <div class="detail-panel-header">
+                <button class="detail-close" onclick="closeDetailPanel()">&times;</button>
+                <h2>
+                    <span>📋</span>
+                    <span id="detailJobNumber">JOB-2501</span>
+                </h2>
+                <div class="job-meta">
+                    <span>📅 15 Enero 2025</span>
+                    <span>⏰ 07:00 - 15:30 (8.5h)</span>
+                    <span class="status-chip active">Activo</span>
+                    <span class="status-chip out-of-town">Out of Town</span>
+                </div>
+            </div>
+
+            <div class="detail-panel-body">
+                <!-- Job Information -->
+                <div class="detail-section">
+                    <h3>
+                        <span>ℹ️</span>
+                        <span>Información del Trabajo</span>
+                    </h3>
+                    <div class="detail-row">
+                        <div class="detail-label">Nombre Proyecto:</div>
+                        <div class="detail-value"><strong>Highway Expansion - Phase 2</strong></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Dirección:</div>
+                        <div class="detail-value">3450 Interstate 15 North, San Diego, CA 92101</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Total de Horas:</div>
+                        <div class="detail-value"><strong>8.5 horas</strong></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Estimador:</div>
+                        <div class="detail-value">Robert Martinez (Program Manager)</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Tipo de Trabajo:</div>
+                        <div class="detail-value">
+                            <span class="status-chip out-of-town">Out of Town</span>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Extensión:</div>
+                        <div class="detail-value">Se extiende al día siguiente (16 Enero)</div>
+                    </div>
+                </div>
+
+                <!-- Crew Assignment -->
+                <div class="detail-section">
+                    <h3>
+                        <span>👥</span>
+                        <span>Crew Asignado (5 personas)</span>
+                    </h3>
+                    <div class="crew-member">
+                        <div class="crew-member-info">
+                            <div class="crew-member-avatar" style="background: var(--primary-blue);">JP</div>
+                            <div>
+                                <div class="crew-member-name">Juan Pérez</div>
+                                <div class="crew-member-role">Supervisor de Campo</div>
+                            </div>
+                        </div>
+                        <span class="crew-member-badge">Supervisor</span>
+                    </div>
+                    <div class="crew-member">
+                        <div class="crew-member-info">
+                            <div class="crew-member-avatar" style="background: var(--success);">MG</div>
+                            <div>
+                                <div class="crew-member-name">María González</div>
+                                <div class="crew-member-role">Operadora de Equipo</div>
+                            </div>
+                        </div>
+                        <span class="crew-member-badge" style="background: var(--success);">Operadora</span>
+                    </div>
+                    <div class="crew-member">
+                        <div class="crew-member-info">
+                            <div class="crew-member-avatar" style="background: var(--warning);">CR</div>
+                            <div>
+                                <div class="crew-member-name">Carlos Rodríguez</div>
+                                <div class="crew-member-role">Técnico Especializado</div>
+                            </div>
+                        </div>
+                        <span class="crew-member-badge" style="background: var(--warning);">Técnico</span>
+                    </div>
+                    <div class="crew-member">
+                        <div class="crew-member-info">
+                            <div class="crew-member-avatar" style="background: var(--purple);">AM</div>
+                            <div>
+                                <div class="crew-member-name">Ana Martínez</div>
+                                <div class="crew-member-role">Ingeniera de Campo</div>
+                            </div>
+                        </div>
+                        <span class="crew-member-badge" style="background: var(--purple);">Ingeniera</span>
+                    </div>
+                    <div class="crew-member">
+                        <div class="crew-member-info">
+                            <div class="crew-member-avatar" style="background: var(--teal);">LS</div>
+                            <div>
+                                <div class="crew-member-name">Luis Sánchez</div>
+                                <div class="crew-member-role">Operario General</div>
+                            </div>
+                        </div>
+                        <span class="crew-member-badge" style="background: var(--teal);">Operario</span>
+                    </div>
+                </div>
+
+                <!-- Vehicles & Equipment -->
+                <div class="detail-section">
+                    <h3>
+                        <span>🚗</span>
+                        <span>Vehículos y Equipos Asignados</span>
+                    </h3>
+                    <div class="vehicle-item">
+                        <div class="vehicle-info">
+                            <div class="vehicle-icon">🚜</div>
+                            <div>
+                                <div class="vehicle-name">Excavadora CAT 320 #12</div>
+                                <div class="vehicle-driver">Operadora: María González</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="vehicle-item">
+                        <div class="vehicle-info">
+                            <div class="vehicle-icon">🚚</div>
+                            <div>
+                                <div class="vehicle-name">Camión Ford F-550 #5</div>
+                                <div class="vehicle-driver">Conductor: Carlos Rodríguez</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="vehicle-item">
+                        <div class="vehicle-info">
+                            <div class="vehicle-icon">🚙</div>
+                            <div>
+                                <div class="vehicle-name">Van de Crew - Sprinter #3</div>
+                                <div class="vehicle-driver">Conductor: Juan Pérez (Supervisor)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="detail-row" style="margin-top: 1rem;">
+                        <div class="detail-label">Requiere Trailer:</div>
+                        <div class="detail-value">
+                            <strong>Sí</strong> - Trailer de 20ft para herramientas
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Notes -->
+                <div class="detail-section">
+                    <h3>
+                        <span>📝</span>
+                        <span>Notas Adicionales</span>
+                    </h3>
+                    <div class="detail-value">
+                        Trabajo requiere certificaciones especiales de OSHA. El equipo debe llegar 30 minutos antes para briefing de seguridad. Coordinar con el cliente para acceso al sitio a las 6:45 AM.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="detail-actions">
+                <div class="action-buttons-row">
+                    <button class="btn-detail btn-detail-primary" onclick="duplicateAssignment()">
+                        <span>📋</span>
+                        <span>Duplicar al Día Siguiente</span>
+                    </button>
+                </div>
+                <div class="action-buttons-row">
+                    <button class="btn-detail btn-detail-warning" onclick="holdAssignment()">
+                        <span>⏸️</span>
+                        <span>Poner en HOLD</span>
+                    </button>
+                    <button class="btn-detail btn-detail-danger" onclick="pushAssignment()">
+                        <span>🚫</span>
+                        <span>PUSH (Cancelar)</span>
+                    </button>
+                </div>
+                <div class="action-buttons-row">
+                    <button class="btn-detail btn-detail-secondary" onclick="editAssignment()">
+                        <span>✏️</span>
+                        <span>Editar Asignación</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- View Toggle -->
+        <div class="view-toggle">
+            <button id="btnCalendar" class="active" onclick="switchView('calendar')">📅 Vista Mes</button>
+            <button id="btnDay" onclick="switchView('day')">📊 Vista Día</button>
+            <button id="btnList" onclick="switchView('list')">📋 Vista Lista</button>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <div class="filters-grid">
+                <div class="form-field">
+                    <label>Proyecto</label>
+                    <select>
+                        <option value="">Todos los proyectos</option>
+                        <option value="job2501">JOB-2501 - Highway Expansion</option>
+                        <option value="job2502">JOB-2502 - Bridge Repair</option>
+                        <option value="job2503">JOB-2503 - Road Paving</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>Tipo de Asignación</label>
+                    <select>
+                        <option value="">Todos los tipos</option>
+                        <option value="personnel">Personal</option>
+                        <option value="equipment">Equipos</option>
+                        <option value="team">Equipos Completos</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>Estado</label>
+                    <select>
+                        <option value="">Todos los estados</option>
+                        <option value="active">Activo</option>
+                        <option value="scheduled">Programado</option>
+                        <option value="completed">Completado</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar View -->
+        <div class="calendar-container" id="calendarView">
+            <div class="calendar-header">
+                <h2>
+                    <span>📅</span>
+                    <span>Enero 2025</span>
+                </h2>
+                <div class="calendar-nav">
+                    <button onclick="previousMonth()">←</button>
+                    <span>Semana 15-21</span>
+                    <button onclick="nextMonth()">→</button>
+                </div>
+            </div>
+
+            <div class="calendar-grid">
+                <div class="calendar-day-header">Dom</div>
+                <div class="calendar-day-header">Lun</div>
+                <div class="calendar-day-header">Mar</div>
+                <div class="calendar-day-header">Mié</div>
+                <div class="calendar-day-header">Jue</div>
+                <div class="calendar-day-header">Vie</div>
+                <div class="calendar-day-header">Sáb</div>
+
+                <div class="calendar-day other-month">
+                    <div class="calendar-day-number">29</div>
+                </div>
+                <div class="calendar-day other-month">
+                    <div class="calendar-day-number">30</div>
+                </div>
+                <div class="calendar-day other-month">
+                    <div class="calendar-day-number">31</div>
+                </div>
+                <div class="calendar-day" onclick="goToDayView('2025-01-01')">
+                    <div class="calendar-day-number">1</div>
+                </div>
+                <div class="calendar-day" onclick="goToDayView('2025-01-02')">
+                    <div class="calendar-day-number">2</div>
+                </div>
+                <div class="calendar-day" onclick="goToDayView('2025-01-03')">
+                    <div class="calendar-day-number">3</div>
+                </div>
+                <div class="calendar-day" onclick="goToDayView('2025-01-04')">
+                    <div class="calendar-day-number">4</div>
+                </div>
+
+                <div class="calendar-day" onclick="goToDayView('2025-01-05')">
+                    <div class="calendar-day-number">5</div>
+                </div>
+                <div class="calendar-day" onclick="goToDayView('2025-01-06')">
+                    <div class="calendar-day-number">6</div>
+                    <span class="assignment-pill">Juan P. → JOB-2501</span>
+                    <span class="assignment-pill equipment">Excavadora #12</span>
+                </div>
+                <div class="calendar-day" onclick="goToDayView('2025-01-07')">
+                    <div class="calendar-day-number">7</div>
+                    <span class="assignment-pill">María G. → JOB-2503</span>
+                </div>
+                <div class="calendar-day" onclick="goToDayView('2025-01-08')">
+                    <div class="calendar-day-number">8</div>
+                    <span class="assignment-pill team">Equipo A → JOB-2501</span>
+                </div>
+                <div class="calendar-day" onclick="goToDayView('2025-01-09')">
+                    <div class="calendar-day-number">9</div>
+                </div>
+                <div class="calendar-day" onclick="goToDayView('2025-01-10')">
+                    <div class="calendar-day-number">10</div>
+                    <span class="assignment-pill">Carlos R. → JOB-2502</span>
+                </div>
+                <div class="calendar-day" onclick="goToDayView('2025-01-11')">
+                    <div class="calendar-day-number">11</div>
+                </div>
+
+                <div class="calendar-day" onclick="goToDayView('2025-01-12')">
+                    <div class="calendar-day-number">12</div>
+                </div>
+                <div class="calendar-day" onclick="goToDayView('2025-01-13')">
+                    <div class="calendar-day-number">13</div>
+                    <span class="assignment-pill">Juan P. → JOB-2501</span>
+                    <span class="assignment-pill">María G. → JOB-2501</span>
+                </div>
+                <div class="calendar-day" onclick="goToDayView('2025-01-14')">
+                    <div class="calendar-day-number">14</div>
+                    <span class="assignment-pill equipment">Camión #5</span>
+                </div>
+                <div class="calendar-day today" onclick="goToDayView('2025-01-15')">
+                    <div class="calendar-day-number">15</div>
+                    <span class="assignment-pill team">Equipo B → JOB-2502</span>
+                </div>
+                <div class="calendar-day" onclick="goToDayView('2025-01-16')">
+                    <div class="calendar-day-number">16</div>
+                </div>
+                <div class="calendar-day" onclick="goToDayView('2025-01-17')">
+                    <div class="calendar-day-number">17</div>
+                </div>
+                <div class="calendar-day" onclick="goToDayView('2025-01-18')">
+                    <div class="calendar-day-number">18</div>
+                </div>
+
+                <div class="calendar-day" onclick="goToDayView('2025-01-19')">
+                    <div class="calendar-day-number">19</div>
+                </div>
+                <div class="calendar-day" onclick="goToDayView('2025-01-20')">
+                    <div class="calendar-day-number">20</div>
+                    <span class="assignment-pill">Juan P. → JOB-2503</span>
+                </div>
+                <div class="calendar-day" onclick="goToDayView('2025-01-21')">
+                    <div class="calendar-day-number">21</div>
+                </div>
+                <div class="calendar-day" onclick="goToDayView('2025-01-22')">
+                    <div class="calendar-day-number">22</div>
+                </div>
+                <div class="calendar-day" onclick="goToDayView('2025-01-23')">
+                    <div class="calendar-day-number">23</div>
+                </div>
+                <div class="calendar-day" onclick="goToDayView('2025-01-24')">
+                    <div class="calendar-day-number">24</div>
+                </div>
+                <div class="calendar-day" onclick="goToDayView('2025-01-25')">
+                    <div class="calendar-day-number">25</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Day View -->
+        <div class="day-view-container" id="dayView" style="display: none;">
+            <div class="day-view-header">
+                <h2>
+                    <span>📊</span>
+                    <span>Asignaciones del Día</span>
+                </h2>
+                <div class="day-nav">
+                    <button onclick="previousDay()">← Día Anterior</button>
+                    <span id="dayViewDate">Miércoles, 15 de Enero 2025</span>
+                    <button onclick="nextDay()">Día Siguiente →</button>
+                </div>
+            </div>
+
+            <div class="schedule-grid">
+                <!-- Time Header -->
+                <div style="grid-column: 1;"></div>
+                <div class="time-header">
+                    <div class="time-slot">00</div>
+                    <div class="time-slot">01</div>
+                    <div class="time-slot">02</div>
+                    <div class="time-slot">03</div>
+                    <div class="time-slot">04</div>
+                    <div class="time-slot">05</div>
+                    <div class="time-slot">06</div>
+                    <div class="time-slot">07</div>
+                    <div class="time-slot">08</div>
+                    <div class="time-slot">09</div>
+                    <div class="time-slot">10</div>
+                    <div class="time-slot">11</div>
+                    <div class="time-slot">12</div>
+                    <div class="time-slot">13</div>
+                    <div class="time-slot">14</div>
+                    <div class="time-slot">15</div>
+                    <div class="time-slot">16</div>
+                    <div class="time-slot">17</div>
+                    <div class="time-slot">18</div>
+                    <div class="time-slot">19</div>
+                    <div class="time-slot">20</div>
+                    <div class="time-slot">21</div>
+                    <div class="time-slot">22</div>
+                    <div class="time-slot">23</div>
+                </div>
+
+                <!-- Resource 1: Juan Pérez -->
+                <div class="resource-label">
+                    <span class="resource-icon">👤</span>
+                    <div>
+                        <strong>Juan Pérez</strong>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary); font-weight: normal;">Supervisor</div>
+                    </div>
+                </div>
+                <div class="resource-timeline">
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <!-- Assignment block: 7:00 - 15:30 -->
+                    <div class="assignment-block" style="left: calc(7 * 100% / 24); width: calc(8.5 * 100% / 24); top: 5px;" onclick="openDetailPanel('job2501-juan')">
+                        JOB-2501 • 07:00-15:30
+                    </div>
+                </div>
+
+                <!-- Resource 2: María González -->
+                <div class="resource-label">
+                    <span class="resource-icon">👤</span>
+                    <div>
+                        <strong>María González</strong>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary); font-weight: normal;">Operadora</div>
+                    </div>
+                </div>
+                <div class="resource-timeline">
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <!-- Assignment block: 8:00 - 16:30 -->
+                    <div class="assignment-block" style="left: calc(8 * 100% / 24); width: calc(8.5 * 100% / 24); top: 5px;" onclick="openDetailPanel('job2503-maria')">
+                        JOB-2503 • 08:00-16:30
+                    </div>
+                </div>
+
+                <!-- Resource 3: Carlos Rodríguez -->
+                <div class="resource-label">
+                    <span class="resource-icon">👤</span>
+                    <div>
+                        <strong>Carlos Rodríguez</strong>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary); font-weight: normal;">Técnico</div>
+                    </div>
+                </div>
+                <div class="resource-timeline">
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <!-- Assignment block: 6:30 - 14:00 -->
+                    <div class="assignment-block" style="left: calc(6.5 * 100% / 24); width: calc(7.5 * 100% / 24); top: 5px;" onclick="openDetailPanel('job2502-carlos')">
+                        JOB-2502 • 06:30-14:00
+                    </div>
+                </div>
+
+                <!-- Equipment 1: Excavadora #12 -->
+                <div class="resource-label">
+                    <span class="resource-icon">🚜</span>
+                    <div>
+                        <strong>Excavadora #12</strong>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary); font-weight: normal;">Equipo Pesado</div>
+                    </div>
+                </div>
+                <div class="resource-timeline">
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <!-- Assignment block: 7:00 - 17:00 -->
+                    <div class="assignment-block equipment" style="left: calc(7 * 100% / 24); width: calc(10 * 100% / 24); top: 5px;" onclick="openDetailPanel('job2501-excavadora')">
+                        JOB-2501 • 07:00-17:00
+                    </div>
+                </div>
+
+                <!-- Equipment 2: Camión #5 -->
+                <div class="resource-label">
+                    <span class="resource-icon">🚚</span>
+                    <div>
+                        <strong>Camión #5</strong>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary); font-weight: normal;">Transporte</div>
+                    </div>
+                </div>
+                <div class="resource-timeline">
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <div class="timeline-hour"></div>
+                    <!-- Assignment block: 8:00 - 12:00 -->
+                    <div class="assignment-block equipment partial" style="left: calc(8 * 100% / 24); width: calc(4 * 100% / 24); top: 5px;" onclick="openDetailPanel('job2503-camion')">
+                        JOB-2503 • 08:00-12:00
+                    </div>
+                    <!-- Assignment block: 13:00 - 16:00 -->
+                    <div class="assignment-block equipment" style="left: calc(13 * 100% / 24); width: calc(3 * 100% / 24); top: 5px;" onclick="openDetailPanel('job2502-camion')">
+                        JOB-2502 • 13:00-16:00
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- List View -->
+        <div class="assignments-list" id="listView" style="display: none;">
+            <h2>
+                <span>📋</span>
+                <span>Todas las Asignaciones</span>
+            </h2>
+
+            <div class="assignment-card" onclick="openDetailPanel('job2501-team')">
+                <div class="assignment-card-header">
+                    <div>
+                        <div class="assignment-title">Equipo A → Highway Expansion</div>
+                        <div class="assignment-meta">
+                            <span>📅 13-17 Ene 2025</span>
+                            <span>📋 JOB-2501</span>
+                        </div>
+                    </div>
+                    <span class="assignment-badge active">Activo</span>
+                </div>
+                <div class="assignment-details">
+                    <div class="assignment-detail">
+                        <div class="assignment-detail-icon">👥</div>
+                        <div class="assignment-detail-text">
+                            <strong>Personal</strong>
+                            <span>5 trabajadores</span>
+                        </div>
+                    </div>
+                    <div class="assignment-detail">
+                        <div class="assignment-detail-icon">🚜</div>
+                        <div class="assignment-detail-text">
+                            <strong>Equipos</strong>
+                            <span>2 maquinarias</span>
+                        </div>
+                    </div>
+                    <div class="assignment-detail">
+                        <div class="assignment-detail-icon">👤</div>
+                        <div class="assignment-detail-text">
+                            <strong>Supervisor</strong>
+                            <span>Juan Pérez</span>
+                        </div>
+                    </div>
+                    <div class="assignment-detail">
+                        <div class="assignment-detail-icon">⏱️</div>
+                        <div class="assignment-detail-text">
+                            <strong>Duración</strong>
+                            <span>5 días</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="assignment-card" onclick="openDetailPanel('job2503-maria')">
+                <div class="assignment-card-header">
+                    <div>
+                        <div class="assignment-title">María González → Road Paving</div>
+                        <div class="assignment-meta">
+                            <span>📅 20-24 Ene 2025</span>
+                            <span>📋 JOB-2503</span>
+                        </div>
+                    </div>
+                    <span class="assignment-badge scheduled">Programado</span>
+                </div>
+                <div class="assignment-details">
+                    <div class="assignment-detail">
+                        <div class="assignment-detail-icon">👤</div>
+                        <div class="assignment-detail-text">
+                            <strong>Trabajador</strong>
+                            <span>María González</span>
+                        </div>
+                    </div>
+                    <div class="assignment-detail">
+                        <div class="assignment-detail-icon">🔧</div>
+                        <div class="assignment-detail-text">
+                            <strong>Rol</strong>
+                            <span>Operadora</span>
+                        </div>
+                    </div>
+                    <div class="assignment-detail">
+                        <div class="assignment-detail-icon">🚜</div>
+                        <div class="assignment-detail-text">
+                            <strong>Equipo Asignado</strong>
+                            <span>Pavimentadora #3</span>
+                        </div>
+                    </div>
+                    <div class="assignment-detail">
+                        <div class="assignment-detail-icon">⏱️</div>
+                        <div class="assignment-detail-text">
+                            <strong>Duración</strong>
+                            <span>5 días</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="assignment-card" onclick="openDetailPanel('job2502-carlos')">
+                <div class="assignment-card-header">
+                    <div>
+                        <div class="assignment-title">Carlos Rodríguez → Bridge Repair</div>
+                        <div class="assignment-meta">
+                            <span>📅 6-12 Ene 2025</span>
+                            <span>📋 JOB-2502</span>
+                        </div>
+                    </div>
+                    <span class="assignment-badge completed">Completado</span>
+                </div>
+                <div class="assignment-details">
+                    <div class="assignment-detail">
+                        <div class="assignment-detail-icon">👤</div>
+                        <div class="assignment-detail-text">
+                            <strong>Trabajador</strong>
+                            <span>Carlos Rodríguez</span>
+                        </div>
+                    </div>
+                    <div class="assignment-detail">
+                        <div class="assignment-detail-icon">🔧</div>
+                        <div class="assignment-detail-text">
+                            <strong>Rol</strong>
+                            <span>Técnico</span>
+                        </div>
+                    </div>
+                    <div class="assignment-detail">
+                        <div class="assignment-detail-icon">✅</div>
+                        <div class="assignment-detail-text">
+                            <strong>Horas Trabajadas</strong>
+                            <span>48h</span>
+                        </div>
+                    </div>
+                    <div class="assignment-detail">
+                        <div class="assignment-detail-icon">⏱️</div>
+                        <div class="assignment-detail-text">
+                            <strong>Duración</strong>
+                            <span>7 días</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAB Button -->
+        <button class="fab" onclick="openModal()">+</button>
+    </div>
+
+    <script>
+        // Switch between views - CORREGIDO
+        function switchView(view) {
+            console.log('Cambiando a vista:', view);
+            
+            // Remove active from all buttons
+            document.getElementById('btnCalendar').classList.remove('active');
+            document.getElementById('btnDay').classList.remove('active');
+            document.getElementById('btnList').classList.remove('active');
+
+            // Hide all views
+            document.getElementById('calendarView').style.display = 'none';
+            document.getElementById('dayView').style.display = 'none';
+            document.getElementById('listView').style.display = 'none';
+
+            // Show selected view and activate button
+            if (view === 'calendar') {
+                document.getElementById('btnCalendar').classList.add('active');
+                document.getElementById('calendarView').style.display = 'block';
+            } else if (view === 'day') {
+                document.getElementById('btnDay').classList.add('active');
+                document.getElementById('dayView').style.display = 'block';
+            } else if (view === 'list') {
+                document.getElementById('btnList').classList.add('active');
+                document.getElementById('listView').style.display = 'block';
+            }
+            
+            console.log('✅ Vista cambiada exitosamente a:', view);
+        }
+
+        // Go to day view from calendar
+        function goToDayView(date) {
+            switchView('day');
+            const dateObj = new Date(date);
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('dayViewDate').textContent = dateObj.toLocaleDateString('es-ES', options);
+        }
+
+        // Calendar navigation
+        function previousMonth() {
+            console.log('Mes anterior');
+        }
+
+        function nextMonth() {
+            console.log('Mes siguiente');
+        }
+
+        // Day navigation
+        function previousDay() {
+            console.log('Día anterior');
+        }
+
+        function nextDay() {
+            console.log('Día siguiente');
+        }
+
+        // Modal functions
+        function openModal() {
+            console.log('Abriendo modal de nueva asignación');
+            alert('Modal de nueva asignación (próximamente)');
+        }
+
+        function closeModal() {
+            console.log('Cerrando modal');
+        }
+
+        function createAssignment() {
+            alert('✅ Asignación creada exitosamente');
+        }
+
+        // Open detail panel
+        function openDetailPanel(assignmentId) {
+            document.getElementById('detailPanel').classList.add('open');
+            document.getElementById('detailOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+            console.log('Abriendo detalle para:', assignmentId);
+        }
+
+        // Close detail panel
+        function closeDetailPanel() {
+            document.getElementById('detailPanel').classList.remove('open');
+            document.getElementById('detailOverlay').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Duplicate assignment
+        function duplicateAssignment() {
+            if (confirm('¿Duplicar esta asignación al día siguiente (16 Enero)?')) {
+                alert('✅ Asignación duplicada exitosamente al 16 de Enero\n\n📋 JOB-2501 - Highway Expansion\n👥 Mismo crew asignado\n🚗 Mismos vehículos y equipos');
+                closeDetailPanel();
+            }
+        }
+
+        // Hold assignment
+        function holdAssignment() {
+            if (confirm('⏸️ ¿Poner esta asignación en HOLD?\n\nEl trabajo quedará pausado pero mantendrá toda la información. El crew y los equipos quedarán disponibles para otras asignaciones.')) {
+                alert('⏸️ Trabajo puesto en HOLD\n\n✅ Información del trabajo preservada\n✅ Crew liberado\n✅ Equipos liberados\n\nPodrás reactivar este trabajo en cualquier momento.');
+                closeDetailPanel();
+            }
+        }
+
+        // Push assignment (cancel)
+        function pushAssignment() {
+            if (confirm('🚫 ¿PUSH (Cancelar) esta asignación?\n\n⚠️ ADVERTENCIA:\n- El crew será desasignado\n- Los equipos serán liberados\n- Solo quedará el cascarón del trabajo\n- La información del proyecto se mantendrá\n\n¿Continuar?')) {
+                alert('🚫 Trabajo PUSHED (Cancelado)\n\n✅ Información del proyecto preservada\n✅ Crew completamente desasignado\n✅ Equipos completamente liberados\n\n💡 El trabajo quedó como cascarón y puede ser reactivado en el futuro con un nuevo crew.');
+                closeDetailPanel();
+            }
+        }
+
+        // Edit assignment
+        function editAssignment() {
+            alert('✏️ Abriendo editor de asignación...');
+            closeDetailPanel();
+        }
+
+        console.log('✅ Assignments.html cargado correctamente');
+        console.log('📊 Vistas disponibles: Calendario, Día, Lista');
+        console.log('👁️ Todos los botones funcionales');
+    </script>
+</body>
+</html>

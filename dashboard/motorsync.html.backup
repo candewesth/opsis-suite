@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotorSync - Opsis Suite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: #f5f5f5;
+            color: #022326;
+            line-height: 1.6;
+        }
+
+        /* VERDI Color Palette */
+        :root {
+            --verdi-dark: #022326;
+            --verdi-mid: #034040;
+            --verdi-accent: #035951;
+            --verdi-light: #02735E;
+            --bg-light: #f5f5f5;
+            --white: #ffffff;
+        }
+
+        /* Aire Animation */
+        @keyframes aire {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--verdi-dark), var(--verdi-mid), var(--verdi-accent), var(--verdi-light));
+            background-size: 300% 300%;
+            animation: aire 12s ease-in-out infinite;
+            color: white;
+            padding: 1rem 2rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .module-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .nav-menu a:hover {
+            opacity: 0.8;
+        }
+
+        /* Main Content */
+        main {
+            margin-top: 80px;
+            padding: 2rem;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Category Selector */
+        .category-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 20px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+        }
+
+        .category-selector {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .category-selector label {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--verdi-dark);
+        }
+
+        .category-selector select {
+            padding: 0.7rem 1.2rem;
+            border: 2px solid var(--verdi-accent);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-family: 'Helvetica Neue', sans-serif;
+            color: var(--verdi-dark);
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 250px;
+        }
+
+        .category-selector select:focus {
+            outline: none;
+            border-color: var(--verdi-light);
+            box-shadow: 0 0 0 3px rgba(2, 115, 94, 0.1);
+        }
+
+        .category-icon {
+            font-size: 2rem;
+        }
+
+        /* Welcome Section */
+        .welcome-section {
+            background: linear-gradient(135deg, var(--verdi-dark), var(--verdi-mid), var(--verdi-accent), var(--verdi-light));
+            background-size: 300% 300%;
+            animation: aire 12s ease-in-out infinite;
+            color: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 25px rgba(0,0,0,0.15);
+        }
+
+        .welcome-section h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-section p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.8rem;
+            border-radius: 20px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: 500;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--verdi-dark);
+        }
+
+        .stat-change {
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            font-weight: 600;
+        }
+
+        .stat-change.positive {
+            color: #10b981;
+        }
+
+        .stat-change.negative {
+            color: #ef4444;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+        }
+
+        .quick-actions h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--verdi-dark);
+            margin-bottom: 1.5rem;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, var(--verdi-dark), var(--verdi-mid), var(--verdi-accent), var(--verdi-light));
+            background-size: 300% 300%;
+            animation: aire 12s ease-in-out infinite;
+            color: white;
+            border: none;
+            padding: 1.2rem;
+            border-radius: 15px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-family: 'Helvetica Neue', sans-serif;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(2, 115, 94, 0.3);
+        }
+
+        .action-btn-icon {
+            font-size: 1.5rem;
+        }
+
+        /* Content Grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Recent Activity */
+        .activity-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+        }
+
+        .activity-section h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--verdi-dark);
+            margin-bottom: 1.5rem;
+        }
+
+        .activity-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--verdi-accent), var(--verdi-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .activity-details h4 {
+            font-weight: 600;
+            color: var(--verdi-dark);
+            margin-bottom: 0.2rem;
+        }
+
+        .activity-details p {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .activity-time {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 0.3rem;
+        }
+
+        /* Team Section */
+        .team-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+        }
+
+        .team-section h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--verdi-dark);
+            margin-bottom: 1.5rem;
+        }
+
+        .team-member {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .team-member:last-child {
+            border-bottom: none;
+        }
+
+        .member-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--verdi-mid), var(--verdi-accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .member-info h4 {
+            font-weight: 600;
+            color: var(--verdi-dark);
+            margin-bottom: 0.2rem;
+        }
+
+        .member-info p {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .member-status {
+            margin-left: auto;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-available {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-busy {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-away {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        /* Modules Section */
+        .modules-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+        }
+
+        .modules-section h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--verdi-dark);
+            margin-bottom: 1.5rem;
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .module-card {
+            background: linear-gradient(135deg, rgba(2, 35, 38, 0.05), rgba(3, 64, 64, 0.05));
+            padding: 1.8rem;
+            border-radius: 15px;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .module-card:hover {
+            border-color: var(--verdi-light);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .module-card.active {
+            background: linear-gradient(135deg, var(--verdi-dark), var(--verdi-mid), var(--verdi-accent), var(--verdi-light));
+            background-size: 300% 300%;
+            animation: aire 12s ease-in-out infinite;
+            color: white;
+        }
+
+        .module-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .module-icon {
+            font-size: 2rem;
+        }
+
+        .module-card h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .module-card p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .module-status {
+            margin-top: 1rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .module-card:not(.active) .module-status {
+            background: rgba(2, 115, 94, 0.1);
+            color: var(--verdi-light);
+        }
+
+        .module-card.active .module-status {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .premium-module {
+            border: 2px solid #e5e7eb;
+        }
+
+        .premium-module:hover {
+            border-color: #f59e0b;
+        }
+
+        .premium-module.module-card.active {
+            border-color: var(--verdi-light);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 1rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .nav-menu {
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+
+            main {
+                padding: 1rem;
+                margin-top: 160px;
+            }
+
+            .welcome-section h1 {
+                font-size: 1.8rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modules-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo">Opsis Suite</div>
+                <div class="module-badge">MotorSync</div>
+            </div>
+            <nav class="nav-menu">
+                <a href="/dashboard/motorsync.html">Dashboard</a>
+                <a href="/timesync/timesync.html">TimeSync</a>
+                <a href="/warehouse/inventory.html">ToolSync</a>
+                <a href="/dashboard/team-management.html">Equipo</a>
+                <a href="/dashboard/system-config.html">Configuración</a>
+                <a href="/admin/superadmin.html">Admin</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Category Selector -->
+        <div class="category-section">
+            <div class="category-selector">
+                <span class="category-icon" id="categoryIcon">🔧</span>
+                <label for="companyCategory">Tipo de Empresa:</label>
+                <select id="companyCategory" onchange="updateCategory()">
+                    <option value="hvac">HVAC y Refrigeración</option>
+                    <option value="solar">Energía Solar</option>
+                    <option value="electrical">Electricidad</option>
+                    <option value="plumbing" selected>Plomería</option>
+                    <option value="roofing">Roofing (Techos)</option>
+                    <option value="restoration">Restauración de Daños</option>
+                    <option value="abatement">Abatimiento (Asbesto/Plomo)</option>
+                    <option value="landscaping">Landscaping (Paisajismo)</option>
+                    <option value="pool">Servicios de Piscinas</option>
+                    <option value="painting">Pintura</option>
+                    <option value="pest">Control de Plagas</option>
+                    <option value="telecom">Telecomunicaciones</option>
+                    <option value="concrete">Concreto y Albañilería</option>
+                    <option value="fire">Sistemas Contra Incendios</option>
+                    <option value="facility">Facility Management</option>
+                    <option value="excavation">Excavación</option>
+                    <option value="logistics">Logística y Distribución</option>
+                    <option value="moving">Mudanzas</option>
+                    <option value="catering">Catering y Eventos</option>
+                    <option value="remodeling">Remodelación</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h1>Bienvenido a <span id="companyName">Demo Company</span></h1>
+            <p>Sistema Operacional Completo para <span id="categoryDisplay">Plomería</span></p>
+            <div style="margin-top: 1rem; font-size: 0.95rem; opacity: 0.9;">
+                MotorSync - Tu base operacional completa • Los módulos premium expanden tu capacidad
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon">📋</div>
+                </div>
+                <div class="stat-label" id="statLabel1">Órdenes Activas</div>
+                <div class="stat-value" id="statValue1">28</div>
+                <div class="stat-change positive">↑ 12% vs. semana pasada</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon">👥</div>
+                </div>
+                <div class="stat-label" id="statLabel2">Técnicos en Campo</div>
+                <div class="stat-value" id="statValue2">15</div>
+                <div class="stat-change positive">↑ 3 más que ayer</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon">💰</div>
+                </div>
+                <div class="stat-label">Ingresos del Mes</div>
+                <div class="stat-value">$127,450</div>
+                <div class="stat-change positive">↑ 8.5% vs. mes anterior</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon">⭐</div>
+                </div>
+                <div class="stat-label">Satisfacción Cliente</div>
+                <div class="stat-value">4.8/5</div>
+                <div class="stat-change positive">↑ 0.3 puntos</div>
+            </div>
+        </div>
+
+        <!-- Core Operations - MotorSync Base Features -->
+        <div class="quick-actions">
+            <h2>Operaciones Principales - MotorSync Base</h2>
+            <div class="actions-grid">
+                <button class="action-btn" onclick="window.location.href='#work-orders'">
+                    <span class="action-btn-icon">📋</span>
+                    <span id="actionNew">Órdenes de Trabajo</span>
+                </button>
+                <button class="action-btn" onclick="window.location.href='#scheduling'">
+                    <span class="action-btn-icon">📅</span>
+                    <span>Programación</span>
+                </button>
+                <button class="action-btn" onclick="window.location.href='#customers'">
+                    <span class="action-btn-icon">🏢</span>
+                    <span>Clientes</span>
+                </button>
+                <button class="action-btn" onclick="window.location.href='/dashboard/team-management.html'">
+                    <span class="action-btn-icon">👥</span>
+                    <span>Equipo</span>
+                </button>
+                <button class="action-btn" onclick="window.location.href='#invoicing'">
+                    <span class="action-btn-icon">💵</span>
+                    <span>Facturación</span>
+                </button>
+                <button class="action-btn" onclick="window.location.href='#reports'">
+                    <span class="action-btn-icon">📊</span>
+                    <span>Reportes</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Essential Tools Section -->
+        <div class="modules-section">
+            <h2>Herramientas Esenciales (Incluidas en MotorSync)</h2>
+            <div class="modules-grid">
+                <div class="module-card active" onclick="window.location.href='#work-orders'">
+                    <div class="module-header">
+                        <span class="module-icon">📋</span>
+                    </div>
+                    <h3 id="workOrdersTitle">Órdenes de Trabajo</h3>
+                    <p>Gestión completa de trabajos, asignaciones y seguimiento</p>
+                    <span class="module-status">✓ Base</span>
+                </div>
+
+                <div class="module-card active" onclick="window.location.href='#customers'">
+                    <div class="module-header">
+                        <span class="module-icon">🏢</span>
+                    </div>
+                    <h3>CRM - Clientes</h3>
+                    <p>Base de datos de clientes, historial y comunicación</p>
+                    <span class="module-status">✓ Base</span>
+                </div>
+
+                <div class="module-card active" onclick="window.location.href='#scheduling'">
+                    <div class="module-header">
+                        <span class="module-icon">📅</span>
+                    </div>
+                    <h3>Programación</h3>
+                    <p>Calendario, asignación de recursos y planificación</p>
+                    <span class="module-status">✓ Base</span>
+                </div>
+
+                <div class="module-card active" onclick="window.location.href='#invoicing'">
+                    <div class="module-header">
+                        <span class="module-icon">💰</span>
+                    </div>
+                    <h3>Facturación Básica</h3>
+                    <p>Cotizaciones, facturas y seguimiento de pagos</p>
+                    <span class="module-status">✓ Base</span>
+                </div>
+
+                <div class="module-card active" onclick="window.location.href='/dashboard/team-management.html'">
+                    <div class="module-header">
+                        <span class="module-icon">👥</span>
+                    </div>
+                    <h3>Gestión de Equipo</h3>
+                    <p>Personal, roles, contactos y disponibilidad</p>
+                    <span class="module-status">✓ Base</span>
+                </div>
+
+                <div class="module-card active" onclick="window.location.href='#inventory-basic'">
+                    <div class="module-header">
+                        <span class="module-icon">📦</span>
+                    </div>
+                    <h3 id="inventoryTitle">Inventario Básico</h3>
+                    <p>Control simple de materiales y suministros</p>
+                    <span class="module-status">✓ Base</span>
+                </div>
+
+                <div class="module-card active" onclick="window.location.href='#reports'">
+                    <div class="module-header">
+                        <span class="module-icon">📊</span>
+                    </div>
+                    <h3>Reportes Operacionales</h3>
+                    <p>Análisis básico de desempeño y métricas</p>
+                    <span class="module-status">✓ Base</span>
+                </div>
+
+                <div class="module-card active" onclick="window.location.href='#mobile'">
+                    <div class="module-header">
+                        <span class="module-icon">📱</span>
+                    </div>
+                    <h3>Acceso Móvil</h3>
+                    <p>App móvil para técnicos en campo</p>
+                    <span class="module-status">✓ Base</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Premium Modules Section -->
+        <div class="modules-section" style="margin-top: 3rem;">
+            <h2>Módulos Premium - Expande tu Capacidad Operacional</h2>
+            <p style="color: #666; margin-bottom: 1.5rem; font-size: 1rem;">
+                Robustece MotorSync con módulos especializados para llevar tu operación al siguiente nivel
+            </p>
+            <div class="modules-grid">
+                <div class="module-card premium-module" onclick="window.location.href='/timesync/timesync.html'">
+                    <div class="module-header">
+                        <span class="module-icon">⏱️</span>
+                    </div>
+                    <h3>TimeSync <span style="font-size: 0.7rem; color: #02735E;">PREMIUM</span></h3>
+                    <p>Control avanzado de tiempo, horarios, asistencia y productividad</p>
+                    <div style="margin-top: 1rem; font-size: 0.85rem; color: #666;">
+                        ✓ Timesheet digital<br>
+                        ✓ Geolocalización<br>
+                        ✓ Análisis de productividad<br>
+                        ✓ Aprobaciones automáticas
+                    </div>
+                    <span class="module-status" style="background: #d1fae5; color: #065f46;">✓ Activo</span>
+                </div>
+
+                <div class="module-card premium-module" onclick="window.location.href='/warehouse/inventory.html'">
+                    <div class="module-header">
+                        <span class="module-icon">🔧</span>
+                    </div>
+                    <h3>ToolSync <span style="font-size: 0.7rem; color: #02735E;">PREMIUM</span></h3>
+                    <p>Gestión avanzada de inventario, herramientas y equipos</p>
+                    <div style="margin-top: 1rem; font-size: 0.85rem; color: #666;">
+                        ✓ Trazabilidad completa<br>
+                        ✓ Mantenimiento preventivo<br>
+                        ✓ Códigos QR/Barras<br>
+                        ✓ Alertas de stock
+                    </div>
+                    <span class="module-status" style="background: #d1fae5; color: #065f46;">✓ Activo</span>
+                </div>
+
+                <div class="module-card premium-module">
+                    <div class="module-header">
+                        <span class="module-icon">👤</span>
+                    </div>
+                    <h3>HumanSync <span style="font-size: 0.7rem; color: #f59e0b;">PREMIUM</span></h3>
+                    <p>Recursos humanos completo, nómina y gestión de talento</p>
+                    <div style="margin-top: 1rem; font-size: 0.85rem; color: #666;">
+                        ✓ Nómina automatizada<br>
+                        ✓ Evaluaciones de desempeño<br>
+                        ✓ Reclutamiento<br>
+                        ✓ Capacitación y certificaciones
+                    </div>
+                    <span class="module-status">Disponible para activar</span>
+                </div>
+
+                <div class="module-card premium-module">
+                    <div class="module-header">
+                        <span class="module-icon">💵</span>
+                    </div>
+                    <h3>FinanSync <span style="font-size: 0.7rem; color: #f59e0b;">PREMIUM</span></h3>
+                    <p>Contabilidad completa, finanzas avanzadas y análisis</p>
+                    <div style="margin-top: 1rem; font-size: 0.85rem; color: #666;">
+                        ✓ Contabilidad completa<br>
+                        ✓ Flujo de caja<br>
+                        ✓ Proyecciones financieras<br>
+                        ✓ Integración bancaria
+                    </div>
+                    <span class="module-status">Disponible para activar</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Grid -->
+        <div class="content-grid">
+            <!-- Recent Activity -->
+            <div class="activity-section">
+                <h2>Actividad Reciente</h2>
+                <div class="activity-item">
+                    <div class="activity-icon">📋</div>
+                    <div class="activity-details">
+                        <h4 id="activity1Title">Nueva orden de trabajo asignada</h4>
+                        <p id="activity1Desc">Juan Pérez - Reparación de tubería principal</p>
+                        <div class="activity-time">Hace 15 minutos</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">✅</div>
+                    <div class="activity-details">
+                        <h4 id="activity2Title">Orden completada</h4>
+                        <p id="activity2Desc">María González - Instalación completada exitosamente</p>
+                        <div class="activity-time">Hace 1 hora</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">💰</div>
+                    <div class="activity-details">
+                        <h4>Pago recibido</h4>
+                        <p>Cliente: Edificio Comercial Central - $3,500</p>
+                        <div class="activity-time">Hace 2 horas</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">📦</div>
+                    <div class="activity-details">
+                        <h4 id="activity4Title">Inventario actualizado</h4>
+                        <p id="activity4Desc">Nuevos materiales agregados al almacén</p>
+                        <div class="activity-time">Hace 3 horas</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">⏰</div>
+                    <div class="activity-details">
+                        <h4>Entrada registrada</h4>
+                        <p>Carlos Ramírez inició turno a las 8:00 AM</p>
+                        <div class="activity-time">Hace 4 horas</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Section -->
+            <div class="team-section">
+                <h2>Equipo en Campo</h2>
+                <div class="team-member">
+                    <div class="member-avatar">JP</div>
+                    <div class="member-info">
+                        <h4>Juan Pérez</h4>
+                        <p id="teamRole1">Técnico Senior</p>
+                    </div>
+                    <span class="member-status status-available">Disponible</span>
+                </div>
+                <div class="team-member">
+                    <div class="member-avatar">MG</div>
+                    <div class="member-info">
+                        <h4>María González</h4>
+                        <p id="teamRole2">Instaladora</p>
+                    </div>
+                    <span class="member-status status-busy">En servicio</span>
+                </div>
+                <div class="team-member">
+                    <div class="member-avatar">CR</div>
+                    <div class="member-info">
+                        <h4>Carlos Ramírez</h4>
+                        <p id="teamRole3">Técnico</p>
+                    </div>
+                    <span class="member-status status-available">Disponible</span>
+                </div>
+                <div class="team-member">
+                    <div class="member-avatar">AL</div>
+                    <div class="member-info">
+                        <h4>Ana López</h4>
+                        <p id="teamRole4">Supervisora</p>
+                    </div>
+                    <span class="member-status status-away">En ruta</span>
+                </div>
+                <div class="team-member">
+                    <div class="member-avatar">RS</div>
+                    <div class="member-info">
+                        <h4>Roberto Silva</h4>
+                        <p id="teamRole5">Técnico</p>
+                    </div>
+                    <span class="member-status status-busy">En servicio</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Demo Mode - Bypass Authentication
+        console.log('MotorSync Dashboard - Demo Mode Active');
+
+        // Category Configurations
+        const CATEGORIES = {
+            hvac: {
+                name: 'HVAC y Refrigeración',
+                icon: '❄️',
+                statLabel1: 'Servicios Activos',
+                statLabel2: 'Técnicos HVAC',
+                actionNew: 'Nueva Orden HVAC',
+                actionInventory: 'Equipos y Partes',
+                teamRole1: 'Técnico HVAC Senior',
+                teamRole2: 'Instalador HVAC',
+                teamRole3: 'Técnico HVAC',
+                teamRole4: 'Supervisora HVAC',
+                teamRole5: 'Técnico HVAC',
+                activity1Title: 'Mantenimiento programado asignado',
+                activity1Desc: 'Juan Pérez - Servicio de aire acondicionado',
+                activity2Title: 'Instalación completada',
+                activity2Desc: 'María González - Sistema nuevo instalado',
+                activity4Title: 'Refrigerante restockeado',
+                activity4Desc: 'R-410A agregado al inventario'
+            },
+            solar: {
+                name: 'Energía Solar',
+                icon: '☀️',
+                statLabel1: 'Instalaciones Activas',
+                statLabel2: 'Instaladores',
+                actionNew: 'Nueva Instalación',
+                actionInventory: 'Paneles y Equipos',
+                teamRole1: 'Ingeniero Solar Senior',
+                teamRole2: 'Instaladora Solar',
+                teamRole3: 'Instalador Solar',
+                teamRole4: 'Supervisora Proyectos',
+                teamRole5: 'Técnico Eléctrico',
+                activity1Title: 'Nuevo proyecto solar asignado',
+                activity1Desc: 'Juan Pérez - Instalación residencial 8kW',
+                activity2Title: 'Sistema activado',
+                activity2Desc: 'María González - Conexión a red exitosa',
+                activity4Title: 'Paneles recibidos',
+                activity4Desc: '50 paneles 400W agregados'
+            },
+            electrical: {
+                name: 'Electricidad',
+                icon: '⚡',
+                statLabel1: 'Trabajos Activos',
+                statLabel2: 'Electricistas',
+                actionNew: 'Nuevo Trabajo',
+                actionInventory: 'Materiales Eléctricos',
+                teamRole1: 'Electricista Master',
+                teamRole2: 'Electricista Oficial',
+                teamRole3: 'Electricista',
+                teamRole4: 'Supervisora Eléctrica',
+                teamRole5: 'Aprendiz Eléctrico',
+                activity1Title: 'Inspección eléctrica programada',
+                activity1Desc: 'Juan Pérez - Panel principal comercial',
+                activity2Title: 'Instalación aprobada',
+                activity2Desc: 'María González - Permiso obtenido',
+                activity4Title: 'Cable y conductos recibidos',
+                activity4Desc: 'Materiales para 5 proyectos'
+            },
+            plumbing: {
+                name: 'Plomería',
+                icon: '🔧',
+                statLabel1: 'Órdenes Activas',
+                statLabel2: 'Técnicos en Campo',
+                actionNew: 'Nueva Orden',
+                actionInventory: 'Inventario',
+                teamRole1: 'Técnico Senior',
+                teamRole2: 'Instaladora',
+                teamRole3: 'Técnico',
+                teamRole4: 'Supervisora',
+                teamRole5: 'Técnico',
+                activity1Title: 'Nueva orden de trabajo asignada',
+                activity1Desc: 'Juan Pérez - Reparación de tubería principal',
+                activity2Title: 'Orden completada',
+                activity2Desc: 'María González - Instalación completada exitosamente',
+                activity4Title: 'Inventario actualizado',
+                activity4Desc: 'Nuevos materiales agregados al almacén'
+            },
+            roofing: {
+                name: 'Roofing (Techos)',
+                icon: '🏠',
+                statLabel1: 'Proyectos Activos',
+                statLabel2: 'Techadores',
+                actionNew: 'Nuevo Proyecto',
+                actionInventory: 'Materiales de Techo',
+                teamRole1: 'Techador Master',
+                teamRole2: 'Instaladora Techos',
+                teamRole3: 'Techador',
+                teamRole4: 'Supervisora Proyectos',
+                teamRole5: 'Techador Junior',
+                activity1Title: 'Nuevo proyecto de techo asignado',
+                activity1Desc: 'Juan Pérez - Reemplazo de techo residencial',
+                activity2Title: 'Techo completado',
+                activity2Desc: 'María González - Inspección final aprobada',
+                activity4Title: 'Tejas recibidas',
+                activity4Desc: 'Material para 3 proyectos'
+            },
+            restoration: {
+                name: 'Restauración de Daños',
+                icon: '🔨',
+                statLabel1: 'Casos Activos',
+                statLabel2: 'Técnicos Restauración',
+                actionNew: 'Nuevo Caso',
+                actionInventory: 'Equipo Restauración',
+                teamRole1: 'Especialista Senior',
+                teamRole2: 'Técnica Restauración',
+                teamRole3: 'Técnico Mitigación',
+                teamRole4: 'Supervisora Casos',
+                teamRole5: 'Técnico Secado',
+                activity1Title: 'Emergencia asignada',
+                activity1Desc: 'Juan Pérez - Daño por agua comercial',
+                activity2Title: 'Mitigación completada',
+                activity2Desc: 'María González - Área asegurada y seca',
+                activity4Title: 'Equipos disponibles',
+                activity4Desc: 'Deshumidificadores y ventiladores listos'
+            },
+            abatement: {
+                name: 'Abatimiento (Asbesto/Plomo)',
+                icon: '☣️',
+                statLabel1: 'Proyectos Activos',
+                statLabel2: 'Técnicos Certificados',
+                actionNew: 'Nuevo Proyecto',
+                actionInventory: 'Equipo de Seguridad',
+                teamRole1: 'Supervisor Certificado',
+                teamRole2: 'Técnica Abatimiento',
+                teamRole3: 'Técnico Especialista',
+                teamRole4: 'Supervisora Calidad',
+                teamRole5: 'Técnico Muestreo',
+                activity1Title: 'Inspección programada',
+                activity1Desc: 'Juan Pérez - Evaluación de asbesto',
+                activity2Title: 'Remoción completada',
+                activity2Desc: 'María González - Test de aire aprobado',
+                activity4Title: 'EPP recibido',
+                activity4Desc: 'Trajes y respiradores nuevos'
+            },
+            landscaping: {
+                name: 'Landscaping (Paisajismo)',
+                icon: '🌳',
+                statLabel1: 'Proyectos Activos',
+                statLabel2: 'Jardineros/Paisajistas',
+                actionNew: 'Nuevo Proyecto',
+                actionInventory: 'Plantas y Equipos',
+                teamRole1: 'Diseñador Paisajista',
+                teamRole2: 'Jardinera Senior',
+                teamRole3: 'Jardinero',
+                teamRole4: 'Supervisora Proyectos',
+                teamRole5: 'Operador Equipos',
+                activity1Title: 'Diseño aprobado',
+                activity1Desc: 'Juan Pérez - Jardín corporativo',
+                activity2Title: 'Instalación completada',
+                activity2Desc: 'María González - Sistema de riego activo',
+                activity4Title: 'Plantas recibidas',
+                activity4Desc: 'Árboles y arbustos para 2 proyectos'
+            },
+            pool: {
+                name: 'Servicios de Piscinas',
+                icon: '🏊',
+                statLabel1: 'Servicios Programados',
+                statLabel2: 'Técnicos Piscinas',
+                actionNew: 'Nuevo Servicio',
+                actionInventory: 'Químicos y Equipos',
+                teamRole1: 'Técnico Piscinas Senior',
+                teamRole2: 'Especialista Mantenimiento',
+                teamRole3: 'Técnico Servicio',
+                teamRole4: 'Supervisora Rutas',
+                teamRole5: 'Técnico Reparaciones',
+                activity1Title: 'Ruta de servicio asignada',
+                activity1Desc: 'Juan Pérez - 12 piscinas hoy',
+                activity2Title: 'Reparación completada',
+                activity2Desc: 'María González - Bomba reemplazada',
+                activity4Title: 'Químicos recibidos',
+                activity4Desc: 'Cloro y otros productos para el mes'
+            },
+            painting: {
+                name: 'Pintura',
+                icon: '🎨',
+                statLabel1: 'Proyectos Activos',
+                statLabel2: 'Pintores',
+                actionNew: 'Nuevo Proyecto',
+                actionInventory: 'Pinturas y Materiales',
+                teamRole1: 'Pintor Master',
+                teamRole2: 'Pintora Comercial',
+                teamRole3: 'Pintor',
+                teamRole4: 'Supervisora Proyectos',
+                teamRole5: 'Pintor Residencial',
+                activity1Title: 'Proyecto iniciado',
+                activity1Desc: 'Juan Pérez - Oficinas corporativas',
+                activity2Title: 'Proyecto completado',
+                activity2Desc: 'María González - Casa residencial finalizada',
+                activity4Title: 'Pintura recibida',
+                activity4Desc: 'Galones para 5 proyectos'
+            },
+            pest: {
+                name: 'Control de Plagas',
+                icon: '🐛',
+                statLabel1: 'Servicios Activos',
+                statLabel2: 'Técnicos Control',
+                actionNew: 'Nuevo Servicio',
+                actionInventory: 'Productos Control',
+                teamRole1: 'Técnico Licenciado Senior',
+                teamRole2: 'Especialista Plagas',
+                teamRole3: 'Técnico Aplicador',
+                teamRole4: 'Supervisora Rutas',
+                teamRole5: 'Técnico Comercial',
+                activity1Title: 'Inspección programada',
+                activity1Desc: 'Juan Pérez - Control preventivo restaurante',
+                activity2Title: 'Tratamiento completado',
+                activity2Desc: 'María González - Residencia libre de termitas',
+                activity4Title: 'Productos recibidos',
+                activity4Desc: 'Insecticidas y equipos de aplicación'
+            },
+            telecom: {
+                name: 'Telecomunicaciones',
+                icon: '📡',
+                statLabel1: 'Instalaciones Activas',
+                statLabel2: 'Técnicos Telecom',
+                actionNew: 'Nueva Instalación',
+                actionInventory: 'Equipos y Cables',
+                teamRole1: 'Ingeniero Redes Senior',
+                teamRole2: 'Técnica Instalaciones',
+                teamRole3: 'Técnico Cableado',
+                teamRole4: 'Supervisora Proyectos',
+                teamRole5: 'Técnico Soporte',
+                activity1Title: 'Red empresarial asignada',
+                activity1Desc: 'Juan Pérez - Cableado estructurado oficinas',
+                activity2Title: 'Instalación certificada',
+                activity2Desc: 'María González - Fibra óptica operativa',
+                activity4Title: 'Cable recibido',
+                activity4Desc: 'Cat6 y fibra para proyectos del mes'
+            },
+            concrete: {
+                name: 'Concreto y Albañilería',
+                icon: '🧱',
+                statLabel1: 'Proyectos Activos',
+                statLabel2: 'Albañiles/Concreteros',
+                actionNew: 'Nuevo Proyecto',
+                actionInventory: 'Materiales Construcción',
+                teamRole1: 'Maestro Albañil',
+                teamRole2: 'Concretera Especialista',
+                teamRole3: 'Albañil',
+                teamRole4: 'Supervisora Obra',
+                teamRole5: 'Ayudante General',
+                activity1Title: 'Fundición programada',
+                activity1Desc: 'Juan Pérez - Base para edificio comercial',
+                activity2Title: 'Curado completado',
+                activity2Desc: 'María González - Losa lista para construcción',
+                activity4Title: 'Cemento recibido',
+                activity4Desc: 'Material para 3 fundiciones'
+            },
+            fire: {
+                name: 'Sistemas Contra Incendios',
+                icon: '🚒',
+                statLabel1: 'Instalaciones/Servicios',
+                statLabel2: 'Técnicos Certificados',
+                actionNew: 'Nuevo Proyecto',
+                actionInventory: 'Equipos Contra Incendios',
+                teamRole1: 'Ingeniero Seguridad',
+                teamRole2: 'Técnica Sistemas',
+                teamRole3: 'Instalador Certificado',
+                teamRole4: 'Supervisora Inspecciones',
+                teamRole5: 'Técnico Mantenimiento',
+                activity1Title: 'Inspección anual programada',
+                activity1Desc: 'Juan Pérez - Sistema de rociadores edificio',
+                activity2Title: 'Instalación certificada',
+                activity2Desc: 'María González - Sistema aprobado por bomberos',
+                activity4Title: 'Rociadores recibidos',
+                activity4Desc: 'Equipos para 2 instalaciones nuevas'
+            },
+            facility: {
+                name: 'Facility Management',
+                icon: '🏢',
+                statLabel1: 'Órdenes de Trabajo',
+                statLabel2: 'Técnicos Mantenimiento',
+                actionNew: 'Nueva Orden',
+                actionInventory: 'Suministros Generales',
+                teamRole1: 'Gerente Facilities',
+                teamRole2: 'Técnica Multiservicios',
+                teamRole3: 'Técnico Mantenimiento',
+                teamRole4: 'Supervisora Edificios',
+                teamRole5: 'Técnico HVAC/Plomería',
+                activity1Title: 'Mantenimiento preventivo',
+                activity1Desc: 'Juan Pérez - Edificio corporativo piso 3',
+                activity2Title: 'Reparación completada',
+                activity2Desc: 'María González - Sistema eléctrico restaurado',
+                activity4Title: 'Suministros recibidos',
+                activity4Desc: 'Materiales para mantenimiento mensual'
+            },
+            excavation: {
+                name: 'Excavación',
+                icon: '🚜',
+                statLabel1: 'Proyectos Activos',
+                statLabel2: 'Operadores',
+                actionNew: 'Nuevo Proyecto',
+                actionInventory: 'Maquinaria y Equipos',
+                teamRole1: 'Operador Senior',
+                teamRole2: 'Operadora Excavadora',
+                teamRole3: 'Operador Retroexcavadora',
+                teamRole4: 'Supervisora Sitio',
+                teamRole5: 'Operador Bulldozer',
+                activity1Title: 'Excavación iniciada',
+                activity1Desc: 'Juan Pérez - Preparación terreno comercial',
+                activity2Title: 'Nivelación completada',
+                activity2Desc: 'María González - Sitio listo para construcción',
+                activity4Title: 'Maquinaria disponible',
+                activity4Desc: 'Excavadora nueva agregada a flota'
+            },
+            logistics: {
+                name: 'Logística y Distribución',
+                icon: '🚚',
+                statLabel1: 'Rutas Activas',
+                statLabel2: 'Conductores',
+                actionNew: 'Nueva Ruta',
+                actionInventory: 'Vehículos y Equipos',
+                teamRole1: 'Coordinador Logística',
+                teamRole2: 'Conductora Ruta',
+                teamRole3: 'Conductor Entrega',
+                teamRole4: 'Supervisora Distribución',
+                teamRole5: 'Conductor Local',
+                activity1Title: 'Ruta optimizada',
+                activity1Desc: 'Juan Pérez - 25 entregas programadas',
+                activity2Title: 'Entregas completadas',
+                activity2Desc: 'María González - 100% entregas a tiempo',
+                activity4Title: 'Vehículo incorporado',
+                activity4Desc: 'Camión nuevo agregado a flota'
+            },
+            moving: {
+                name: 'Mudanzas',
+                icon: '📦',
+                statLabel1: 'Mudanzas Programadas',
+                statLabel2: 'Equipo Mudanzas',
+                actionNew: 'Nueva Mudanza',
+                actionInventory: 'Materiales Empaque',
+                teamRole1: 'Supervisor Mudanzas',
+                teamRole2: 'Líder Equipo',
+                teamRole3: 'Cargador',
+                teamRole4: 'Supervisora Logística',
+                teamRole5: 'Conductor Camión',
+                activity1Title: 'Mudanza confirmada',
+                activity1Desc: 'Juan Pérez - Residencia 4 habitaciones',
+                activity2Title: 'Mudanza completada',
+                activity2Desc: 'María González - Cliente satisfecho 5 estrellas',
+                activity4Title: 'Materiales recibidos',
+                activity4Desc: 'Cajas y materiales de embalaje'
+            },
+            catering: {
+                name: 'Catering y Eventos',
+                icon: '🍽️',
+                statLabel1: 'Eventos Programados',
+                statLabel2: 'Personal Catering',
+                actionNew: 'Nuevo Evento',
+                actionInventory: 'Suministros y Equipos',
+                teamRole1: 'Chef Ejecutivo',
+                teamRole2: 'Coordinadora Eventos',
+                teamRole3: 'Chef de Línea',
+                teamRole4: 'Supervisora Servicio',
+                teamRole5: 'Mesero/Servidor',
+                activity1Title: 'Evento corporativo confirmado',
+                activity1Desc: 'Juan Pérez - Cena gala 200 personas',
+                activity2Title: 'Evento completado',
+                activity2Desc: 'María González - Cliente muy satisfecho',
+                activity4Title: 'Suministros recibidos',
+                activity4Desc: 'Ingredientes frescos para eventos'
+            },
+            remodeling: {
+                name: 'Remodelación',
+                icon: '🛠️',
+                statLabel1: 'Proyectos Activos',
+                statLabel2: 'Contratistas/Técnicos',
+                actionNew: 'Nuevo Proyecto',
+                actionInventory: 'Materiales Construcción',
+                teamRole1: 'Contratista General',
+                teamRole2: 'Carpintera',
+                teamRole3: 'Técnico Multiservicios',
+                teamRole4: 'Supervisora Proyectos',
+                teamRole5: 'Electricista/Plomero',
+                activity1Title: 'Remodelación iniciada',
+                activity1Desc: 'Juan Pérez - Cocina y baños residencia',
+                activity2Title: 'Proyecto completado',
+                activity2Desc: 'María González - Inspección final aprobada',
+                activity4Title: 'Materiales recibidos',
+                activity4Desc: 'Gabinetes y accesorios para proyecto'
+            }
+        };
+
+        // Update category display and terminology
+        function updateCategory() {
+            const select = document.getElementById('companyCategory');
+            const category = CATEGORIES[select.value];
+            
+            // Update icon and display
+            document.getElementById('categoryIcon').textContent = category.icon;
+            document.getElementById('categoryDisplay').textContent = category.name;
+            
+            // Update stat labels
+            document.getElementById('statLabel1').textContent = category.statLabel1;
+            document.getElementById('statLabel2').textContent = category.statLabel2;
+            
+            // Update action buttons
+            document.getElementById('actionNew').textContent = category.actionNew;
+            document.getElementById('actionInventory').textContent = category.actionInventory;
+            
+            // Update team roles
+            document.getElementById('teamRole1').textContent = category.teamRole1;
+            document.getElementById('teamRole2').textContent = category.teamRole2;
+            document.getElementById('teamRole3').textContent = category.teamRole3;
+            document.getElementById('teamRole4').textContent = category.teamRole4;
+            document.getElementById('teamRole5').textContent = category.teamRole5;
+            
+            // Update activity descriptions
+            document.getElementById('activity1Title').textContent = category.activity1Title;
+            document.getElementById('activity1Desc').textContent = category.activity1Desc;
+            document.getElementById('activity2Title').textContent = category.activity2Title;
+            document.getElementById('activity2Desc').textContent = category.activity2Desc;
+            document.getElementById('activity4Title').textContent = category.activity4Title;
+            document.getElementById('activity4Desc').textContent = category.activity4Desc;
+            
+            // Save preference
+            localStorage.setItem('opsisCategory', select.value);
+        }
+
+        // Load saved category on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedCategory = localStorage.getItem('opsisCategory');
+            if (savedCategory) {
+                document.getElementById('companyCategory').value = savedCategory;
+            }
+            updateCategory();
+        });
+    </script>
+</body>
+</html>

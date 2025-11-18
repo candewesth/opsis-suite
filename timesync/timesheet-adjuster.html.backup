@@ -1,0 +1,1735 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timesheet Adjuster - Jardinería</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-blue: #007AFF;
+            --background: #F5F5F7;
+            --card-bg: #FFFFFF;
+            --text-primary: #1D1D1F;
+            --text-secondary: #86868B;
+            --border: #D2D2D7;
+            --success: #34C759;
+            --warning: #FF9500;
+            --danger: #FF3B30;
+            --purple: #AF52DE;
+            --teal: #5AC8FA;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #FF9500, #FF6B35);
+            color: white;
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(255, 149, 0, 0.3);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header-title h1 {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .header-title span {
+            font-size: 2.5rem;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            border: none;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.95;
+        }
+
+        /* View Selector */
+        .view-selector {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .view-selector h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .view-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .view-option {
+            background: linear-gradient(135deg, #F9F9FB, #FFFFFF);
+            border: 2px solid var(--border);
+            padding: 1.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .view-option:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px var(--shadow);
+        }
+
+        .view-option.active {
+            border-color: var(--primary-blue);
+            background: linear-gradient(135deg, #E5F2FF, #FFFFFF);
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
+        }
+
+        .view-option-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .view-option h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .view-option p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Filter Section */
+        .filter-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: inherit;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        /* Bulk Actions Bar */
+        .bulk-actions {
+            background: linear-gradient(135deg, #5AC8FA, #007AFF);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .bulk-actions-text {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .bulk-actions-text span:first-child {
+            font-size: 1.5rem;
+        }
+
+        .bulk-actions-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .bulk-btn {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        .bulk-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Current View Display */
+        .current-view {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .current-view-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .current-view h2 {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .edit-mode-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 28px;
+            background: var(--border);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: var(--primary-blue);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(22px);
+        }
+
+        /* Timecards Table */
+        .timecards-table-wrapper {
+            overflow-x: auto;
+        }
+
+        .timecards-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+        }
+
+        .timecards-table th {
+            background: #F9F9FB;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .timecards-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        .timecards-table tr:hover {
+            background: #F9F9FB;
+        }
+
+        .timecards-table tr.selected {
+            background: #E5F2FF;
+        }
+
+        .timecards-table input[type="time"],
+        .timecards-table input[type="number"],
+        .timecards-table select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+
+        .timecards-table input:focus,
+        .timecards-table select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+        }
+
+        .timecards-table input:disabled,
+        .timecards-table select:disabled {
+            background: #F5F5F7;
+            cursor: not-allowed;
+        }
+
+        .checkbox-cell {
+            text-align: center;
+        }
+
+        .checkbox-cell input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.draft { background: #E5E5E7; color: var(--text-secondary); }
+        .status-badge.pending { background: #FFF3E0; color: var(--warning); }
+        .status-badge.approved { background: #E8F5E9; color: var(--success); }
+        .status-badge.processed { background: #E3F2FD; color: var(--primary-blue); }
+
+        /* Add Entry Section - REDISEÑADO */
+        .add-entry-section {
+            background: linear-gradient(135deg, #E8F5E9, #FFFFFF);
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(52, 199, 89, 0.15);
+            margin-bottom: 2rem;
+            border: 2px solid var(--success);
+        }
+
+        .add-entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(52, 199, 89, 0.2);
+        }
+
+        .add-entry-header h2 {
+            font-size: 1.75rem;
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .add-entry-step {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .add-entry-step h3 {
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .step-number {
+            background: var(--success);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .entry-form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-field label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .form-field label .required {
+            color: var(--danger);
+        }
+
+        .form-field input,
+        .form-field select {
+            padding: 0.75rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .form-field input:focus,
+        .form-field select:focus {
+            outline: none;
+            border-color: var(--success);
+            box-shadow: 0 0 0 4px rgba(52, 199, 89, 0.1);
+        }
+
+        .multi-select-wrapper {
+            position: relative;
+        }
+
+        .multi-select {
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 0.5rem;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .multi-select-item {
+            padding: 0.5rem;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .multi-select-item:hover {
+            background: #F0F0F2;
+        }
+
+        .multi-select-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+
+        .help-text {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .summary-box {
+            background: linear-gradient(135deg, #FFF3E0, #FFFFFF);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 2px solid var(--warning);
+            margin-top: 1rem;
+        }
+
+        .summary-box h4 {
+            color: var(--warning);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 149, 0, 0.2);
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Rate Configuration - REDISEÑADO */
+        .rate-config {
+            background: linear-gradient(135deg, #FFF8F0, #FFFFFF);
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(255, 149, 0, 0.15);
+            margin-bottom: 2rem;
+            border: 2px solid var(--warning);
+        }
+
+        .rate-config-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(255, 149, 0, 0.2);
+        }
+
+        .rate-config h2 {
+            font-size: 1.75rem;
+            color: var(--warning);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .rate-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .rate-section h3 {
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .rate-section-icon {
+            font-size: 1.5rem;
+        }
+
+        .rate-info-box {
+            background: #FFF3E0;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--warning);
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .rate-display {
+            background: #F9F9FB;
+            padding: 1rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .rate-display-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .rate-display-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        /* History Section - MEJOR INTEGRADO */
+        .history-section {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .history-header h2 {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .history-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .history-item {
+            background: linear-gradient(135deg, #F9F9FB, #FFFFFF);
+            padding: 1.25rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .history-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px var(--shadow);
+            border-color: var(--primary-blue);
+        }
+
+        .history-item.active {
+            border-color: var(--primary-blue);
+            background: linear-gradient(135deg, #E5F2FF, #FFFFFF);
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
+        }
+
+        .history-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .history-item-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            background: #F0F0F2;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .history-item-action {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .history-item-details {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .history-item-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 0.75rem;
+        }
+
+        .history-item-badge.added { background: #E8F5E9; color: var(--success); }
+        .history-item-badge.modified { background: #FFF3E0; color: var(--warning); }
+        .history-item-badge.deleted { background: #FFEBEE; color: var(--danger); }
+
+        .clear-history-btn {
+            background: var(--danger);
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .clear-history-btn:hover {
+            background: #E6322B;
+            transform: translateY(-1px);
+        }
+
+        /* Action Buttons */
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px var(--shadow);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .action-left {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .action-right {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0051D5;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #28A745;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: #F9F9FB;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #E6322B;
+            transform: translateY(-1px);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header-top {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .view-options {
+                grid-template-columns: 1fr;
+            }
+
+            .history-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-bar {
+                flex-direction: column;
+            }
+
+            .action-left,
+            .action-right {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .btn {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-top">
+                <div class="header-title">
+                    <span>✏️</span>
+                    <h1>Timesheet Adjuster</h1>
+                </div>
+                <button class="back-btn" onclick="goBack()">
+                    <span>←</span>
+                    <span>Volver a Timecards</span>
+                </button>
+            </div>
+            <p>🔒 Herramienta exclusiva para Administradores - Gestiona, modifica y agrega timecards de forma avanzada</p>
+        </div>
+
+        <!-- View Selector -->
+        <div class="view-selector">
+            <h2>1. Selecciona el Modo de Visualización</h2>
+            <div class="view-options">
+                <div class="view-option active" onclick="selectView('employee')">
+                    <div class="view-option-icon">👤</div>
+                    <h3>Por Empleado</h3>
+                    <p>Solo un empleado específico</p>
+                </div>
+                <div class="view-option" onclick="selectView('job')">
+                    <div class="view-option-icon">📋</div>
+                    <h3>Por Job Number</h3>
+                    <p>Todos los del día seleccionado</p>
+                </div>
+                <div class="view-option" onclick="selectView('day')">
+                    <div class="view-option-icon">📅</div>
+                    <h3>Por Rango de Días</h3>
+                    <p>Todas las timecards del período</p>
+                </div>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="filter-section" id="filterSection">
+                <div class="filter-group">
+                    <label>Seleccionar Empleado</label>
+                    <select id="employeeSelect">
+                        <option value="">Seleccionar empleado...</option>
+                        <option value="emp001">Juan Pérez (EMP-001)</option>
+                        <option value="emp002">María González (EMP-002)</option>
+                        <option value="emp003">Carlos Rodríguez (EMP-003)</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Desde</label>
+                    <input type="date" id="startDate">
+                </div>
+                <div class="filter-group">
+                    <label>Hasta</label>
+                    <input type="date" id="endDate">
+                </div>
+                <div class="filter-group">
+                    <label>&nbsp;</label>
+                    <button class="btn btn-primary" onclick="loadTimecards()" style="width: 100%;">
+                        Cargar Timecards
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Actions Bar -->
+        <div class="bulk-actions">
+            <div class="bulk-actions-text">
+                <span>⚡</span>
+                <div>
+                    <strong>Acciones Masivas</strong>
+                    <p style="font-size: 0.875rem; opacity: 0.9;">Selecciona múltiples timecards y modifícalas al mismo tiempo</p>
+                </div>
+            </div>
+            <div class="bulk-actions-buttons">
+                <button class="bulk-btn" onclick="bulkEdit()">✏️ Editar Seleccionadas</button>
+                <button class="bulk-btn" onclick="bulkDelete()">🗑️ Eliminar Seleccionadas</button>
+            </div>
+        </div>
+
+        <!-- Current View Display -->
+        <div class="current-view">
+            <div class="current-view-header">
+                <h2>
+                    <span>📊</span>
+                    <span>Juan Pérez - Semana 15-21 Ene 2025</span>
+                </h2>
+                <div class="edit-mode-toggle">
+                    <span style="font-size: 0.875rem; color: var(--text-secondary); font-weight: 600;">Modo Edición</span>
+                    <div class="toggle-switch" onclick="toggleEditMode()" id="editToggle"></div>
+                </div>
+            </div>
+
+            <div class="timecards-table-wrapper">
+                <table class="timecards-table">
+                    <thead>
+                        <tr>
+                            <th class="checkbox-cell">
+                                <input type="checkbox" onchange="selectAll(this)">
+                            </th>
+                            <th>Día</th>
+                            <th>Empleado</th>
+                            <th>Job Number</th>
+                            <th>Inicio</th>
+                            <th>Fin</th>
+                            <th>Drive</th>
+                            <th>Break</th>
+                            <th>Meal Start</th>
+                            <th>Meal End</th>
+                            <th>Tipo Hora</th>
+                            <th>Per Diem</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="timecardsTableBody">
+                        <tr>
+                            <td class="checkbox-cell">
+                                <input type="checkbox" class="row-checkbox" onchange="updateSelection()">
+                            </td>
+                            <td><strong>Lunes 15</strong></td>
+                            <td>Juan Pérez</td>
+                            <td>JOB-2501</td>
+                            <td><input type="time" value="07:00" disabled></td>
+                            <td><input type="time" value="15:30" disabled></td>
+                            <td><input type="number" value="0.5" step="0.25" min="0" style="max-width: 70px;" disabled> h</td>
+                            <td><input type="number" value="0.25" step="0.25" min="0" style="max-width: 70px;" disabled> h</td>
+                            <td><input type="time" value="12:00" disabled></td>
+                            <td><input type="time" value="12:30" disabled></td>
+                            <td>
+                                <select disabled>
+                                    <option value="regular" selected>Regular</option>
+                                    <option value="federal">Federal</option>
+                                    <option value="state">Estatal</option>
+                                </select>
+                            </td>
+                            <td><input type="number" value="75" step="5" min="0" style="max-width: 80px;" disabled></td>
+                            <td><strong>8.0h</strong></td>
+                            <td><span class="status-badge pending">Pendiente</span></td>
+                            <td>
+                                <button class="btn btn-danger" style="padding: 0.5rem;" onclick="deleteEntry(this)">
+                                    🗑️
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="checkbox-cell">
+                                <input type="checkbox" class="row-checkbox" onchange="updateSelection()">
+                            </td>
+                            <td><strong>Martes 16</strong></td>
+                            <td>Juan Pérez</td>
+                            <td>JOB-2501</td>
+                            <td><input type="time" value="07:00" disabled></td>
+                            <td><input type="time" value="16:00" disabled></td>
+                            <td><input type="number" value="0.5" step="0.25" min="0" style="max-width: 70px;" disabled> h</td>
+                            <td><input type="number" value="0.25" step="0.25" min="0" style="max-width: 70px;" disabled> h</td>
+                            <td><input type="time" value="12:00" disabled></td>
+                            <td><input type="time" value="12:30" disabled></td>
+                            <td>
+                                <select disabled>
+                                    <option value="regular" selected>Regular</option>
+                                    <option value="federal">Federal</option>
+                                    <option value="state">Estatal</option>
+                                </select>
+                            </td>
+                            <td><input type="number" value="75" step="5" min="0" style="max-width: 80px;" disabled></td>
+                            <td><strong>8.5h</strong></td>
+                            <td><span class="status-badge approved">Aprobado</span></td>
+                            <td>
+                                <button class="btn btn-danger" style="padding: 0.5rem;" onclick="deleteEntry(this)">
+                                    🗑️
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="checkbox-cell">
+                                <input type="checkbox" class="row-checkbox" onchange="updateSelection()">
+                            </td>
+                            <td><strong>Miércoles 17</strong></td>
+                            <td>Juan Pérez</td>
+                            <td>JOB-2502</td>
+                            <td><input type="time" value="06:30" disabled></td>
+                            <td><input type="time" value="14:30" disabled></td>
+                            <td><input type="number" value="1.0" step="0.25" min="0" style="max-width: 70px;" disabled> h</td>
+                            <td><input type="number" value="0.25" step="0.25" min="0" style="max-width: 70px;" disabled> h</td>
+                            <td><input type="time" value="11:30" disabled></td>
+                            <td><input type="time" value="12:00" disabled></td>
+                            <td>
+                                <select disabled>
+                                    <option value="regular">Regular</option>
+                                    <option value="federal" selected>Federal</option>
+                                    <option value="state">Estatal</option>
+                                </select>
+                            </td>
+                            <td><input type="number" value="100" step="5" min="0" style="max-width: 80px;" disabled></td>
+                            <td><strong>8.0h</strong></td>
+                            <td><span class="status-badge pending">Pendiente</span></td>
+                            <td>
+                                <button class="btn btn-danger" style="padding: 0.5rem;" onclick="deleteEntry(this)">
+                                    🗑️
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Add Entry Section - REDISEÑADO -->
+        <div class="add-entry-section">
+            <div class="add-entry-header">
+                <h2>
+                    <span>➕</span>
+                    <span>Agregar Nueva Entrada</span>
+                </h2>
+            </div>
+
+            <!-- Step 1: Selección Básica -->
+            <div class="add-entry-step">
+                <h3>
+                    <span class="step-number">1</span>
+                    <span>Información Básica</span>
+                </h3>
+                <div class="entry-form-grid">
+                    <div class="form-field">
+                        <label>Fecha <span class="required">*</span></label>
+                        <input type="date" id="newEntryDate" required>
+                        <span class="help-text">Día de trabajo</span>
+                    </div>
+                    <div class="form-field">
+                        <label>Job Number <span class="required">*</span></label>
+                        <select id="newEntryJob" required>
+                            <option value="">Seleccionar trabajo...</option>
+                            <option value="job2501">JOB-2501 - Highway Expansion</option>
+                            <option value="job2502">JOB-2502 - Bridge Repair</option>
+                            <option value="job2503">JOB-2503 - Road Paving</option>
+                        </select>
+                        <span class="help-text">Proyecto asignado</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Selección de Empleados -->
+            <div class="add-entry-step">
+                <h3>
+                    <span class="step-number">2</span>
+                    <span>Seleccionar Empleados (Múltiples)</span>
+                </h3>
+                <div class="multi-select-wrapper">
+                    <div class="multi-select" id="employeeMultiSelect">
+                        <div class="multi-select-item">
+                            <input type="checkbox" id="emp001" value="emp001">
+                            <label for="emp001">👤 Juan Pérez (EMP-001) - Supervisor</label>
+                        </div>
+                        <div class="multi-select-item">
+                            <input type="checkbox" id="emp002" value="emp002">
+                            <label for="emp002">👤 María González (EMP-002) - Operadora</label>
+                        </div>
+                        <div class="multi-select-item">
+                            <input type="checkbox" id="emp003" value="emp003">
+                            <label for="emp003">👤 Carlos Rodríguez (EMP-003) - Técnico</label>
+                        </div>
+                    </div>
+                    <span class="help-text">✅ Selecciona uno o más empleados que trabajaron el mismo día</span>
+                </div>
+            </div>
+
+            <!-- Step 3: Horarios -->
+            <div class="add-entry-step">
+                <h3>
+                    <span class="step-number">3</span>
+                    <span>Horarios y Tiempos</span>
+                </h3>
+                <div class="entry-form-grid">
+                    <div class="form-field">
+                        <label>🕐 Hora Inicio <span class="required">*</span></label>
+                        <input type="time" id="newEntryStart" required>
+                    </div>
+                    <div class="form-field">
+                        <label>🕐 Hora Fin <span class="required">*</span></label>
+                        <input type="time" id="newEntryEnd" required>
+                    </div>
+                    <div class="form-field">
+                        <label>🚗 Drive Time (horas)</label>
+                        <input type="number" id="newEntryDrive" step="0.25" min="0" value="0">
+                        <span class="help-text">Tiempo de traslado</span>
+                    </div>
+                    <div class="form-field">
+                        <label>☕ Break Time (horas)</label>
+                        <input type="number" id="newEntryBreak" step="0.25" min="0" value="0">
+                        <span class="help-text">Pausas cortas</span>
+                    </div>
+                    <div class="form-field">
+                        <label>🍽️ Meal Start</label>
+                        <input type="time" id="newEntryMealStart">
+                    </div>
+                    <div class="form-field">
+                        <label>🍽️ Meal End</label>
+                        <input type="time" id="newEntryMealEnd">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Tipo y Compensación -->
+            <div class="add-entry-step">
+                <h3>
+                    <span class="step-number">4</span>
+                    <span>Tipo de Hora y Compensación</span>
+                </h3>
+                <div class="entry-form-grid">
+                    <div class="form-field">
+                        <label>📋 Tipo de Hora</label>
+                        <select id="newEntryHourType">
+                            <option value="regular">Regular</option>
+                            <option value="federal">Federal (Tasa especial)</option>
+                            <option value="state">Estatal (Tasa especial)</option>
+                            <option value="vacation">Vacaciones</option>
+                            <option value="sick">Enfermedad</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label>💵 Per Diem ($)</label>
+                        <input type="number" id="newEntryPerDiem" step="5" min="0" value="0">
+                        <span class="help-text">Compensación diaria</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Box -->
+            <div class="summary-box">
+                <h4>📊 Resumen de la Acción</h4>
+                <div class="summary-item">
+                    <span>Empleados seleccionados:</span>
+                    <strong id="summaryEmployees">0</strong>
+                </div>
+                <div class="summary-item">
+                    <span>Timecards a crear:</span>
+                    <strong id="summaryTimecards">0</strong>
+                </div>
+                <div class="summary-item">
+                    <span>Fecha:</span>
+                    <strong id="summaryDate">-</strong>
+                </div>
+                <div class="summary-item">
+                    <span>Job Number:</span>
+                    <strong id="summaryJob">-</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rate Configuration - REDISEÑADO -->
+        <div class="rate-config">
+            <div class="rate-config-header">
+                <h2>
+                    <span>🔒</span>
+                    <span>Configuración de Tasas</span>
+                </h2>
+            </div>
+
+            <!-- Section 1: Tasa Regular del Empleado -->
+            <div class="rate-section">
+                <h3>
+                    <span class="rate-section-icon">👤</span>
+                    <span>Tasa Regular del Empleado</span>
+                </h3>
+                <div class="rate-info-box">
+                    <span style="font-size: 1.5rem;">💡</span>
+                    <div>
+                        <strong>Esta tasa es específica de cada empleado</strong> según su contrato de trabajo. 
+                        Solo puede ser modificada por el administrador y se aplica a todas las horas tipo "Regular".
+                    </div>
+                </div>
+                <div class="entry-form-grid">
+                    <div class="form-field">
+                        <label>Seleccionar Empleado</label>
+                        <select id="rateEmployee" onchange="loadEmployeeRate()">
+                            <option value="">Seleccionar empleado...</option>
+                            <option value="emp001">Juan Pérez (EMP-001)</option>
+                            <option value="emp002">María González (EMP-002)</option>
+                            <option value="emp003">Carlos Rodríguez (EMP-003)</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label>Tasa Regular ($/hora)</label>
+                        <input type="number" id="rateRegular" step="0.01" min="0" placeholder="28.50">
+                    </div>
+                </div>
+                <div class="rate-display">
+                    <span class="rate-display-label">Tasa Actual Cargada:</span>
+                    <span class="rate-display-value" id="currentRate">$0.00/hr</span>
+                </div>
+            </div>
+
+            <!-- Section 2: Tasas Especiales por Proyecto -->
+            <div class="rate-section">
+                <h3>
+                    <span class="rate-section-icon">📋</span>
+                    <span>Tasas Especiales por Proyecto</span>
+                </h3>
+                <div class="rate-info-box">
+                    <span style="font-size: 1.5rem;">⚠️</span>
+                    <div>
+                        <strong>Las tasas Federal y Estatal varían según el proyecto/contrato.</strong>
+                        Se aplican cuando el tipo de hora es "Federal" o "Estatal".
+                    </div>
+                </div>
+                <div class="entry-form-grid">
+                    <div class="form-field">
+                        <label>Seleccionar Job Number</label>
+                        <select id="rateJob" onchange="loadProjectRates()">
+                            <option value="">Seleccionar proyecto...</option>
+                            <option value="job2501">JOB-2501 - Highway Expansion</option>
+                            <option value="job2502">JOB-2502 - Bridge Repair</option>
+                            <option value="job2503">JOB-2503 - Road Paving</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label>🏛️ Tasa Federal ($/hora)</label>
+                        <input type="number" id="rateFederal" step="0.01" min="0" placeholder="35.50">
+                        <span class="help-text">Para trabajos con contrato federal</span>
+                    </div>
+                    <div class="form-field">
+                        <label>🏢 Tasa Estatal ($/hora)</label>
+                        <input type="number" id="rateState" step="0.01" min="0" placeholder="32.00">
+                        <span class="help-text">Para trabajos con contrato estatal</span>
+                    </div>
+                </div>
+                <div class="rate-display">
+                    <div>
+                        <span class="rate-display-label">Federal:</span>
+                        <span class="rate-display-value" id="currentFederal">$0.00/hr</span>
+                    </div>
+                    <div>
+                        <span class="rate-display-label">Estatal:</span>
+                        <span class="rate-display-value" id="currentState">$0.00/hr</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Section - MEJOR INTEGRADO -->
+        <div class="history-section">
+            <div class="history-header">
+                <h2>
+                    <span>📜</span>
+                    <span>Historial de Modificaciones</span>
+                </h2>
+                <button class="clear-history-btn" onclick="clearHistory()">
+                    🗑️ Limpiar Historial
+                </button>
+            </div>
+            <div class="history-grid" id="historyGrid">
+                <div class="history-item active" onclick="loadHistoryItem(this, 1)">
+                    <div class="history-item-header">
+                        <span class="history-item-time">Hace 5 min</span>
+                    </div>
+                    <div class="history-item-action">Modificación de horas</div>
+                    <div class="history-item-details">
+                        Juan Pérez - JOB-2501<br>
+                        Lunes 15 Ene: 8h → 8.5h
+                    </div>
+                    <span class="history-item-badge modified">Modificado</span>
+                </div>
+
+                <div class="history-item" onclick="loadHistoryItem(this, 2)">
+                    <div class="history-item-header">
+                        <span class="history-item-time">Hace 12 min</span>
+                    </div>
+                    <div class="history-item-action">Nueva entrada agregada</div>
+                    <div class="history-item-details">
+                        María González - JOB-2503<br>
+                        Jueves 18 Ene: 8h
+                    </div>
+                    <span class="history-item-badge added">Agregado</span>
+                </div>
+
+                <div class="history-item" onclick="loadHistoryItem(this, 3)">
+                    <div class="history-item-header">
+                        <span class="history-item-time">Hace 25 min</span>
+                    </div>
+                    <div class="history-item-action">Edición masiva</div>
+                    <div class="history-item-details">
+                        3 empleados - JOB-2501<br>
+                        Per Diem: $0 → $75
+                    </div>
+                    <span class="history-item-badge modified">Modificado</span>
+                </div>
+
+                <div class="history-item" onclick="loadHistoryItem(this, 4)">
+                    <div class="history-item-header">
+                        <span class="history-item-time">Hace 1 hora</span>
+                    </div>
+                    <div class="history-item-action">Entrada eliminada</div>
+                    <div class="history-item-details">
+                        Carlos Rodríguez - JOB-2502<br>
+                        Martes 16 Ene
+                    </div>
+                    <span class="history-item-badge deleted">Eliminado</span>
+                </div>
+
+                <div class="history-item" onclick="loadHistoryItem(this, 5)">
+                    <div class="history-item-header">
+                        <span class="history-item-time">Hace 2 horas</span>
+                    </div>
+                    <div class="history-item-action">Modificación de tasa</div>
+                    <div class="history-item-details">
+                        Juan Pérez<br>
+                        Tasa Regular: $28.50 → $29.00
+                    </div>
+                    <span class="history-item-badge modified">Modificado</span>
+                </div>
+
+                <div class="history-item" onclick="loadHistoryItem(this, 6)">
+                    <div class="history-item-header">
+                        <span class="history-item-time">Hace 3 horas</span>
+                    </div>
+                    <div class="history-item-action">5 entradas agregadas</div>
+                    <div class="history-item-details">
+                        Equipo completo - JOB-2501<br>
+                        Viernes 19 Ene
+                    </div>
+                    <span class="history-item-badge added">Agregado</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Bar -->
+        <div class="action-bar">
+            <div class="action-left">
+                <button class="btn btn-secondary" onclick="exportTimecards()">
+                    <span>📄</span>
+                    <span>Exportar Excel</span>
+                </button>
+            </div>
+            <div class="action-right">
+                <button class="btn btn-secondary" onclick="resetChanges()">
+                    <span>↺</span>
+                    <span>Cancelar</span>
+                </button>
+                <button class="btn btn-success" onclick="addNewEntry()">
+                    <span>➕</span>
+                    <span>Agregar Entrada(s)</span>
+                </button>
+                <button class="btn btn-primary" onclick="saveAllChanges()">
+                    <span>💾</span>
+                    <span>Guardar Todo</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Current state
+        let currentView = 'employee';
+        let editMode = false;
+        let selectedRows = [];
+
+        // Update summary in real-time
+        function updateSummary() {
+            const selectedEmployees = document.querySelectorAll('#employeeMultiSelect input[type="checkbox"]:checked').length;
+            const date = document.getElementById('newEntryDate').value;
+            const job = document.getElementById('newEntryJob').value;
+            
+            document.getElementById('summaryEmployees').textContent = selectedEmployees;
+            document.getElementById('summaryTimecards').textContent = selectedEmployees;
+            document.getElementById('summaryDate').textContent = date || '-';
+            document.getElementById('summaryJob').textContent = job ? document.getElementById('newEntryJob').selectedOptions[0].text : '-';
+        }
+
+        // Listen to changes in form
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('newEntryDate')?.addEventListener('change', updateSummary);
+            document.getElementById('newEntryJob')?.addEventListener('change', updateSummary);
+            document.querySelectorAll('#employeeMultiSelect input[type="checkbox"]').forEach(cb => {
+                cb.addEventListener('change', updateSummary);
+            });
+        });
+
+        // Select view mode
+        function selectView(view) {
+            currentView = view;
+            
+            document.querySelectorAll('.view-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            event.target.closest('.view-option').classList.add('active');
+
+            updateFilterSection(view);
+        }
+
+        // Update filter section based on view
+        function updateFilterSection(view) {
+            const filterSection = document.getElementById('filterSection');
+            
+            if (view === 'employee') {
+                filterSection.innerHTML = `
+                    <div class="filter-group">
+                        <label>Seleccionar UN Empleado</label>
+                        <select id="employeeSelect">
+                            <option value="">Seleccionar...</option>
+                            <option value="emp001">Juan Pérez (EMP-001)</option>
+                            <option value="emp002">María González (EMP-002)</option>
+                            <option value="emp003">Carlos Rodríguez (EMP-003)</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Desde</label>
+                        <input type="date" id="startDate">
+                    </div>
+                    <div class="filter-group">
+                        <label>Hasta</label>
+                        <input type="date" id="endDate">
+                    </div>
+                    <div class="filter-group">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-primary" onclick="loadTimecards()" style="width: 100%;">
+                            Cargar
+                        </button>
+                    </div>
+                `;
+            } else if (view === 'job') {
+                filterSection.innerHTML = `
+                    <div class="filter-group">
+                        <label>Job Number</label>
+                        <select id="jobSelect">
+                            <option value="">Seleccionar...</option>
+                            <option value="job2501">JOB-2501</option>
+                            <option value="job2502">JOB-2502</option>
+                            <option value="job2503">JOB-2503</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Día</label>
+                        <input type="date" id="daySelect">
+                    </div>
+                    <div class="filter-group">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-primary" onclick="loadTimecards()" style="width: 100%;">
+                            Cargar Trabajadores del Día
+                        </button>
+                    </div>
+                `;
+            } else if (view === 'day') {
+                filterSection.innerHTML = `
+                    <div class="filter-group">
+                        <label>Desde (Fecha Inicio)</label>
+                        <input type="date" id="startDate">
+                    </div>
+                    <div class="filter-group">
+                        <label>Hasta (Fecha Fin)</label>
+                        <input type="date" id="endDate">
+                    </div>
+                    <div class="filter-group">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-primary" onclick="loadTimecards()" style="width: 100%;">
+                            Cargar Todas las Timecards
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Toggle edit mode
+        function toggleEditMode() {
+            editMode = !editMode;
+            const toggle = document.getElementById('editToggle');
+            const inputs = document.querySelectorAll('.timecards-table input, .timecards-table select');
+            
+            toggle.classList.toggle('active');
+            
+            inputs.forEach(input => {
+                input.disabled = !editMode;
+            });
+
+            addToHistory(editMode ? 'Modo edición activado' : 'Modo edición desactivado', 'Sistema');
+        }
+
+        // Select all checkboxes
+        function selectAll(checkbox) {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = checkbox.checked;
+            });
+            updateSelection();
+        }
+
+        // Update selection
+        function updateSelection() {
+            selectedRows = [];
+            const checkboxes = document.querySelectorAll('.row-checkbox:checked');
+            checkboxes.forEach(cb => {
+                const row = cb.closest('tr');
+                row.classList.add('selected');
+                selectedRows.push(row);
+            });
+            
+            document.querySelectorAll('.row-checkbox:not(:checked)').forEach(cb => {
+                cb.closest('tr').classList.remove('selected');
+            });
+        }
+
+        // Bulk edit
+        function bulkEdit() {
+            if (selectedRows.length === 0) {
+                alert('Selecciona al menos una timecard');
+                return;
+            }
+
+            const field = prompt('¿Qué campo deseas modificar?\n1. Hora Inicio\n2. Hora Fin\n3. Drive Time\n4. Break Time\n5. Tipo de Hora\n6. Per Diem');
+            
+            if (field) {
+                const value = prompt('Nuevo valor:');
+                if (value) {
+                    alert(`Modificando ${selectedRows.length} timecards...`);
+                    addToHistory(`Edición masiva: ${selectedRows.length} registros`, `Campo: ${field} → ${value}`);
+                }
+            }
+        }
+
+        // Bulk delete
+        function bulkDelete() {
+            if (selectedRows.length === 0) {
+                alert('Selecciona al menos una timecard');
+                return;
+            }
+
+            if (confirm(`¿Eliminar ${selectedRows.length} timecards seleccionadas?`)) {
+                selectedRows.forEach(row => row.remove());
+                addToHistory(`${selectedRows.length} entradas eliminadas`, 'Eliminación masiva');
+                selectedRows = [];
+            }
+        }
+
+        // Load timecards
+        function loadTimecards() {
+            console.log('Loading timecards for view:', currentView);
+            addToHistory('Timecards cargadas', `Vista: ${currentView}`);
+            alert('Timecards cargadas exitosamente');
+        }
+
+        // Delete single entry
+        function deleteEntry(button) {
+            if (confirm('¿Eliminar esta entrada?')) {
+                const row = button.closest('tr');
+                const day = row.cells[1].textContent;
+                const employee = row.cells[2].textContent;
+                row.remove();
+                addToHistory('Entrada eliminada', `${employee} - ${day}`);
+            }
+        }
+
+        // Add new entry
+        function addNewEntry() {
+            const date = document.getElementById('newEntryDate').value;
+            const job = document.getElementById('newEntryJob').value;
+            const selectedEmployees = document.querySelectorAll('#employeeMultiSelect input[type="checkbox"]:checked');
+            
+            if (!date || !job || selectedEmployees.length === 0) {
+                alert('Completa los campos obligatorios (Fecha, Job y al menos 1 empleado)');
+                return;
+            }
+
+            const employeeNames = Array.from(selectedEmployees).map(cb => cb.nextElementSibling.textContent);
+            
+            alert(`✅ Creando ${selectedEmployees.length} timecard(s) para:\n${employeeNames.join('\n')}`);
+            addToHistory(`${selectedEmployees.length} entrada(s) agregada(s)`, `${employeeNames.join(', ')} - ${date}`);
+        }
+
+        // Load employee rate
+        function loadEmployeeRate() {
+            const employeeId = document.getElementById('rateEmployee').value;
+            if (employeeId) {
+                const rates = {
+                    'emp001': '28.50',
+                    'emp002': '32.00',
+                    'emp003': '25.00'
+                };
+                document.getElementById('rateRegular').value = rates[employeeId];
+                document.getElementById('currentRate').textContent = `${rates[employeeId]}/hr`;
+                addToHistory('Tasa de empleado cargada', `Empleado ID: ${employeeId} - ${rates[employeeId]}/hr`);
+            }
+        }
+
+        // Load project rates
+        function loadProjectRates() {
+            const jobId = document.getElementById('rateJob').value;
+            if (jobId) {
+                const rates = {
+                    'job2501': { federal: '35.50', state: '32.00' },
+                    'job2502': { federal: '38.00', state: '34.50' },
+                    'job2503': { federal: '33.00', state: '30.00' }
+                };
+                document.getElementById('rateFederal').value = rates[jobId].federal;
+                document.getElementById('rateState').value = rates[jobId].state;
+                document.getElementById('currentFederal').textContent = `${rates[jobId].federal}/hr`;
+                document.getElementById('currentState').textContent = `${rates[jobId].state}/hr`;
+                addToHistory('Tasas de proyecto cargadas', `Job: ${jobId}`);
+            }
+        }
+
+        // Add to history
+        function addToHistory(action, details) {
+            const historyGrid = document.getElementById('historyGrid');
+            const item = document.createElement('div');
+            item.className = 'history-item';
+            item.onclick = function() { loadHistoryItem(this, Date.now()); };
+            
+            item.innerHTML = `
+                <div class="history-item-header">
+                    <span class="history-item-time">Justo ahora</span>
+                </div>
+                <div class="history-item-action">${action}</div>
+                <div class="history-item-details">${details}</div>
+                <span class="history-item-badge modified">Modificado</span>
+            `;
+            
+            // Remove active from all
+            document.querySelectorAll('.history-item').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            
+            historyGrid.insertBefore(item, historyGrid.firstChild);
+        }
+
+        // Load history item
+        function loadHistoryItem(item, id) {
+            document.querySelectorAll('.history-item').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            console.log('Loading history item:', id);
+            alert('✅ Cargando estado anterior de esta modificación...\n\nEsta función te permite volver al estado exacto de cuando hiciste este cambio.');
+        }
+
+        // Clear history
+        function clearHistory() {
+            if (confirm('¿Limpiar todo el historial de modificaciones?')) {
+                document.getElementById('historyGrid').innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-secondary);">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">📜</div>
+                        <p>No hay historial de modificaciones</p>
+                    </div>
+                `;
+                alert('Historial limpiado');
+            }
+        }
+
+        // Save all changes
+        function saveAllChanges() {
+            if (confirm('¿Guardar todos los cambios realizados?')) {
+                addToHistory('Cambios guardados', 'Todas las modificaciones aplicadas');
+                alert('✅ Cambios guardados exitosamente');
+            }
+        }
+
+        // Reset changes
+        function resetChanges() {
+            if (confirm('¿Cancelar todos los cambios sin guardar?')) {
+                location.reload();
+            }
+        }
+
+        // Export
+        function exportTimecards() {
+            alert('📄 Exportando timecards a Excel...');
+            addToHistory('Timecards exportadas', 'Archivo Excel generado');
+        }
+
+        // Go back
+        function goBack() {
+            if (confirm('¿Volver a Timecards? Los cambios no guardados se perderán.')) {
+                window.location.href = 'timecards.html';
+            }
+        }
+
+        // Initialize summary on load
+        window.addEventListener('DOMContentLoaded', function() {
+            updateSummary();
+        });

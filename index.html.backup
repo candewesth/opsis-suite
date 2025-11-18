@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opsis Suite - Operational Management Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: #ffffff;
+            color: #2c3e50;
+            line-height: 1.6;
+            font-size: 16px;
+            font-weight: 400;
+        }
+
+        /* ANIMATIONS */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* NAVIGATION */
+        .nav-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            width: 100%;
+            padding: 8px 0;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            width: 100%;
+        }
+
+        .nav-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            width: 100%;
+        }
+
+        .logo-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            transition: transform 0.2s ease;
+        }
+
+        .logo-container {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            padding: 2px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3, #54a0ff, #5f27cd, #00d2d3, #ff9f43, #10ac84, #ee5a6f, #ff6b6b);
+            background-size: 400% 400%;
+            animation: gradientShift 4s ease-in-out infinite;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #495057, #6c757d);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+            font-weight: 300;
+            box-shadow: 0 2px 8px rgba(73, 80, 87, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-icon::after {
+            content: '◉';
+            animation: winkEye 6s ease-in-out infinite;
+        }
+
+        .logo-text {
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #495057, #6c757d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            user-select: none;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .nav-link {
+            color: #495057;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link.active {
+            color: #20c997;
+            font-weight: 600;
+        }
+
+        .nav-link:hover {
+            color: #20c997;
+            background: rgba(32, 201, 151, 0.08);
+        }
+
+        .nav-cta {
+            background: linear-gradient(135deg, #495057, #6c757d);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .nav-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(73, 80, 87, 0.3);
+        }
+
+        /* HERO SECTION */
+        .hero-section {
+            padding: 6rem 2rem 5rem;
+            text-align: center;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(32, 201, 151, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(253, 126, 20, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 20% 80%, rgba(102, 16, 242, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(13, 202, 240, 0.1) 0%, transparent 50%);
+            animation: subtleFloat 40s ease-in-out infinite;
+        }
+
+        .hero-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #1d1d1f, #495057);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -2px;
+            line-height: 1.1;
+        }
+
+        .hero-subtitle {
+            font-size: 1.4rem;
+            color: #6c757d;
+            margin-bottom: 2rem;
+            font-weight: 400;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.5;
+        }
+
+        .hero-description {
+            font-size: 1.1rem;
+            color: #6c757d;
+            margin-bottom: 3rem;
+            font-weight: 400;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.7;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 4rem;
+        }
+
+        .btn {
+            padding: 1.2rem 3rem;
+            border: none;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            text-decoration: none;
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #495057, #6c757d);
+            color: white;
+            box-shadow: 0 15px 40px rgba(73, 80, 87, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 60px rgba(73, 80, 87, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.9);
+            color: #1d1d1f;
+            border: 2px solid rgba(210, 210, 215, 0.4);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        /* SOLUTIONS SECTION */
+        .solutions-section {
+            padding: 5rem 2rem;
+            background: white;
+        }
+
+        .section-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #1d1d1f;
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+            color: #6c757d;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .solutions-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 3rem;
+        }
+
+        .solutions-motor {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        .solutions-pillars {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+        }
+
+        .solution-card {
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            border: 2px solid rgba(210, 210, 215, 0.5);
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            min-height: 420px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        .solution-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--solution-gradient);
+            border-radius: 20px 20px 0 0;
+        }
+
+        .solution-card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 20px 70px rgba(0, 0, 0, 0.18);
+            background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
+            border-color: var(--solution-gradient);
+        }
+
+        .solution-card:hover .solution-icon {
+            transform: scale(1.15) rotateZ(-8deg);
+        }
+
+        .solution-card:hover .solution-title {
+            color: var(--solution-color);
+        }
+
+        .solution-icon {
+            width: 110px;
+            height: 110px;
+            background: var(--solution-gradient);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            margin: 0 auto 2rem;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .solution-card:hover .solution-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .solution-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #1d1d1f;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .solution-description {
+            color: #495057;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+            line-height: 1.7;
+        }
+
+        .solution-features {
+            list-style: none;
+            text-align: left;
+        }
+
+        .solution-features li {
+            color: #495057;
+            margin-bottom: 0.8rem;
+            font-size: 1rem;
+            line-height: 1.6;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .solution-features li::before {
+            content: '✓';
+            color: #20c997;
+            font-weight: bold;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .solution-cta {
+            margin-top: 2.5rem;
+            padding-top: 2rem;
+            border-top: 2px solid rgba(210, 210, 215, 0.5);
+            color: #20c997;
+            font-weight: 700;
+            font-size: 1.05rem;
+            letter-spacing: 0.3px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .solution-card:hover .solution-cta {
+            color: #1aa179;
+            transform: translateX(6px);
+        }
+
+        /* PILLAR SPECIFIC COLORS */
+        .pillar-warehouse {
+            --solution-gradient: linear-gradient(135deg, #6366f1, #818cf8);
+            --solution-color: #6366f1;
+        }
+
+        .pillar-operational {
+            --solution-gradient: linear-gradient(135deg, #fd7e14, #ff9d3d);
+            --solution-color: #fd7e14;
+        }
+        
+        .pillar-timesync { 
+            --solution-gradient: linear-gradient(135deg, #1c7ed6, #4dadf7);
+            --solution-color: #1c7ed6;
+        }
+
+        .pillar-finance { 
+            --solution-gradient: linear-gradient(135deg, #9775fa, #b197fc);
+            --solution-color: #9775fa;
+        }
+
+        .pillar-hr { 
+            --solution-gradient: linear-gradient(135deg, #37b24d, #69db7c);
+            --solution-color: #37b24d;
+        }
+
+        /* STATS SECTION */
+        .stats-section {
+            padding: 5rem 2rem;
+            background: linear-gradient(135deg, #1d1d1f 0%, #2d2d2f 100%);
+            position: relative;
+            color: white;
+        }
+
+        .stats-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 25% 25%, rgba(32, 201, 151, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(102, 16, 242, 0.1) 0%, transparent 50%);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .stat-item {
+            padding: 2.5rem 2rem;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 249, 250, 0.95));
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            border-color: rgba(255, 255, 255, 0.5);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 1), rgba(240, 247, 255, 0.95));
+        }
+
+        .stat-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #20c997, #1aa179);
+        }
+
+        .stat-item:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            border-color: rgba(255, 255, 255, 0.5);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 1), rgba(240, 247, 255, 0.95));
+        }
+
+        .stat-number {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: #1d1d1f;
+            display: block;
+            margin-bottom: 0.8rem;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 1.2rem;
+            color: #495057;
+            font-weight: 600;
+        }
+
+        .stat-description {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 0.5rem;
+        }
+
+        /* CTA SECTION */
+        .cta-section {
+            padding: 5rem 2rem;
+            background: white;
+            text-align: center;
+        }
+
+        .cta-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .cta-title {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #1d1d1f;
+        }
+
+        .cta-description {
+            font-size: 1.2rem;
+            color: #6c757d;
+            margin-bottom: 3rem;
+            line-height: 1.6;
+        }
+
+        /* ROADMAP SECTION */
+        .roadmap-section {
+            background: white;
+            padding: 5rem 2rem;
+        }
+
+        .roadmap-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .roadmap-phase {
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            border: 2px solid rgba(210, 210, 215, 0.5);
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .roadmap-phase:nth-child(1) { animation-delay: 0.1s; }
+        .roadmap-phase:nth-child(2) { animation-delay: 0.2s; }
+        .roadmap-phase:nth-child(3) { animation-delay: 0.3s; }
+        .roadmap-phase:nth-child(4) { animation-delay: 0.4s; }
+        .roadmap-phase:nth-child(5) { animation-delay: 0.5s; }
+
+        .roadmap-phase::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #495057, #6c757d);
+            border-radius: 20px 20px 0 0;
+        }
+
+        .roadmap-phase:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 20px 70px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
+            border-color: rgba(32, 201, 151, 0.3);
+        }
+
+        .phase-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #495057, #6c757d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .roadmap-items {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .roadmap-item {
+            padding: 1rem 1.2rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border: 1px solid rgba(210, 210, 215, 0.3);
+            border-radius: 12px;
+            font-size: 1rem;
+            color: #495057;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            cursor: pointer;
+        }
+
+        .roadmap-item:hover {
+            background: linear-gradient(135deg, #20c997 0%, #1aa179 100%);
+            color: white;
+            transform: translateX(8px);
+            border-color: #20c997;
+            box-shadow: 0 8px 25px rgba(32, 201, 151, 0.2);
+        }
+
+        .roadmap-cta {
+            text-align: center;
+            padding: 2.5rem;
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            border: 2px solid rgba(210, 210, 215, 0.5);
+            border-radius: 20px;
+            color: #495057;
+            font-size: 1.1rem;
+            font-weight: 500;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            transition: all 0.4s ease;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .roadmap-cta:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+            border-color: rgba(32, 201, 151, 0.3);
+            background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
+        }
+
+        .roadmap-cta a {
+            text-decoration: none;
+            font-weight: 700;
+            background: linear-gradient(135deg, #495057, #6c757d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            transition: all 0.3s ease;
+        }
+
+        .roadmap-cta:hover a {
+            background: linear-gradient(135deg, #20c997, #1aa179);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* FOOTER */
+        .footer {
+            background: #1d1d1f;
+            color: white;
+            padding: 3rem 0 2rem;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #f8f9fa;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links a {
+            color: #adb5bd;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s ease;
+        }
+
+        .footer-links a:hover {
+            color: #20c997;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #495057;
+            padding-top: 1.5rem;
+            text-align: center;
+            color: #adb5bd;
+            font-size: 0.85rem;
+        }
+
+        /* NOTIFICATION */
+        .notification {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(32, 201, 151, 0.3);
+            transform: translateY(-100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
+
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* FADE IN ANIMATIONS */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* PRICING MODAL */
+        .pricing-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            overflow-y: auto;
+        }
+
+        .pricing-modal.active {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 2rem;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 1200px;
+            width: 95%;
+            padding: 2rem;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        [data-theme='dark'] .modal-content {
+            background: #2b2f33;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #666;
+            z-index: 10;
+        }
+
+        [data-theme='dark'] .modal-close {
+            color: #a0a0a0;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        [data-theme='dark'] .modal-close:hover {
+            color: #fff;
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-right: 3rem;
+        }
+
+        .modal-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #1d1d1f;
+            margin-bottom: 0.5rem;
+        }
+
+        [data-theme='dark'] .modal-title {
+            color: #fff;
+        }
+
+        .modal-subtitle {
+            font-size: 1.1rem;
+            color: #666;
+        }
+
+        [data-theme='dark'] .modal-subtitle {
+            color: #a0a0a0;
+        }
+
+        .modal-pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .modal-pricing-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 16px;
+            padding: 1.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        [data-theme='dark'] .modal-pricing-card {
+            background: #333;
+            border-color: #444;
+        }
+
+        .modal-pricing-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-pricing-card.featured {
+            border-color: #0066cc;
+            border-width: 3px;
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(0, 102, 204, 0.15);
+        }
+
+        .modal-pricing-card.featured .badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #0066cc, #0052a3);
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 0.75rem;
+        }
+
+        .modal-plan-icon {
+            font-size: 2rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .modal-plan-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+            color: #1d1d1f;
+        }
+
+        [data-theme='dark'] .modal-plan-name {
+            color: #fff;
+        }
+
+        .modal-plan-desc {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        [data-theme='dark'] .modal-plan-desc {
+            color: #a0a0a0;
+        }
+
+        .modal-price {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #0066cc;
+            margin-bottom: 0.3rem;
+        }
+
+        .modal-price-period {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 1.2rem;
+        }
+
+        [data-theme='dark'] .modal-price-period {
+            color: #a0a0a0;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero-section {
+                padding: 4rem 1.5rem 3rem;
+            }
+
+            .hero-title {
+                font-size: 2.8rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.2rem;
+                margin-bottom: 3rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+                gap: 1.5rem;
+                margin-bottom: 3rem;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .solutions-section {
+                padding: 4rem 1.5rem;
+            }
+
+            .solutions-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .solutions-pillars {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .solution-card {
+                min-height: auto;
+                padding: 2rem 1.5rem;
+            }
+
+            .section-title {
+                font-size: 2.2rem;
+            }
+
+            .stats-section {
+                padding: 4rem 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 2rem;
+            }
+
+            .stat-item {
+                padding: 2rem 1.5rem;
+            }
+
+            .stat-number {
+                font-size: 2.5rem;
+            }
+
+            .cta-section {
+                padding: 4rem 1.5rem;
+            }
+
+            .cta-title {
+                font-size: 2.2rem;
+            }
+
+            .roadmap-section {
+                padding: 4rem 1.5rem;
+            }
+
+            .roadmap-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .roadmap-phase {
+                padding: 1.5rem;
+            }
+
+            .footer-content {
+                grid-template-columns: repeat(2, 1fr);
+                text-align: center;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1200px) {
+            .solutions-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVIGATION -->
+    <nav class="nav-header">
+        <div class="nav-container">
+            <div class="nav-content">
+                <a href="index.html" class="logo-link">
+                    <div class="logo-container">
+                        <div class="logo-icon"></div>
+                    </div>
+                    <div class="logo-text">Opsis Suite</div>
+                </a>
+
+                <div class="nav-links">
+                    <a href="index.html" class="nav-link active">Home</a>
+                    <a href="solutions.html" class="nav-link">Solutions</a>
+                    <a href="pages/features.html" class="nav-link">Features</a>
+                    <a href="pricing.html" class="nav-link">Pricing</a>
+                    <a href="contact.html" class="nav-link">Contact</a>
+                </div>
+
+                <a href="login.html" class="nav-cta">Access Workspace</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="hero-section">
+        <div class="hero-container">
+            <h1 class="hero-title">Operational Management Systems<br>for Service Industries</h1>
+            <p class="hero-subtitle">Modular, scalable platforms designed for real-world business operations</p>
+            <p class="hero-description">Opsis Suite provides ready-to-use operational management systems for service businesses. Start with one of our proven platforms and scale as you grow. Real-time GPS tracking, job management, customer portals, and detailed analytics built in.</p>
+            
+            <div class="cta-buttons">
+                <a href="pricing.html" class="btn btn-primary">See Pricing & Plans</a>
+                <a href="#available-systems" class="btn btn-secondary">View Available Systems</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- SOLUTIONS SECTION -->
+    <section class="solutions-section" id="available-systems">
+        <div class="section-container">
+            <div class="section-header fade-in">
+                <h2 class="section-title">Powerful Modules • Built to Scale</h2>
+                <p class="section-subtitle">Modular systems designed to work independently or together. Scale your business at your own pace with Opsis Suite.</p>
+            </div>
+            
+            <div class="solutions-grid">
+                <!-- WAREHOUSE (MOTOR OPSIS) -->
+                <div class="solutions-motor">
+                    <div class="solution-card pillar-warehouse fade-in" onclick="navigateToSolutions('warehouse')" style="cursor: pointer;">
+                        <div class="solution-icon">🏢</div>
+                        <h3 class="solution-title">Motor Opsis</h3>
+                        <p class="solution-description"><strong>Módulo Core Principal</strong> - La plataforma operacional central que gestiona inventario, almacén, equipos y recursos con control total.</p>
+                        <ul class="solution-features">
+                            <li>✓ Control de entrada y salida de productos</li>
+                            <li>✓ Gestión de ubicaciones y estanterías</li>
+                            <li>✓ Picking y packing automático</li>
+                            <li>✓ Recuentos de inventario en tiempo real</li>
+                            <li>✓ Trazabilidad completa de productos</li>
+                        </ul>
+                        <div class="solution-cta">Explorar Motor Opsis →</div>
+                    </div>
+                </div>
+
+                <!-- 4 PILARES COMPLEMENTARIOS -->
+                <div class="solutions-pillars">
+                    <!-- TIME SYNC -->
+                    <div class="solution-card pillar-timesync fade-in" onclick="navigateToSolutions('timesync')" style="cursor: pointer;">
+                        <div class="solution-icon">⏱️</div>
+                        <h3 class="solution-title">TimeSync</h3>
+                        <p class="solution-description"><strong>Time & Project Management</strong> - Track time, manage projects, optimize team productivity.</p>
+                        <ul class="solution-features">
+                            <li>✓ GPS-verified time tracking</li>
+                            <li>✓ Project allocation</li>
+                            <li>✓ Team scheduling</li>
+                            <li>✓ Productivity analytics</li>
+                            <li>✓ Mobile app integration</li>
+                        </ul>
+                        <div class="solution-cta">Explore →</div>
+                    </div>
+
+                    <!-- WAREHOUSE -->
+                    <div class="solution-card pillar-warehouse fade-in" onclick="navigateToSolutions('warehouse')" style="cursor: pointer;">
+                        <div class="solution-icon">🏢</div>
+                        <h3 class="solution-title">Warehouse</h3>
+                        <p class="solution-description"><strong>Inventory & Warehouse</strong> - Complete warehouse management with real-time inventory control.</p>
+                        <ul class="solution-features">
+                            <li>✓ Product inbound/outbound</li>
+                            <li>✓ Location management</li>
+                            <li>✓ Automated picking & packing</li>
+                            <li>✓ Real-time inventory</li>
+                            <li>✓ Full traceability</li>
+                        </ul>
+                        <div class="solution-cta">Explore →</div>
+                    </div>
+
+                    <!-- FINANCE -->
+                    <div class="solution-card pillar-finance fade-in" onclick="navigateToSolutions('finance')" style="cursor: pointer;">
+                        <div class="solution-icon">💰</div>
+                        <h3 class="solution-title">Finance</h3>
+                        <p class="solution-description"><strong>Financial Management</strong> - Automated billing, expense tracking, and financial reporting.</p>
+                        <ul class="solution-features">
+                            <li>✓ Automated invoicing</li>
+                            <li>✓ Expense categorization</li>
+                            <li>✓ Profitability analytics</li>
+                            <li>✓ Cash flow forecasting</li>
+                            <li>✓ Accounting integrations</li>
+                        </ul>
+                        <div class="solution-cta">Explore →</div>
+                    </div>
+
+                    <!-- HR -->
+                    <div class="solution-card pillar-hr fade-in" onclick="navigateToSolutions('hr')" style="cursor: pointer;">
+                        <div class="solution-icon">👥</div>
+                        <h3 class="solution-title">HR</h3>
+                        <p class="solution-description"><strong>Human Resources</strong> - Complete HR management, payroll, and team coordination.</p>
+                        <ul class="solution-features">
+                            <li>✓ Employee records</li>
+                            <li>✓ Payroll management</li>
+                            <li>✓ Performance tracking</li>
+                            <li>✓ Training & certifications</li>
+                            <li>✓ Team communications</li>
+                        </ul>
+                        <div class="solution-cta">Explore →</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STATS SECTION -->
+    <section class="stats-section">
+        <div class="section-container">
+            <div class="stats-grid">
+                <div class="stat-item fade-in">
+                    <span class="stat-number">99.9%</span>
+                    <span class="stat-label">Uptime SLA</span>
+                    <span class="stat-description">Enterprise reliability</span>
+                </div>
+                <div class="stat-item fade-in">
+                    <span class="stat-number">500+</span>
+                    <span class="stat-label">Companies</span>
+                    <span class="stat-description">Trust our platform</span>
+                </div>
+                <div class="stat-item fade-in">
+                    <span class="stat-number">2.5M</span>
+                    <span class="stat-label">Operations</span>
+                    <span class="stat-description">Managed annually</span>
+                </div>
+                <div class="stat-item fade-in">
+                    <span class="stat-number">24/7</span>
+                    <span class="stat-label">Support</span>
+                    <span class="stat-description">Enterprise assistance</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ROADMAP SECTION -->
+    <section class="roadmap-section">
+        <div class="section-container">
+            <div class="section-header fade-in">
+                <h2 class="section-title">Roadmap de Expansión • Próximos Sistemas</h2>
+                <p class="section-subtitle">Nuestra plataforma está construida para escalar. Nuevos sistemas operacionales están en desarrollo para servir industrias de servicios adicionales.</p>
+            </div>
+
+            <div class="roadmap-grid">
+                <div class="roadmap-phase fade-in">
+                    <h3 class="phase-title">✓ Phase 1 • Available Now</h3>
+                    <div class="roadmap-items">
+                        <span class="roadmap-item">🏢 Motor Opsis (Core)</span>
+                        <span class="roadmap-item">⏱️ TimeSync</span>
+                        <span class="roadmap-item">🏭 Warehouse</span>
+                        <span class="roadmap-item">💰 Finance</span>
+                        <span class="roadmap-item">👥 HR</span>
+                    </div>
+                </div>
+
+                <div class="roadmap-phase fade-in">
+                    <h3 class="phase-title">⏳ Fase 2 • Q1 2026</h3>
+                    <div class="roadmap-items">
+                        <span class="roadmap-item">❄️ HVAC</span>
+                        <span class="roadmap-item">⚡ Electrical</span>
+                        <span class="roadmap-item">🏢 Facility Maintenance</span>
+                        <span class="roadmap-item">🏗️ Construction</span>
+                    </div>
+                </div>
+
+                <div class="roadmap-phase fade-in">
+                    <h3 class="phase-title">🔮 Fase 3 • Q2-Q3 2026</h3>
+                    <div class="roadmap-items">
+                        <span class="roadmap-item">🧹 Cleaning Services</span>
+                        <span class="roadmap-item">🐭 Pest Control</span>
+                        <span class="roadmap-item">🎨 Painting</span>
+                        <span class="roadmap-item">📱 Telecommunications</span>
+                    </div>
+                </div>
+
+                <div class="roadmap-phase fade-in">
+                    <h3 class="phase-title">🌟 Fase 4 • H2 2026</h3>
+                    <div class="roadmap-items">
+                        <span class="roadmap-item">🏭 Industrial Maintenance</span>
+                        <span class="roadmap-item">🚜 Equipment Rental</span>
+                        <span class="roadmap-item">🛡️ Private Security</span>
+                        <span class="roadmap-item">🚗 Mobile Auto Repair</span>
+                    </div>
+                </div>
+
+                <div class="roadmap-phase fade-in">
+                    <h3 class="phase-title">⭐ Fase 5 • 2027</h3>
+                    <div class="roadmap-items">
+                        <span class="roadmap-item">🔩 Duct Cleaning</span>
+                        <span class="roadmap-item">🔌 Appliance Repair</span>
+                        <span class="roadmap-item">🏊 Pool Maintenance</span>
+                        <span class="roadmap-item">💧 Hydrojetting</span>
+                        <span class="roadmap-item">🍽️ Restaurant Maintenance</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="roadmap-cta fade-in">
+                <p>¿Tu industria no está en la lista? <strong><a href="contact.html" style="color: #667eea;">Contáctanos</a></strong> para solicitar un nuevo sistema.</p>
+            </div>
+        </div>
+    </section>
+    <section class="cta-section">
+        <div class="cta-container">
+            <h2 class="cta-title">Ready to Launch Your Operational System?</h2>
+            <p class="cta-description">Start with our free trial. No credit card required. Deploy your first system in minutes.</p>
+            <div class="cta-buttons">
+                <a href="pricing.html" class="btn btn-primary">View Plans & Pricing</a>
+                <a href="contact.html" class="btn btn-secondary">Schedule Demo</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRICING MODAL -->
+    <div class="pricing-modal" id="pricingModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closePricingModal()">✕</button>
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Planes de Precios - Plomería</h2>
+                <p class="modal-subtitle">Elige el plan perfecto para tu empresa</p>
+            </div>
+            <div class="modal-pricing-grid" id="modalPricingGrid">
+                <!-- Se genera dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Platform</h4>
+                    <ul class="footer-links">
+                        <li><a href="#available-systems">Motor Opsis</a></li>
+                        <li><a href="#available-systems">TimeSync</a></li>
+                        <li><a href="#available-systems">Warehouse</a></li>
+                        <li><a href="#available-systems">Finance</a></li>
+                        <li><a href="#available-systems">HR</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul class="footer-links">
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="careers.html">Careers</a></li>
+                        <li><a href="docs/README.md">Support</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Platform</h4>
+                    <ul class="footer-links">
+                        <li><a href="pages/features.html">Features</a></li>
+                        <li><a href="pricing.html">Pricing</a></li>
+                        <li><a href="legal/security.html">Security</a></li>
+                        <li><a href="login.html">Login</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <ul class="footer-links">
+                        <li><a href="legal/privacy.html">Privacy Policy</a></li>
+                        <li><a href="legal/terms.html">Terms of Service</a></li>
+                        <li><a href="pages/api.html">API Documentation</a></li>
+                        <li><a href="legal/compliance.html">Compliance</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Opsis Suite. All rights reserved. | Enterprise Management Platform</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- NOTIFICATION -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // NOTIFICATION SYSTEM
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            if (notification) {
+                notification.textContent = message;
+                notification.className = 'notification ' + (type || 'info');
+                notification.classList.add('show');
+
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 4000);
+            }
+        }
+
+        // FADE IN ANIMATIONS
+        function setupFadeInAnimations() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.fade-in').forEach(el => {
+                observer.observe(el);
+            });
+        }
+
+        // NAVIGATE TO SOLUTIONS
+        function navigateToSolutions(pillar) {
+            sessionStorage.setItem('selectedPillar', pillar);
+            window.location.href = 'solutions.html#' + pillar;
+        }
+
+        // PRICING MODAL FUNCTIONS
+        const pricingData = {
+            plomeria: { name: 'Plomería', icon: '🚰', plans: { basic: { name: 'Opal', price: 29, desc: 'Para comenzar', icon: '💎' }, professional: { name: 'Sapphire', price: 79, desc: 'Empresas en crecimiento', icon: '👥' }, enterprise: { name: 'Diamond', price: 149, desc: 'Empresarial', icon: '💼' }, premium: { name: 'Onyx', price: 299, desc: 'Premium', icon: '👑' } } },
+            jardineria: { name: 'Jardinería', icon: '🌿', plans: { basic: { name: 'Opal', price: 25, desc: 'Para comenzar', icon: '💎' }, professional: { name: 'Sapphire', price: 65, desc: 'Empresas en crecimiento', icon: '👥' }, enterprise: { name: 'Diamond', price: 125, desc: 'Empresarial', icon: '💼' }, premium: { name: 'Onyx', price: 249, desc: 'Premium', icon: '👑' } } },
+            logistica: { name: 'Logística', icon: '📦', plans: { basic: { name: 'Opal', price: 35, desc: 'Para comenzar', icon: '💎' }, professional: { name: 'Sapphire', price: 89, desc: 'Empresas en crecimiento', icon: '👥' }, enterprise: { name: 'Diamond', price: 169, desc: 'Empresarial', icon: '💼' }, premium: { name: 'Onyx', price: 329, desc: 'Premium', icon: '👑' } } },
+            mudanza: { name: 'Mudanza', icon: '🚚', plans: { basic: { name: 'Opal', price: 31, desc: 'Para comenzar', icon: '💎' }, professional: { name: 'Sapphire', price: 81, desc: 'Empresas en crecimiento', icon: '👥' }, enterprise: { name: 'Diamond', price: 151, desc: 'Empresarial', icon: '💼' }, premium: { name: 'Onyx', price: 301, desc: 'Premium', icon: '👑' } } }
+        };
+
+        function openPricingModal(system) {
+            const data = pricingData[system];
+            document.getElementById('modalTitle').textContent = `Planes de Precios - ${data.name}`;
+            
+            const grid = document.getElementById('modalPricingGrid');
+            grid.innerHTML = '';
+
+            const planKeys = ['basic', 'professional', 'enterprise', 'premium'];
+            planKeys.forEach((key, index) => {
+                const plan = data.plans[key];
+                const isFeatured = index === 3;
+
+                let badge = '';
+                if (isFeatured) {
+                    badge = '<div class="badge">⭐ MÁS POPULAR</div>';
+                }
+
+                const card = document.createElement('div');
+                card.className = `modal-pricing-card ${isFeatured ? 'featured' : ''}`;
+                card.innerHTML = `
+                    ${badge}
+                    <div class="modal-plan-icon">${plan.icon}</div>
+                    <h3 class="modal-plan-name">${plan.name}</h3>
+                    <p class="modal-plan-desc">${plan.desc}</p>
+                    <div class="modal-price">$${plan.price}</div>
+                    <p class="modal-price-period">por mes</p>
+                    <button style="width: 100%; padding: 0.8rem; background: linear-gradient(135deg, #0066cc, #0052a3); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Comenzar Ahora</button>
+                `;
+                grid.appendChild(card);
+            });
+
+            document.getElementById('pricingModal').classList.add('active');
+        }
+
+        function closePricingModal() {
+            document.getElementById('pricingModal').classList.remove('active');
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('pricingModal');
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closePricingModal();
+                }
+            });
+        });
+
+        // INITIALIZATION
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Opsis Suite - Página Principal');
+            console.log('✅ 4 Pilares: Motor Operacional, TimeSync, Finance, Charles Solutions');
+            console.log('✅ Arquitectura modular');
+            console.log('✅ Mezcla y combina según sea necesario');
+            
+            setupFadeInAnimations();
+        });
+
+        console.log('👁️ Logo animation active');
+        console.log('💎 4 Pilares: Motor Operacional, TimeSync, Finance, Charles Solutions');
+    </script>
+</body>
+</html>

@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timecards - Jardinería</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-blue: #007AFF;
+            --background: #F5F5F7;
+            --card-bg: #FFFFFF;
+            --text-primary: #1D1D1F;
+            --text-secondary: #86868B;
+            --border: #D2D2D7;
+            --success: #34C759;
+            --warning: #FF9500;
+            --danger: #FF3B30;
+            --purple: #AF52DE;
+            --teal: #5AC8FA;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* View Mode Toggle */
+        .view-toggle {
+            display: flex;
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 0.25rem;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .view-toggle button {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+        }
+
+        .view-toggle button.active {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        /* Week Selector */
+        .week-selector {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: var(--card-bg);
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .week-selector button {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--primary-blue);
+            transition: transform 0.2s;
+        }
+
+        .week-selector button:hover {
+            transform: scale(1.1);
+        }
+
+        .week-selector span {
+            font-weight: 500;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        /* Admin Quick Access */
+        .admin-quick-access {
+            background: linear-gradient(135deg, #FF9500, #FF6B35);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(255, 149, 0, 0.3);
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .admin-quick-access.visible {
+            display: flex;
+        }
+
+        .admin-quick-access-text {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .admin-quick-access-text span:first-child {
+            font-size: 2rem;
+        }
+
+        .admin-quick-access-text div h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .admin-quick-access-text div p {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        .admin-quick-btn {
+            background: white;
+            color: var(--warning);
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .admin-quick-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .filter-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: inherit;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .stat-card h3 {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .stat-card.success .value { color: var(--success); }
+        .stat-card.warning .value { color: var(--warning); }
+        .stat-card.danger .value { color: var(--danger); }
+        .stat-card.primary .value { color: var(--primary-blue); }
+
+        /* Employee Timecards */
+        .employee-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 2px 12px var(--shadow);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .employee-header {
+            background: linear-gradient(135deg, var(--primary-blue), #5856D6);
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .employee-info h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .employee-info p {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        .employee-rate {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .hours-summary {
+            display: flex;
+            gap: 2rem;
+            text-align: right;
+        }
+
+        .hours-summary-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hours-summary-item label {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .hours-summary-item .value {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .hours-summary-item.overtime .value {
+            color: #FFD60A;
+        }
+
+        /* Hours Breakdown */
+        .hours-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            padding: 1.5rem;
+            background: #F9F9FB;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .breakdown-item {
+            text-align: center;
+        }
+
+        .breakdown-item label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+        }
+
+        .breakdown-item .value {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .breakdown-item.regular .value { color: var(--primary-blue); }
+        .breakdown-item.federal .value { color: var(--success); }
+        .breakdown-item.state .value { color: var(--purple); }
+        .breakdown-item.vacation .value { color: var(--teal); }
+        .breakdown-item.sick .value { color: var(--warning); }
+
+        /* Daily Entries Table */
+        .timecard-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .timecard-table th {
+            background: #F9F9FB;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .timecard-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        .timecard-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .timecard-table input[type="time"],
+        .timecard-table input[type="number"],
+        .timecard-table select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .timecard-table input:focus,
+        .timecard-table select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+        }
+
+        .day-label {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .day-date {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            display: block;
+            margin-top: 0.25rem;
+        }
+
+        .job-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .job-number {
+            font-weight: 600;
+            color: var(--primary-blue);
+            font-size: 0.875rem;
+        }
+
+        .job-name {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .total-cell {
+            font-weight: 600;
+            color: var(--primary-blue);
+            font-size: 1.1rem;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge.draft { background: #E5E5E7; color: var(--text-secondary); }
+        .status-badge.pending { background: #FFF3E0; color: var(--warning); }
+        .status-badge.approved { background: #E8F5E9; color: var(--success); }
+        .status-badge.processed { background: #E3F2FD; color: var(--primary-blue); }
+
+        /* Action Buttons */
+        .action-buttons {
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            background: #F9F9FB;
+            flex-wrap: wrap;
+        }
+
+        .action-left {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .action-right {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0051D5;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #28A745;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: #F9F9FB;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #E68A00;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .timecard-table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .hours-summary {
+                flex-direction: column;
+                gap: 0.5rem;
+                text-align: left;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .filter-row {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .action-left,
+            .action-right {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .btn {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>⏱️ Timecards</h1>
+            <div class="header-actions">
+                <!-- View Mode Toggle -->
+                <div class="view-toggle">
+                    <button class="active" onclick="switchView('employee')">👤 Por Empleado</button>
+                    <button onclick="switchView('project')">📋 Por Proyecto</button>
+                </div>
+
+                <!-- Week Selector -->
+                <div class="week-selector">
+                    <button onclick="previousWeek()">←</button>
+                    <span id="weekRange">Jan 15 - Jan 21, 2025</span>
+                    <button onclick="nextWeek()">→</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Quick Access (Only visible for Admins) -->
+        <div class="admin-quick-access visible" id="adminQuickAccess">
+            <div class="admin-quick-access-text">
+                <span>🛠️</span>
+                <div>
+                    <h3>Herramientas de Administrador</h3>
+                    <p>Accede al Timesheet Adjuster para gestionar y modificar timecards</p>
+                </div>
+            </div>
+            <button class="admin-quick-btn" onclick="openTimesheetAdjuster()">
+                <span>✏️</span>
+                <span>Abrir Timesheet Adjuster</span>
+            </button>
+        </div>
+
+        <!-- Enhanced Filter Bar -->
+        <div class="filter-bar">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>Ver Todo / Filtrar</label>
+                    <select id="viewMode" onchange="updateViewMode()">
+                        <option value="all">Todas las Timecards</option>
+                        <option value="filtered">Vista Filtrada</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Empleado</label>
+                    <select id="employeeFilter" onchange="filterTimecards()">
+                        <option value="all">Todos los empleados</option>
+                        <option value="emp001">Juan Pérez</option>
+                        <option value="emp002">María González</option>
+                        <option value="emp003">Carlos Rodríguez</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Job Number</label>
+                    <select id="jobFilter" onchange="filterTimecards()">
+                        <option value="all">Todos los trabajos</option>
+                        <option value="job2501">JOB-2501 - Highway Expansion</option>
+                        <option value="job2502">JOB-2502 - Bridge Repair</option>
+                        <option value="job2503">JOB-2503 - Road Paving</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Día Específico</label>
+                    <input type="date" id="dayFilter" onchange="filterTimecards()">
+                </div>
+            </div>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>Estado</label>
+                    <select id="statusFilter" onchange="filterTimecards()">
+                        <option value="all">Todos los estados</option>
+                        <option value="draft">Borrador</option>
+                        <option value="pending">Pendiente Aprobación</option>
+                        <option value="approved">Aprobado</option>
+                        <option value="processed">Procesado</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Tipo de Hora</label>
+                    <select id="hourTypeFilter" onchange="filterTimecards()">
+                        <option value="all">Todos los tipos</option>
+                        <option value="regular">Regular</option>
+                        <option value="federal">Federal</option>
+                        <option value="state">Estatal</option>
+                        <option value="vacation">Vacaciones</option>
+                        <option value="sick">Enfermedad</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>&nbsp;</label>
+                    <button class="btn btn-primary" onclick="applyFilters()">Aplicar Filtros</button>
+                </div>
+                <div class="filter-group">
+                    <label>&nbsp;</label>
+                    <button class="btn btn-secondary" onclick="resetFilters()">Limpiar Filtros</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Global Stats -->
+        <div class="stats-grid">
+            <div class="stat-card primary">
+                <h3>Total Horas Trabajadas</h3>
+                <div class="value">124.5h</div>
+            </div>
+            <div class="stat-card success">
+                <h3>Empleados Activos</h3>
+                <div class="value">3</div>
+            </div>
+            <div class="stat-card warning">
+                <h3>Pendiente Aprobación</h3>
+                <div class="value">5</div>
+            </div>
+            <div class="stat-card danger">
+                <h3>Total Overtime</h3>
+                <div class="value">12.5h</div>
+            </div>
+        </div>
+
+        <!-- Employee 1 -->
+        <div class="employee-card">
+            <div class="employee-header">
+                <div class="employee-info">
+                    <h2>Juan Pérez</h2>
+                    <p>Supervisor de Campo • ID: EMP-001</p>
+                    <span class="employee-rate">💰 Tasa Regular: $28.50/hr (Solo Admin puede modificar)</span>
+                </div>
+                <div class="hours-summary">
+                    <div class="hours-summary-item">
+                        <label>Meta Semanal</label>
+                        <div class="value">40.0h</div>
+                    </div>
+                    <div class="hours-summary-item">
+                        <label>Trabajadas</label>
+                        <div class="value">43.0h</div>
+                    </div>
+                    <div class="hours-summary-item overtime">
+                        <label>Overtime</label>
+                        <div class="value">3.0h</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hours Breakdown -->
+            <div class="hours-breakdown">
+                <div class="breakdown-item regular">
+                    <label>Regulares</label>
+                    <div class="value">35.0h</div>
+                </div>
+                <div class="breakdown-item federal">
+                    <label>Federales</label>
+                    <div class="value">8.0h</div>
+                </div>
+                <div class="breakdown-item state">
+                    <label>Estatales</label>
+                    <div class="value">0h</div>
+                </div>
+                <div class="breakdown-item vacation">
+                    <label>Vacaciones</label>
+                    <div class="value">0h</div>
+                </div>
+                <div class="breakdown-item sick">
+                    <label>Enfermedad</label>
+                    <div class="value">0h</div>
+                </div>
+            </div>
+
+            <!-- Daily Entries -->
+            <div style="overflow-x: auto;">
+                <table class="timecard-table">
+                    <thead>
+                        <tr>
+                            <th>Día</th>
+                            <th>Job Number</th>
+                            <th>Inicio</th>
+                            <th>Fin</th>
+                            <th>Drive</th>
+                            <th>Break</th>
+                            <th>Meal Time</th>
+                            <th>Tipo Hora</th>
+                            <th>Per Diem</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <span class="day-label">Lunes</span>
+                                <span class="day-date">15 Ene</span>
+                            </td>
+                            <td>
+                                <div class="job-info">
+                                    <span class="job-number">JOB-2501</span>
+                                    <span class="job-name">Highway Expansion</span>
+                                </div>
+                            </td>
+                            <td><input type="time" value="07:00"></td>
+                            <td><input type="time" value="15:30"></td>
+                            <td><input type="number" value="0.5" step="0.25" min="0" style="max-width: 70px;"> h</td>
+                            <td><input type="number" value="0.25" step="0.25" min="0" style="max-width: 70px;"> h</td>
+                            <td style="min-width: 180px;">
+                                <input type="time" value="12:00" style="width: 48%; display: inline-block;"> - 
+                                <input type="time" value="12:30" style="width: 48%; display: inline-block;">
+                            </td>
+                            <td>
+                                <select>
+                                    <option value="regular" selected>Regular</option>
+                                    <option value="federal">Federal</option>
+                                    <option value="state">Estatal</option>
+                                    <option value="vacation">Vacaciones</option>
+                                    <option value="sick">Enfermedad</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" value="75" step="5" min="0" style="max-width: 80px;">
+                            </td>
+                            <td class="total-cell">8.0h</td>
+                            <td><span class="status-badge pending">Pendiente</span></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="day-label">Martes</span>
+                                <span class="day-date">16 Ene</span>
+                            </td>
+                            <td>
+                                <div class="job-info">
+                                    <span class="job-number">JOB-2501</span>
+                                    <span class="job-name">Highway Expansion</span>
+                                </div>
+                            </td>
+                            <td><input type="time" value="07:00"></td>
+                            <td><input type="time" value="16:00"></td>
+                            <td><input type="number" value="0.5" step="0.25" min="0" style="max-width: 70px;"> h</td>
+                            <td><input type="number" value="0.25" step="0.25" min="0" style="max-width: 70px;"> h</td>
+                            <td style="min-width: 180px;">
+                                <input type="time" value="12:00" style="width: 48%; display: inline-block;"> - 
+                                <input type="time" value="12:30" style="width: 48%; display: inline-block;">
+                            </td>
+                            <td>
+                                <select>
+                                    <option value="regular" selected>Regular</option>
+                                    <option value="federal">Federal</option>
+                                    <option value="state">Estatal</option>
+                                    <option value="vacation">Vacaciones</option>
+                                    <option value="sick">Enfermedad</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" value="75" step="5" min="0" style="max-width: 80px;">
+                            </td>
+                            <td class="total-cell">8.5h</td>
+                            <td><span class="status-badge approved">Aprobado</span></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="day-label">Miércoles</span>
+                                <span class="day-date">17 Ene</span>
+                            </td>
+                            <td>
+                                <div class="job-info">
+                                    <span class="job-number">JOB-2502</span>
+                                    <span class="job-name">Bridge Repair</span>
+                                </div>
+                            </td>
+                            <td><input type="time" value="06:30"></td>
+                            <td><input type="time" value="14:30"></td>
+                            <td><input type="number" value="1.0" step="0.25" min="0" style="max-width: 70px;"> h</td>
+                            <td><input type="number" value="0.25" step="0.25" min="0" style="max-width: 70px;"> h</td>
+                            <td style="min-width: 180px;">
+                                <input type="time" value="11:30" style="width: 48%; display: inline-block;"> - 
+                                <input type="time" value="12:00" style="width: 48%; display: inline-block;">
+                            </td>
+                            <td>
+                                <select>
+                                    <option value="regular">Regular</option>
+                                    <option value="federal" selected>Federal</option>
+                                    <option value="state">Estatal</option>
+                                    <option value="vacation">Vacaciones</option>
+                                    <option value="sick">Enfermedad</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" value="100" step="5" min="0" style="max-width: 80px;">
+                            </td>
+                            <td class="total-cell">8.0h</td>
+                            <td><span class="status-badge pending">Pendiente</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="action-buttons">
+                <div class="action-left">
+                    <button class="btn btn-secondary">
+                        <span>📱</span>
+                        <span>Enviar SMS Verificación</span>
+                    </button>
+                    <button class="btn btn-warning">
+                        <span>✏️</span>
+                        <span>Solicitar Corrección</span>
+                    </button>
+                </div>
+                <div class="action-right">
+                    <button class="btn btn-secondary">Cancelar Cambios</button>
+                    <button class="btn btn-success">
+                        <span>✓</span>
+                        <span>Aprobar Timecard</span>
+                    </button>
+                    <button class="btn btn-primary">Guardar y Enviar a Payroll</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employee 2 -->
+        <div class="employee-card">
+            <div class="employee-header">
+                <div class="employee-info">
+                    <h2>María González</h2>
+                    <p>Operadora de Equipo • ID: EMP-002</p>
+                    <span class="employee-rate">💰 Tasa Regular: $32.00/hr (Solo Admin puede modificar)</span>
+                </div>
+                <div class="hours-summary">
+                    <div class="hours-summary-item">
+                        <label>Meta Semanal</label>
+                        <div class="value">40.0h</div>
+                    </div>
+                    <div class="hours-summary-item">
+                        <label>Trabajadas</label>
+                        <div class="value">38.5h</div>
+                    </div>
+                    <div class="hours-summary-item">
+                        <label>Overtime</label>
+                        <div class="value" style="color: white;">0h</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hours-breakdown">
+                <div class="breakdown-item regular">
+                    <label>Regulares</label>
+                    <div class="value">36.5h</div>
+                </div>
+                <div class="breakdown-item federal">
+                    <label>Federales</label>
+                    <div class="value">0h</div>
+                </div>
+                <div class="breakdown-item state">
+                    <label>Estatales</label>
+                    <div class="value">0h</div>
+                </div>
+                <div class="breakdown-item vacation">
+                    <label>Vacaciones</label>
+                    <div class="value">0h</div>
+                </div>
+                <div class="breakdown-item sick">
+                    <label>Enfermedad</label>
+                    <div class="value">2.0h</div>
+                </div>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="timecard-table">
+                    <thead>
+                        <tr>
+                            <th>Día</th>
+                            <th>Job Number</th>
+                            <th>Inicio</th>
+                            <th>Fin</th>
+                            <th>Drive</th>
+                            <th>Break</th>
+                            <th>Meal Time</th>
+                            <th>Tipo Hora</th>
+                            <th>Per Diem</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <span class="day-label">Lunes</span>
+                                <span class="day-date">15 Ene</span>
+                            </td>
+                            <td>
+                                <div class="job-info">
+                                    <span class="job-number">JOB-2503</span>
+                                    <span class="job-name">Road Paving</span>
+                                </div>
+                            </td>
+                            <td><input type="time" value="08:00"></td>
+                            <td><input type="time" value="16:30"></td>
+                            <td><input type="number" value="0" step="0.25" min="0" style="max-width: 70px;"> h</td>
+                            <td><input type="number" value="0.5" step="0.25" min="0" style="max-width: 70px;"> h</td>
+                            <td style="min-width: 180px;">
+                                <input type="time" value="12:00" style="width: 48%; display: inline-block;"> - 
+                                <input type="time" value="12:30" style="width: 48%; display: inline-block;">
+                            </td>
+                            <td>
+                                <select>
+                                    <option value="regular" selected>Regular</option>
+                                    <option value="federal">Federal</option>
+                                    <option value="state">Estatal</option>
+                                    <option value="vacation">Vacaciones</option>
+                                    <option value="sick">Enfermedad</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" value="0" step="5" min="0" style="max-width: 80px;">
+                            </td>
+                            <td class="total-cell">8.0h</td>
+                            <td><span class="status-badge approved">Aprobado</span></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="day-label">Miércoles</span>
+                                <span class="day-date">17 Ene</span>
+                            </td>
+                            <td>
+                                <div class="job-info">
+                                    <span class="job-number">-</span>
+                                    <span class="job-name">Día de Enfermedad</span>
+                                </div>
+                            </td>
+                            <td><input type="time" disabled></td>
+                            <td><input type="time" disabled></td>
+                            <td><input type="number" value="0" step="0.25" min="0" style="max-width: 70px;" disabled> h</td>
+                            <td><input type="number" value="0" step="0.25" min="0" style="max-width: 70px;" disabled> h</td>
+                            <td style="min-width: 180px;">
+                                <input type="time" style="width: 48%; display: inline-block;" disabled> - 
+                                <input type="time" style="width: 48%; display: inline-block;" disabled>
+                            </td>
+                            <td>
+                                <select>
+                                    <option value="regular">Regular</option>
+                                    <option value="federal">Federal</option>
+                                    <option value="state">Estatal</option>
+                                    <option value="vacation">Vacaciones</option>
+                                    <option value="sick" selected>Enfermedad</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" value="0" step="5" min="0" style="max-width: 80px;" disabled>
+                            </td>
+                            <td class="total-cell">2.0h</td>
+                            <td><span class="status-badge approved">Aprobado</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="action-buttons">
+                <div class="action-left">
+                    <button class="btn btn-secondary">
+                        <span>📱</span>
+                        <span>Enviar SMS Verificación</span>
+                    </button>
+                </div>
+                <div class="action-right">
+                    <button class="btn btn-secondary">Cancelar Cambios</button>
+                    <button class="btn btn-primary">Guardar y Enviar a Payroll</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Check user role
+        const userRole = 'admin'; // This would come from auth
+        if (userRole === 'admin' || userRole === 'superadmin') {
+            document.getElementById('adminQuickAccess').classList.add('visible');
+        }
+
+        // Switch between views
+        function switchView(view) {
+            const buttons = document.querySelectorAll('.view-toggle button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (view === 'project') {
+                console.log('Switching to project view...');
+                // window.location.href = 'timecards-project-view.html';
+            }
+        }
+
+        // Week navigation
+        function previousWeek() {
+            console.log('Previous week');
+        }
+
+        function nextWeek() {
+            console.log('Next week');
+        }
+
+        // Filter functions
+        function updateViewMode() {
+            const mode = document.getElementById('viewMode').value;
+            console.log('View mode:', mode);
+        }
+
+        function filterTimecards() {
+            const employee = document.getElementById('employeeFilter').value;
+            const job = document.getElementById('jobFilter').value;
+            const day = document.getElementById('dayFilter').value;
+            const status = document.getElementById('statusFilter').value;
+            const hourType = document.getElementById('hourTypeFilter').value;
+            console.log('Filtering:', { employee, job, day, status, hourType });
+        }
+
+        function applyFilters() {
+            filterTimecards();
+            alert('Filtros aplicados');
+        }
+
+        function resetFilters() {
+            document.getElementById('employeeFilter').value = 'all';
+            document.getElementById('jobFilter').value = 'all';
+            document.getElementById('dayFilter').value = '';
+            document.getElementById('statusFilter').value = 'all';
+            document.getElementById('hourTypeFilter').value = 'all';
+            filterTimecards();
+        }
+
+        // Open Timesheet Adjuster (separate page)
+        function openTimesheetAdjuster() {
+            window.location.href = 'timesheet-adjuster.html';
+        }
+    </script>
+</body>
+</html>

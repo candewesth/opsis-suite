@@ -1,1265 +1,637 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Programación | Jardinería - Opsis Suite</title>
+    <title>Schedule - TimeSync - Opsis Suite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
-        :root {
-            /* Apple 97 Design System */
-            --primary: #007AFF;
-            --primary-hover: #0051D5;
-            --success: #34C759;
-            --warning: #FF9500;
-            --danger: #FF3B30;
-            --info: #5856D6;
-            --purple: #AF52DE;
-            
-            --bg-primary: #FFFFFF;
-            --bg-secondary: #F5F5F7;
-            --bg-tertiary: #E8E8ED;
-            
-            --text-primary: #1D1D1F;
-            --text-secondary: #86868B;
-            --text-tertiary: #C7C7CC;
-            
-            --border: #D2D2D7;
-            --shadow: rgba(0, 0, 0, 0.1);
-            
-            --radius: 12px;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        [data-theme="dark"] {
-            --bg-primary: #1C1C1E;
-            --bg-secondary: #2C2C2E;
-            --bg-tertiary: #3A3A3C;
-            --text-primary: #F5F5F7;
-            --text-secondary: #98989D;
-            --text-tertiary: #636366;
-            --border: #38383A;
-            --shadow: rgba(0, 0, 0, 0.3);
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
-            background: var(--bg-secondary);
-            color: var(--text-primary);
+            font-family: 'Helvetica Neue', 'Neue Helvetica', Arial, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            color: #022326;
             line-height: 1.6;
         }
 
-        /* Header */
+        @keyframes aire {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* HEADER */
         .header {
-            background: var(--bg-primary);
-            border-bottom: 1px solid var(--border);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid #e9ecef;
             position: sticky;
             top: 0;
             z-index: 100;
-            backdrop-filter: blur(10px);
         }
 
-        .header-left {
+        .header-content {
+            max-width: 1800px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .logo-section {
             display: flex;
             align-items: center;
             gap: 1rem;
         }
 
-        .back-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            border: none;
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition);
-        }
-
-        .back-btn:hover {
-            background: var(--bg-tertiary);
-            transform: translateX(-2px);
-        }
-
-        .page-title {
+        .logo-text {
             font-size: 1.5rem;
             font-weight: 700;
+            background: linear-gradient(135deg, #022326, #034040, #035951, #02735E);
+            background-size: 400% 400%;
+            animation: aire 12s ease-in-out infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .header-actions {
-            display: flex;
-            gap: 0.75rem;
-            align-items: center;
-        }
-
-        /* View Toggle */
-        .view-toggle {
-            display: flex;
-            background: var(--bg-secondary);
+        .module-badge {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            background: linear-gradient(135deg, #022326, #034040, #035951, #02735E);
+            background-size: 400% 400%;
+            animation: aire 12s ease-in-out infinite;
+            color: white;
             border-radius: 8px;
-            padding: 4px;
+            font-weight: 600;
+            font-size: 0.9rem;
         }
 
-        .view-btn {
-            padding: 0.5rem 1rem;
-            border: none;
-            background: transparent;
-            color: var(--text-secondary);
-            cursor: pointer;
-            border-radius: 6px;
-            font-weight: 500;
-            transition: var(--transition);
-        }
-
-        .view-btn.active {
-            background: var(--bg-primary);
-            color: var(--primary);
-            box-shadow: 0 2px 8px var(--shadow);
-        }
-
-        /* Filters Bar */
-        .filters-bar {
-            background: var(--bg-primary);
-            padding: 1rem 2rem;
+        .header-nav {
             display: flex;
             gap: 1rem;
             align-items: center;
-            border-bottom: 1px solid var(--border);
-            flex-wrap: wrap;
-        }
-
-        .filter-group {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .filter-label {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        .filter-select {
-            padding: 0.5rem 1rem;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            font-size: 0.875rem;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .filter-select:hover {
-            border-color: var(--primary);
-        }
-
-        .date-nav {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-left: auto;
-        }
-
-        .date-display {
-            font-weight: 600;
-            font-size: 1rem;
-            min-width: 200px;
-            text-align: center;
         }
 
         .nav-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            background: var(--bg-primary);
-            color: var(--text-primary);
+            padding: 0.7rem 1.3rem;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            color: #034040;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition);
         }
 
         .nav-btn:hover {
-            background: var(--bg-secondary);
-            border-color: var(--primary);
+            border-color: #02735E;
+            color: #02735E;
+            transform: translateY(-2px);
         }
 
-        .today-btn {
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            border: 1px solid var(--primary);
-            background: transparent;
-            color: var(--primary);
-            cursor: pointer;
-            font-weight: 500;
-            transition: var(--transition);
-        }
-
-        .today-btn:hover {
-            background: var(--primary);
+        .nav-btn-primary {
+            background: linear-gradient(135deg, #022326, #034040, #035951, #02735E);
+            background-size: 400% 400%;
+            animation: aire 12s ease-in-out infinite;
+            border: none;
             color: white;
         }
 
-        /* Main Content */
-        .main-content {
-            padding: 2rem;
+        .nav-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(2, 115, 94, 0.3);
+        }
+
+        /* CONTAINER */
+        .container {
             max-width: 1800px;
             margin: 0 auto;
+            padding: 2rem;
         }
 
-        /* Stats Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
+        /* PAGE HEADER */
+        .page-header {
             margin-bottom: 2rem;
+            animation: fadeInUp 0.6s ease-out;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
-        .stat-card {
-            background: var(--bg-primary);
-            padding: 1.5rem;
-            border-radius: var(--radius);
-            box-shadow: 0 2px 8px var(--shadow);
-            border-left: 4px solid var(--primary);
-        }
-
-        .stat-label {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
+        .page-title-section h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #022326;
             margin-bottom: 0.5rem;
         }
 
-        .stat-value {
-            font-size: 2rem;
+        .page-subtitle {
+            color: #034040;
+            font-size: 1.1rem;
+        }
+
+        .calendar-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .month-selector {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(2, 35, 38, 0.08);
+        }
+
+        .month-selector button {
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, rgba(2, 35, 38, 0.1), rgba(3, 89, 81, 0.1));
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #022326;
+            transition: all 0.3s ease;
+        }
+
+        .month-selector button:hover {
+            background: linear-gradient(135deg, #022326, #034040, #035951, #02735E);
+            background-size: 400% 400%;
+            animation: aire 12s ease-in-out infinite;
+            color: white;
+        }
+
+        .month-display {
             font-weight: 700;
-            color: var(--text-primary);
+            color: #022326;
+            min-width: 150px;
+            text-align: center;
+            font-size: 1.1rem;
         }
 
-        /* ============================================ */
-        /* WEEK VIEW - Compact with colored lines */
-        /* ============================================ */
-        .week-view {
-            background: var(--bg-primary);
-            border-radius: var(--radius);
-            box-shadow: 0 2px 12px var(--shadow);
-            overflow: hidden;
+        .btn-add-event {
+            padding: 0.8rem 1.5rem;
+            background: linear-gradient(135deg, #022326, #034040, #035951, #02735E);
+            background-size: 400% 400%;
+            animation: aire 12s ease-in-out infinite;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
-        .week-grid {
+        .btn-add-event:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(2, 115, 94, 0.3);
+        }
+
+        /* CALENDAR */
+        .calendar-container {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(2, 35, 38, 0.08);
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 1px;
-            background: var(--border);
+            background: #e9ecef;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
         }
 
-        .week-day-card {
-            background: var(--bg-primary);
-            padding: 1.5rem;
-            cursor: pointer;
-            transition: var(--transition);
-            min-height: 400px;
-        }
-
-        .week-day-card:hover {
-            background: var(--bg-secondary);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 16px var(--shadow);
-        }
-
-        .week-day-card.today {
-            background: linear-gradient(135deg, rgba(0, 122, 255, 0.05), rgba(88, 86, 214, 0.05));
-            border-top: 3px solid var(--primary);
-        }
-
-        .week-day-header {
+        .calendar-header {
+            background: linear-gradient(135deg, #022326, #034040, #035951, #02735E);
+            background-size: 400% 400%;
+            animation: aire 12s ease-in-out infinite;
+            color: white;
+            padding: 1rem;
             text-align: center;
-            margin-bottom: 1rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid var(--border);
-        }
-
-        .week-day-name {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-
-        .week-day-number {
-            font-size: 2rem;
             font-weight: 700;
-            margin-top: 0.25rem;
+            font-size: 0.9rem;
         }
 
-        .week-day-date {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            margin-top: 0.25rem;
-        }
-
-        /* Compact job lines */
-        .job-line {
+        .calendar-day {
+            background: white;
+            min-height: 120px;
             padding: 0.75rem;
-            margin-bottom: 0.5rem;
-            border-radius: 8px;
-            border-left: 4px solid;
+            position: relative;
+            transition: all 0.3s ease;
             cursor: pointer;
-            transition: var(--transition);
-            background: var(--bg-secondary);
         }
 
-        .job-line:hover {
-            transform: translateX(4px);
-            box-shadow: 0 2px 8px var(--shadow);
+        .calendar-day:hover {
+            background: #f8f9fa;
         }
 
-        .job-line.project { border-left-color: var(--primary); }
-        .job-line.maintenance { border-left-color: var(--warning); }
-        .job-line.meeting { border-left-color: var(--info); }
-        .job-line.urgent { border-left-color: var(--danger); }
+        .calendar-day.other-month {
+            background: #fafafa;
+            opacity: 0.5;
+        }
 
-        .job-line-header {
+        .calendar-day.today {
+            background: linear-gradient(135deg, rgba(2, 35, 38, 0.05), rgba(3, 89, 81, 0.05));
+        }
+
+        .day-number {
+            font-weight: 600;
+            color: #022326;
+            margin-bottom: 0.5rem;
+        }
+
+        .calendar-day.today .day-number {
+            display: inline-block;
+            background: linear-gradient(135deg, #022326, #034040, #035951, #02735E);
+            background-size: 400% 400%;
+            animation: aire 12s ease-in-out infinite;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .event-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #02735E;
+            margin-bottom: 2px;
+        }
+
+        .event-item {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            background: linear-gradient(135deg, rgba(2, 35, 38, 0.1), rgba(3, 89, 81, 0.1));
+            border-left: 3px solid #02735E;
+            border-radius: 4px;
             margin-bottom: 0.25rem;
-        }
-
-        .job-number {
-            font-weight: 700;
-            font-size: 0.875rem;
-            color: var(--text-primary);
-        }
-
-        .job-time {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        .job-address {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
-        .no-jobs {
-            text-align: center;
-            padding: 2rem;
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-        }
-
-        /* ============================================ */
-        /* DAY VIEW - Grouped Timeline */
-        /* ============================================ */
-        .day-view {
-            display: none;
-            background: var(--bg-primary);
-            border-radius: var(--radius);
-            box-shadow: 0 2px 12px var(--shadow);
-            overflow: hidden;
-        }
-
-        .day-view.active {
-            display: block;
-        }
-
-        .day-view-header {
-            padding: 1.5rem 2rem;
-            background: linear-gradient(135deg, var(--primary), var(--info));
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .day-view-title {
-            font-size: 1.75rem;
-            font-weight: 700;
-        }
-
-        .day-view-subtitle {
-            font-size: 0.875rem;
-            opacity: 0.9;
-            margin-top: 0.25rem;
-        }
-
-        .back-to-week {
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            cursor: pointer;
-            font-weight: 600;
-            transition: var(--transition);
-            backdrop-filter: blur(10px);
-        }
-
-        .back-to-week:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.5);
-        }
-
-        /* Grouped Timeline */
-        .timeline-container {
-            max-height: 700px;
-            overflow-y: auto;
-        }
-
-        .hour-group {
-            border-bottom: 1px solid var(--border);
-        }
-
-        .hour-group-header {
-            display: grid;
-            grid-template-columns: 80px 1fr auto;
-            align-items: center;
-            padding: 1rem;
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border);
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .hour-group-header:hover {
-            background: var(--bg-tertiary);
-        }
-
-        .hour-label {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
-        .hour-summary {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .job-count-badge {
-            padding: 0.25rem 0.75rem;
+        /* UPCOMING EVENTS */
+        .upcoming-section {
+            background: white;
             border-radius: 20px;
-            background: var(--primary);
-            color: white;
-            font-size: 0.75rem;
-            font-weight: 600;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(2, 35, 38, 0.08);
+            animation: fadeInUp 1s ease-out;
         }
 
-        .job-preview {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        .expand-icon {
-            font-size: 1.25rem;
-            color: var(--text-secondary);
-            transition: var(--transition);
-        }
-
-        .hour-group-header.expanded .expand-icon {
-            transform: rotate(180deg);
-        }
-
-        /* Jobs List within Hour Group */
-        .hour-jobs {
-            display: none;
-            padding: 1rem;
-            background: var(--bg-primary);
-        }
-
-        .hour-jobs.expanded {
-            display: block;
-        }
-
-        .job-card {
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-            border-radius: 8px;
-            border-left: 4px solid;
-            cursor: pointer;
-            transition: var(--transition);
-            display: grid;
-            grid-template-columns: auto 1fr auto;
-            gap: 1rem;
-            align-items: center;
-        }
-
-        .job-card:hover {
-            transform: translateX(4px);
-            box-shadow: 0 4px 16px var(--shadow);
-        }
-
-        .job-card.project {
-            background: rgba(0, 122, 255, 0.1);
-            border-left-color: var(--primary);
-        }
-
-        .job-card.maintenance {
-            background: rgba(255, 149, 0, 0.1);
-            border-left-color: var(--warning);
-        }
-
-        .job-card.meeting {
-            background: rgba(88, 86, 214, 0.1);
-            border-left-color: var(--info);
-        }
-
-        .job-card.urgent {
-            background: rgba(255, 59, 48, 0.1);
-            border-left-color: var(--danger);
-        }
-
-        .job-card-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .section-title {
             font-size: 1.5rem;
-            background: rgba(255, 255, 255, 0.5);
-        }
-
-        .job-card-content {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-        }
-
-        .job-card-number {
             font-weight: 700;
-            font-size: 1rem;
-            color: var(--text-primary);
-        }
-
-        .job-card-address {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .job-card-meta {
-            display: flex;
-            gap: 1rem;
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-
-        .job-card-actions {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 0.5rem;
-        }
-
-        .job-card-time {
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .job-card-duration {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-
-        /* Legend */
-        .schedule-legend {
-            display: flex;
-            gap: 1.5rem;
-            padding: 1rem 2rem;
-            background: var(--bg-primary);
-            border-bottom: 1px solid var(--border);
-            flex-wrap: wrap;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        .legend-color {
-            width: 16px;
-            height: 16px;
-            border-radius: 4px;
-        }
-
-        /* Buttons */
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 0.875rem;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-hover);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
-        }
-
-        /* Sidebar */
-        .schedule-sidebar {
-            position: fixed;
-            right: -400px;
-            top: 0;
-            width: 400px;
-            height: 100vh;
-            background: var(--bg-primary);
-            box-shadow: -4px 0 20px var(--shadow);
-            transition: var(--transition);
-            z-index: 1000;
-            overflow-y: auto;
-        }
-
-        .schedule-sidebar.active {
-            right: 0;
-        }
-
-        .sidebar-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .sidebar-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-        }
-
-        .close-sidebar {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            border: none;
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .sidebar-content {
-            padding: 1.5rem;
-        }
-
-        .form-group {
+            color: #022326;
             margin-bottom: 1.5rem;
         }
 
-        .form-label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--text-primary);
+        .event-list {
+            display: grid;
+            gap: 1rem;
         }
 
-        .form-input,
-        .form-select,
-        .form-textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border);
+        .event-card {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #02735E;
+            transition: all 0.3s ease;
+        }
+
+        .event-card:hover {
+            background: linear-gradient(135deg, rgba(2, 35, 38, 0.05), rgba(3, 89, 81, 0.05));
+            transform: translateX(5px);
+        }
+
+        .event-date {
+            min-width: 60px;
+            text-align: center;
+            padding: 0.5rem;
+            background: white;
             border-radius: 8px;
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            font-size: 0.875rem;
-            transition: var(--transition);
         }
 
-        .form-input:focus,
-        .form-select:focus,
-        .form-textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        .event-day {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #02735E;
         }
 
-        .form-textarea {
-            resize: vertical;
-            min-height: 100px;
+        .event-month {
+            font-size: 0.85rem;
+            color: #6c757d;
+            text-transform: uppercase;
         }
 
-        .staff-selector {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
+        .event-details {
+            flex: 1;
         }
 
-        .staff-chip {
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            background: var(--bg-secondary);
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 0.875rem;
+        .event-title {
+            font-weight: 600;
+            color: #022326;
+            margin-bottom: 0.25rem;
         }
 
-        .staff-chip:hover {
-            border-color: var(--primary);
+        .event-time {
+            font-size: 0.9rem;
+            color: #6c757d;
         }
 
-        .staff-chip.selected {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
+        .event-location {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
         }
 
-        .sidebar-actions {
-            display: flex;
-            gap: 0.75rem;
-            padding: 1.5rem;
-            border-top: 1px solid var(--border);
-            background: var(--bg-secondary);
-        }
-
-        .btn-secondary {
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-        }
-
-        .btn-secondary:hover {
-            background: var(--bg-tertiary);
-        }
-
-        /* Responsive */
-        @media (max-width: 1200px) {
-            .week-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-        }
-
+        /* RESPONSIVE */
         @media (max-width: 768px) {
-            .week-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .filters-bar {
+            .header-content {
                 flex-direction: column;
                 align-items: flex-start;
             }
 
-            .date-nav {
+            .header-nav {
                 width: 100%;
-                justify-content: space-between;
+                flex-wrap: wrap;
             }
 
-            .stats-grid {
-                grid-template-columns: 1fr;
+            .nav-btn {
+                flex: 1;
+                min-width: 120px;
+                text-align: center;
             }
 
-            .schedule-sidebar {
-                width: 100%;
-                right: -100%;
-            }
-
-            .job-card {
-                grid-template-columns: 1fr;
-            }
-
-            .job-card-actions {
+            .page-header {
+                flex-direction: column;
                 align-items: flex-start;
+            }
+
+            .calendar-day {
+                min-height: 80px;
+                padding: 0.5rem;
+            }
+
+            .event-item {
+                font-size: 0.65rem;
+                padding: 0.2rem 0.3rem;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <div class="header">
-        <div class="header-left">
-            <button class="back-btn" onclick="goBack()">←</button>
-            <h1 class="page-title">📅 Programación</h1>
-        </div>
-        <div class="header-actions">
-            <div class="view-toggle">
-                <button class="view-btn active" data-view="week" onclick="switchToWeekView()">Semana</button>
-                <button class="view-btn" data-view="day" onclick="switchToDayView()">Día</button>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo-text">Opsis Suite</div>
+                <span class="module-badge">TimeSync</span>
             </div>
-            <button class="btn btn-primary" onclick="openNewAssignment()">+ Nuevo Trabajo</button>
+            <nav class="header-nav">
+                <a href="timesync.html" class="nav-btn">← Dashboard</a>
+                <a href="timecards.html" class="nav-btn">Timecards</a>
+                <a href="staff.html" class="nav-btn">Staff</a>
+                <a href="reports.html" class="nav-btn">Reports</a>
+            </nav>
         </div>
-    </div>
+    </header>
 
-    <!-- Filters Bar -->
-    <div class="filters-bar">
-        <div class="filter-group">
-            <span class="filter-label">Proyecto:</span>
-            <select class="filter-select" id="projectFilter">
-                <option value="all">Todos los proyectos</option>
-                <option value="proj-001">Centro Comercial ABC</option>
-                <option value="proj-002">Edificio XYZ</option>
-                <option value="proj-003">Remodelación Oficinas</option>
-            </select>
-        </div>
-
-        <div class="filter-group">
-            <span class="filter-label">Equipo:</span>
-            <select class="filter-select" id="staffFilter">
-                <option value="all">Todos los equipos</option>
-                <option value="team-a">Equipo A</option>
-                <option value="team-b">Equipo B</option>
-                <option value="available">Disponibles</option>
-            </select>
-        </div>
-
-        <div class="filter-group">
-            <span class="filter-label">Tipo:</span>
-            <select class="filter-select" id="typeFilter">
-                <option value="all">Todos</option>
-                <option value="project">Proyectos</option>
-                <option value="maintenance">Mantenimiento</option>
-                <option value="meeting">Reuniones</option>
-            </select>
-        </div>
-
-        <div class="date-nav">
-            <button class="nav-btn" onclick="prevWeek()">‹</button>
-            <button class="today-btn" onclick="goToToday()">Hoy</button>
-            <span class="date-display" id="dateDisplay">Oct 20 - 26, 2025</span>
-            <button class="nav-btn" onclick="nextWeek()">›</button>
-        </div>
-    </div>
-
-    <!-- Legend -->
-    <div class="schedule-legend">
-        <div class="legend-item">
-            <div class="legend-color" style="background: var(--primary);"></div>
-            <span>Proyectos</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background: var(--warning);"></div>
-            <span>Mantenimiento</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background: var(--info);"></div>
-            <span>Reuniones</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background: var(--danger);"></div>
-            <span>Urgente</span>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="main-content">
-        <!-- Stats -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-label">Trabajos esta Semana</div>
-                <div class="stat-value">24</div>
+    <!-- MAIN CONTAINER -->
+    <div class="container">
+        <!-- PAGE HEADER -->
+        <div class="page-header">
+            <div class="page-title-section">
+                <h1>Schedule</h1>
+                <p class="page-subtitle">Plan and manage team schedules</p>
             </div>
-            <div class="stat-card" style="border-left-color: var(--success);">
-                <div class="stat-label">Personal Disponible</div>
-                <div class="stat-value">18</div>
-            </div>
-            <div class="stat-card" style="border-left-color: var(--warning);">
-                <div class="stat-label">Horas Programadas</div>
-                <div class="stat-value">847h</div>
-            </div>
-            <div class="stat-card" style="border-left-color: var(--info);">
-                <div class="stat-label">Proyectos Activos</div>
-                <div class="stat-value">8</div>
+            <div class="calendar-controls">
+                <div class="month-selector">
+                    <button onclick="previousMonth()">←</button>
+                    <span class="month-display" id="monthDisplay">Loading...</span>
+                    <button onclick="nextMonth()">→</button>
+                </div>
+                <button class="btn-add-event" onclick="addEvent()">+ New Event</button>
             </div>
         </div>
 
-        <!-- WEEK VIEW - Compact -->
-        <div class="week-view" id="weekView">
-            <div class="week-grid" id="weekGrid">
-                <!-- Days will be generated by JS -->
+        <!-- CALENDAR -->
+        <div class="calendar-container">
+            <div class="calendar-grid">
+                <div class="calendar-header">Sunday</div>
+                <div class="calendar-header">Monday</div>
+                <div class="calendar-header">Tuesday</div>
+                <div class="calendar-header">Wednesday</div>
+                <div class="calendar-header">Thursday</div>
+                <div class="calendar-header">Friday</div>
+                <div class="calendar-header">Saturday</div>
+                
+                <div id="calendarDays"></div>
             </div>
         </div>
 
-        <!-- DAY VIEW - Grouped Timeline -->
-        <div class="day-view" id="dayView">
-            <div class="day-view-header">
-                <div>
-                    <div class="day-view-title" id="dayViewTitle">Lunes, 20 de Octubre</div>
-                    <div class="day-view-subtitle">15 trabajos programados</div>
-                </div>
-                <button class="back-to-week" onclick="switchToWeekView()">← Volver a Semana</button>
-            </div>
-
-            <!-- Grouped Timeline -->
-            <div class="timeline-container" id="timelineContainer">
-                <!-- Generated by JS -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Sidebar for New/Edit Assignment -->
-    <div class="schedule-sidebar" id="scheduleSidebar">
-        <div class="sidebar-header">
-            <h2 class="sidebar-title">Nuevo Trabajo</h2>
-            <button class="close-sidebar" onclick="closeSidebar()">✕</button>
-        </div>
-        <div class="sidebar-content">
-            <form id="assignmentForm">
-                <div class="form-group">
-                    <label class="form-label">Número de Trabajo *</label>
-                    <input type="text" class="form-input" placeholder="Ej: JOB-2025-001" required>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Dirección / Ubicación *</label>
-                    <input type="text" class="form-input" placeholder="123 Main St, San Diego, CA" required>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Proyecto *</label>
-                    <select class="form-select" required>
-                        <option value="">Seleccionar proyecto</option>
-                        <option value="proj-001">Centro Comercial ABC</option>
-                        <option value="proj-002">Edificio XYZ</option>
-                        <option value="proj-003">Remodelación Oficinas</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Tipo *</label>
-                    <select class="form-select" required>
-                        <option value="project">Proyecto</option>
-                        <option value="maintenance">Mantenimiento</option>
-                        <option value="meeting">Reunión</option>
-                        <option value="urgent">Urgente</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Fecha *</label>
-                    <input type="date" class="form-input" required>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Hora Inicio *</label>
-                    <input type="time" class="form-input" value="08:00" required>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Hora Fin *</label>
-                    <input type="time" class="form-input" value="17:00" required>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Asignar Personal</label>
-                    <div class="staff-selector">
-                        <div class="staff-chip" onclick="toggleStaff(this)">👤 Juan Pérez</div>
-                        <div class="staff-chip" onclick="toggleStaff(this)">👤 María García</div>
-                        <div class="staff-chip" onclick="toggleStaff(this)">👤 Carlos López</div>
-                        <div class="staff-chip" onclick="toggleStaff(this)">👤 Ana Martínez</div>
+        <!-- UPCOMING EVENTS -->
+        <div class="upcoming-section">
+            <h2 class="section-title">Upcoming Events</h2>
+            <div class="event-list">
+                <div class="event-card">
+                    <div class="event-date">
+                        <div class="event-day">18</div>
+                        <div class="event-month">Nov</div>
+                    </div>
+                    <div class="event-details">
+                        <div class="event-title">Team Meeting - North Plaza Project</div>
+                        <div class="event-time">9:00 AM - 10:00 AM</div>
+                        <div class="event-location">📍 Main Office - Conference Room A</div>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Notas</label>
-                    <textarea class="form-textarea" placeholder="Instrucciones especiales, requisitos, etc..."></textarea>
+                <div class="event-card">
+                    <div class="event-date">
+                        <div class="event-day">20</div>
+                        <div class="event-month">Nov</div>
+                    </div>
+                    <div class="event-details">
+                        <div class="event-title">Site Inspection - Hospital Renovation</div>
+                        <div class="event-time">2:00 PM - 4:00 PM</div>
+                        <div class="event-location">📍 City General Hospital</div>
+                    </div>
                 </div>
-            </form>
-        </div>
-        <div class="sidebar-actions">
-            <button class="btn btn-secondary" style="flex: 1;" onclick="closeSidebar()">Cancelar</button>
-            <button class="btn btn-primary" style="flex: 1;" onclick="saveAssignment()">Guardar</button>
+
+                <div class="event-card">
+                    <div class="event-date">
+                        <div class="event-day">22</div>
+                        <div class="event-month">Nov</div>
+                    </div>
+                    <div class="event-details">
+                        <div class="event-title">Safety Training Session</div>
+                        <div class="event-time">10:00 AM - 12:00 PM</div>
+                        <div class="event-location">📍 Training Center</div>
+                    </div>
+                </div>
+
+                <div class="event-card">
+                    <div class="event-date">
+                        <div class="event-day">25</div>
+                        <div class="event-month">Nov</div>
+                    </div>
+                    <div class="event-details">
+                        <div class="event-title">Client Presentation - Downtown Office</div>
+                        <div class="event-time">3:00 PM - 5:00 PM</div>
+                        <div class="event-location">📍 Client Office</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // Sample data - simulando 15 trabajos en un día
-        const sampleJobs = [
-            // 8:00 AM - 5 trabajos
-            { id: 1, number: 'JOB-2025-001', address: '123 Main St, Building A', project: 'Centro Comercial ABC', type: 'project', date: '2025-10-20', startTime: '08:00', endTime: '12:00', staff: ['Juan Pérez', 'María García'] },
-            { id: 2, number: 'JOB-2025-002', address: '456 Oak Ave, Suite 200', project: 'Edificio XYZ', type: 'maintenance', date: '2025-10-20', startTime: '08:00', endTime: '11:00', staff: ['Carlos López'] },
-            { id: 3, number: 'JOB-2025-003', address: '789 Pine St, Unit 5', project: 'Remodelación Oficinas', type: 'urgent', date: '2025-10-20', startTime: '08:00', endTime: '17:00', staff: ['Ana Martínez'] },
-            { id: 11, number: 'JOB-2025-011', address: '111 Cedar Ln, Floor 2', project: 'Centro Comercial ABC', type: 'project', date: '2025-10-20', startTime: '08:00', endTime: '14:00', staff: ['Pedro Sánchez'] },
-            { id: 12, number: 'JOB-2025-012', address: '222 Maple Dr, Suite 5', project: 'Edificio XYZ', type: 'project', date: '2025-10-20', startTime: '08:00', endTime: '10:00', staff: ['Luis Gómez'] },
-            
-            // 9:00 AM - 2 trabajos
-            { id: 13, number: 'JOB-2025-013', address: '333 Birch St, Office 12', project: 'Remodelación Oficinas', type: 'meeting', date: '2025-10-20', startTime: '09:00', endTime: '10:00', staff: ['Juan Pérez'] },
-            { id: 14, number: 'JOB-2025-014', address: '444 Walnut Ave, Building C', project: 'Centro Comercial ABC', type: 'project', date: '2025-10-20', startTime: '09:00', endTime: '13:00', staff: ['María García'] },
-            
-            // 10:00 AM - 3 trabajos
-            { id: 5, number: 'JOB-2025-005', address: '555 Maple Dr, Floor 2', project: 'Edificio XYZ', type: 'meeting', date: '2025-10-20', startTime: '10:00', endTime: '11:00', staff: ['Carlos López'] },
-            { id: 15, number: 'JOB-2025-015', address: '666 Spruce St, Unit 8', project: 'Remodelación Oficinas', type: 'maintenance', date: '2025-10-20', startTime: '10:00', endTime: '15:00', staff: ['Ana Martínez'] },
-            { id: 16, number: 'JOB-2025-016', address: '777 Willow Ln, Suite 3', project: 'Centro Comercial ABC', type: 'project', date: '2025-10-20', startTime: '10:00', endTime: '16:00', staff: ['Pedro Sánchez'] },
-            
-            // 13:00 PM - 3 trabajos
-            { id: 7, number: 'JOB-2025-007', address: '999 Broadway, Office 12', project: 'Centro Comercial ABC', type: 'project', date: '2025-10-20', startTime: '13:00', endTime: '16:00', staff: ['María García', 'Carlos López'] },
-            { id: 17, number: 'JOB-2025-017', address: '101 Ash St, Floor 5', project: 'Edificio XYZ', type: 'urgent', date: '2025-10-20', startTime: '13:00', endTime: '18:00', staff: ['Luis Gómez'] },
-            { id: 18, number: 'JOB-2025-018', address: '202 Poplar Ave, Building B', project: 'Remodelación Oficinas', type: 'project', date: '2025-10-20', startTime: '13:00', endTime: '17:00', staff: ['Juan Pérez'] },
-            
-            // 14:00 PM - 2 trabajos
-            { id: 19, number: 'JOB-2025-019', address: '303 Elm St, Suite 7', project: 'Centro Comercial ABC', type: 'maintenance', date: '2025-10-20', startTime: '14:00', endTime: '16:00', staff: ['Ana Martínez'] },
-            { id: 20, number: 'JOB-2025-020', address: '404 Oak Dr, Office 9', project: 'Edificio XYZ', type: 'project', date: '2025-10-20', startTime: '14:00', endTime: '18:00', staff: ['Pedro Sánchez'] },
+        let currentDate = new Date();
 
-            // Otros días
-            { id: 4, number: 'JOB-2025-004', address: '321 Elm St, Building C', project: 'Centro Comercial ABC', type: 'project', date: '2025-10-21', startTime: '08:00', endTime: '15:00', staff: ['María García'] },
-            { id: 6, number: 'JOB-2025-006', address: '888 Cedar Ln, Warehouse', project: 'Remodelación Oficinas', type: 'project', date: '2025-10-23', startTime: '07:00', endTime: '16:00', staff: ['Carlos López', 'Ana Martínez'] }
-        ];
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            // Update month display
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                              'July', 'August', 'September', 'October', 'November', 'December'];
+            document.getElementById('monthDisplay').textContent = `${monthNames[month]} ${year}`;
 
-        let currentView = 'week';
-        let selectedDay = null;
+            // Get first day of month and number of days
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const numDays = lastDay.getDate();
+            const startingDayOfWeek = firstDay.getDay();
+
+            // Get previous month's last days
+            const prevMonthLastDay = new Date(year, month, 0);
+            const prevMonthDays = prevMonthLastDay.getDate();
+
+            const calendarDaysContainer = document.getElementById('calendarDays');
+            calendarDaysContainer.innerHTML = '';
+
+            // Sample events
+            const events = {
+                18: ['Team Meeting'],
+                20: ['Site Inspection'],
+                22: ['Safety Training'],
+                25: ['Client Presentation']
+            };
+
+            const today = new Date();
+            const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+            const todayDate = today.getDate();
+
+            // Add previous month's trailing days
+            for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+                const day = prevMonthDays - i;
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'calendar-day other-month';
+                dayDiv.innerHTML = `<div class="day-number">${day}</div>`;
+                calendarDaysContainer.appendChild(dayDiv);
+            }
+
+            // Add current month's days
+            for (let day = 1; day <= numDays; day++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'calendar-day';
+                
+                if (isCurrentMonth && day === todayDate) {
+                    dayDiv.classList.add('today');
+                }
+
+                let eventsHTML = '';
+                if (events[day]) {
+                    events[day].forEach(event => {
+                        eventsHTML += `<div class="event-item">${event}</div>`;
+                    });
+                }
+
+                dayDiv.innerHTML = `
+                    <div class="day-number">${day}</div>
+                    ${eventsHTML}
+                `;
+                dayDiv.onclick = () => dayClicked(day);
+                calendarDaysContainer.appendChild(dayDiv);
+            }
+
+            // Add next month's leading days
+            const totalCells = calendarDaysContainer.children.length;
+            const remainingCells = 42 - totalCells; // 6 rows * 7 days
+            for (let day = 1; day <= remainingCells; day++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'calendar-day other-month';
+                dayDiv.innerHTML = `<div class="day-number">${day}</div>`;
+                calendarDaysContainer.appendChild(dayDiv);
+            }
+        }
+
+        function previousMonth() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        }
+
+        function dayClicked(day) {
+            alert(`Day ${day} clicked. Event creation will be implemented here.`);
+        }
+
+        function addEvent() {
+            alert('Add Event dialog will be implemented here.');
+        }
 
         // Initialize
-        function init() {
-            renderWeekView();
-            updateDateDisplay();
-        }
-
-        // Render Week View (Compact)
-        function renderWeekView() {
-            const weekGrid = document.getElementById('weekGrid');
-            weekGrid.innerHTML = '';
-
-            const days = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-            const dates = [20, 21, 22, 23, 24, 25, 26];
-
-            days.forEach((day, index) => {
-                const dayCard = document.createElement('div');
-                dayCard.className = 'week-day-card';
-                if (index === 0) dayCard.classList.add('today');
-                
-                const date = `2025-10-${dates[index]}`;
-                const dayJobs = sampleJobs.filter(job => job.date === date);
-
-                dayCard.innerHTML = `
-                    <div class="week-day-header">
-                        <div class="week-day-name">${day}</div>
-                        <div class="week-day-number">${dates[index]}</div>
-                        <div class="week-day-date">Octubre 2025</div>
-                    </div>
-                    <div class="week-day-jobs">
-                        ${dayJobs.length > 0 ? dayJobs.slice(0, 5).map(job => `
-                            <div class="job-line ${job.type}" onclick="event.stopPropagation(); viewJobDetails(${job.id})">
-                                <div class="job-line-header">
-                                    <span class="job-number">${job.number}</span>
-                                    <span class="job-time">${job.startTime}</span>
-                                </div>
-                                <div class="job-address">${job.address}</div>
-                            </div>
-                        `).join('') + (dayJobs.length > 5 ? `<div style="text-align: center; padding: 0.5rem; color: var(--primary); font-weight: 600; font-size: 0.875rem;">+${dayJobs.length - 5} más trabajos</div>` : '') : '<div class="no-jobs">Sin trabajos</div>'}
-                    </div>
-                `;
-
-                dayCard.addEventListener('click', (e) => {
-                    if (!e.target.closest('.job-line')) {
-                        expandDay(index, day, dates[index], date);
-                    }
-                });
-
-                weekGrid.appendChild(dayCard);
-            });
-        }
-
-        // Expand to Day View with Grouped Timeline
-        function expandDay(dayIndex, dayName, dayNumber, date) {
-            selectedDay = date;
-            currentView = 'day';
-
-            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector('[data-view="day"]').classList.add('active');
-
-            const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
-                               'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-            document.getElementById('dayViewTitle').textContent = 
-                `${dayName}, ${dayNumber} de ${monthNames[9]} 2025`;
-
-            const dayJobs = sampleJobs.filter(job => job.date === date);
-            document.querySelector('.day-view-subtitle').textContent = 
-                `${dayJobs.length} trabajo${dayJobs.length !== 1 ? 's' : ''} programado${dayJobs.length !== 1 ? 's' : ''}`;
-
-            renderGroupedTimeline(dayJobs);
-
-            document.getElementById('weekView').style.display = 'none';
-            document.getElementById('dayView').classList.add('active');
-        }
-
-        // Render Grouped Timeline
-        function renderGroupedTimeline(jobs) {
-            const container = document.getElementById('timelineContainer');
-            container.innerHTML = '';
-
-            // Group jobs by start hour
-            const grouped = {};
-            jobs.forEach(job => {
-                const hour = job.startTime.split(':')[0];
-                if (!grouped[hour]) grouped[hour] = [];
-                grouped[hour].push(job);
-            });
-
-            // Sort hours
-            const hours = Object.keys(grouped).sort((a, b) => parseInt(a) - parseInt(b));
-
-            hours.forEach(hour => {
-                const hourJobs = grouped[hour];
-                const hourGroup = document.createElement('div');
-                hourGroup.className = 'hour-group';
-
-                // Header
-                const header = document.createElement('div');
-                header.className = 'hour-group-header';
-                header.innerHTML = `
-                    <div class="hour-label">${hour}:00</div>
-                    <div class="hour-summary">
-                        <span class="job-count-badge">${hourJobs.length} trabajo${hourJobs.length !== 1 ? 's' : ''}</span>
-                        <span class="job-preview">${hourJobs.slice(0, 2).map(j => j.number).join(', ')}${hourJobs.length > 2 ? '...' : ''}</span>
-                    </div>
-                    <div class="expand-icon">▼</div>
-                `;
-
-                // Jobs list
-                const jobsList = document.createElement('div');
-                jobsList.className = 'hour-jobs';
-                hourJobs.forEach(job => {
-                    const duration = calculateDuration(job.startTime, job.endTime);
-                    const jobCard = document.createElement('div');
-                    jobCard.className = `job-card ${job.type}`;
-                    jobCard.innerHTML = `
-                        <div class="job-card-icon">📋</div>
-                        <div class="job-card-content">
-                            <div class="job-card-number">${job.number}</div>
-                            <div class="job-card-address">📍 ${job.address}</div>
-                            <div class="job-card-meta">
-                                <span>👥 ${job.staff.length} persona${job.staff.length !== 1 ? 's' : ''}</span>
-                                <span>📦 ${job.project}</span>
-                            </div>
-                        </div>
-                        <div class="job-card-actions">
-                            <div class="job-card-time">${job.startTime} - ${job.endTime}</div>
-                            <div class="job-card-duration">${duration}</div>
-                        </div>
-                    `;
-                    jobCard.onclick = () => viewJobDetails(job.id);
-                    jobsList.appendChild(jobCard);
-                });
-
-                // Toggle expansion
-                header.onclick = () => {
-                    header.classList.toggle('expanded');
-                    jobsList.classList.toggle('expanded');
-                };
-
-                hourGroup.appendChild(header);
-                hourGroup.appendChild(jobsList);
-                container.appendChild(hourGroup);
-            });
-        }
-
-        // Calculate duration
-        function calculateDuration(start, end) {
-            const [startH, startM] = start.split(':').map(Number);
-            const [endH, endM] = end.split(':').map(Number);
-            const minutes = (endH * 60 + endM) - (startH * 60 + startM);
-            const hours = Math.floor(minutes / 60);
-            const mins = minutes % 60;
-            return `${hours}h ${mins > 0 ? mins + 'm' : ''}`.trim();
-        }
-
-        // Switch views
-        function switchToWeekView() {
-            currentView = 'week';
-            document.getElementById('weekView').style.display = 'block';
-            document.getElementById('dayView').classList.remove('active');
-            
-            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector('[data-view="week"]').classList.add('active');
-        }
-
-        function switchToDayView() {
-            if (selectedDay) {
-                const dayIndex = parseInt(selectedDay.split('-')[2]) - 20;
-                expandDay(dayIndex, ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'][dayIndex], 
-                         parseInt(selectedDay.split('-')[2]), selectedDay);
-            } else {
-                expandDay(0, 'Lun', 20, '2025-10-20');
-            }
-        }
-
-        // Sidebar functions
-        function openNewAssignment() {
-            document.getElementById('scheduleSidebar').classList.add('active');
-        }
-
-        function closeSidebar() {
-            document.getElementById('scheduleSidebar').classList.remove('active');
-        }
-
-        function saveAssignment() {
-            alert('Trabajo guardado exitosamente');
-            closeSidebar();
-        }
-
-        function viewJobDetails(jobId) {
-            const job = sampleJobs.find(j => j.id === jobId);
-            if (job) {
-                alert(`Detalles del trabajo:\n\n${job.number}\n${job.address}\n\n${job.startTime} - ${job.endTime}\nPersonal: ${job.staff.join(', ')}\nProyecto: ${job.project}`);
-            }
-        }
-
-        // Staff selector
-        function toggleStaff(element) {
-            element.classList.toggle('selected');
-        }
-
-        // Navigation
-        function goBack() {
-            window.location.href = '../dashboard/template.html';
-        }
-
-        function prevWeek() {
-            console.log('Previous week');
-        }
-
-        function nextWeek() {
-            console.log('Next week');
-        }
-
-        function goToToday() {
-            renderWeekView();
-        }
-
-        function updateDateDisplay() {
-            document.getElementById('dateDisplay').textContent = 'Oct 20 - 26, 2025';
-        }
-
-        // Initialize on load
-        document.addEventListener('DOMContentLoaded', init);
+        renderCalendar();
     </script>
 </body>
 </html>

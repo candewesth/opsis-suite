@@ -1,0 +1,1659 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Jardinería</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-teal: #20c997;
+            --primary-blue: #17a2b8;
+            --dark-gray: #495057;
+            --medium-gray: #6c757d;
+            --timesync-color: #5856D6;
+            --background: #F5F5F7;
+            --card-bg: #FFFFFF;
+            --text-primary: #1D1D1F;
+            --text-secondary: #86868B;
+            --border: #D2D2D7;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --success: #34C759;
+            --warning: #FF9500;
+            --danger: #FF3B30;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: white;
+            border-right: 1px solid var(--border);
+            padding: 2rem 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .logo-container {
+            position: relative;
+            padding: 4px;
+            border-radius: 16px;
+            background: linear-gradient(
+                45deg,
+                #ff6b6b, #4ecdc4, #45b7d1, #feca57,
+                #ff9ff3, #54a0ff, #5f27cd, #ff6b6b
+            );
+            background-size: 300% 300%;
+            animation: gradientShift 4s ease infinite;
+        }
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, var(--dark-gray), var(--medium-gray));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-icon::after {
+            content: '◉';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 22px;
+            color: white;
+            animation: winkEye 4s ease-in-out infinite;
+        }
+
+        @keyframes winkEye {
+            0%, 85% { transform: translate(-50%, -50%) scaleY(1); }
+            88% { transform: translate(-50%, -50%) scaleY(0.1); }
+            92% { transform: translate(-50%, -50%) scaleY(1); }
+            94% { transform: translate(-50%, -50%) scaleY(0.1); }
+            97%, 100% { transform: translate(-50%, -50%) scaleY(1); }
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            25% { background-position: 100% 50%; }
+            50% { background-position: 100% 100%; }
+            75% { background-position: 0% 100%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-text .brand {
+            font-size: 1.25rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-teal), var(--primary-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+        }
+
+        .logo-text .tagline {
+            font-size: 0.75rem;
+            color: var(--medium-gray);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .nav-section-title {
+            padding: 0 1.5rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item {
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .nav-item:hover {
+            background: #F9F9FB;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, var(--primary-teal), var(--primary-blue));
+            color: white;
+            font-weight: 600;
+        }
+
+        .nav-icon {
+            font-size: 1.25rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .content-header {
+            margin-bottom: 2rem;
+        }
+
+        .content-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .content-header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .settings-section {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .settings-section h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .setting-item {
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-info h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .setting-info p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .setting-control {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 28px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .3s;
+            border-radius: 34px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background: linear-gradient(135deg, var(--primary-teal), var(--primary-blue));
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(22px);
+        }
+
+        /* Form Controls */
+        .form-control {
+            padding: 0.75rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            min-width: 200px;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-teal);
+            box-shadow: 0 0 0 4px rgba(32, 201, 151, 0.1);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-teal), var(--primary-blue));
+            color: white;
+            box-shadow: 0 4px 12px rgba(32, 201, 151, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #1ba87d, #1591a3);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(32, 201, 151, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: #F9F9FB;
+            border-color: var(--primary-teal);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #E6322B;
+        }
+
+        /* Grid Layout for Settings */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .settings-card {
+            padding: 1.5rem;
+            background: #F9F9FB;
+            border-radius: 12px;
+            transition: all 0.2s;
+        }
+
+        .settings-card:hover {
+            background: #EFEFEF;
+        }
+
+        .settings-card h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .settings-card p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge.success {
+            background: #E8F5E9;
+            color: var(--success);
+        }
+
+        .badge.warning {
+            background: #FFF3E0;
+            color: var(--warning);
+        }
+
+        .badge.danger {
+            background: #FFEBEE;
+            color: var(--danger);
+        }
+
+        /* Action Buttons Row */
+        .actions-row {
+            display: flex;
+            gap: 1rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            margin-top: 1.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* List styling */
+        .settings-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .settings-list li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .settings-list li:last-child {
+            border-bottom: none;
+        }
+
+        /* Modal styling */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.show {
+            display: block;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .close-modal {
+            color: var(--text-secondary);
+            float: right;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-modal:hover {
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo-section">
+                <div class="logo-container">
+                    <div class="logo-icon"></div>
+                </div>
+                <div class="logo-text">
+                    <div class="brand">Jardinería</div>
+                    <div class="tagline">SETTINGS</div>
+                </div>
+            </div>
+
+            <nav>
+                <div class="nav-section">
+                    <div class="nav-section-title">General</div>
+                    <div class="nav-item active" onclick="showSection('general')">
+                        <span class="nav-icon">⚙️</span>
+                        <span>Configuración General</span>
+                    </div>
+                    <div class="nav-item" onclick="showSection('time-tracking')">
+                        <span class="nav-icon">⏱️</span>
+                        <span>Time Tracking</span>
+                    </div>
+                    <div class="nav-item" onclick="showSection('clock-in')">
+                        <span class="nav-icon">🕐</span>
+                        <span>Clock In/Out</span>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Proyectos</div>
+                    <div class="nav-item" onclick="showSection('projects')">
+                        <span class="nav-icon">📋</span>
+                        <span>Configuración de Proyectos</span>
+                    </div>
+                    <div class="nav-item" onclick="showSection('assignments')">
+                        <span class="nav-icon">👥</span>
+                        <span>Asignaciones</span>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Aprobaciones</div>
+                    <div class="nav-item" onclick="showSection('approvals')">
+                        <span class="nav-icon">✅</span>
+                        <span>Workflow de Aprobación</span>
+                    </div>
+                    <div class="nav-item" onclick="showSection('overtime')">
+                        <span class="nav-icon">⏰</span>
+                        <span>Overtime & Breaks</span>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Notificaciones</div>
+                    <div class="nav-item" onclick="showSection('notifications')">
+                        <span class="nav-icon">🔔</span>
+                        <span>Alertas y Notificaciones</span>
+                    </div>
+                    <div class="nav-item" onclick="showSection('reminders')">
+                        <span class="nav-icon">⏰</span>
+                        <span>Recordatorios</span>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Integraciones</div>
+                    <div class="nav-item" onclick="showSection('integrations')">
+                        <span class="nav-icon">🔗</span>
+                        <span>Integraciones</span>
+                    </div>
+                    <div class="nav-item" onclick="showSection('api')">
+                        <span class="nav-icon">🔌</span>
+                        <span>API & Webhooks</span>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Avanzado</div>
+                    <div class="nav-item" onclick="showSection('compliance')">
+                        <span class="nav-icon">📜</span>
+                        <span>Compliance & Labor Laws</span>
+                    </div>
+                    <div class="nav-item" onclick="showSection('backup')">
+                        <span class="nav-icon">💾</span>
+                        <span>Backup & Data Export</span>
+                    </div>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- GENERAL SETTINGS (Already existed) -->
+            <div id="section-general" class="settings-content">
+                <div class="content-header">
+                    <h1><span>⚙️</span><span>Configuración General</span></h1>
+                    <p>Opciones básicas y preferencias del sistema Jardinería</p>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Preferencias del Sistema</h2>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Zona Horaria</h3>
+                            <p>Zona horaria predeterminada para registros de tiempo</p>
+                        </div>
+                        <div class="setting-control">
+                            <select class="form-control">
+                                <option>América/Tijuana (PST/PDT)</option>
+                                <option>América/Mexico_City (CST/CDT)</option>
+                                <option>América/Los_Angeles (PST/PDT)</option>
+                                <option>América/New_York (EST/EDT)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Formato de Fecha</h3>
+                            <p>Cómo se muestran las fechas en el sistema</p>
+                        </div>
+                        <div class="setting-control">
+                            <select class="form-control">
+                                <option>DD/MM/YYYY</option>
+                                <option>MM/DD/YYYY</option>
+                                <option>YYYY-MM-DD</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Idioma</h3>
+                            <p>Idioma predeterminado de la interfaz</p>
+                        </div>
+                        <div class="setting-control">
+                            <select class="form-control">
+                                <option>Español</option>
+                                <option>English</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions-row">
+                    <button class="btn btn-primary" onclick="saveSettings('general')">Guardar Cambios</button>
+                </div>
+            </div>
+
+            <!-- TIME TRACKING (Already existed) -->
+            <div id="section-time-tracking" class="settings-content" style="display: none;">
+                <div class="content-header">
+                    <h1><span>⏱️</span><span>Time Tracking</span></h1>
+                    <p>Configuración del seguimiento de tiempo y productividad</p>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Opciones de Rastreo</h2>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Rastreo Automático</h3>
+                            <p>Activar seguimiento automático de actividad</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Intervalo de Captura de Pantalla</h3>
+                            <p>Cada cuántos minutos tomar screenshots</p>
+                        </div>
+                        <div class="setting-control">
+                            <input type="number" class="form-control" value="30" min="5" max="60">
+                            <span>minutos</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions-row">
+                    <button class="btn btn-primary" onclick="saveSettings('time-tracking')">Guardar Cambios</button>
+                </div>
+            </div>
+
+            <!-- CLOCK IN/OUT (Already existed) -->
+            <div id="section-clock-in" class="settings-content" style="display: none;">
+                <div class="content-header">
+                    <h1><span>🕐</span><span>Clock In/Out</span></h1>
+                    <p>Configuración de entrada y salida de jornada</p>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Reglas de Clock In/Out</h2>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Permitir Clock In Anticipado</h3>
+                            <p>Minutos antes para registrar entrada</p>
+                        </div>
+                        <div class="setting-control">
+                            <input type="number" class="form-control" value="15" min="0" max="60">
+                            <span>minutos</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Prevención de Buddy Punching</h3>
+                            <p>Detectar y prevenir registros fraudulentos</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions-row">
+                    <button class="btn btn-primary" onclick="saveSettings('clock-in')">Guardar Cambios</button>
+                </div>
+            </div>
+
+            <!-- PROJECTS - NUEVA SECCIÓN -->
+            <div id="section-projects" class="settings-content" style="display: none;">
+                <div class="content-header">
+                    <h1><span>📋</span><span>Configuración de Proyectos</span></h1>
+                    <p>Gestiona códigos de proyecto, categorías y etiquetas</p>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Estructura de Proyectos</h2>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Formato de Código de Proyecto</h3>
+                            <p>Patrón único para identificar proyectos</p>
+                        </div>
+                        <div class="setting-control">
+                            <select class="form-control">
+                                <option>AUTO-XXXX (ej: AUTO-0001)</option>
+                                <option>PROJ-YYYY-MM-DD</option>
+                                <option>CUSTOM</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Requerir Descripción de Proyecto</h3>
+                            <p>Obligar descripción detallada al crear</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Presupuesto Predeterminado</h3>
+                            <p>Asignar presupuesto automático</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Categorías y Etiquetas</h2>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Categorías Disponibles</h3>
+                            <p>Editar categorías de proyectos</p>
+                        </div>
+                        <div class="setting-control">
+                            <button class="btn btn-secondary" onclick="manageCategoriesModal()">Editar Categorías</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions-row">
+                    <button class="btn btn-primary" onclick="saveSettings('projects')">Guardar Cambios</button>
+                </div>
+            </div>
+
+            <!-- ASSIGNMENTS - NUEVA SECCIÓN -->
+            <div id="section-assignments" class="settings-content" style="display: none;">
+                <div class="content-header">
+                    <h1><span>👥</span><span>Asignaciones</span></h1>
+                    <p>Configuración de asignación de personal a proyectos</p>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Reglas de Asignación</h2>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Validar Disponibilidad de Personal</h3>
+                            <p>Verificar conflictos de horarios</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Permitir Sobreasignación</h3>
+                            <p>Asignar a más proyectos que capacidad</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Capacidad Máxima por Empleado</h3>
+                            <p>Horas máximas por semana</p>
+                        </div>
+                        <div class="setting-control">
+                            <input type="number" class="form-control" value="40" min="20" max="60">
+                            <span>horas</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Opciones de Equipos</h2>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Requerir Certificaciones</h3>
+                            <p>Validar certificaciones antes de asignar</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions-row">
+                    <button class="btn btn-primary" onclick="saveSettings('assignments')">Guardar Cambios</button>
+                </div>
+            </div>
+
+            <!-- APPROVALS - NUEVA SECCIÓN -->
+            <div id="section-approvals" class="settings-content" style="display: none;">
+                <div class="content-header">
+                    <h1><span>✅</span><span>Workflow de Aprobación</span></h1>
+                    <p>Configurar procesos de aprobación de timesheets</p>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Niveles de Aprobación</h2>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Aprobación Requerida</h3>
+                            <p>Timesheets necesitan aprobación</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Número de Niveles de Aprobación</h3>
+                            <p>Cuántos supervisores aprueban</p>
+                        </div>
+                        <div class="setting-control">
+                            <select class="form-control">
+                                <option>1 nivel (Supervisor)</option>
+                                <option>2 niveles (Supervisor + Manager)</option>
+                                <option>3 niveles (Full chain)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Tiempo Máximo de Aprobación</h3>
+                            <p>Días antes de alerta</p>
+                        </div>
+                        <div class="setting-control">
+                            <input type="number" class="form-control" value="3" min="1" max="10">
+                            <span>días</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Requisitos de Aprobación</h2>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Adjuntos Requeridos</h3>
+                            <p>Solicitar documentos con timesheet</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Notas Obligatorias en Cambios</h3>
+                            <p>Explicación al modificar horas</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions-row">
+                    <button class="btn btn-primary" onclick="saveSettings('approvals')">Guardar Cambios</button>
+                </div>
+            </div>
+
+            <!-- OVERTIME & BREAKS - NUEVA SECCIÓN -->
+            <div id="section-overtime" class="settings-content" style="display: none;">
+                <div class="content-header">
+                    <h1><span>⏰</span><span>Overtime & Breaks</span></h1>
+                    <p>Configuración de horas extra y descansos</p>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Reglas de Horas Extra</h2>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Umbral de Overtime</h3>
+                            <p>Horas diarias que activan overtime</p>
+                        </div>
+                        <div class="setting-control">
+                            <input type="number" class="form-control" value="8" min="4" max="12" step="0.5">
+                            <span>horas</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Multiplicador de Overtime</h3>
+                            <p>Multiplier de pago (1.5x, 2x, etc)</p>
+                        </div>
+                        <div class="setting-control">
+                            <select class="form-control">
+                                <option>1.5x (Time and a half)</option>
+                                <option>2x (Double time)</option>
+                                <option>Custom</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Incluir Días Festivos</h3>
+                            <p>Contar festivos como overtime automático</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Reglas de Descansos</h2>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Almuerzo Requerido</h3>
+                            <p>Duración mínima de almuerzo</p>
+                        </div>
+                        <div class="setting-control">
+                            <input type="number" class="form-control" value="30" min="15" max="120">
+                            <span>minutos</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Breaks Pagados</h3>
+                            <p>Considerar breaks como tiempo pagado</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Frecuencia de Breaks</h3>
+                            <p>Break cada cuántas horas trabajadas</p>
+                        </div>
+                        <div class="setting-control">
+                            <input type="number" class="form-control" value="4" min="1" max="8">
+                            <span>horas</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions-row">
+                    <button class="btn btn-primary" onclick="saveSettings('overtime')">Guardar Cambios</button>
+                </div>
+            </div>
+
+            <!-- NOTIFICATIONS - NUEVA SECCIÓN -->
+            <div id="section-notifications" class="settings-content" style="display: none;">
+                <div class="content-header">
+                    <h1><span>🔔</span><span>Alertas y Notificaciones</span></h1>
+                    <p>Configurar eventos que generan notificaciones</p>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Tipos de Notificaciones</h2>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Recordatorio de Clock In</h3>
+                            <p>Alerta si olvida registrar entrada</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Alerta de Hora Extra</h3>
+                            <p>Notificar cuando entra en OT</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Recordatorio de Timesheet</h3>
+                            <p>Enviar recordatorio de validación</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Alerta de Aprobación Pendiente</h3>
+                            <p>Recordar aprobaciones sin completar</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Canales de Notificación</h2>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Email</h3>
+                            <p>Recibir notificaciones por email</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Push Notifications</h3>
+                            <p>Notificaciones en la app</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>SMS</h3>
+                            <p>Alertas críticas por SMS</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions-row">
+                    <button class="btn btn-primary" onclick="saveSettings('notifications')">Guardar Cambios</button>
+                </div>
+            </div>
+
+            <!-- REMINDERS - NUEVA SECCIÓN -->
+            <div id="section-reminders" class="settings-content" style="display: none;">
+                <div class="content-header">
+                    <h1><span>📢</span><span>Recordatorios</span></h1>
+                    <p>Configurar frecuencia y tipo de recordatorios</p>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Recordatorios Programados</h2>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Recordatorio Matutino</h3>
+                            <p>Hora para enviar recordatorio diario</p>
+                        </div>
+                        <div class="setting-control">
+                            <input type="time" class="form-control" value="08:00">
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Recordatorio Vespertino</h3>
+                            <p>Alerta a mitad de jornada</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Recordatorio de Fin de Jornada</h3>
+                            <p>Aviso antes de terminar</p>
+                        </div>
+                        <div class="setting-control">
+                            <input type="time" class="form-control" value="17:00">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Recordatorios Semanales</h2>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Validación Semanal</h3>
+                            <p>Día para recordar validación de semana</p>
+                        </div>
+                        <div class="setting-control">
+                            <select class="form-control">
+                                <option>Viernes</option>
+                                <option>Jueves</option>
+                                <option>Miércoles</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Recordatorio de Días Libres</h3>
+                            <p>Notificar días feriados próximos</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions-row">
+                    <button class="btn btn-primary" onclick="saveSettings('reminders')">Guardar Cambios</button>
+                </div>
+            </div>
+
+            <!-- INTEGRATIONS (Already existed) -->
+            <div id="section-integrations" class="settings-content" style="display: none;">
+                <div class="content-header">
+                    <h1><span>🔗</span><span>Integraciones</span></h1>
+                    <p>Conecta Jardinería con otros sistemas</p>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Integraciones de Opsis Suite</h2>
+                    <div class="settings-grid">
+                        <div class="settings-card">
+                            <h4>📦 Plomería</h4>
+                            <p>Sincronizar equipos y asignaciones</p>
+                            <span class="badge success">Conectado</span>
+                        </div>
+                        <div class="settings-card">
+                            <h4>👥 Logística</h4>
+                            <p>Sincronizar personal y nómina</p>
+                            <span class="badge success">Conectado</span>
+                        </div>
+                        <div class="settings-card">
+                            <h4>💵 Mudanza</h4>
+                            <p>Exportar costos laborales</p>
+                            <span class="badge success">Conectado</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Integraciones Externas</h2>
+                    <div class="settings-grid">
+                        <div class="settings-card">
+                            <h4>QuickBooks</h4>
+                            <p>Exportar timesheets para nómina</p>
+                            <span class="badge warning">No Conectado</span>
+                            <button class="btn btn-secondary" style="margin-top: 1rem;" onclick="connectIntegration('quickbooks')">Conectar</button>
+                        </div>
+                        <div class="settings-card">
+                            <h4>Slack</h4>
+                            <p>Notificaciones en tiempo real</p>
+                            <span class="badge warning">No Conectado</span>
+                            <button class="btn btn-secondary" style="margin-top: 1rem;" onclick="connectIntegration('slack')">Conectar</button>
+                        </div>
+                        <div class="settings-card">
+                            <h4>Google Calendar</h4>
+                            <p>Sincronizar schedules y asignaciones</p>
+                            <span class="badge warning">No Conectado</span>
+                            <button class="btn btn-secondary" style="margin-top: 1rem;" onclick="connectIntegration('google')">Conectar</button>
+                        </div>
+                        <div class="settings-card">
+                            <h4>Microsoft Teams</h4>
+                            <p>Notificaciones y comandos</p>
+                            <span class="badge warning">No Conectado</span>
+                            <button class="btn btn-secondary" style="margin-top: 1rem;" onclick="connectIntegration('teams')">Conectar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions-row">
+                    <button class="btn btn-primary" onclick="saveSettings('integrations')">Guardar Cambios</button>
+                </div>
+            </div>
+
+            <!-- API & WEBHOOKS - NUEVA SECCIÓN -->
+            <div id="section-api" class="settings-content" style="display: none;">
+                <div class="content-header">
+                    <h1><span>🔌</span><span>API & Webhooks</span></h1>
+                    <p>Gestionar acceso a API y webhooks del sistema</p>
+                </div>
+
+                <div class="settings-section">
+                    <h2>API Keys</h2>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>API Key Pública</h3>
+                            <p>Para integraciones públicas</p>
+                        </div>
+                        <div class="setting-control">
+                            <input type="text" class="form-control" value="pk_live_xxxxxxxxxxxxxf" readonly>
+                            <button class="btn btn-secondary" style="margin-left: 0.5rem;" onclick="regenerateKey('public')">Regenerar</button>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>API Key Secreta</h3>
+                            <p>Para integraciones seguras (nunca compartir)</p>
+                        </div>
+                        <div class="setting-control">
+                            <input type="password" class="form-control" value="••••••••••••••••" readonly>
+                            <button class="btn btn-secondary" style="margin-left: 0.5rem;" onclick="showApiKey()">Mostrar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Webhooks</h2>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Webhook de Timesheet Válido</h3>
+                            <p>URL para recibir eventos cuando se valide</p>
+                        </div>
+                        <div class="setting-control">
+                            <input type="url" class="form-control" placeholder="https://tu-servidor.com/webhook">
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Webhook de Clock In/Out</h3>
+                            <p>URL para registros de entrada/salida</p>
+                        </div>
+                        <div class="setting-control">
+                            <input type="url" class="form-control" placeholder="https://tu-servidor.com/webhook">
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Reintento de Webhook</h3>
+                            <p>Reintentar en caso de error</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions-row">
+                    <button class="btn btn-primary" onclick="saveSettings('api')">Guardar Cambios</button>
+                    <button class="btn btn-secondary" onclick="testWebhooks()">Probar Webhooks</button>
+                </div>
+            </div>
+
+            <!-- COMPLIANCE & LABOR LAWS - NUEVA SECCIÓN -->
+            <div id="section-compliance" class="settings-content" style="display: none;">
+                <div class="content-header">
+                    <h1><span>📜</span><span>Compliance & Labor Laws</span></h1>
+                    <p>Configurar cumplimiento normativo por región</p>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Regulación por Región</h2>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>País/Región</h3>
+                            <p>Seleccionar leyes laborales aplicables</p>
+                        </div>
+                        <div class="setting-control">
+                            <select class="form-control">
+                                <option>México</option>
+                                <option>Estados Unidos</option>
+                                <option>Canadá</option>
+                                <option>Otro</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Jornada Máxima Legal</h3>
+                            <p>Horas máximas permitidas por ley</p>
+                        </div>
+                        <div class="setting-control">
+                            <input type="number" class="form-control" value="8" min="4" max="12">
+                            <span>horas</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Días de Descanso Obligatorio</h3>
+                            <p>Mínimo días libres por semana</p>
+                        </div>
+                        <div class="setting-control">
+                            <input type="number" class="form-control" value="1" min="1" max="3">
+                            <span>día(s)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Cumplimiento Automático</h2>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Validar Límites de Hora</h3>
+                            <p>Bloquear si excede legal máximo</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Alertar Días sin Descanso</h3>
+                            <p>Notificación preventiva</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Registro de Auditoría</h3>
+                            <p>Guardar histórico de cambios</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions-row">
+                    <button class="btn btn-primary" onclick="saveSettings('compliance')">Guardar Cambios</button>
+                </div>
+            </div>
+
+            <!-- BACKUP & DATA EXPORT - NUEVA SECCIÓN -->
+            <div id="section-backup" class="settings-content" style="display: none;">
+                <div class="content-header">
+                    <h1><span>💾</span><span>Backup & Data Export</span></h1>
+                    <p>Gestionar copias de seguridad y exportación de datos</p>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Copias de Seguridad</h2>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Frecuencia de Backup</h3>
+                            <p>Con qué frecuencia se hacen copias</p>
+                        </div>
+                        <div class="setting-control">
+                            <select class="form-control">
+                                <option>Diario</option>
+                                <option>Cada 12 horas</option>
+                                <option>Semanal</option>
+                                <option>Manual</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Retención de Backups</h3>
+                            <p>Cuánto tiempo guardar copias</p>
+                        </div>
+                        <div class="setting-control">
+                            <input type="number" class="form-control" value="90" min="7" max="365">
+                            <span>días</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Último Backup</h3>
+                            <p>Información del último backup</p>
+                        </div>
+                        <div class="setting-control">
+                            <button class="btn btn-secondary" onclick="backupNow()">Hacer Backup Ahora</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Exportar Datos</h2>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Exportar Timesheets</h3>
+                            <p>Descargar todos los registros de tiempo</p>
+                        </div>
+                        <div class="setting-control">
+                            <select class="form-control" style="margin-right: 0.5rem;">
+                                <option>CSV</option>
+                                <option>Excel</option>
+                                <option>JSON</option>
+                            </select>
+                            <button class="btn btn-secondary" onclick="exportData('timesheets')">Descargar</button>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Exportar Personal</h3>
+                            <p>Información de empleados</p>
+                        </div>
+                        <div class="setting-control">
+                            <select class="form-control" style="margin-right: 0.5rem;">
+                                <option>CSV</option>
+                                <option>Excel</option>
+                            </select>
+                            <button class="btn btn-secondary" onclick="exportData('personnel')">Descargar</button>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Exportar Proyectos</h3>
+                            <p>Datos completos de proyectos</p>
+                        </div>
+                        <div class="setting-control">
+                            <select class="form-control" style="margin-right: 0.5rem;">
+                                <option>CSV</option>
+                                <option>Excel</option>
+                            </select>
+                            <button class="btn btn-secondary" onclick="exportData('projects')">Descargar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Peligro - Zona Roja</h2>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Eliminar Todos los Datos</h3>
+                            <p style="color: var(--danger);">⚠️ Esta acción no se puede deshacer</p>
+                        </div>
+                        <div class="setting-control">
+                            <button class="btn btn-danger" onclick="if(confirm('¿Estás seguro? Esto eliminará TODO.')) alert('Datos eliminados')">Eliminar Todo</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions-row">
+                    <button class="btn btn-primary" onclick="saveSettings('backup')">Guardar Cambios</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Show Section
+        function showSection(sectionId) {
+            document.querySelectorAll('.settings-content').forEach(section => {
+                section.style.display = 'none';
+            });
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            document.getElementById('section-' + sectionId).style.display = 'block';
+            
+            event.target.closest('.nav-item').classList.add('active');
+            console.log('📍 Sección activa:', sectionId);
+        }
+
+        // Save Settings
+        function saveSettings(section) {
+            console.log('💾 Guardando configuración:', section);
+            alert(`✅ Configuración de ${section} guardada exitosamente`);
+        }
+
+        // Reset Settings
+        function resetSettings(section) {
+            if (confirm(`⚠️ ¿Restaurar configuración de ${section} a valores por defecto?\n\nEsta acción no se puede deshacer.`)) {
+                console.log('🔄 Restaurando configuración:', section);
+                alert(`✅ Configuración de ${section} restaurada`);
+            }
+        }
+
+        // Connect Integration
+        function connectIntegration(service) {
+            console.log('🔗 Conectando integración:', service);
+            alert(`🔗 Conectando con ${service}...\n\nSerás redirigido para autorizar la conexión.\n\n(Función en desarrollo)`);
+        }
+
+        // Additional functions for new sections
+        function manageCategoriesModal() {
+            alert('📋 Modal de Categorías\n\n(Modal completo próximamente)');
+        }
+
+        function regenerateKey(type) {
+            if (confirm(`¿Regenerar API Key ${type}? Las integraciones existentes dejarán de funcionar.`)) {
+                alert('✅ API Key regenerada correctamente');
+            }
+        }
+
+        function showApiKey() {
+            alert('🔑 API Key Secreta: sk_live_xxxxxxxxxxxxxxxxxx\n\n(Nunca compartir esta clave)');
+        }
+
+        function testWebhooks() {
+            alert('🧪 Probando webhooks...\n\n✅ Webhook test enviado exitosamente');
+        }
+
+        function backupNow() {
+            alert('💾 Creando backup...\n\n✅ Backup completado correctamente\nÚltimo backup: ' + new Date().toLocaleString());
+        }
+
+        function exportData(type) {
+            alert(`📥 Exportando ${type}...\n\n✅ Archivo descargado: ${type}_${new Date().toISOString().split('T')[0]}.csv`);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ Jardinería Settings Completo - Todas las 13 secciones cargadas');
+            console.log('⚙️ Sección activa: General');
+        });
+    </script>
+</body>
+</html>

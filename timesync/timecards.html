@@ -1,9 +1,12 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Timecards - Jardinería</title>
+    <title>Timecards - TimeSync - Opsis Suite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
         * {
             margin: 0;
@@ -11,63 +14,194 @@
             box-sizing: border-box;
         }
 
-        :root {
-            --primary-blue: #007AFF;
-            --background: #F5F5F7;
-            --card-bg: #FFFFFF;
-            --text-primary: #1D1D1F;
-            --text-secondary: #86868B;
-            --border: #D2D2D7;
-            --success: #34C759;
-            --warning: #FF9500;
-            --danger: #FF3B30;
-            --purple: #AF52DE;
-            --teal: #5AC8FA;
-            --shadow: rgba(0, 0, 0, 0.1);
+        html {
+            scroll-behavior: smooth;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
-            background: var(--background);
-            color: var(--text-primary);
+            font-family: 'Helvetica Neue', 'Neue Helvetica', Arial, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            color: #022326;
             line-height: 1.6;
         }
 
+        @keyframes aire {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* HEADER */
+        .header {
+            background: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid #e9ecef;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1800px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #022326, #034040, #035951, #02735E);
+            background-size: 400% 400%;
+            animation: aire 12s ease-in-out infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .module-badge {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            background: linear-gradient(135deg, #022326, #034040, #035951, #02735E);
+            background-size: 400% 400%;
+            animation: aire 12s ease-in-out infinite;
+            color: white;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-btn {
+            padding: 0.7rem 1.3rem;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            color: #034040;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-btn:hover {
+            border-color: #02735E;
+            color: #02735E;
+            transform: translateY(-2px);
+        }
+
+        .nav-btn-primary {
+            background: linear-gradient(135deg, #022326, #034040, #035951, #02735E);
+            background-size: 400% 400%;
+            animation: aire 12s ease-in-out infinite;
+            border: none;
+            color: white;
+        }
+
+        .nav-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(2, 115, 94, 0.3);
+        }
+
+        /* CONTAINER */
         .container {
-            max-width: 1600px;
+            max-width: 1800px;
             margin: 0 auto;
             padding: 2rem;
         }
 
-        /* Header */
-        .header {
+        /* PAGE HEADER */
+        .page-header {
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.6s ease-out;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
             flex-wrap: wrap;
             gap: 1rem;
         }
 
-        .header h1 {
-            font-size: 2rem;
-            font-weight: 600;
+        .page-title-section h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #022326;
+            margin-bottom: 0.5rem;
         }
 
-        .header-actions {
+        .page-subtitle {
+            color: #034040;
+            font-size: 1.1rem;
+        }
+
+        .week-selector {
             display: flex;
-            gap: 1rem;
             align-items: center;
-            flex-wrap: wrap;
+            gap: 1rem;
+            background: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(2, 35, 38, 0.08);
         }
 
-        /* View Mode Toggle */
+        .week-selector button {
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, rgba(2, 35, 38, 0.1), rgba(3, 89, 81, 0.1));
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #022326;
+            transition: all 0.3s ease;
+        }
+
+        .week-selector button:hover {
+            background: linear-gradient(135deg, #022326, #034040, #035951, #02735E);
+            background-size: 400% 400%;
+            animation: aire 12s ease-in-out infinite;
+            color: white;
+        }
+
+        .week-display {
+            font-weight: 600;
+            color: #022326;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        /* VIEW TOGGLE */
         .view-toggle {
             display: flex;
-            background: var(--card-bg);
+            background: white;
             border-radius: 10px;
             padding: 0.25rem;
-            box-shadow: 0 2px 8px var(--shadow);
+            box-shadow: 0 2px 8px rgba(2, 35, 38, 0.08);
         }
 
         .view-toggle button {
@@ -78,1033 +212,452 @@
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
-            color: var(--text-secondary);
+            color: #6c757d;
         }
 
         .view-toggle button.active {
-            background: var(--primary-blue);
+            background: linear-gradient(135deg, #022326, #034040, #035951, #02735E);
+            background-size: 400% 400%;
+            animation: aire 12s ease-in-out infinite;
             color: white;
         }
 
-        /* Week Selector */
-        .week-selector {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            background: var(--card-bg);
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px var(--shadow);
-        }
-
-        .week-selector button {
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            cursor: pointer;
-            color: var(--primary-blue);
-            transition: transform 0.2s;
-        }
-
-        .week-selector button:hover {
-            transform: scale(1.1);
-        }
-
-        .week-selector span {
-            font-weight: 500;
-            min-width: 200px;
-            text-align: center;
-        }
-
-        /* Admin Quick Access */
-        .admin-quick-access {
-            background: linear-gradient(135deg, #FF9500, #FF6B35);
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 12px rgba(255, 149, 0, 0.3);
-            display: none;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .admin-quick-access.visible {
-            display: flex;
-        }
-
-        .admin-quick-access-text {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .admin-quick-access-text span:first-child {
-            font-size: 2rem;
-        }
-
-        .admin-quick-access-text div h3 {
-            font-size: 1.1rem;
-            margin-bottom: 0.25rem;
-        }
-
-        .admin-quick-access-text div p {
-            font-size: 0.875rem;
-            opacity: 0.9;
-        }
-
-        .admin-quick-btn {
+        /* TIMECARD GRID */
+        .timecard-grid {
             background: white;
-            color: var(--warning);
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .admin-quick-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Filter Bar */
-        .filter-bar {
-            background: var(--card-bg);
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px var(--shadow);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(2, 35, 38, 0.08);
             margin-bottom: 2rem;
+            animation: fadeInUp 0.8s ease-out;
         }
 
-        .filter-row {
+        .grid-header {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
+            grid-template-columns: 200px repeat(7, 1fr) 120px;
+            gap: 0.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e9ecef;
             margin-bottom: 1rem;
         }
 
-        .filter-row:last-child {
-            margin-bottom: 0;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .filter-group label {
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-
-        .filter-group select,
-        .filter-group input {
-            padding: 0.75rem;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-family: inherit;
-        }
-
-        .filter-group select:focus,
-        .filter-group input:focus {
-            outline: none;
-            border-color: var(--primary-blue);
-        }
-
-        /* Stats Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: var(--card-bg);
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px var(--shadow);
-        }
-
-        .stat-card h3 {
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .stat-card .value {
-            font-size: 2rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .stat-card.success .value { color: var(--success); }
-        .stat-card.warning .value { color: var(--warning); }
-        .stat-card.danger .value { color: var(--danger); }
-        .stat-card.primary .value { color: var(--primary-blue); }
-
-        /* Employee Timecards */
-        .employee-card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 0 2px 12px var(--shadow);
-            margin-bottom: 2rem;
-            overflow: hidden;
-        }
-
-        .employee-header {
-            background: linear-gradient(135deg, var(--primary-blue), #5856D6);
-            color: white;
-            padding: 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .employee-info h2 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .employee-info p {
-            opacity: 0.9;
-            font-size: 0.95rem;
-        }
-
-        .employee-rate {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 0.25rem 0.75rem;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            margin-top: 0.5rem;
-            backdrop-filter: blur(10px);
-        }
-
-        .hours-summary {
-            display: flex;
-            gap: 2rem;
-            text-align: right;
-        }
-
-        .hours-summary-item {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .hours-summary-item label {
-            font-size: 0.75rem;
-            opacity: 0.8;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .hours-summary-item .value {
-            font-size: 1.75rem;
+        .grid-header div {
             font-weight: 700;
-        }
-
-        .hours-summary-item.overtime .value {
-            color: #FFD60A;
-        }
-
-        /* Hours Breakdown */
-        .hours-breakdown {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 1rem;
-            padding: 1.5rem;
-            background: #F9F9FB;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .breakdown-item {
+            color: #022326;
             text-align: center;
+            font-size: 0.9rem;
         }
 
-        .breakdown-item label {
-            display: block;
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.25rem;
+        .grid-row {
+            display: grid;
+            grid-template-columns: 200px repeat(7, 1fr) 120px;
+            gap: 0.5rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f8f9fa;
+            align-items: center;
         }
 
-        .breakdown-item .value {
-            font-size: 1.25rem;
+        .employee-name {
             font-weight: 600;
+            color: #022326;
+            padding-left: 1rem;
         }
 
-        .breakdown-item.regular .value { color: var(--primary-blue); }
-        .breakdown-item.federal .value { color: var(--success); }
-        .breakdown-item.state .value { color: var(--purple); }
-        .breakdown-item.vacation .value { color: var(--teal); }
-        .breakdown-item.sick .value { color: var(--warning); }
-
-        /* Daily Entries Table */
-        .timecard-table {
-            width: 100%;
-            border-collapse: collapse;
+        .time-cell {
+            text-align: center;
+            position: relative;
         }
 
-        .timecard-table th {
-            background: #F9F9FB;
-            padding: 1rem;
-            text-align: left;
-            font-weight: 600;
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-        }
-
-        .timecard-table td {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border);
-            vertical-align: middle;
-        }
-
-        .timecard-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        .timecard-table input[type="time"],
-        .timecard-table input[type="number"],
-        .timecard-table select {
+        .time-input {
             width: 100%;
             padding: 0.5rem;
-            border: 1px solid var(--border);
+            border: 2px solid #e9ecef;
             border-radius: 8px;
-            font-size: 0.95rem;
-            font-family: inherit;
-            transition: border-color 0.2s;
+            text-align: center;
+            font-weight: 600;
+            color: #022326;
+            transition: all 0.3s ease;
         }
 
-        .timecard-table input:focus,
-        .timecard-table select:focus {
+        .time-input:focus {
+            border-color: #02735E;
             outline: none;
-            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(2, 115, 94, 0.1);
         }
 
-        .day-label {
-            font-weight: 600;
-            color: var(--text-primary);
+        .time-input.has-value {
+            background: linear-gradient(135deg, rgba(2, 35, 38, 0.05), rgba(3, 89, 81, 0.05));
+            border-color: #02735E;
         }
 
-        .day-date {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            display: block;
-            margin-top: 0.25rem;
-        }
-
-        .job-info {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-        }
-
-        .job-number {
-            font-weight: 600;
-            color: var(--primary-blue);
-            font-size: 0.875rem;
-        }
-
-        .job-name {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        .total-cell {
-            font-weight: 600;
-            color: var(--primary-blue);
+        .total-hours {
+            text-align: center;
+            font-weight: 700;
+            color: #02735E;
             font-size: 1.1rem;
         }
 
-        /* Status Badge */
-        .status-badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        /* SUMMARY CARDS */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
         }
 
-        .status-badge.draft { background: #E5E5E7; color: var(--text-secondary); }
-        .status-badge.pending { background: #FFF3E0; color: var(--warning); }
-        .status-badge.approved { background: #E8F5E9; color: var(--success); }
-        .status-badge.processed { background: #E3F2FD; color: var(--primary-blue); }
-
-        /* Action Buttons */
-        .action-buttons {
-            padding: 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            gap: 1rem;
-            background: #F9F9FB;
-            flex-wrap: wrap;
+        .summary-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(2, 35, 38, 0.08);
+            animation: fadeInUp 1s ease-out;
+            position: relative;
+            overflow: hidden;
         }
 
-        .action-left {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #022326, #034040, #035951, #02735E);
+            background-size: 400% 400%;
+            animation: aire 12s ease-in-out infinite;
         }
 
-        .action-right {
+        .summary-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(2, 35, 38, 0.1), rgba(3, 89, 81, 0.1));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 1rem;
+        }
+
+        .summary-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #022326;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-label {
+            color: #034040;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* ACTION BUTTONS */
+        .action-bar {
             display: flex;
             gap: 1rem;
-            flex-wrap: wrap;
+            justify-content: flex-end;
+            margin-bottom: 2rem;
         }
 
         .btn {
-            padding: 0.75rem 1.5rem;
+            padding: 0.8rem 1.5rem;
             border: none;
             border-radius: 10px;
-            font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            transition: all 0.3s ease;
+            font-size: 1rem;
         }
 
         .btn-primary {
-            background: var(--primary-blue);
+            background: linear-gradient(135deg, #022326, #034040, #035951, #02735E);
+            background-size: 400% 400%;
+            animation: aire 12s ease-in-out infinite;
             color: white;
         }
 
         .btn-primary:hover {
-            background: #0051D5;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #28A745;
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(2, 115, 94, 0.3);
         }
 
         .btn-secondary {
             background: white;
-            color: var(--text-primary);
-            border: 1px solid var(--border);
+            border: 2px solid #e9ecef;
+            color: #034040;
         }
 
         .btn-secondary:hover {
-            background: #F9F9FB;
+            border-color: #02735E;
+            color: #02735E;
+            transform: translateY(-2px);
         }
 
-        .btn-warning {
-            background: var(--warning);
-            color: white;
-        }
-
-        .btn-warning:hover {
-            background: #E68A00;
-        }
-
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .timecard-table {
-                display: block;
-                overflow-x: auto;
-            }
-
-            .hours-summary {
-                flex-direction: column;
-                gap: 0.5rem;
-                text-align: left;
+        /* RESPONSIVE */
+        @media (max-width: 1200px) {
+            .grid-header,
+            .grid-row {
+                grid-template-columns: 150px repeat(7, 1fr) 100px;
             }
         }
 
         @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-
-            .header {
+            .header-content {
                 flex-direction: column;
                 align-items: flex-start;
             }
 
-            .filter-row {
-                grid-template-columns: 1fr;
-            }
-
-            .action-buttons {
-                flex-direction: column;
-            }
-
-            .action-left,
-            .action-right {
+            .header-nav {
                 width: 100%;
-                flex-direction: column;
+                flex-wrap: wrap;
             }
 
-            .btn {
-                justify-content: center;
+            .nav-btn {
+                flex: 1;
+                min-width: 120px;
+                text-align: center;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .grid-header,
+            .grid-row {
+                display: none;
+            }
+
+            .timecard-grid {
+                padding: 1rem;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>⏱️ Timecards</h1>
-            <div class="header-actions">
-                <!-- View Mode Toggle -->
-                <div class="view-toggle">
-                    <button class="active" onclick="switchView('employee')">👤 Por Empleado</button>
-                    <button onclick="switchView('project')">📋 Por Proyecto</button>
-                </div>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo-text">Opsis Suite</div>
+                <span class="module-badge">TimeSync</span>
+            </div>
+            <nav class="header-nav">
+                <a href="timesync.html" class="nav-btn">← Dashboard</a>
+                <a href="schedule.html" class="nav-btn">Schedule</a>
+                <a href="staff.html" class="nav-btn">Staff</a>
+                <a href="reports.html" class="nav-btn">Reports</a>
+            </nav>
+        </div>
+    </header>
 
-                <!-- Week Selector -->
+    <!-- MAIN CONTAINER -->
+    <div class="container">
+        <!-- PAGE HEADER -->
+        <div class="page-header">
+            <div class="page-title-section">
+                <h1>Timecards</h1>
+                <p class="page-subtitle">Track and manage employee hours</p>
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
                 <div class="week-selector">
                     <button onclick="previousWeek()">←</button>
-                    <span id="weekRange">Jan 15 - Jan 21, 2025</span>
+                    <span class="week-display" id="weekDisplay">Loading...</span>
                     <button onclick="nextWeek()">→</button>
                 </div>
-            </div>
-        </div>
-
-        <!-- Admin Quick Access (Only visible for Admins) -->
-        <div class="admin-quick-access visible" id="adminQuickAccess">
-            <div class="admin-quick-access-text">
-                <span>🛠️</span>
-                <div>
-                    <h3>Herramientas de Administrador</h3>
-                    <p>Accede al Timesheet Adjuster para gestionar y modificar timecards</p>
-                </div>
-            </div>
-            <button class="admin-quick-btn" onclick="openTimesheetAdjuster()">
-                <span>✏️</span>
-                <span>Abrir Timesheet Adjuster</span>
-            </button>
-        </div>
-
-        <!-- Enhanced Filter Bar -->
-        <div class="filter-bar">
-            <div class="filter-row">
-                <div class="filter-group">
-                    <label>Ver Todo / Filtrar</label>
-                    <select id="viewMode" onchange="updateViewMode()">
-                        <option value="all">Todas las Timecards</option>
-                        <option value="filtered">Vista Filtrada</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Empleado</label>
-                    <select id="employeeFilter" onchange="filterTimecards()">
-                        <option value="all">Todos los empleados</option>
-                        <option value="emp001">Juan Pérez</option>
-                        <option value="emp002">María González</option>
-                        <option value="emp003">Carlos Rodríguez</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Job Number</label>
-                    <select id="jobFilter" onchange="filterTimecards()">
-                        <option value="all">Todos los trabajos</option>
-                        <option value="job2501">JOB-2501 - Highway Expansion</option>
-                        <option value="job2502">JOB-2502 - Bridge Repair</option>
-                        <option value="job2503">JOB-2503 - Road Paving</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Día Específico</label>
-                    <input type="date" id="dayFilter" onchange="filterTimecards()">
-                </div>
-            </div>
-            <div class="filter-row">
-                <div class="filter-group">
-                    <label>Estado</label>
-                    <select id="statusFilter" onchange="filterTimecards()">
-                        <option value="all">Todos los estados</option>
-                        <option value="draft">Borrador</option>
-                        <option value="pending">Pendiente Aprobación</option>
-                        <option value="approved">Aprobado</option>
-                        <option value="processed">Procesado</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Tipo de Hora</label>
-                    <select id="hourTypeFilter" onchange="filterTimecards()">
-                        <option value="all">Todos los tipos</option>
-                        <option value="regular">Regular</option>
-                        <option value="federal">Federal</option>
-                        <option value="state">Estatal</option>
-                        <option value="vacation">Vacaciones</option>
-                        <option value="sick">Enfermedad</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>&nbsp;</label>
-                    <button class="btn btn-primary" onclick="applyFilters()">Aplicar Filtros</button>
-                </div>
-                <div class="filter-group">
-                    <label>&nbsp;</label>
-                    <button class="btn btn-secondary" onclick="resetFilters()">Limpiar Filtros</button>
+                <div class="view-toggle">
+                    <button class="active" onclick="setView('week')">Week</button>
+                    <button onclick="setView('day')">Day</button>
                 </div>
             </div>
         </div>
 
-        <!-- Global Stats -->
-        <div class="stats-grid">
-            <div class="stat-card primary">
-                <h3>Total Horas Trabajadas</h3>
-                <div class="value">124.5h</div>
+        <!-- SUMMARY CARDS -->
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-icon">⏱️</div>
+                <div class="summary-value" id="totalHours">0</div>
+                <div class="summary-label">Total Hours This Week</div>
             </div>
-            <div class="stat-card success">
-                <h3>Empleados Activos</h3>
-                <div class="value">3</div>
+            <div class="summary-card">
+                <div class="summary-icon">👥</div>
+                <div class="summary-value" id="activeEmployees">0</div>
+                <div class="summary-label">Active Employees</div>
             </div>
-            <div class="stat-card warning">
-                <h3>Pendiente Aprobación</h3>
-                <div class="value">5</div>
+            <div class="summary-card">
+                <div class="summary-icon">📋</div>
+                <div class="summary-value" id="pendingApprovals">0</div>
+                <div class="summary-label">Pending Approvals</div>
             </div>
-            <div class="stat-card danger">
-                <h3>Total Overtime</h3>
-                <div class="value">12.5h</div>
-            </div>
-        </div>
-
-        <!-- Employee 1 -->
-        <div class="employee-card">
-            <div class="employee-header">
-                <div class="employee-info">
-                    <h2>Juan Pérez</h2>
-                    <p>Supervisor de Campo • ID: EMP-001</p>
-                    <span class="employee-rate">💰 Tasa Regular: $28.50/hr (Solo Admin puede modificar)</span>
-                </div>
-                <div class="hours-summary">
-                    <div class="hours-summary-item">
-                        <label>Meta Semanal</label>
-                        <div class="value">40.0h</div>
-                    </div>
-                    <div class="hours-summary-item">
-                        <label>Trabajadas</label>
-                        <div class="value">43.0h</div>
-                    </div>
-                    <div class="hours-summary-item overtime">
-                        <label>Overtime</label>
-                        <div class="value">3.0h</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Hours Breakdown -->
-            <div class="hours-breakdown">
-                <div class="breakdown-item regular">
-                    <label>Regulares</label>
-                    <div class="value">35.0h</div>
-                </div>
-                <div class="breakdown-item federal">
-                    <label>Federales</label>
-                    <div class="value">8.0h</div>
-                </div>
-                <div class="breakdown-item state">
-                    <label>Estatales</label>
-                    <div class="value">0h</div>
-                </div>
-                <div class="breakdown-item vacation">
-                    <label>Vacaciones</label>
-                    <div class="value">0h</div>
-                </div>
-                <div class="breakdown-item sick">
-                    <label>Enfermedad</label>
-                    <div class="value">0h</div>
-                </div>
-            </div>
-
-            <!-- Daily Entries -->
-            <div style="overflow-x: auto;">
-                <table class="timecard-table">
-                    <thead>
-                        <tr>
-                            <th>Día</th>
-                            <th>Job Number</th>
-                            <th>Inicio</th>
-                            <th>Fin</th>
-                            <th>Drive</th>
-                            <th>Break</th>
-                            <th>Meal Time</th>
-                            <th>Tipo Hora</th>
-                            <th>Per Diem</th>
-                            <th>Total</th>
-                            <th>Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <span class="day-label">Lunes</span>
-                                <span class="day-date">15 Ene</span>
-                            </td>
-                            <td>
-                                <div class="job-info">
-                                    <span class="job-number">JOB-2501</span>
-                                    <span class="job-name">Highway Expansion</span>
-                                </div>
-                            </td>
-                            <td><input type="time" value="07:00"></td>
-                            <td><input type="time" value="15:30"></td>
-                            <td><input type="number" value="0.5" step="0.25" min="0" style="max-width: 70px;"> h</td>
-                            <td><input type="number" value="0.25" step="0.25" min="0" style="max-width: 70px;"> h</td>
-                            <td style="min-width: 180px;">
-                                <input type="time" value="12:00" style="width: 48%; display: inline-block;"> - 
-                                <input type="time" value="12:30" style="width: 48%; display: inline-block;">
-                            </td>
-                            <td>
-                                <select>
-                                    <option value="regular" selected>Regular</option>
-                                    <option value="federal">Federal</option>
-                                    <option value="state">Estatal</option>
-                                    <option value="vacation">Vacaciones</option>
-                                    <option value="sick">Enfermedad</option>
-                                </select>
-                            </td>
-                            <td>
-                                <input type="number" value="75" step="5" min="0" style="max-width: 80px;">
-                            </td>
-                            <td class="total-cell">8.0h</td>
-                            <td><span class="status-badge pending">Pendiente</span></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <span class="day-label">Martes</span>
-                                <span class="day-date">16 Ene</span>
-                            </td>
-                            <td>
-                                <div class="job-info">
-                                    <span class="job-number">JOB-2501</span>
-                                    <span class="job-name">Highway Expansion</span>
-                                </div>
-                            </td>
-                            <td><input type="time" value="07:00"></td>
-                            <td><input type="time" value="16:00"></td>
-                            <td><input type="number" value="0.5" step="0.25" min="0" style="max-width: 70px;"> h</td>
-                            <td><input type="number" value="0.25" step="0.25" min="0" style="max-width: 70px;"> h</td>
-                            <td style="min-width: 180px;">
-                                <input type="time" value="12:00" style="width: 48%; display: inline-block;"> - 
-                                <input type="time" value="12:30" style="width: 48%; display: inline-block;">
-                            </td>
-                            <td>
-                                <select>
-                                    <option value="regular" selected>Regular</option>
-                                    <option value="federal">Federal</option>
-                                    <option value="state">Estatal</option>
-                                    <option value="vacation">Vacaciones</option>
-                                    <option value="sick">Enfermedad</option>
-                                </select>
-                            </td>
-                            <td>
-                                <input type="number" value="75" step="5" min="0" style="max-width: 80px;">
-                            </td>
-                            <td class="total-cell">8.5h</td>
-                            <td><span class="status-badge approved">Aprobado</span></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <span class="day-label">Miércoles</span>
-                                <span class="day-date">17 Ene</span>
-                            </td>
-                            <td>
-                                <div class="job-info">
-                                    <span class="job-number">JOB-2502</span>
-                                    <span class="job-name">Bridge Repair</span>
-                                </div>
-                            </td>
-                            <td><input type="time" value="06:30"></td>
-                            <td><input type="time" value="14:30"></td>
-                            <td><input type="number" value="1.0" step="0.25" min="0" style="max-width: 70px;"> h</td>
-                            <td><input type="number" value="0.25" step="0.25" min="0" style="max-width: 70px;"> h</td>
-                            <td style="min-width: 180px;">
-                                <input type="time" value="11:30" style="width: 48%; display: inline-block;"> - 
-                                <input type="time" value="12:00" style="width: 48%; display: inline-block;">
-                            </td>
-                            <td>
-                                <select>
-                                    <option value="regular">Regular</option>
-                                    <option value="federal" selected>Federal</option>
-                                    <option value="state">Estatal</option>
-                                    <option value="vacation">Vacaciones</option>
-                                    <option value="sick">Enfermedad</option>
-                                </select>
-                            </td>
-                            <td>
-                                <input type="number" value="100" step="5" min="0" style="max-width: 80px;">
-                            </td>
-                            <td class="total-cell">8.0h</td>
-                            <td><span class="status-badge pending">Pendiente</span></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="action-buttons">
-                <div class="action-left">
-                    <button class="btn btn-secondary">
-                        <span>📱</span>
-                        <span>Enviar SMS Verificación</span>
-                    </button>
-                    <button class="btn btn-warning">
-                        <span>✏️</span>
-                        <span>Solicitar Corrección</span>
-                    </button>
-                </div>
-                <div class="action-right">
-                    <button class="btn btn-secondary">Cancelar Cambios</button>
-                    <button class="btn btn-success">
-                        <span>✓</span>
-                        <span>Aprobar Timecard</span>
-                    </button>
-                    <button class="btn btn-primary">Guardar y Enviar a Payroll</button>
-                </div>
+            <div class="summary-card">
+                <div class="summary-icon">✅</div>
+                <div class="summary-value" id="approved">0</div>
+                <div class="summary-label">Approved This Week</div>
             </div>
         </div>
 
-        <!-- Employee 2 -->
-        <div class="employee-card">
-            <div class="employee-header">
-                <div class="employee-info">
-                    <h2>María González</h2>
-                    <p>Operadora de Equipo • ID: EMP-002</p>
-                    <span class="employee-rate">💰 Tasa Regular: $32.00/hr (Solo Admin puede modificar)</span>
-                </div>
-                <div class="hours-summary">
-                    <div class="hours-summary-item">
-                        <label>Meta Semanal</label>
-                        <div class="value">40.0h</div>
-                    </div>
-                    <div class="hours-summary-item">
-                        <label>Trabajadas</label>
-                        <div class="value">38.5h</div>
-                    </div>
-                    <div class="hours-summary-item">
-                        <label>Overtime</label>
-                        <div class="value" style="color: white;">0h</div>
-                    </div>
-                </div>
+        <!-- ACTION BAR -->
+        <div class="action-bar">
+            <button class="btn btn-secondary" onclick="exportData()">📥 Export</button>
+            <button class="btn btn-primary" onclick="saveTimecards()">💾 Save All</button>
+            <button class="btn btn-primary" onclick="submitForApproval()">✓ Submit for Approval</button>
+        </div>
+
+        <!-- TIMECARD GRID -->
+        <div class="timecard-grid">
+            <div class="grid-header">
+                <div>Employee</div>
+                <div id="day0">Mon</div>
+                <div id="day1">Tue</div>
+                <div id="day2">Wed</div>
+                <div id="day3">Thu</div>
+                <div id="day4">Fri</div>
+                <div id="day5">Sat</div>
+                <div id="day6">Sun</div>
+                <div>Total</div>
             </div>
 
-            <div class="hours-breakdown">
-                <div class="breakdown-item regular">
-                    <label>Regulares</label>
-                    <div class="value">36.5h</div>
+            <div id="timecardRows">
+                <!-- Sample rows -->
+                <div class="grid-row">
+                    <div class="employee-name">John Pérez</div>
+                    <div class="time-cell"><input type="number" class="time-input" value="8" min="0" max="24" step="0.5" onchange="calculateTotal(this)"></div>
+                    <div class="time-cell"><input type="number" class="time-input" value="8" min="0" max="24" step="0.5" onchange="calculateTotal(this)"></div>
+                    <div class="time-cell"><input type="number" class="time-input" value="8" min="0" max="24" step="0.5" onchange="calculateTotal(this)"></div>
+                    <div class="time-cell"><input type="number" class="time-input" value="8" min="0" max="24" step="0.5" onchange="calculateTotal(this)"></div>
+                    <div class="time-cell"><input type="number" class="time-input" value="8" min="0" max="24" step="0.5" onchange="calculateTotal(this)"></div>
+                    <div class="time-cell"><input type="number" class="time-input" value="0" min="0" max="24" step="0.5" onchange="calculateTotal(this)"></div>
+                    <div class="time-cell"><input type="number" class="time-input" value="0" min="0" max="24" step="0.5" onchange="calculateTotal(this)"></div>
+                    <div class="total-hours">40.0</div>
                 </div>
-                <div class="breakdown-item federal">
-                    <label>Federales</label>
-                    <div class="value">0h</div>
-                </div>
-                <div class="breakdown-item state">
-                    <label>Estatales</label>
-                    <div class="value">0h</div>
-                </div>
-                <div class="breakdown-item vacation">
-                    <label>Vacaciones</label>
-                    <div class="value">0h</div>
-                </div>
-                <div class="breakdown-item sick">
-                    <label>Enfermedad</label>
-                    <div class="value">2.0h</div>
-                </div>
-            </div>
 
-            <div style="overflow-x: auto;">
-                <table class="timecard-table">
-                    <thead>
-                        <tr>
-                            <th>Día</th>
-                            <th>Job Number</th>
-                            <th>Inicio</th>
-                            <th>Fin</th>
-                            <th>Drive</th>
-                            <th>Break</th>
-                            <th>Meal Time</th>
-                            <th>Tipo Hora</th>
-                            <th>Per Diem</th>
-                            <th>Total</th>
-                            <th>Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <span class="day-label">Lunes</span>
-                                <span class="day-date">15 Ene</span>
-                            </td>
-                            <td>
-                                <div class="job-info">
-                                    <span class="job-number">JOB-2503</span>
-                                    <span class="job-name">Road Paving</span>
-                                </div>
-                            </td>
-                            <td><input type="time" value="08:00"></td>
-                            <td><input type="time" value="16:30"></td>
-                            <td><input type="number" value="0" step="0.25" min="0" style="max-width: 70px;"> h</td>
-                            <td><input type="number" value="0.5" step="0.25" min="0" style="max-width: 70px;"> h</td>
-                            <td style="min-width: 180px;">
-                                <input type="time" value="12:00" style="width: 48%; display: inline-block;"> - 
-                                <input type="time" value="12:30" style="width: 48%; display: inline-block;">
-                            </td>
-                            <td>
-                                <select>
-                                    <option value="regular" selected>Regular</option>
-                                    <option value="federal">Federal</option>
-                                    <option value="state">Estatal</option>
-                                    <option value="vacation">Vacaciones</option>
-                                    <option value="sick">Enfermedad</option>
-                                </select>
-                            </td>
-                            <td>
-                                <input type="number" value="0" step="5" min="0" style="max-width: 80px;">
-                            </td>
-                            <td class="total-cell">8.0h</td>
-                            <td><span class="status-badge approved">Aprobado</span></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <span class="day-label">Miércoles</span>
-                                <span class="day-date">17 Ene</span>
-                            </td>
-                            <td>
-                                <div class="job-info">
-                                    <span class="job-number">-</span>
-                                    <span class="job-name">Día de Enfermedad</span>
-                                </div>
-                            </td>
-                            <td><input type="time" disabled></td>
-                            <td><input type="time" disabled></td>
-                            <td><input type="number" value="0" step="0.25" min="0" style="max-width: 70px;" disabled> h</td>
-                            <td><input type="number" value="0" step="0.25" min="0" style="max-width: 70px;" disabled> h</td>
-                            <td style="min-width: 180px;">
-                                <input type="time" style="width: 48%; display: inline-block;" disabled> - 
-                                <input type="time" style="width: 48%; display: inline-block;" disabled>
-                            </td>
-                            <td>
-                                <select>
-                                    <option value="regular">Regular</option>
-                                    <option value="federal">Federal</option>
-                                    <option value="state">Estatal</option>
-                                    <option value="vacation">Vacaciones</option>
-                                    <option value="sick" selected>Enfermedad</option>
-                                </select>
-                            </td>
-                            <td>
-                                <input type="number" value="0" step="5" min="0" style="max-width: 80px;" disabled>
-                            </td>
-                            <td class="total-cell">2.0h</td>
-                            <td><span class="status-badge approved">Aprobado</span></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="action-buttons">
-                <div class="action-left">
-                    <button class="btn btn-secondary">
-                        <span>📱</span>
-                        <span>Enviar SMS Verificación</span>
-                    </button>
+                <div class="grid-row">
+                    <div class="employee-name">Maria González</div>
+                    <div class="time-cell"><input type="number" class="time-input" value="7.5" min="0" max="24" step="0.5" onchange="calculateTotal(this)"></div>
+                    <div class="time-cell"><input type="number" class="time-input" value="8" min="0" max="24" step="0.5" onchange="calculateTotal(this)"></div>
+                    <div class="time-cell"><input type="number" class="time-input" value="8" min="0" max="24" step="0.5" onchange="calculateTotal(this)"></div>
+                    <div class="time-cell"><input type="number" class="time-input" value="8" min="0" max="24" step="0.5" onchange="calculateTotal(this)"></div>
+                    <div class="time-cell"><input type="number" class="time-input" value="7.5" min="0" max="24" step="0.5" onchange="calculateTotal(this)"></div>
+                    <div class="time-cell"><input type="number" class="time-input" value="4" min="0" max="24" step="0.5" onchange="calculateTotal(this)"></div>
+                    <div class="time-cell"><input type="number" class="time-input" value="0" min="0" max="24" step="0.5" onchange="calculateTotal(this)"></div>
+                    <div class="total-hours">43.0</div>
                 </div>
-                <div class="action-right">
-                    <button class="btn btn-secondary">Cancelar Cambios</button>
-                    <button class="btn btn-primary">Guardar y Enviar a Payroll</button>
+
+                <div class="grid-row">
+                    <div class="employee-name">Carlos Silva</div>
+                    <div class="time-cell"><input type="number" class="time-input" value="8" min="0" max="24" step="0.5" onchange="calculateTotal(this)"></div>
+                    <div class="time-cell"><input type="number" class="time-input" value="8" min="0" max="24" step="0.5" onchange="calculateTotal(this)"></div>
+                    <div class="time-cell"><input type="number" class="time-input" value="8" min="0" max="24" step="0.5" onchange="calculateTotal(this)"></div>
+                    <div class="time-cell"><input type="number" class="time-input" value="8" min="0" max="24" step="0.5" onchange="calculateTotal(this)"></div>
+                    <div class="time-cell"><input type="number" class="time-input" value="8" min="0" max="24" step="0.5" onchange="calculateTotal(this)"></div>
+                    <div class="time-cell"><input type="number" class="time-input" value="0" min="0" max="24" step="0.5" onchange="calculateTotal(this)"></div>
+                    <div class="time-cell"><input type="number" class="time-input" value="0" min="0" max="24" step="0.5" onchange="calculateTotal(this)"></div>
+                    <div class="total-hours">40.0</div>
                 </div>
             </div>
         </div>
-
     </div>
 
     <script>
-        // Check user role
-        const userRole = 'admin'; // This would come from auth
-        if (userRole === 'admin' || userRole === 'superadmin') {
-            document.getElementById('adminQuickAccess').classList.add('visible');
+        let currentWeekStart = new Date();
+        currentWeekStart.setDate(currentWeekStart.getDate() - currentWeekStart.getDay() + 1);
+
+        function formatDate(date) {
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         }
 
-        // Switch between views
-        function switchView(view) {
-            const buttons = document.querySelectorAll('.view-toggle button');
-            buttons.forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+        function updateWeekDisplay() {
+            const weekEnd = new Date(currentWeekStart);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+            document.getElementById('weekDisplay').textContent = 
+                `${formatDate(currentWeekStart)} - ${formatDate(weekEnd)}`;
             
-            if (view === 'project') {
-                console.log('Switching to project view...');
-                // window.location.href = 'timecards-project-view.html';
+            // Update day headers
+            for (let i = 0; i < 7; i++) {
+                const day = new Date(currentWeekStart);
+                day.setDate(day.getDate() + i);
+                const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                document.getElementById(`day${i}`).textContent = 
+                    `${dayNames[i]}\n${day.getDate()}`;
             }
+
+            updateSummary();
         }
 
-        // Week navigation
         function previousWeek() {
-            console.log('Previous week');
+            currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+            updateWeekDisplay();
         }
 
         function nextWeek() {
-            console.log('Next week');
+            currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+            updateWeekDisplay();
         }
 
-        // Filter functions
-        function updateViewMode() {
-            const mode = document.getElementById('viewMode').value;
-            console.log('View mode:', mode);
+        function setView(view) {
+            document.querySelectorAll('.view-toggle button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            // TODO: Implement view switching logic
         }
 
-        function filterTimecards() {
-            const employee = document.getElementById('employeeFilter').value;
-            const job = document.getElementById('jobFilter').value;
-            const day = document.getElementById('dayFilter').value;
-            const status = document.getElementById('statusFilter').value;
-            const hourType = document.getElementById('hourTypeFilter').value;
-            console.log('Filtering:', { employee, job, day, status, hourType });
+        function calculateTotal(input) {
+            const row = input.closest('.grid-row');
+            const inputs = row.querySelectorAll('.time-input');
+            let total = 0;
+            inputs.forEach(inp => {
+                const value = parseFloat(inp.value) || 0;
+                total += value;
+                if (value > 0) {
+                    inp.classList.add('has-value');
+                } else {
+                    inp.classList.remove('has-value');
+                }
+            });
+            row.querySelector('.total-hours').textContent = total.toFixed(1);
+            updateSummary();
         }
 
-        function applyFilters() {
-            filterTimecards();
-            alert('Filtros aplicados');
+        function updateSummary() {
+            const rows = document.querySelectorAll('.grid-row');
+            let totalHours = 0;
+            let activeEmployees = 0;
+
+            rows.forEach(row => {
+                const inputs = row.querySelectorAll('.time-input');
+                let hasHours = false;
+                inputs.forEach(inp => {
+                    const value = parseFloat(inp.value) || 0;
+                    totalHours += value;
+                    if (value > 0) hasHours = true;
+                });
+                if (hasHours) activeEmployees++;
+            });
+
+            document.getElementById('totalHours').textContent = totalHours.toFixed(1);
+            document.getElementById('activeEmployees').textContent = activeEmployees;
+            document.getElementById('pendingApprovals').textContent = Math.floor(Math.random() * 5) + 2;
+            document.getElementById('approved').textContent = Math.floor(Math.random() * 15) + 10;
         }
 
-        function resetFilters() {
-            document.getElementById('employeeFilter').value = 'all';
-            document.getElementById('jobFilter').value = 'all';
-            document.getElementById('dayFilter').value = '';
-            document.getElementById('statusFilter').value = 'all';
-            document.getElementById('hourTypeFilter').value = 'all';
-            filterTimecards();
+        function saveTimecards() {
+            alert('✓ Timecards saved successfully!');
         }
 
-        // Open Timesheet Adjuster (separate page)
-        function openTimesheetAdjuster() {
-            window.location.href = 'timesheet-adjuster.html';
+        function submitForApproval() {
+            if (confirm('Submit all timecards for approval?')) {
+                alert('✓ Timecards submitted for approval!');
+            }
         }
+
+        function exportData() {
+            alert('📥 Exporting timecard data...');
+        }
+
+        // Initialize
+        updateWeekDisplay();
     </script>
 </body>
 </html>

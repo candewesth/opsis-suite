@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modules - Opsis Suite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', 'Neue Helvetica', Arial, sans-serif;
+            background: #BFBFBF;
+            color: #022326;
+            line-height: 1.6;
+            font-size: 16px;
+            font-weight: 400;
+        }
+
+        @keyframes aire {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* NAVIGATION */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(38, 49, 63, 0.08);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 4rem;
+        }
+
+        .nav-logo {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #022326;
+            letter-spacing: -0.5px;
+            text-decoration: none;
+            background: linear-gradient(135deg, #022326, #034040, #035951, #02735E);
+            background-size: 400% 400%;
+            animation: aire 12s ease-in-out infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 3rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #034040;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: #022326;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #022326;
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .nav-cta {
+            background: linear-gradient(135deg, #022326, #034040, #035951, #02735E);
+            background-size: 400% 400%;
+            animation: aire 12s ease-in-out infinite;
+            color: white;
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .nav-cta:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* HERO SECTION */
+        .hero {
+            padding-top: 150px;
+            padding-bottom: 100px;
+            background: linear-gradient(135deg, #f5f5f5 0%, white 100%);
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 5.5rem;
+            font-weight: 800;
+            color: #022326;
+            margin-bottom: 1.5rem;
+            letter-spacing: -1.2px;
+            line-height: 1.1;
+        }
+
+        .hero-subtitle {
+            font-size: 1.35rem;
+            color: #034040;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* CONTAINER */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* SECTION */
+        section {
+            padding: 6rem 0 !important;
+        }
+
+        section + section {
+            margin-top: 2rem;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: #022326;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.8px;
+            line-height: 1.15;
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+            color: #034040;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.8;
+            font-weight: 400;
+        }
+
+        /* MODULES GRID */
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+
+        .motor-opsis {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #022326, #034040, #035951, #02735E);
+            background-size: 400% 400%;
+            animation: aire 12s ease-in-out infinite;
+            padding: 4rem;
+            color: white;
+            border-radius: 0;
+            text-align: center;
+        }
+
+        .motor-opsis h3 {
+            font-size: 3.2rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.6px;
+        }
+
+        .motor-opsis p {
+            font-size: 1.2rem;
+            margin-bottom: 2.5rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .pillars-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 3rem;
+            grid-column: 1 / -1;
+        }
+
+        .module-card {
+            background: white;
+            border: none;
+            padding: 0;
+            border-radius: 0;
+            transition: all 0.4s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            min-height: 480px;
+            box-shadow: 0 4px 20px rgba(2, 35, 38, 0.08);
+        }
+
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 140px;
+            background: linear-gradient(135deg, var(--module-color, #022326) 0%, var(--module-color-light, #034040) 100%);
+            z-index: 0;
+            transition: all 0.4s ease;
+            border-radius: 0;
+        }
+
+        .module-card:hover {
+            box-shadow: 0 16px 40px rgba(2, 35, 38, 0.15);
+            transform: translateY(-6px);
+        }
+
+        .module-card:hover::before {
+            height: 145px;
+        }
+
+        .module-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 0.3rem;
+            letter-spacing: -0.4px;
+            position: relative;
+            z-index: 2;
+            padding: 0 2.5rem;
+        }
+
+        .module-subtitle {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.85);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 0;
+            font-weight: 600;
+            position: relative;
+            z-index: 2;
+            padding: 1.5rem 2.5rem 0 2.5rem;
+        }
+
+        .module-description {
+            font-size: 1rem;
+            color: #034040;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 1;
+            flex-grow: 1;
+            padding: 2.5rem 2.5rem 0 2.5rem;
+        }
+
+        .module-features {
+            list-style: none;
+            margin-top: 0;
+            padding: 1.5rem 2.5rem;
+            border-top: 1px solid rgba(2, 35, 38, 0.1);
+            position: relative;
+            z-index: 1;
+            margin-left: 0;
+            margin-bottom: 0;
+        }
+
+        .module-features li {
+            font-size: 0.95rem;
+            color: #022326;
+            margin-bottom: 0.8rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .module-features li:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #02735E;
+            font-weight: 800;
+        }
+
+        .module-features li:last-child {
+            margin-bottom: 0;
+        }
+
+        /* MODULE COLORS */
+        .module-timesync {
+            --module-color: #ffffff;
+            --module-color-light: #f5f5f5;
+        }
+
+        .module-toolsync {
+            --module-color: #f5f5f5;
+            --module-color-light: #eeeeee;
+        }
+
+        .module-finance {
+            --module-color: #ffffff;
+            --module-color-light: #f5f5f5;
+        }
+
+        .module-hr {
+            --module-color: #f5f5f5;
+            --module-color-light: #eeeeee;
+        }
+
+        /* BUTTON */
+        .btn {
+            padding: 0.9rem 2rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #022326;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #034040;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #022326;
+            border: 2px solid #022326;
+        }
+
+        .btn-secondary:hover {
+            background: #022326;
+            color: white;
+        }
+
+        /* FOOTER */
+        footer {
+            background: #022326;
+            color: #035951;
+            padding: 4rem 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-section h4 {
+            color: white;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-links a {
+            color: #035951;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 0 auto;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 2rem;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #BFBFBF;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            nav {
+                padding: 0 2rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                padding-top: 120px;
+                padding-bottom: 60px;
+            }
+
+            .hero h1 {
+                font-size: 3rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+
+            .modules-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .pillars-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .motor-opsis {
+                padding: 2rem;
+            }
+
+            .motor-opsis h3 {
+                font-size: 2rem;
+            }
+
+            .module-title {
+                font-size: 1.5rem;
+            }
+
+            .section-title {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVIGATION -->
+    <nav>
+        <a href="index.html" class="nav-logo">Opsis Suite</a>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="modules.html">Modules</a></li>
+            <li><a href="index.html#features">Features</a></li>
+            <li><a href="pricing.html">Pricing</a></li>
+            <li><a href="contact.html">Contact</a></li>
+        </ul>
+        <a href="login.html" class="nav-cta">Login</a>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="container">
+            <h1>Our Modules</h1>
+            <p class="hero-subtitle">Complete operational management with Motor Opsis at the core, powered by specialized modules designed for your growth.</p>
+        </div>
+    </section>
+
+    <!-- MODULES SECTION -->
+    <section>
+        <div class="container">
+            <div class="modules-grid">
+                <!-- MOTOR OPSIS -->
+                <div class="motor-opsis fade-in">
+                    <h3>Motor Opsis</h3>
+                    <p>The operational core of your business. Complete control over inventory, assets, and resources with real-time visibility and intelligent automation.</p>
+                    <button class="btn btn-secondary" onclick="window.location.href='solutions.html#motor-opsis'">Learn More</button>
+                </div>
+
+                <!-- PILLARS -->
+                <div class="pillars-grid">
+                    <!-- TIMESYNC -->
+                    <div class="module-card module-timesync fade-in">
+                        <div class="module-subtitle">Time Management</div>
+                        <h4 class="module-title">TimeSync</h4>
+                        <p class="module-description">Track time, manage projects, and optimize productivity with GPS-verified tracking, project allocation, and comprehensive analytics.</p>
+                        <ul class="module-features">
+                            <li>GPS time tracking</li>
+                            <li>Project allocation</li>
+                            <li>Team scheduling</li>
+                            <li>Productivity analytics</li>
+                        </ul>
+                    </div>
+
+                    <!-- TOOLSYNC -->
+                    <div class="module-card module-toolsync fade-in">
+                        <div class="module-subtitle">Tool Management</div>
+                        <h4 class="module-title">ToolSync</h4>
+                        <p class="module-description">Complete tool management with real-time tracking, maintenance scheduling, and inventory optimization for maximum operational efficiency.</p>
+                        <ul class="module-features">
+                            <li>Tool tracking & location</li>
+                            <li>Maintenance scheduling</li>
+                            <li>Usage analytics</li>
+                            <li>Inventory optimization</li>
+                        </ul>
+                    </div>
+
+                    <!-- FINANCE -->
+                    <div class="module-card module-finance fade-in">
+                        <div class="module-subtitle">Financial Management</div>
+                        <h4 class="module-title">FinanSync</h4>
+                        <p class="module-description">Automated billing, expense tracking, profitability analysis, and financial reporting fully integrated with your operations.</p>
+                        <ul class="module-features">
+                            <li>Automated invoicing</li>
+                            <li>Expense tracking</li>
+                            <li>Profitability analysis</li>
+                            <li>Cash flow forecasting</li>
+                        </ul>
+                    </div>
+
+                    <!-- HR -->
+                    <div class="module-card module-hr fade-in">
+                        <div class="module-subtitle">Human Resources</div>
+                        <h4 class="module-title">HumanSync</h4>
+                        <p class="module-description">Complete HR management including payroll, performance tracking, training programs, and comprehensive team coordination.</p>
+                        <ul class="module-features">
+                            <li>Employee records</li>
+                            <li>Payroll management</li>
+                            <li>Performance tracking</li>
+                            <li>Team management</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Solutions</h4>
+                <ul class="footer-links">
+                    <li><a href="solutions.html">Warehouse Management</a></li>
+                    <li><a href="pages/features.html">HR Management</a></li>
+                    <li><a href="pages/features.html">Time Synchronization</a></li>
+                    <li><a href="pages/features.html">Financial Management</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Company</h4>
+                <ul class="footer-links">
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="careers.html">Careers</a></li>
+                    <li><a href="support.html">Support</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Platform</h4>
+                <ul class="footer-links">
+                    <li><a href="pages/features.html">Features</a></li>
+                    <li><a href="pricing.html">Pricing</a></li>
+                    <li><a href="legal/security.html">Security</a></li>
+                    <li><a href="login.html">Login</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Legal</h4>
+                <ul class="footer-links">
+                    <li><a href="legal/privacy.html">Privacy Policy</a></li>
+                    <li><a href="legal/terms.html">Terms of Service</a></li>
+                    <li><a href="pages/api.html">API Documentation</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Opsis Suite. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
