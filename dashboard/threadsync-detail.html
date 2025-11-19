@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ThreadSync - Seguimiento de Oportunidad | Opsis Suite</title>
+  <style>
+    :root {
+      --verdi-dark: #022326;
+      --verdi-mid: #034040;
+      --verdi-accent: #035951;
+      --verdi-light: #02735E;
+      --primary-color: #02735E;
+      --accent-color: #035951;
+      --text-primary: #1e293b;
+      --text-secondary: #475569;
+      --bg-body: #fafafa;
+      --bg-card: #ffffff;
+      --border-color: #ebebeb;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Helvetica Neue', Helvetica, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-body);
+      color: var(--text-primary);
+      font-weight: 400;
+      line-height: 1.6;
+    }
+
+    /* Header */
+    .thread-header {
+      background: linear-gradient(135deg, #02735E 0%, #035951 100%);
+      color: white;
+      padding: 24px 32px;
+      box-shadow: 0 4px 12px rgba(2, 115, 94, 0.3);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .back-button {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .back-button:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .thread-brand {
+      font-size: 24px;
+      font-weight: 700;
+      color: white;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-white {
+      background: white;
+      color: var(--primary-color);
+      border: 1px solid white;
+    }
+
+    .btn-white:hover {
+      background: rgba(255,255,255,0.9);
+    }
+
+    .btn-success {
+      background: #10b981;
+      color: white;
+      border: 1px solid #10b981;
+    }
+
+    .btn-success:hover {
+      background: #059669;
+    }
+
+    .btn-primary {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-color);
+    }
+
+    .btn-secondary {
+      background: #6b7280;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #4b5563;
+    }
+
+    .thread-info {
+      margin-top: 16px;
+    }
+
+    .thread-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .thread-meta {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      font-size: 14px;
+      opacity: 0.95;
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .status-prospecto {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-cotizado {
+      background: #dbeafe;
+      color: #1e3a8a;
+    }
+
+    .status-negociacion {
+      background: #fce7f3;
+      color: #831843;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .info-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .info-item {
+      display: flex;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .info-label {
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .info-value {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .timeline-item {
+      display: flex;
+      gap: 12px;
+      padding: 16px;
+      background: #f9fafb;
+      border-radius: 8px;
+      border-left: 4px solid var(--primary-color);
+    }
+
+    .timeline-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--primary-color);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .timeline-content {
+      flex: 1;
+    }
+
+    .timeline-title {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .timeline-date {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .timeline-text {
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+
+    .form-input,
+    .form-textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
+      width: 90%;
+      max-width: 700px;
+      max-height: 90vh;
+      overflow: hidden;
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(40px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, #02735E 0%, #035951 100%);
+      color: white;
+      padding: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .modal-close {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .modal-close:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .modal-body {
+      padding: 24px;
+      max-height: calc(90vh - 200px);
+      overflow-y: auto;
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .form-select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    .form-select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+    }
+
+    .alert-box {
+      background: #fef3c7;
+      border: 1px solid #fbbf24;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 12px;
+    }
+
+    .alert-icon {
+      color: #f59e0b;
+      flex-shrink: 0;
+    }
+
+    .alert-content {
+      flex: 1;
+    }
+
+    .alert-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .alert-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="thread-header">
+    <div class="header-top">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <button class="back-button" onclick="window.location.href='motorsync.html'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          Volver a MotorSync
+        </button>
+        <span class="thread-brand">ThreadSync</span>
+      </div>
+      
+      <div class="header-actions">
+        <button class="btn btn-white" onclick="editThread()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          Editar
+        </button>
+        <button class="btn btn-success" onclick="convertToProject()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          Convertir a Proyecto
+        </button>
+      </div>
+    </div>
+
+    <div class="thread-info">
+      <h1 class="thread-title" id="threadTitle">Instalación HVAC - Edificio Corporativo Guadalajara</h1>
+      <div class="thread-meta">
+        <div class="meta-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          <span id="threadClient">Corporativo Azteca S.A.</span>
+        </div>
+        <div class="meta-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <span>Creado: 15 Nov 2024</span>
+        </div>
+        <div class="meta-item">
+          <span class="status-badge status-cotizado" id="threadStatus">Cotizado</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="grid-2">
+      <!-- Columna izquierda: Timeline y comunicación -->
+      <div>
+        <div class="card">
+          <h3 class="card-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+            Historial de Seguimiento
+          </h3>
+          
+          <div class="timeline">
+            <div class="timeline-item">
+              <div class="timeline-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
+              <div class="timeline-content">
+                <div class="timeline-title">Cotización enviada</div>
+                <div class="timeline-date">17 Nov 2024 - 10:30 AM</div>
+                <div class="timeline-text">Se envió cotización formal por $45,000 USD para instalación completa de sistema HVAC. Incluye 3 unidades industriales.</div>
+              </div>
+            </div>
+
+            <div class="timeline-item">
+              <div class="timeline-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+              </div>
+              <div class="timeline-content">
+                <div class="timeline-title">Llamada de seguimiento</div>
+                <div class="timeline-date">16 Nov 2024 - 14:00 PM</div>
+                <div class="timeline-text">Cliente interesado. Solicitó ajustes en el presupuesto. Mencionó que comparará con 2 proveedores más.</div>
+              </div>
+            </div>
+
+            <div class="timeline-item">
+              <div class="timeline-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+              </div>
+              <div class="timeline-content">
+                <div class="timeline-title">Visita al sitio</div>
+                <div class="timeline-date">15 Nov 2024 - 09:00 AM</div>
+                <div class="timeline-text">Inspección del edificio corporativo. 3 pisos, aprox 2,500 m². Cliente requiere instalación antes de fin de año.</div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" style="margin-top: 24px; width: 100%;" onclick="addUpdate()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Agregar Actualización
+          </button>
+        </div>
+      </div>
+
+      <!-- Columna derecha: Información y acciones -->
+      <div>
+        <div class="card">
+          <h3 class="card-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Información del Thread
+          </h3>
+          
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Cliente</span>
+              <span class="info-value">Corporativo Azteca S.A.</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Contacto Principal</span>
+              <span class="info-value">Ing. Roberto Mendoza</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Teléfono</span>
+              <span class="info-value">+52 33 1234 5678</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Email</span>
+              <span class="info-value">rmendoza@azteca.com</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Tipo de Servicio</span>
+              <span class="info-value">Instalación HVAC</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Monto Estimado</span>
+              <span class="info-value">$45,000 USD</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Probabilidad</span>
+              <span class="info-value">75% - Alta</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Fecha Esperada</span>
+              <span class="info-value">Dic 2024</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 24px;">
+          <h3 class="card-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            Documentos
+          </h3>
+          
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div style="padding: 12px; background: #f9fafb; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <span style="font-size: 14px; font-weight: 600;">Cotización.pdf</span>
+              </div>
+              <button class="btn btn-white" style="padding: 6px 12px; font-size: 12px;">Ver</button>
+            </div>
+          </div>
+
+          <button class="btn btn-secondary" style="width: 100%; margin-top: 16px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            Subir Documento
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Función para editar thread
+    function editThread() {
+      alert('✏️ Editar ThreadSync\n\nEn desarrollo: Modal para editar información del thread.');
+    }
+
+    // Función para agregar actualización
+    function addUpdate() {
+      const modalHTML = `
+        <div class="modal-overlay" id="addUpdateModal" onclick="if(event.target === this) closeModal('addUpdateModal')">
+          <div class="modal">
+            <div class="modal-header">
+              <div class="modal-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19"/>
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Agregar Actualización al Seguimiento
+              </div>
+              <button class="modal-close" onclick="closeModal('addUpdateModal')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="form-group">
+                <label class="form-label">Título de la Actualización *</label>
+                <input type="text" id="updateTitle" class="form-input" placeholder="Ej: Llamada de seguimiento, Reunión, Visita al sitio..." />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Descripción *</label>
+                <textarea id="updateDescription" class="form-textarea" placeholder="Describe lo que se realizó y los acuerdos alcanzados..." style="min-height: 120px;"></textarea>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Tipo de Interacción</label>
+                <select id="updateType" class="form-select">
+                  <option value="call">📞 Llamada telefónica</option>
+                  <option value="meeting">🤝 Reunión</option>
+                  <option value="visit">📍 Visita al sitio</option>
+                  <option value="email">📧 Correo electrónico</option>
+                  <option value="quote">📋 Cotización enviada</option>
+                  <option value="proposal">📄 Propuesta comercial</option>
+                  <option value="correction">🔧 Corrección/Ajuste</option>
+                  <option value="comment">💬 Comentario/Nota</option>
+                  <option value="negotiation">💰 Negociación</option>
+                  <option value="followup">🔔 Seguimiento</option>
+                  <option value="presentation">📊 Presentación</option>
+                  <option value="contract">📑 Contrato/Firma</option>
+                  <option value="payment">💳 Pago recibido</option>
+                  <option value="other">📝 Otra actividad</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Adjuntar Archivos</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                  <div>
+                    <input type="file" id="updatePhotos" class="form-input" accept="image/*" multiple style="padding: 8px; font-size: 13px;" />
+                    <small style="color: var(--text-secondary); font-size: 12px;">📷 Fotos (opcional)</small>
+                  </div>
+                  <div>
+                    <input type="file" id="updateDocuments" class="form-input" accept=".pdf,.doc,.docx,.xls,.xlsx" multiple style="padding: 8px; font-size: 13px;" />
+                    <small style="color: var(--text-secondary); font-size: 12px;">📄 Documentos (opcional)</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" onclick="closeModal('addUpdateModal')">Cancelar</button>
+              <button class="btn btn-primary" onclick="saveUpdate()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Guardar Actualización
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+
+    function saveUpdate() {
+      const title = document.getElementById('updateTitle').value.trim();
+      const description = document.getElementById('updateDescription').value.trim();
+      const type = document.getElementById('updateType').value;
+      const photosInput = document.getElementById('updatePhotos');
+      const docsInput = document.getElementById('updateDocuments');
+
+      if (!title || !description) {
+        alert('⚠️ Por favor completa los campos obligatorios (*)');
+        return;
+      }
+
+      // Obtener fecha y hora actual del sistema
+      const now = new Date();
+      const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+      const day = now.getDate();
+      const month = months[now.getMonth()];
+      const year = now.getFullYear();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const formattedDate = `${day} ${month} ${year} - ${hours}:${minutes}`;
+
+      // Procesar archivos adjuntos
+      let attachmentsHTML = '';
+      const photoFiles = photosInput.files;
+      const docFiles = docsInput.files;
+      
+      if (photoFiles.length > 0 || docFiles.length > 0) {
+        attachmentsHTML = '<div style="margin-top: 12px; padding: 10px; background: #f0f9ff; border-radius: 6px; border-left: 3px solid #3b82f6;">';
+        attachmentsHTML += '<div style="font-size: 12px; font-weight: 600; color: #1e40af; margin-bottom: 6px;">📎 Archivos adjuntos:</div>';
+        
+        if (photoFiles.length > 0) {
+          attachmentsHTML += '<div style="font-size: 12px; color: #475569; margin-bottom: 4px;">📷 ' + photoFiles.length + ' foto(s): ';
+          for (let i = 0; i < photoFiles.length; i++) {
+            attachmentsHTML += photoFiles[i].name;
+            if (i < photoFiles.length - 1) attachmentsHTML += ', ';
+          }
+          attachmentsHTML += '</div>';
+        }
+        
+        if (docFiles.length > 0) {
+          attachmentsHTML += '<div style="font-size: 12px; color: #475569;">📄 ' + docFiles.length + ' documento(s): ';
+          for (let i = 0; i < docFiles.length; i++) {
+            attachmentsHTML += docFiles[i].name;
+            if (i < docFiles.length - 1) attachmentsHTML += ', ';
+          }
+          attachmentsHTML += '</div>';
+        }
+        
+        attachmentsHTML += '</div>';
+      }
+
+      // Formatear fecha para mostrar
+      const dateObj = new Date(dateDone + 'T' + timeDone);
+      const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+      const formattedDate = `${dateObj.getDate()} ${months[dateObj.getMonth()]} ${dateObj.getFullYear()} - ${timeDone}`;
+
+      // Iconos según tipo
+      const icons = {
+        call: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>',
+        meeting: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+        visit: '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
+        email: '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>',
+        quote: '<polyline points="20 6 9 17 4 12"/>',
+        proposal: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',
+        correction: '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>',
+        comment: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+        negotiation: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+        followup: '<path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"/>',
+        presentation: '<rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>',
+        contract: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>',
+        payment: '<rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>',
+        other: '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>'
+      };
+
+      const newTimelineItem = `
+        <div class="timeline-item" style="animation: slideUp 0.3s ease-out;">
+          <div class="timeline-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              ${icons[type]}
+            </svg>
+          </div>
+          <div class="timeline-content">
+            <div class="timeline-title">${title}</div>
+            <div class="timeline-date">${formattedDate}</div>
+            <div class="timeline-text">${description}</div>
+            ${attachmentsHTML}
+          </div>
+        </div>
+      `;
+
+      // Insertar al inicio del timeline
+      const timeline = document.querySelector('.timeline');
+      timeline.insertAdjacentHTML('afterbegin', newTimelineItem);
+
+      closeModal('addUpdateModal');
+      alert('✓ Actualización agregada exitosamente');
+    }
+
+    // Función principal para convertir Thread a Proyecto
+    function convertToProject() {
+      const modalHTML = `
+        <div class="modal-overlay" id="convertModal" onclick="if(event.target === this) closeModal('convertModal')">
+          <div class="modal">
+            <div class="modal-header">
+              <div class="modal-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                  <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                Convertir a Proyecto Confirmado
+              </div>
+              <button class="modal-close" onclick="closeModal('convertModal')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="alert-box">
+                <div class="alert-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                </div>
+                <div class="alert-content">
+                  <div class="alert-title">Convertir ThreadSync a Proyecto</div>
+                  <div class="alert-text">La información existente se copiará automáticamente. Completa los datos faltantes para programar el proyecto.</div>
+                </div>
+              </div>
+
+              <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 16px; color: var(--text-secondary);">
+                📋 Información Existente (ThreadSync)
+              </h4>
+
+              <div class="form-group">
+                <label class="form-label">Nombre del Proyecto</label>
+                <input type="text" class="form-input" value="Instalación HVAC - Edificio Corporativo Guadalajara" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Cliente</label>
+                <input type="text" class="form-input" value="Corporativo Azteca S.A." />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Contacto Principal</label>
+                <input type="text" class="form-input" value="Ing. Roberto Mendoza" />
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                  <label class="form-label">Teléfono</label>
+                  <input type="tel" class="form-input" value="+52 33 1234 5678" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Email</label>
+                  <input type="email" class="form-input" value="rmendoza@azteca.com" />
+                </div>
+              </div>
+
+              <h4 style="font-size: 16px; font-weight: 600; margin: 24px 0 16px; color: var(--primary-color);">
+                ✏️ Completar para Programación
+              </h4>
+
+              <div class="form-group">
+                <label class="form-label">Dirección del Proyecto *</label>
+                <input type="text" class="form-input" placeholder="Av. Universidad #789, Guadalajara" />
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                  <label class="form-label">Fecha de Inicio *</label>
+                  <input type="date" class="form-input" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Fecha de Fin *</label>
+                  <input type="date" class="form-input" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Cuadrilla Asignada *</label>
+                <select class="form-select">
+                  <option value="">Seleccionar cuadrilla...</option>
+                  <option>Cuadrilla A - Juan Pérez</option>
+                  <option>Cuadrilla B - Luis García</option>
+                  <option>Cuadrilla C - Ana Martínez</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Presupuesto Confirmado *</label>
+                <input type="text" class="form-input" value="$45,000 USD" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Notas del Proyecto</label>
+                <textarea class="form-textarea" placeholder="Detalles adicionales del proyecto...">Cliente requiere instalación antes de fin de año. Edificio corporativo de 3 pisos.</textarea>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" onclick="closeModal('convertModal')">Cancelar</button>
+              <button class="btn btn-success" onclick="confirmConversion()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Crear Proyecto
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+
+    function closeModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.style.animation = 'fadeOut 0.2s ease-out';
+        setTimeout(() => modal.remove(), 200);
+      }
+    }
+
+    function confirmConversion() {
+      alert('✓ Proyecto Creado Exitosamente\n\nEl ThreadSync ha sido convertido a proyecto confirmado.\n\nEl proyecto ahora aparecerá en:\n• MotorSync → ProjectSync\n• Agenda → Calendario\n• Mapa de proyectos\n\nRedirigiendo...');
+      
+      setTimeout(() => {
+        window.location.href = 'viewsync.html';
+      }, 2000);
+    }
+  </script>
+
+</body>
+</html>

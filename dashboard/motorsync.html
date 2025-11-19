@@ -1350,6 +1350,85 @@
       cursor: pointer;
     }
 
+    /* Modal de selección */
+    .selection-modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
+      z-index: 2001;
+      max-width: 500px;
+      width: 90%;
+    }
+
+    .selection-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .selection-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .selection-options {
+      display: grid;
+      gap: 16px;
+    }
+
+    .selection-option {
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 24px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+    }
+
+    .selection-option:hover {
+      border-color: var(--primary-color);
+      background: rgba(2, 115, 94, 0.02);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .selection-option-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .selection-option-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #02735E 0%, #035951 100%);
+      color: white;
+    }
+
+    .selection-option-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .selection-option-description {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
     @media (max-width: 768px) {
       .app-shell {
         display: block;
@@ -4136,7 +4215,7 @@
           </div>
           <div style="display: flex; gap: 12px;" id="motorsync-header-actions">
             <button class="btn btn-secondary" onclick="alert('Exportar proyectos')">Exportar</button>
-            <button class="btn btn-primary" onclick="alert('Nuevo Proyecto')">+ Nuevo Proyecto</button>
+            <button class="btn btn-primary" onclick="showNewItemModal()">+ Nuevo</button>
           </div>
         </div>
 
@@ -17167,6 +17246,76 @@
         });
       });
     });
+
+    // ========================================
+    // MODAL DE SELECCIÓN: PROYECTO vs THREADSYNC
+    // ========================================
+    function showNewItemModal() {
+      const modalHTML = `
+        <div class="modal-overlay" id="selectionModal" onclick="if(event.target === this) closeMotorModal('selectionModal')" style="z-index: 2000;">
+          <div class="selection-modal">
+            <h2 class="selection-title">¿Qué deseas crear?</h2>
+            <p class="selection-subtitle">Selecciona el tipo de registro que quieres agregar</p>
+            
+            <div class="selection-options">
+              <div class="selection-option" onclick="openNewProjectModal()">
+                <div class="selection-option-header">
+                  <div class="selection-option-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                      <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                  </div>
+                  <div class="selection-option-title">Proyecto Confirmado</div>
+                </div>
+                <p class="selection-option-description">
+                  Cliente confirmó el proyecto. Agregar directamente a la programación con fechas, equipo y presupuesto.
+                </p>
+              </div>
+              
+              <div class="selection-option" onclick="openNewThreadModal()">
+                <div class="selection-option-header">
+                  <div class="selection-option-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                  </div>
+                  <div class="selection-option-title">ThreadSync (Seguimiento)</div>
+                </div>
+                <p class="selection-option-description">
+                  Oportunidad o cotización en proceso. Dar seguimiento hasta que el cliente confirme para convertir en proyecto.
+                </p>
+              </div>
+            </div>
+            
+            <button class="btn btn-secondary" style="width: 100%; margin-top: 24px;" onclick="closeMotorModal('selectionModal')">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+
+    function closeMotorModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.style.animation = 'fadeOut 0.2s ease-out';
+        setTimeout(() => modal.remove(), 200);
+      }
+    }
+
+    function openNewProjectModal() {
+      closeMotorModal('selectionModal');
+      // Aquí abriremos el modal de nuevo proyecto
+      alert('🏗️ Modal de Nuevo Proyecto\\n\\nSe abrirá el formulario completo para crear un proyecto confirmado.\\n\\nEn desarrollo...');
+    }
+
+    function openNewThreadModal() {
+      closeMotorModal('selectionModal');
+      // Redirigir a la página de ThreadSync para crear nuevo
+      window.location.href = 'threadsync-detail.html?action=new';
+    }
   </script>
 
 
