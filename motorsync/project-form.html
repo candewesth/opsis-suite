@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nuevo Proyecto | Opsis Suite</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    :root {
+      --verdi-dark: #022326;
+      --verdi-mid: #034040;
+      --verdi-accent: #035951;
+      --verdi-light: #02735E;
+      --primary-color: #02735E;
+      --accent-color: #035951;
+      --text-primary: #1e293b;
+      --text-secondary: #475569;
+      --bg-body: #f8fafb;
+      --bg-card: #ffffff;
+      --border-color: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, #f8fafb 0%, #e8f4f2 100%);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .app-header {
+      background: linear-gradient(135deg, #02735E 0%, #035951 100%);
+      color: white;
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      box-shadow: 0 4px 20px rgba(2, 115, 94, 0.2);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo-img {
+      height: 42px;
+      width: auto;
+    }
+
+    .header-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: white;
+      letter-spacing: -0.02em;
+    }
+
+    .back-button {
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(10px);
+    }
+
+    .back-button:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateX(-4px);
+    }
+
+    /* Main Content */
+    main {
+      flex: 1;
+      padding: 40px 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .form-container {
+      background: white;
+      border-radius: 24px;
+      padding: 48px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+      border: 1px solid rgba(2, 115, 94, 0.1);
+    }
+
+    .form-header {
+      margin-bottom: 40px;
+      text-align: center;
+      position: relative;
+    }
+
+    .form-header::before {
+      content: '';
+      position: absolute;
+      top: -24px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 4px;
+      background: linear-gradient(90deg, #02735E, #035951);
+      border-radius: 2px;
+    }
+
+    .form-header h1 {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .form-header p {
+      color: var(--text-secondary);
+      font-size: 15px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      margin-bottom: 32px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .form-label .required {
+      color: #ef4444;
+      font-size: 16px;
+    }
+
+    .form-label svg {
+      opacity: 0.5;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+      padding: 14px 18px;
+      border: 2px solid var(--border-color);
+      border-radius: 14px;
+      font-size: 15px;
+      font-family: inherit;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      background: #fafbfc;
+    }
+
+    .form-input:hover,
+    .form-select:hover,
+    .form-textarea:hover {
+      border-color: #cbd5e1;
+      background: white;
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      background: white;
+      box-shadow: 0 0 0 4px rgba(2, 115, 94, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 120px;
+      line-height: 1.6;
+    }
+
+    .map-section {
+      grid-column: 1 / -1;
+      background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+      border-radius: 20px;
+      padding: 28px;
+      border: 2px dashed rgba(2, 115, 94, 0.2);
+    }
+
+    .map-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .map-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #02735E 0%, #035951 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .map-container {
+      height: 450px;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 3px solid white;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      position: relative;
+      z-index: 1;
+    }
+
+    #map {
+      height: 100%;
+      width: 100%;
+    }
+
+    .map-instructions {
+      font-size: 13px;
+      color: #047857;
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 2px solid #f1f5f9;
+    }
+
+    .btn {
+      padding: 16px 40px;
+      border-radius: 16px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      letter-spacing: 0.01em;
+    }
+
+    .btn-secondary {
+      background: white;
+      color: var(--text-secondary);
+      border: 2px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #02735E 0%, #035951 100%);
+      color: white;
+      box-shadow: 0 8px 24px rgba(2, 115, 94, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn-primary:hover::before {
+      left: 100%;
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 12px 32px rgba(2, 115, 94, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .status-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .status-option {
+      position: relative;
+    }
+
+    .status-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+    }
+
+    .status-option label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 24px 16px;
+      border: 2px solid var(--border-color);
+      border-radius: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-size: 14px;
+      font-weight: 700;
+      background: #fafbfc;
+    }
+
+    .status-option .status-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+
+    .status-option input[type="radio"]:checked + label {
+      border-color: var(--primary-color);
+      background: linear-gradient(135deg, rgba(2, 115, 94, 0.05) 0%, rgba(3, 89, 81, 0.08) 100%);
+      color: var(--primary-color);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(2, 115, 94, 0.15);
+    }
+
+    .status-option input[type="radio"]:checked + label .status-icon {
+      background: linear-gradient(135deg, #02735E 0%, #035951 100%);
+      box-shadow: 0 4px 12px rgba(2, 115, 94, 0.3);
+    }
+
+    .status-option label:hover {
+      border-color: var(--primary-color);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    @media (max-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .status-options {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Header -->
+    <header class="app-header">
+      <button class="back-button" onclick="window.location.href='projectsync.html'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Volver
+      </button>
+      <div class="logo-section">
+        <img src="../assets/images/logo-white.svg" alt="Opsis" class="logo-img" onerror="this.style.display='none'">
+        <span class="header-title">Nuevo Proyecto</span>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+      <div class="form-container">
+        <div class="form-header">
+          <h1>Crear Nuevo Proyecto</h1>
+          <p>Completa la información del proyecto. Los campos marcados con * son obligatorios.</p>
+        </div>
+
+        <form id="projectForm" onsubmit="handleSubmit(event)">
+          <div class="form-grid">
+            <!-- Project Name -->
+            <div class="form-group full-width">
+              <label class="form-label">
+                Nombre del Proyecto<span class="required">*</span>
+              </label>
+              <input type="text" class="form-input" id="projectName" required placeholder="Ej: Instalación HVAC Residencial">
+            </div>
+
+            <!-- Client -->
+            <div class="form-group">
+              <label class="form-label">
+                Cliente<span class="required">*</span>
+              </label>
+              <input type="text" class="form-input" id="clientName" required placeholder="Nombre del cliente">
+            </div>
+
+            <!-- Contact -->
+            <div class="form-group">
+              <label class="form-label">
+                Contacto
+              </label>
+              <input type="text" class="form-input" id="contactName" placeholder="Persona de contacto">
+            </div>
+
+            <!-- Phone -->
+            <div class="form-group">
+              <label class="form-label">
+                Teléfono
+              </label>
+              <input type="tel" class="form-input" id="phone" placeholder="(619) 555-0123">
+            </div>
+
+            <!-- Email -->
+            <div class="form-group">
+              <label class="form-label">
+                Email
+              </label>
+              <input type="email" class="form-input" id="email" placeholder="cliente@ejemplo.com">
+            </div>
+
+            <!-- Address -->
+            <div class="form-group full-width">
+              <label class="form-label">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                </svg>
+                Dirección<span class="required">*</span>
+              </label>
+              <input type="text" class="form-input" id="address" required placeholder="Calle, Ciudad, Estado, CP">
+            </div>
+
+            <!-- Map -->
+            <div class="map-section">
+              <div class="map-header">
+                <div class="map-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                  </svg>
+                </div>
+                <div>
+                  <label class="form-label" style="margin-bottom: 4px;">
+                    Ubicación en el Mapa<span class="required">*</span>
+                  </label>
+                </div>
+              </div>
+              <div class="map-container">
+                <div id="map"></div>
+              </div>
+              <input type="hidden" id="latitude" required>
+              <input type="hidden" id="longitude" required>
+            </div>
+
+            <!-- Start Date -->
+            <div class="form-group">
+              <label class="form-label">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                Fecha de Inicio<span class="required">*</span>
+              </label>
+              <input type="date" class="form-input" id="startDate" required>
+            </div>
+
+            <!-- End Date -->
+            <div class="form-group">
+              <label class="form-label">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                  <path d="M8 14h.01"></path>
+                  <path d="M12 14h.01"></path>
+                  <path d="M16 14h.01"></path>
+                </svg>
+                Fecha de Término Estimada<span class="required">*</span>
+              </label>
+              <input type="date" class="form-input" id="endDate" required>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group full-width">
+              <label class="form-label">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                Descripción
+              </label>
+              <textarea class="form-textarea" id="description" placeholder="Detalles del proyecto..."></textarea>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="window.location.href='projectsync.html'">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Crear Proyecto
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // Initialize map
+    const map = L.map('map').setView([32.7157, -117.1611], 12);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let marker = null;
+
+    // Click to add marker
+    map.on('click', function(e) {
+      const { lat, lng } = e.latlng;
+      
+      if (marker) {
+        map.removeLayer(marker);
+      }
+      
+      marker = L.marker([lat, lng]).addTo(map);
+      
+      document.getElementById('latitude').value = lat;
+      document.getElementById('longitude').value = lng;
+    });
+
+    // Geocoding - Address to coordinates
+    let geocodeTimeout;
+    const addressInput = document.getElementById('address');
+    
+    addressInput.addEventListener('input', function() {
+      clearTimeout(geocodeTimeout);
+      const address = this.value;
+      
+      if (address.length < 10) return; // Wait for more complete address
+      
+      geocodeTimeout = setTimeout(() => {
+        geocodeAddress(address);
+      }, 1000); // Wait 1 second after user stops typing
+    });
+
+    async function geocodeAddress(address) {
+      try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`);
+        const data = await response.json();
+        
+        if (data && data.length > 0) {
+          const { lat, lon } = data[0];
+          const latitude = parseFloat(lat);
+          const longitude = parseFloat(lon);
+          
+          // Remove old marker
+          if (marker) {
+            map.removeLayer(marker);
+          }
+          
+          // Add new marker
+          marker = L.marker([latitude, longitude]).addTo(map);
+          
+          // Center map on marker
+          map.setView([latitude, longitude], 15);
+          
+          // Update hidden fields
+          document.getElementById('latitude').value = latitude;
+          document.getElementById('longitude').value = longitude;
+          
+          // Add subtle animation to marker
+          marker.bindPopup(`📍 ${address}`).openPopup();
+        }
+      } catch (error) {
+        console.error('Geocoding error:', error);
+      }
+    }
+
+    // Form submission
+    function handleSubmit(event) {
+      event.preventDefault();
+      
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>Creando...</span>';
+
+      // Collect form data
+      const projectData = {
+        id: 'ORD-' + Math.floor(Math.random() * 1000),
+        name: document.getElementById('projectName').value,
+        client: document.getElementById('clientName').value,
+        contact: document.getElementById('contactName').value,
+        phone: document.getElementById('phone').value,
+        email: document.getElementById('email').value,
+        address: document.getElementById('address').value,
+        lat: parseFloat(document.getElementById('latitude').value),
+        lng: parseFloat(document.getElementById('longitude').value),
+        status: 'active', // Default status: active
+        startDate: document.getElementById('startDate').value,
+        endDate: document.getElementById('endDate').value,
+        description: document.getElementById('description').value,
+        createdAt: new Date().toISOString()
+      };
+
+      // TODO: Save to Supabase
+      console.log('Project data:', projectData);
+
+      // Simulate API call
+      setTimeout(() => {
+        // Redirect back to projects with success message
+        window.location.href = 'projectsync.html?success=true&project=' + projectData.id;
+      }, 1000);
+    }
+  </script>
+</body>
+</html>

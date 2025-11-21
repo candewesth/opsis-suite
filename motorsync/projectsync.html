@@ -505,18 +505,25 @@
         const container = document.getElementById('module-tabs-container');
         if (!container) return;
         
-        const currentPage = window.location.pathname.split('/').pop();
+        const currentPath = window.location.pathname;
         const sortedModules = Object.entries(MODULE_REGISTRY)
             .filter(([_, module]) => module.enabled)
             .sort((a, b) => a[1].order - b[1].order);
         
         container.innerHTML = sortedModules.map(([key, module]) => {
-            const isActive = currentPage === module.url || currentPage.includes(key);
+            // Si estamos en la carpeta motorsync/, marcar MotorSync como activo
+            const isActive = (key === 'motorsync' && currentPath.includes('/motorsync/')) ||
+                           currentPath.endsWith(module.url);
             return `<a href="${module.url}" class="module-tab ${isActive ? 'active' : ''}">${module.name}</a>`;
         }).join('');
     }
     
-    renderModuleTabs();
+    // Ejecutar inmediatamente y también en DOMContentLoaded por si acaso
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', renderModuleTabs);
+    } else {
+        renderModuleTabs();
+    }
     </script>
 
     <div class="app-content">
@@ -589,7 +596,7 @@
                 </svg>
                 Actualizar
               </button>
-              <button class="btn btn-primary" onclick="alert('Nuevo proyecto')">
+              <button class="btn btn-primary" onclick="openNewProjectModal()">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="12" y1="5" x2="12" y2="19"></line>
                   <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -602,14 +609,14 @@
 
         <!-- Tabs -->
         <div class="segmented-control projectsync-tabs" role="tablist">
-          <button class="btn btn-secondary active" data-projectsync-tab="overview">Resumen</button>
-          <button class="btn btn-secondary" data-projectsync-tab="projects">Proyectos</button>
+          <button class="btn btn-secondary active" data-projectsync-tab="projects">Proyectos</button>
           <button class="btn btn-secondary" data-projectsync-tab="agenda">Agenda</button>
         </div>
 
-        <!-- Overview Panel -->
-        <div class="projectsync-panel active" data-projectsync-panel="overview">
-          <div class="grid grid-4 kpi-grid">
+        <!-- Projects Panel -->
+        <div class="projectsync-panel active" data-projectsync-panel="projects">
+          <!-- KPIs -->
+          <div class="grid grid-4 kpi-grid" style="margin-bottom: 24px;">
             <div class="stat-card">
               <div class="stat-label">Total Proyectos</div>
               <div class="stat-value">24</div>
@@ -632,7 +639,8 @@
             </div>
           </div>
 
-          <div class="card" style="margin-top: 24px;">
+          <!-- Map -->
+          <div class="card">
             <div class="card-header">
               <div>
                 <h3 class="card-title">Mapa de Proyectos</h3>
@@ -647,34 +655,15 @@
             </div>
             <div id="projects-map"></div>
           </div>
-        </div>
-
-        <!-- Projects Panel -->
-        <div class="projectsync-panel" data-projectsync-panel="projects">
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <h3 class="card-title">Mapa de Proyectos</h3>
-                <p style="color: #94a3b8; font-size: 13px; margin-top: 4px;">Visualiza y filtra todos tus proyectos en el mapa</p>
-              </div>
-              <div class="map-filter-group">
-                <button class="chip-filter active" data-project-filter="all">Todos (24)</button>
-                <button class="chip-filter" data-project-filter="active">Activos (8)</button>
-                <button class="chip-filter" data-project-filter="scheduled">Programados (4)</button>
-                <button class="chip-filter" data-project-filter="completed">Completados (12)</button>
-              </div>
-            </div>
-            <div id="projects-map-projects"></div>
-          </div>
 
           <div class="card" style="margin-top: 24px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
               <h3 class="card-title">Lista de Proyectos</h3>
               <div style="display: flex; gap: 8px;">
-                <button class="chip-filter active">Todos (24)</button>
-                <button class="chip-filter">Activos (8)</button>
-                <button class="chip-filter">Programados (4)</button>
-                <button class="chip-filter">Completados (12)</button>
+                <button class="chip-filter table-filter active" data-table-filter="all">Todos (24)</button>
+                <button class="chip-filter table-filter" data-table-filter="active">Activos (8)</button>
+                <button class="chip-filter table-filter" data-table-filter="scheduled">Programados (4)</button>
+                <button class="chip-filter table-filter" data-table-filter="completed">Completados (12)</button>
               </div>
             </div>
             <div class="table-wrapper">
@@ -693,7 +682,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
+                  <tr data-project-id="ORD-201">
                     <td>
                       <strong>ORD-201</strong>
                       <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0 0;">Proyecto #1024</p>
@@ -716,10 +705,10 @@
                       </div>
                     </td>
                     <td>
-                      <button class="btn btn-small btn-secondary">Ver</button>
+                      <button class="btn btn-small btn-secondary" onclick="viewProject('ORD-201')">Ver</button>
                     </td>
                   </tr>
-                  <tr>
+                  <tr data-project-id="ORD-202">
                     <td>
                       <strong>ORD-202</strong>
                       <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0 0;">Proyecto #1023</p>
@@ -742,10 +731,10 @@
                       </div>
                     </td>
                     <td>
-                      <button class="btn btn-small btn-secondary">Ver</button>
+                      <button class="btn btn-small btn-secondary" onclick="viewProject('ORD-202')">Ver</button>
                     </td>
                   </tr>
-                  <tr>
+                  <tr data-project-id="ORD-203">
                     <td>
                       <strong>ORD-203</strong>
                       <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0 0;">Proyecto #1022</p>
@@ -768,7 +757,7 @@
                       </div>
                     </td>
                     <td>
-                      <button class="btn btn-small btn-secondary">Ver</button>
+                      <button class="btn btn-small btn-secondary" onclick="viewProject('ORD-203')">Ver</button>
                     </td>
                   </tr>
                 </tbody>
@@ -812,6 +801,34 @@
   </div>
 
   <script>
+    // View Project Function
+    function viewProject(projectId) {
+      // TODO: En producción, esto se conectará con Supabase para obtener los datos del proyecto
+      // Por ahora, navegamos a una página de proyecto con el ID como parámetro
+      window.location.href = `project-detail.html?id=${projectId}`;
+    }
+
+    // Refresh Projects Function
+    function refreshProjects() {
+      const btn = event.target.closest('button');
+      const icon = btn.querySelector('svg');
+      
+      // Add rotation animation
+      icon.style.transition = 'transform 0.6s ease';
+      icon.style.transform = 'rotate(360deg)';
+      
+      // Simulate refresh
+      setTimeout(() => {
+        icon.style.transform = 'rotate(0deg)';
+        
+        // Reload map
+        if (map) {
+          map.invalidateSize();
+          console.log('✅ Proyectos actualizados');
+        }
+      }, 600);
+    }
+
     // Tab functionality
     document.addEventListener('DOMContentLoaded', () => {
       const projectTabs = document.querySelectorAll('[data-projectsync-tab]');
@@ -826,11 +843,10 @@
             panel.classList.toggle('active', panel.dataset.projectsyncPanel === target);
           });
           
-          // Reinitialize map when switching to overview or projects tabs
-          if (target === 'overview' || target === 'projects') {
+          // Reinitialize map when switching to projects tab
+          if (target === 'projects') {
             setTimeout(() => {
-              const mapId = target === 'overview' ? 'projects-map' : 'projects-map-projects';
-              initializeMap(mapId);
+              if (map) map.invalidateSize();
             }, 100);
           }
         });
@@ -838,11 +854,33 @@
 
       // Initialize map on load
       initializeMap('projects-map');
+      
+      // Initialize counters
+      updateFilterCounters();
     });
 
     // Map initialization
     let map = null;
-    let markers = [];
+    let allMarkers = [];
+    
+    // DATOS DE PROYECTOS
+    // IMPORTANTE: Esta estructura debe sincronizarse con:
+    // 1. Supabase tabla 'projects' cuando se implemente
+    // 2. ThreadSync cuando un thread se convierte a proyecto (threadsync.html)
+    // 3. Modal de "Nuevo Proyecto" cuando se crea directamente
+    // 
+    // Campos requeridos:
+    // - id: ID único del proyecto (ej: ORD-201)
+    // - lat/lng: Coordenadas para el mapa
+    // - name: Nombre del proyecto
+    // - status: 'active' | 'scheduled' | 'completed'
+    // - color: Color del marcador en el mapa
+    // - badge: Texto del badge ('EN CURSO' | 'PROGRAMADO' | 'COMPLETADO')
+    const projectsData = [
+      { id: 'ORD-201', lat: 32.7157, lng: -117.1611, name: 'Instalación HVAC', status: 'active', color: '#02735E', badge: 'EN CURSO' },
+      { id: 'ORD-202', lat: 32.7357, lng: -117.1411, name: 'Sistema Eléctrico', status: 'scheduled', color: '#eab308', badge: 'PROGRAMADO' },
+      { id: 'ORD-203', lat: 32.6957, lng: -117.1811, name: 'Calderas Hotel', status: 'completed', color: '#059669', badge: 'COMPLETADO' }
+    ];
 
     function initializeMap(mapId) {
       const mapElement = document.getElementById(mapId);
@@ -852,7 +890,7 @@
       if (map) {
         map.remove();
         map = null;
-        markers = [];
+        allMarkers = [];
       }
 
       // Initialize new map
@@ -862,14 +900,8 @@
         attribution: '© OpenStreetMap contributors'
       }).addTo(map);
 
-      // Sample project markers
-      const projects = [
-        { lat: 32.7157, lng: -117.1611, name: 'Instalación HVAC', status: 'active', color: '#02735E' },
-        { lat: 32.7357, lng: -117.1411, name: 'Sistema Eléctrico', status: 'scheduled', color: '#eab308' },
-        { lat: 32.6957, lng: -117.1811, name: 'Calderas Hotel', status: 'completed', color: '#059669' }
-      ];
-
-      projects.forEach(project => {
+      // Create markers for all projects
+      projectsData.forEach(project => {
         const marker = L.circleMarker([project.lat, project.lng], {
           radius: 8,
           fillColor: project.color,
@@ -879,18 +911,111 @@
           fillOpacity: 0.8
         }).addTo(map);
 
-        marker.bindPopup(`<b>${project.name}</b><br>${project.status}`);
-        markers.push(marker);
+        marker.bindPopup(`<b>${project.name}</b><br><span style="text-transform: uppercase; font-size: 11px;">${project.badge}</span>`);
+        marker.projectStatus = project.status;
+        marker.projectId = project.id;
+        allMarkers.push(marker);
       });
     }
 
     // Filter functionality
+    function filterProjects(filterType) {
+      // Filter map markers
+      allMarkers.forEach(marker => {
+        if (filterType === 'all' || marker.projectStatus === filterType) {
+          marker.setStyle({ opacity: 1, fillOpacity: 0.8 });
+        } else {
+          marker.setStyle({ opacity: 0.2, fillOpacity: 0.1 });
+        }
+      });
+
+      // Filter table rows and count visible projects
+      const tableRows = document.querySelectorAll('tbody tr');
+      let visibleCount = 0;
+      
+      tableRows.forEach(row => {
+        const badge = row.querySelector('.badge');
+        if (!badge) return;
+
+        const badgeText = badge.textContent.trim();
+        let rowStatus = '';
+        
+        if (badgeText === 'EN CURSO') rowStatus = 'active';
+        else if (badgeText === 'PROGRAMADO') rowStatus = 'scheduled';
+        else if (badgeText === 'COMPLETADO') rowStatus = 'completed';
+
+        if (filterType === 'all' || rowStatus === filterType) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      // Update active state on both filter groups
+      document.querySelectorAll('.chip-filter').forEach(f => f.classList.remove('active'));
+      document.querySelectorAll(`[data-map-filter="${filterType}"], [data-table-filter="${filterType}"]`).forEach(f => {
+        f.classList.add('active');
+      });
+      
+      // Update filter counters
+      updateFilterCounters();
+    }
+
+    // Update counters in filter buttons
+    function updateFilterCounters() {
+      const tableRows = document.querySelectorAll('tbody tr');
+      const counts = { all: 0, active: 0, scheduled: 0, completed: 0 };
+      
+      tableRows.forEach(row => {
+        const badge = row.querySelector('.badge');
+        if (!badge) return;
+        
+        const badgeText = badge.textContent.trim();
+        counts.all++;
+        
+        if (badgeText === 'EN CURSO') counts.active++;
+        else if (badgeText === 'PROGRAMADO') counts.scheduled++;
+        else if (badgeText === 'COMPLETADO') counts.completed++;
+      });
+      
+      // Update all filter buttons (both map and table)
+      document.querySelectorAll('[data-map-filter="all"], [data-table-filter="all"]').forEach(btn => {
+        btn.textContent = `Todos (${counts.all})`;
+      });
+      document.querySelectorAll('[data-map-filter="active"], [data-table-filter="active"]').forEach(btn => {
+        btn.textContent = `Activos (${counts.active})`;
+      });
+      document.querySelectorAll('[data-map-filter="scheduled"], [data-table-filter="scheduled"]').forEach(btn => {
+        btn.textContent = `Programados (${counts.scheduled})`;
+      });
+      document.querySelectorAll('[data-map-filter="completed"], [data-table-filter="completed"]').forEach(btn => {
+        btn.textContent = `Completados (${counts.completed})`;
+      });
+      
+      // Update KPI cards
+      document.querySelector('.stat-card:nth-child(1) .stat-value').textContent = counts.all;
+      document.querySelector('.stat-card:nth-child(1) .stat-change').textContent = `${counts.active} activos`;
+      document.querySelector('.stat-card:nth-child(2) .stat-value').textContent = counts.active;
+      document.querySelector('.stat-card:nth-child(3) .stat-value').textContent = counts.completed;
+      document.querySelector('.stat-card:nth-child(4) .stat-value').textContent = counts.scheduled;
+    }
+
+    // Map filter functionality
     document.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll('.chip-filter').forEach(filter => {
+      // Map filters
+      document.querySelectorAll('[data-map-filter]').forEach(filter => {
         filter.addEventListener('click', () => {
-          const group = filter.closest('.map-filter-group');
-          group.querySelectorAll('.chip-filter').forEach(f => f.classList.remove('active'));
-          filter.classList.add('active');
+          const filterType = filter.dataset.mapFilter;
+          filterProjects(filterType);
+        });
+      });
+
+      // Table filters
+      document.querySelectorAll('[data-table-filter]').forEach(filter => {
+        filter.addEventListener('click', () => {
+          const filterType = filter.dataset.tableFilter;
+          filterProjects(filterType);
         });
       });
 
@@ -908,7 +1033,256 @@
         sidebar.classList.remove('collapsed');
       });
     });
+
+    // New Project Modal Functions
+    function openNewProjectModal() {
+      document.getElementById('newProjectModal').style.display = 'flex';
+    }
+
+    function closeNewProjectModal() {
+      document.getElementById('newProjectModal').style.display = 'none';
+    }
+
+    function selectProjectOption(option) {
+      closeNewProjectModal();
+      
+      if (option === 'new-project') {
+        // Abrir modal de crear proyecto nuevo
+        openCreateProjectForm();
+      } else if (option === 'new-thread') {
+        // Redirigir a ThreadSync para crear nuevo thread
+        window.location.href = 'thread-form.html';
+      } else if (option === 'connect-thread') {
+        // Abrir modal para conectar proyecto con thread existente
+        openConnectThreadForm();
+      }
+    }
+
+    function openCreateProjectForm() {
+      window.location.href = 'project-form.html';
+    }
+
+    function openConnectThreadForm() {
+      // TODO: Implementar modal para conectar con thread existente
+      alert('Formulario de conexión con thread en desarrollo');
+    }
+
+    // Close modal when clicking outside
+    window.addEventListener('click', (e) => {
+      const modal = document.getElementById('newProjectModal');
+      if (e.target === modal) {
+        closeNewProjectModal();
+      }
+    });
   </script>
+
+  <!-- New Project Modal -->
+  <div id="newProjectModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h2 style="font-size: 24px; font-weight: 600; color: #1e293b;">¿Qué deseas hacer?</h2>
+        <button onclick="closeNewProjectModal()" class="modal-close">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="modal-body" style="padding: 30px;">
+        <div class="project-options">
+          <!-- Option 1: New Project -->
+          <div class="project-option-card" onclick="selectProjectOption('new-project')">
+            <div class="option-icon" style="background: linear-gradient(135deg, #02735E 0%, #035951 100%);">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="12" y1="8" x2="12" y2="16"></line>
+                <line x1="8" y1="12" x2="16" y2="12"></line>
+              </svg>
+            </div>
+            <div class="option-content">
+              <h3 style="font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 8px;">Crear Proyecto Nuevo</h3>
+              <p style="color: #64748b; font-size: 14px; line-height: 1.5;">Inicia un proyecto desde cero con todos los detalles: ubicación, cliente, presupuesto y timeline.</p>
+            </div>
+            <div class="option-arrow">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Option 2: New Thread -->
+          <div class="project-option-card" onclick="selectProjectOption('new-thread')">
+            <div class="option-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                <line x1="9" y1="10" x2="15" y2="10"></line>
+                <line x1="12" y1="7" x2="12" y2="13"></line>
+              </svg>
+            </div>
+            <div class="option-content">
+              <h3 style="font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 8px;">Crear Nuevo Thread</h3>
+              <p style="color: #64748b; font-size: 14px; line-height: 1.5;">Inicia una conversación con un cliente que puede convertirse en proyecto más adelante.</p>
+            </div>
+            <div class="option-arrow">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Option 3: Connect Thread -->
+          <div class="project-option-card" onclick="selectProjectOption('connect-thread')">
+            <div class="option-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+              </svg>
+            </div>
+            <div class="option-content">
+              <h3 style="font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 8px;">Conectar con Thread Existente</h3>
+              <p style="color: #64748b; font-size: 14px; line-height: 1.5;">Vincula este proyecto con una conversación existente en ThreadSync.</p>
+            </div>
+            <div class="option-arrow">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      width: 90%;
+      max-height: 90vh;
+      overflow: auto;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 30px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 8px;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-close:hover {
+      background: #f1f5f9;
+    }
+
+    .project-options {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .project-option-card {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 24px;
+      border: 2px solid #e2e8f0;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .project-option-card:hover {
+      border-color: #02735E;
+      background: #f0fdf4;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(2, 115, 94, 0.15);
+    }
+
+    .option-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .option-content {
+      flex: 1;
+    }
+
+    .option-arrow {
+      flex-shrink: 0;
+      transition: transform 0.3s ease;
+    }
+
+    .project-option-card:hover .option-arrow {
+      transform: translateX(4px);
+    }
+
+    @media (max-width: 768px) {
+      .project-option-card {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .option-arrow {
+        transform: rotate(90deg);
+      }
+
+      .project-option-card:hover .option-arrow {
+        transform: rotate(90deg) translateX(4px);
+      }
+    }
+  </style>
   
   </div><!-- /app-content -->
   </div><!-- /app-shell -->

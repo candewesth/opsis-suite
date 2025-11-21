@@ -407,18 +407,25 @@
         const container = document.getElementById('module-tabs-container');
         if (!container) return;
         
-        const currentPage = window.location.pathname.split('/').pop();
+        const currentPath = window.location.pathname;
         const sortedModules = Object.entries(MODULE_REGISTRY)
             .filter(([_, module]) => module.enabled)
             .sort((a, b) => a[1].order - b[1].order);
         
         container.innerHTML = sortedModules.map(([key, module]) => {
-            const isActive = currentPage === module.url || currentPage.includes(key);
+            // Si estamos en la carpeta motorsync/, marcar MotorSync como activo
+            const isActive = (key === 'motorsync' && currentPath.includes('/motorsync/')) ||
+                           currentPath.endsWith(module.url);
             return `<a href="${module.url}" class="module-tab ${isActive ? 'active' : ''}">${module.name}</a>`;
         }).join('');
     }
     
-    renderModuleTabs();
+    // Ejecutar inmediatamente y también en DOMContentLoaded por si acaso
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', renderModuleTabs);
+    } else {
+        renderModuleTabs();
+    }
     </script>
 
     <div class="app-content">
@@ -983,7 +990,7 @@
 
     // Create new thread
     function createNewThread() {
-      document.getElementById('newThreadModal').style.display = 'block';
+      window.location.href = 'thread-form.html';
     }
 
     function closeNewThreadModal() {
@@ -1037,100 +1044,6 @@
         closeNewThreadModal();
       }
     }
-  </script>
-
-  <script>
-    // ===================================
-    // MODULE TABS DYNAMIC LOADER
-    // ===================================
-    const MODULE_REGISTRY = {
-      motorsync: {
-        name: 'MotorSync',
-        url: 'motorsync.html',
-        order: 1,
-        enabled: true
-      },
-      timesync: {
-        name: 'TimeSync',
-        url: '../timesync/timesync.html',
-        order: 2,
-        enabled: true
-      },
-      projectsync: {
-        name: 'ProjectSync',
-        url: 'projectsync.html',
-        order: 3,
-        enabled: false
-      },
-      warehousesync: {
-        name: 'WarehouseSync',
-        url: '../warehouse/inventory.html',
-        order: 4,
-        enabled: false
-      }
-    };
-
-    function renderModuleTabs() {
-      const container = document.getElementById('module-tabs-container');
-      if (!container) return;
-
-      container.innerHTML = '';
-      const enabledModules = Object.entries(MODULE_REGISTRY)
-        .filter(([key, module]) => module.enabled)
-        .sort((a, b) => a[1].order - b[1].order);
-
-      const currentPage = window.location.pathname.split('/').pop();
-
-      enabledModules.forEach(([key, module]) => {
-        const isActive = currentPage === module.url.split('/').pop() || 
-                        (currentPage.includes('threadsync') && key === 'motorsync');
-        
-        const tab = document.createElement('a');
-        tab.href = module.url;
-        tab.className = `module-tab${isActive ? ' active' : ''}`;
-        tab.style.cssText = `
-          padding: 10px 28px;
-          font-size: 14px;
-          font-weight: 600;
-          color: ${isActive ? '#1e293b' : '#64748b'};
-          background: ${isActive ? 'white' : '#e2e8f0'};
-          text-decoration: none;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 10px 10px 0 0;
-          transition: all 0.2s ease;
-        `;
-        tab.textContent = module.name;
-        
-        tab.addEventListener('mouseenter', () => {
-          if (!isActive) tab.style.background = '#cbd5e1';
-        });
-        tab.addEventListener('mouseleave', () => {
-          if (!isActive) tab.style.background = '#e2e8f0';
-        });
-        
-        container.appendChild(tab);
-      });
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      renderModuleTabs();
-      
-      // Sidebar collapse functionality
-      const sidebar = document.getElementById('sidebar');
-      const sidebarItems = document.querySelectorAll('.sidebar-item');
-      
-      sidebarItems.forEach(item => {
-        item.addEventListener('click', () => {
-          sidebar.classList.add('collapsed');
-        });
-      });
-
-      sidebar.addEventListener('mouseenter', () => {
-        sidebar.classList.remove('collapsed');
-      });
-    });
   </script>
   
   </div><!-- /app-content -->

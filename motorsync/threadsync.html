@@ -747,32 +747,17 @@
 <body>
 
   <div class="app-shell">
-    <header style="background: linear-gradient(135deg, #02735E 0%, #035951 50%, #034040 100%); background-size: 200% 200%; animation: aire 8s ease infinite; padding: 18px 32px; display: flex; align-items: center; gap: 32px; grid-column: 1 / -1; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid rgba(0, 0, 0, 0.1);">
-      <div class="logo" aria-label="Opsis Suite">
+    <header style="background: linear-gradient(135deg, #02735E 0%, #035951 50%, #034040 100%); background-size: 200% 200%; animation: aire 8s ease infinite; padding: 0; display: flex; align-items: flex-end;">
+      <div class="logo" aria-label="Opsis Suite" style="padding: 18px 32px;">
         <div class="logo-text">
-          <div class="logo-title" style="font-size: 26px; font-weight: 700; color: #ffffff; letter-spacing: -0.3px;">Opsis Suite</div>
+          <div class="logo-title">Opsis Suite</div>
           <div id="company-name-header" style="font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.85); margin-top: 2px;">CVE San Diego</div>
         </div>
       </div>
       
       <!-- Module Tabs -->
-      <div class="module-tabs" style="display: flex; gap: 8px; margin-left: auto;">
-        <a href="motorsync.html" class="module-tab active" style="padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; color: #02735E; background: white; text-decoration: none; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"></path>
-            <path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"></path>
-            <path d="M12 2v2"></path>
-            <path d="M12 22v-2"></path>
-          </svg>
-          MotorSync
-        </a>
-        <a href="../timesync/timesync.html" class="module-tab" style="padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.7); background: transparent; text-decoration: none; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
-          TimeSync
-        </a>
+      <div class="module-tabs" id="module-tabs-container" style="display: flex; gap: 0;">
+        <!-- Las pestañas se generan dinámicamente con JavaScript -->
       </div>
     </header>
 
@@ -2205,6 +2190,58 @@
           comment.style.display = 'none';
         }
       });
+    }
+  </script>
+
+  <script>
+    // ===================================
+    // MODULE TABS DYNAMIC LOADER
+    // ===================================
+    const MODULE_REGISTRY = {
+      motorsync: {
+        name: 'MotorSync',
+        url: 'motorsync.html',
+        order: 1,
+        enabled: true
+      },
+      timesync: {
+        name: 'TimeSync',
+        url: '../timesync/timesync.html',
+        order: 2,
+        enabled: true
+      }
+    };
+
+    function renderModuleTabs() {
+      const container = document.getElementById('module-tabs-container');
+      if (!container) return;
+
+      container.innerHTML = '';
+      const enabledModules = Object.entries(MODULE_REGISTRY)
+        .filter(([key, module]) => module.enabled)
+        .sort((a, b) => a[1].order - b[1].order);
+
+      const currentPath = window.location.pathname;
+
+      enabledModules.forEach(([key, module]) => {
+        // Si estamos en la carpeta motorsync/, marcar MotorSync como activo
+        const isActive = (key === 'motorsync' && currentPath.includes('/motorsync/')) ||
+                       currentPath.endsWith(module.url);
+        
+        const tab = document.createElement('a');
+        tab.href = module.url;
+        tab.className = `module-tab${isActive ? ' active' : ''}`;
+        tab.textContent = module.name;
+        
+        container.appendChild(tab);
+      });
+    }
+
+    // Ejecutar inmediatamente y también en DOMContentLoaded por si acaso
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', renderModuleTabs);
+    } else {
+        renderModuleTabs();
     }
   </script>
 

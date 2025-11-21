@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nuevo Thread | Opsis Suite</title>
+  <style>
+    :root {
+      --primary-color: #3b82f6;
+      --accent-color: #2563eb;
+      --text-primary: #1e293b;
+      --text-secondary: #475569;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .app-header {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: white;
+      letter-spacing: -0.02em;
+    }
+
+    .back-button {
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .back-button:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateX(-4px);
+    }
+
+    main {
+      flex: 1;
+      padding: 40px 24px;
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .form-container {
+      background: white;
+      border-radius: 24px;
+      padding: 48px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+      border: 1px solid rgba(59, 130, 246, 0.1);
+    }
+
+    .form-header {
+      margin-bottom: 40px;
+      text-align: center;
+      position: relative;
+    }
+
+    .form-header::before {
+      content: '';
+      position: absolute;
+      top: -24px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 4px;
+      background: linear-gradient(90deg, #3b82f6, #2563eb);
+      border-radius: 2px;
+    }
+
+    .form-header h1 {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .form-header p {
+      color: var(--text-secondary);
+      font-size: 15px;
+    }
+
+    .info-box {
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+      border: 2px solid #bfdbfe;
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .info-box::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(180deg, #3b82f6, #2563eb);
+    }
+
+    .info-box-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .info-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .info-box-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1e40af;
+    }
+
+    .info-box-text {
+      font-size: 14px;
+      color: #1e40af;
+      line-height: 1.6;
+      padding-left: 52px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .form-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .form-label .required {
+      color: #ef4444;
+      font-size: 16px;
+    }
+
+    .form-input,
+    .form-textarea {
+      padding: 14px 18px;
+      border: 2px solid #e2e8f0;
+      border-radius: 14px;
+      font-size: 15px;
+      font-family: inherit;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      background: #fafbfc;
+    }
+
+    .form-input:hover,
+    .form-textarea:hover {
+      border-color: #cbd5e1;
+      background: white;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      background: white;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 140px;
+      line-height: 1.6;
+    }
+
+    .project-selector {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 12px;
+    }
+
+    .project-card {
+      position: relative;
+    }
+
+    .project-card input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+    }
+
+    .project-card label {
+      display: block;
+      padding: 20px;
+      border: 2px solid #e2e8f0;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      background: #fafbfc;
+    }
+
+    .project-card input[type="radio"]:checked + label {
+      border-color: #3b82f6;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(37, 99, 235, 0.08) 100%);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
+    }
+
+    .project-card label:hover {
+      border-color: #3b82f6;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .project-name {
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .project-status {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .priority-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 12px;
+    }
+
+    .priority-option {
+      position: relative;
+    }
+
+    .priority-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+    }
+
+    .priority-option label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: 20px;
+      border: 2px solid #e2e8f0;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-size: 14px;
+      font-weight: 700;
+      background: #fafbfc;
+    }
+
+    .priority-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+
+    .priority-option input[type="radio"]:checked + label {
+      border-color: #3b82f6;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(37, 99, 235, 0.08) 100%);
+      color: #3b82f6;
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
+    }
+
+    .priority-option input[type="radio"]:checked + label .priority-icon {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .priority-option label:hover {
+      border-color: #3b82f6;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 2px solid #f1f5f9;
+    }
+
+    .btn {
+      padding: 16px 40px;
+      border-radius: 16px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      letter-spacing: 0.01em;
+    }
+
+    .btn-secondary {
+      background: white;
+      color: var(--text-secondary);
+      border: 2px solid #e2e8f0;
+    }
+
+    .btn-secondary:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+      box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn-primary:hover::before {
+      left: 100%;
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 12px 32px rgba(59, 130, 246, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 768px) {
+      .form-container {
+        padding: 32px 24px;
+      }
+
+      .project-selector {
+        grid-template-columns: 1fr;
+      }
+
+      .priority-options {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <button class="back-button" onclick="goBack()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Volver
+      </button>
+      <div class="logo-section">
+        <span class="header-title">💬 Nuevo Thread</span>
+      </div>
+    </header>
+
+    <main>
+      <div class="form-container">
+        <div class="form-header">
+          <h1>Crear Nuevo Thread</h1>
+          <p>Inicia una conversación con un cliente que puede convertirse en proyecto más adelante.</p>
+        </div>
+
+        <div class="info-box">
+          <div class="info-box-header">
+            <div class="info-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            </div>
+            <span class="info-box-title">¿Qué es un Thread?</span>
+          </div>
+          <p class="info-box-text">
+            Un thread es una conversación con un cliente potencial. Úsalo para cotizaciones, consultas o seguimiento de oportunidades. Más adelante podrás convertirlo en un proyecto formal.
+          </p>
+        </div>
+
+        <form id="threadForm" onsubmit="handleSubmit(event)">
+          <div class="form-group">
+            <label class="form-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              Nombre del Cliente<span class="required">*</span>
+            </label>
+            <input type="text" class="form-input" id="clientName" required placeholder="Ej: Juan Pérez">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              Asunto<span class="required">*</span>
+            </label>
+            <input type="text" class="form-input" id="subject" required placeholder="Ej: Cotización para instalación HVAC">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+              </svg>
+              Información de Contacto
+            </label>
+            <input type="text" class="form-input" id="contactInfo" placeholder="Teléfono o email">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+              ¿Asociar a un proyecto existente?
+            </label>
+            <div class="project-selector">
+              <div class="project-card">
+                <input type="radio" name="project" id="no-project" value="" checked>
+                <label for="no-project">
+                  <div class="project-name">Sin Proyecto</div>
+                  <div class="project-status">Thread independiente</div>
+                </label>
+              </div>
+              <div class="project-card">
+                <input type="radio" name="project" id="project-1" value="ORD-201">
+                <label for="project-1">
+                  <div class="project-name">ORD-201</div>
+                  <div class="project-status">Instalación HVAC</div>
+                </label>
+              </div>
+              <div class="project-card">
+                <input type="radio" name="project" id="project-2" value="ORD-202">
+                <label for="project-2">
+                  <div class="project-name">ORD-202</div>
+                  <div class="project-status">Reparación Sistema</div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              Prioridad
+            </label>
+            <div class="priority-options">
+              <div class="priority-option">
+                <input type="radio" name="priority" id="priority-low" value="low">
+                <label for="priority-low">
+                  <div class="priority-icon" style="background: linear-gradient(135deg, #94a3b8, #64748b);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                      <polyline points="7 13 12 18 17 13"></polyline>
+                      <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                  </div>
+                  Baja
+                </label>
+              </div>
+              <div class="priority-option">
+                <input type="radio" name="priority" id="priority-medium" value="medium" checked>
+                <label for="priority-medium">
+                  <div class="priority-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                  </div>
+                  Media
+                </label>
+              </div>
+              <div class="priority-option">
+                <input type="radio" name="priority" id="priority-high" value="high">
+                <label for="priority-high">
+                  <div class="priority-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                      <polyline points="17 11 12 6 7 11"></polyline>
+                      <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                  </div>
+                  Alta
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                <line x1="9" y1="10" x2="15" y2="10"></line>
+                <line x1="9" y1="14" x2="15" y2="14"></line>
+              </svg>
+              Mensaje Inicial
+            </label>
+            <textarea class="form-textarea" id="initialMessage" placeholder="Escribe el primer mensaje de la conversación..."></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="goBack()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              Crear Thread
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromPage = document.referrer;
+
+    function goBack() {
+      if (fromPage.includes('projectsync.html')) {
+        window.location.href = 'projectsync.html';
+      } else if (fromPage.includes('threadsync')) {
+        window.location.href = 'threadsync-list.html';
+      } else {
+        window.location.href = 'threadsync-list.html';
+      }
+    }
+
+    function handleSubmit(event) {
+      event.preventDefault();
+      
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg> Creando...';
+
+      const threadData = {
+        id: 'THR-' + Math.floor(Math.random() * 10000),
+        clientName: document.getElementById('clientName').value,
+        subject: document.getElementById('subject').value,
+        contactInfo: document.getElementById('contactInfo').value,
+        project: document.querySelector('input[name="project"]:checked').value,
+        priority: document.querySelector('input[name="priority"]:checked').value,
+        initialMessage: document.getElementById('initialMessage').value,
+        status: 'open',
+        createdAt: new Date().toISOString(),
+        createdBy: 'current-user',
+        messages: []
+      };
+
+      if (threadData.initialMessage) {
+        threadData.messages.push({
+          id: 1,
+          author: 'current-user',
+          content: threadData.initialMessage,
+          timestamp: new Date().toISOString(),
+          type: 'internal'
+        });
+      }
+
+      console.log('Thread data:', threadData);
+
+      setTimeout(() => {
+        window.location.href = `threadsync.html?id=${threadData.id}`;
+      }, 1000);
+    }
+  </script>
+</body>
+</html>

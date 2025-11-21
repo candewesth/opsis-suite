@@ -5741,60 +5741,6 @@
 
           </div>
         </div>
-                    </p>
-                  </div>
-                  <span class="badge" style="background: #ef4444; color: white; font-size: 10px; padding: 3px 8px; border-radius: 12px; white-space: nowrap; margin-left: 12px;">1 nuevo</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 12px; font-size: 11px; color: #94a3b8;">
-                  <div style="display: flex; align-items: center; gap: 4px;">
-                    <img src="https://ui-avatars.com/api/?name=Ana+Martinez&size=20&background=10b981&color=fff" style="width: 20px; height: 20px; border-radius: 50%;">
-                    <span>Ana Martínez</span>
-                  </div>
-                  <span>•</span>
-                  <span>6 comentarios</span>
-                  <span>•</span>
-                  <span>2 PDFs</span>
-                  <span>•</span>
-                  <span>Actualizado hace 5h</span>
-                </div>
-              </div>
-
-              <button class="btn btn-small btn-secondary" onclick="createThreadForProject('project-2')" style="width: 100%; margin-top: 8px;">
-                + Nuevo hilo para este proyecto
-              </button>
-            </div>
-          </div>
-
-          <!-- Proyecto 3: Inspección HVAC -->
-          <div class="card">
-            <div class="card-header" style="padding-bottom: 12px; border-bottom: 1px solid rgba(0,0,0,0.05);">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                  <h3 class="card-title" style="margin-bottom: 4px;">
-                    <span style="color: #3b82f6; margin-right: 8px;">●</span>
-                    Inspección y Mantenimiento HVAC
-                  </h3>
-                  <p style="color: #94a3b8; font-size: 12px;">Tech Services Plaza • Proyecto #1023</p>
-                </div>
-                <button class="btn btn-small btn-secondary" onclick="expandProject('project-3')">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="6 9 12 15 18 9"></polyline>
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <div id="threads-project-3" class="threads-container" style="display: none; padding-top: 16px;">
-              <p style="text-align: center; color: #94a3b8; font-size: 13px; padding: 24px 0;">
-                No hay hilos de conversación para este proyecto.
-              </p>
-              <button class="btn btn-small btn-secondary" onclick="createThreadForProject('project-3')" style="width: 100%;">
-                + Crear primer hilo
-              </button>
-            </div>
-          </div>
-        </div>
-        </div>
         <!-- FIN THREADSYNC CONTENT -->
 
       </section>
@@ -17751,16 +17697,22 @@
         order: 3,
         enabled: false // Se habilita cuando la compañía hace upgrade
       },
-      warehousesync: {
-        name: 'WarehouseSync',
-        url: '../warehouse/inventory.html',
+      toolsync: {
+        name: 'ToolSync',
+        url: '../toolsync/inventory.html',
         order: 4,
+        enabled: false
+      },
+      humansync: {
+        name: 'HumanSync',
+        url: '../humansync/dashboard.html',
+        order: 5,
         enabled: false
       },
       financesync: {
         name: 'FinanceSync',
-        url: '../finance/dashboard.html',
-        order: 5,
+        url: '../financesync/dashboard.html',
+        order: 6,
         enabled: false
       }
     };
@@ -17779,11 +17731,13 @@
         .sort((a, b) => a[1].order - b[1].order);
 
       // Obtener la URL actual para marcar la pestaña activa
-      const currentPage = window.location.pathname.split('/').pop();
+      const currentPath = window.location.pathname;
 
       // Crear pestañas
       enabledModules.forEach(([key, module]) => {
-        const isActive = currentPage === module.url.split('/').pop();
+        // Si estamos en la carpeta motorsync/, marcar MotorSync como activo
+        const isActive = (key === 'motorsync' && currentPath.includes('/motorsync/')) ||
+                       currentPath.endsWith(module.url);
         
         const tab = document.createElement('a');
         tab.href = module.url;
@@ -17815,7 +17769,11 @@
     }
 
     // Cargar las pestañas cuando el DOM esté listo
-    document.addEventListener('DOMContentLoaded', renderModuleTabs);
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', renderModuleTabs);
+    } else {
+        renderModuleTabs();
+    }
 
     // En producción, esto se conectaría con Supabase para obtener
     // los módulos habilitados desde la base de datos:
