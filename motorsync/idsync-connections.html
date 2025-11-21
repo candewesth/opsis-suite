@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cómo funciona IDSync - Opsis Suite</title>
+  <style>
+    :root {
+      --verdi-dark: #022326;
+      --verdi-mid: #034040;
+      --verdi-accent: #035951;
+      --verdi-light: #02735E;
+      --primary-color: #02735E;
+      --accent-color: #035951;
+      --text-primary: #1e293b;
+      --text-secondary: #475569;
+      --bg-body: #f8fafb;
+      --bg-card: #ffffff;
+      --border-color: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: white;
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 20px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .back-button {
+      background: rgba(2, 115, 94, 0.2);
+      border: 2px solid rgba(2, 115, 94, 0.4);
+      color: #10b981;
+      padding: 10px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s;
+      text-decoration: none;
+    }
+
+    .back-button:hover {
+      background: rgba(2, 115, 94, 0.3);
+      transform: translateX(-4px);
+    }
+
+    .header-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #10b981;
+    }
+
+    main {
+      flex: 1;
+      padding: 60px 24px;
+      max-width: 1600px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 80px;
+    }
+
+    .hero h1 {
+      font-size: 48px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #10b981 0%, #02735E 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+    }
+
+    .hero p {
+      font-size: 20px;
+      color: #94a3b8;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      height: 600px;
+      margin-bottom: 80px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    .connection-legend {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-bottom: 60px;
+    }
+
+    .legend-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 24px;
+      transition: all 0.3s;
+    }
+
+    .legend-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(16, 185, 129, 0.5);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .legend-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      font-size: 24px;
+    }
+
+    .legend-card h3 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: white;
+    }
+
+    .legend-card p {
+      font-size: 14px;
+      color: #94a3b8;
+      line-height: 1.6;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 24px;
+      margin-bottom: 60px;
+    }
+
+    .stat-card {
+      background: rgba(16, 185, 129, 0.1);
+      border: 2px solid rgba(16, 185, 129, 0.3);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 36px;
+      font-weight: 900;
+      color: #10b981;
+      margin-bottom: 8px;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    .cta-section {
+      text-align: center;
+      background: linear-gradient(135deg, rgba(2, 115, 94, 0.2) 0%, rgba(16, 185, 129, 0.1) 100%);
+      border: 2px solid rgba(16, 185, 129, 0.3);
+      border-radius: 24px;
+      padding: 48px 24px;
+    }
+
+    .cta-section h2 {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      color: white;
+    }
+
+    .cta-section p {
+      font-size: 18px;
+      color: #94a3b8;
+      margin-bottom: 32px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #10b981 0%, #02735E 100%);
+      color: white;
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s;
+      text-decoration: none;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(16, 185, 129, 0.4);
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header>
+      <a href="project-form.html" class="back-button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Volver al Formulario
+      </a>
+      <div class="header-title">IDSync Connection Map</div>
+    </header>
+
+    <main>
+      <div class="hero">
+        <h1>🔗 Cómo funciona IDSync</h1>
+        <p>Un identificador universal que conecta todos los módulos de tu ecosistema Opsis</p>
+      </div>
+
+      <!-- Canvas para animación de nodos -->
+      <div class="canvas-container">
+        <canvas id="connectionCanvas"></canvas>
+      </div>
+
+      <!-- Estadísticas -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value">1</div>
+          <div class="stat-label">IDSync por Proyecto</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">6+</div>
+          <div class="stat-label">Módulos Conectados</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">100%</div>
+          <div class="stat-label">Sincronización</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">∞</div>
+          <div class="stat-label">Escalabilidad</div>
+        </div>
+      </div>
+
+      <!-- Leyenda de conexiones -->
+      <div class="connection-legend">
+        <div class="legend-card">
+          <div class="legend-icon" style="background: linear-gradient(135deg, #10b981 0%, #02735E 100%);">
+            🔑
+          </div>
+          <h3>IDSync Central</h3>
+          <p>El identificador único que actúa como llave maestra para conectar todos los datos del proyecto a través de los módulos.</p>
+        </div>
+
+        <div class="legend-card">
+          <div class="legend-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+            💬
+          </div>
+          <h3>ThreadSync</h3>
+          <p>Todas las conversaciones y comunicaciones quedan vinculadas al proyecto mediante el IDSync compartido.</p>
+        </div>
+
+        <div class="legend-card">
+          <div class="legend-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+            ⏰
+          </div>
+          <h3>TimeSync</h3>
+          <p>Registros de tiempo, asistencia y timecards se conectan automáticamente usando el mismo IDSync.</p>
+        </div>
+
+        <div class="legend-card">
+          <div class="legend-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+            📐
+          </div>
+          <h3>ViewSync</h3>
+          <p>Planos, visualizaciones y documentos técnicos comparten el IDSync para trazabilidad completa.</p>
+        </div>
+
+        <div class="legend-card">
+          <div class="legend-icon" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+            💰
+          </div>
+          <h3>FinanceSync</h3>
+          <p>Presupuestos, facturas y pagos se vinculan al proyecto mediante el IDSync universal.</p>
+        </div>
+
+        <div class="legend-card">
+          <div class="legend-icon" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+            🚚
+          </div>
+          <h3>EquipmentSync</h3>
+          <p>Control de equipos, herramientas y recursos asignados al proyecto a través del IDSync.</p>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="cta-section">
+        <h2>¿Listo para conectar todo?</h2>
+        <p>Empieza creando tu primer proyecto con IDSync y desbloquea el poder de la integración total</p>
+        <a href="project-form.html" class="btn-primary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Crear Proyecto con IDSync
+        </a>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('connectionCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Ajustar canvas al tamaño del contenedor
+    function resizeCanvas() {
+      canvas.width = canvas.offsetWidth * 2; // Retina
+      canvas.height = canvas.offsetHeight * 2;
+      ctx.scale(2, 2);
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // Definir nodos
+    const nodes = [
+      { 
+        id: 'idsync', 
+        x: canvas.width / 4, 
+        y: canvas.height / 4, 
+        label: 'IDSync', 
+        color: '#10b981',
+        size: 40,
+        icon: '🔑'
+      },
+      { 
+        id: 'project', 
+        x: canvas.width / 4 * 1.2, 
+        y: canvas.height / 4 * 0.6, 
+        label: 'ProjectSync', 
+        color: '#02735E',
+        size: 30,
+        icon: '📋'
+      },
+      { 
+        id: 'thread', 
+        x: canvas.width / 4 * 2, 
+        y: canvas.height / 4 * 0.8, 
+        label: 'ThreadSync', 
+        color: '#3b82f6',
+        size: 28,
+        icon: '💬'
+      },
+      { 
+        id: 'time', 
+        x: canvas.width / 4 * 2.5, 
+        y: canvas.height / 4 * 1.3, 
+        label: 'TimeSync', 
+        color: '#8b5cf6',
+        size: 28,
+        icon: '⏰'
+      },
+      { 
+        id: 'view', 
+        x: canvas.width / 4 * 2, 
+        y: canvas.height / 4 * 1.8, 
+        label: 'ViewSync', 
+        color: '#f59e0b',
+        size: 28,
+        icon: '📐'
+      },
+      { 
+        id: 'finance', 
+        x: canvas.width / 4 * 1.2, 
+        y: canvas.height / 4 * 1.6, 
+        label: 'FinanceSync', 
+        color: '#ef4444',
+        size: 28,
+        icon: '💰'
+      },
+      { 
+        id: 'equipment', 
+        x: canvas.width / 4 * 0.6, 
+        y: canvas.height / 4 * 1.2, 
+        label: 'EquipmentSync', 
+        color: '#06b6d4',
+        size: 28,
+        icon: '🚚'
+      }
+    ];
+
+    // Conexiones desde IDSync central
+    const connections = [
+      { from: 'idsync', to: 'project' },
+      { from: 'idsync', to: 'thread' },
+      { from: 'idsync', to: 'time' },
+      { from: 'idsync', to: 'view' },
+      { from: 'idsync', to: 'finance' },
+      { from: 'idsync', to: 'equipment' }
+    ];
+
+    // Partículas para efecto de flujo
+    const particles = [];
+    connections.forEach(conn => {
+      for (let i = 0; i < 3; i++) {
+        particles.push({
+          connection: conn,
+          progress: Math.random(),
+          speed: 0.005 + Math.random() * 0.01,
+          size: 3 + Math.random() * 3
+        });
+      }
+    });
+
+    let animationTime = 0;
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width / 2, canvas.height / 2);
+      animationTime += 0.01;
+
+      // Dibujar conexiones
+      connections.forEach(conn => {
+        const fromNode = nodes.find(n => n.id === conn.from);
+        const toNode = nodes.find(n => n.id === conn.to);
+
+        // Línea base
+        ctx.beginPath();
+        ctx.moveTo(fromNode.x, fromNode.y);
+        ctx.lineTo(toNode.x, toNode.y);
+        ctx.strokeStyle = 'rgba(16, 185, 129, 0.2)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Línea animada brillante
+        const gradient = ctx.createLinearGradient(fromNode.x, fromNode.y, toNode.x, toNode.y);
+        gradient.addColorStop(0, 'rgba(16, 185, 129, 0)');
+        gradient.addColorStop(0.5, 'rgba(16, 185, 129, 0.6)');
+        gradient.addColorStop(1, 'rgba(16, 185, 129, 0)');
+        
+        ctx.beginPath();
+        ctx.moveTo(fromNode.x, fromNode.y);
+        ctx.lineTo(toNode.x, toNode.y);
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      });
+
+      // Dibujar partículas
+      particles.forEach(particle => {
+        const conn = particle.connection;
+        const fromNode = nodes.find(n => n.id === conn.from);
+        const toNode = nodes.find(n => n.id === conn.to);
+
+        particle.progress += particle.speed;
+        if (particle.progress > 1) particle.progress = 0;
+
+        const x = fromNode.x + (toNode.x - fromNode.x) * particle.progress;
+        const y = fromNode.y + (toNode.y - fromNode.y) * particle.progress;
+
+        ctx.beginPath();
+        ctx.arc(x, y, particle.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(16, 185, 129, ${0.8 - particle.progress * 0.5})`;
+        ctx.fill();
+      });
+
+      // Dibujar nodos
+      nodes.forEach((node, index) => {
+        const pulse = Math.sin(animationTime * 2 + index) * 0.1 + 1;
+        const size = node.size * pulse;
+
+        // Sombra/glow
+        const gradient = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, size);
+        gradient.addColorStop(0, node.color + '80');
+        gradient.addColorStop(1, node.color + '00');
+        
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, size * 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+
+        // Círculo principal
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, size, 0, Math.PI * 2);
+        ctx.fillStyle = node.color;
+        ctx.fill();
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Texto emoji
+        ctx.font = `${size * 0.8}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(node.icon, node.x, node.y);
+
+        // Label
+        ctx.font = 'bold 12px Inter';
+        ctx.fillStyle = 'white';
+        ctx.fillText(node.label, node.x, node.y + size + 20);
+      });
+
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+
+    // Interacción: hover en nodos
+    canvas.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.clientX - rect.left) * 2;
+      const y = (e.clientY - rect.top) * 2;
+
+      nodes.forEach(node => {
+        const distance = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
+        if (distance < node.size) {
+          canvas.style.cursor = 'pointer';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
