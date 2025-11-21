@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Borradores de Proyectos - Opsis Suite</title>
+  <style>
+    :root {
+      --verdi-dark: #022326;
+      --verdi-mid: #034040;
+      --verdi-accent: #035951;
+      --verdi-light: #02735E;
+      --primary-color: #02735E;
+      --accent-color: #035951;
+      --text-primary: #1e293b;
+      --text-secondary: #475569;
+      --bg-body: #f8fafb;
+      --bg-card: #ffffff;
+      --border-color: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, #f8fafb 0%, #e8f4f2 100%);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--verdi-light) 0%, var(--verdi-accent) 100%);
+      color: white;
+      padding: 20px 24px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .back-button {
+      background: rgba(255, 255, 255, 0.15);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .back-button:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateX(-4px);
+    }
+
+    .header-title {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    main {
+      flex: 1;
+      padding: 40px 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .page-header {
+      margin-bottom: 32px;
+    }
+
+    .page-header h1 {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .page-header p {
+      color: var(--text-secondary);
+      font-size: 16px;
+    }
+
+    .drafts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+      gap: 24px;
+    }
+
+    .draft-card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      border: 2px solid var(--border-color);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s;
+    }
+
+    .draft-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      border-color: var(--primary-color);
+    }
+
+    .draft-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #f1f5f9;
+    }
+
+    .draft-id {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary-color);
+      background: rgba(2, 115, 94, 0.1);
+      padding: 6px 12px;
+      border-radius: 8px;
+    }
+
+    .draft-status {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      color: #92400e;
+    }
+
+    .draft-info {
+      margin-bottom: 16px;
+    }
+
+    .draft-info-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .draft-info-row svg {
+      color: var(--text-secondary);
+    }
+
+    .draft-info-row strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .draft-info-row span {
+      color: var(--text-secondary);
+    }
+
+    .draft-timestamp {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #f1f5f9;
+    }
+
+    .draft-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #02735E 0%, #035951 100%);
+      color: white;
+      flex: 1;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(2, 115, 94, 0.3);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+      padding: 10px 16px;
+    }
+
+    .btn-danger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 80px 24px;
+      background: white;
+      border-radius: 24px;
+      border: 2px dashed var(--border-color);
+    }
+
+    .empty-state svg {
+      width: 80px;
+      height: 80px;
+      color: var(--border-color);
+      margin-bottom: 24px;
+    }
+
+    .empty-state h2 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .empty-state p {
+      color: var(--text-secondary);
+      font-size: 16px;
+    }
+
+    .stats-bar {
+      background: white;
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 32px;
+      border: 2px solid var(--border-color);
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--primary-color);
+    }
+
+    .divider {
+      width: 2px;
+      height: 40px;
+      background: var(--border-color);
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 24px;
+      padding: 32px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal h3 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+
+    .modal p {
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .btn-cancel {
+      background: #f1f5f9;
+      color: var(--text-primary);
+    }
+
+    .btn-cancel:hover {
+      background: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header>
+      <button class="back-button" onclick="window.location.href='projectsync.html'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Volver a ProjectSync
+      </button>
+      <div class="header-title">Borradores de Proyectos</div>
+    </header>
+
+    <main>
+      <div class="page-header">
+        <h1>📝 Proyectos Inconclusos</h1>
+        <p>Continúa donde lo dejaste o elimina borradores que ya no necesites</p>
+      </div>
+
+      <div class="stats-bar" id="statsBar">
+        <div class="stat">
+          <span class="stat-label">Borradores</span>
+          <span class="stat-value" id="totalDrafts">0</span>
+        </div>
+        <div class="divider"></div>
+        <div class="stat">
+          <span class="stat-label">Última Modificación</span>
+          <span class="stat-value" style="font-size: 16px; font-weight: 600;" id="lastModified">-</span>
+        </div>
+      </div>
+
+      <div class="drafts-grid" id="draftsContainer">
+        <!-- Drafts will be loaded here -->
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal de confirmación -->
+  <div class="modal-overlay" id="deleteModal">
+    <div class="modal">
+      <h3>⚠️ Confirmar Eliminación</h3>
+      <p>¿Estás seguro de que deseas eliminar este borrador? Esta acción no se puede deshacer.</p>
+      <p style="font-size: 13px; color: #dc2626; font-weight: 600;">
+        El IDSync asociado (<span id="modalIDSync"></span>) se marcará como CANCELADO en el historial.
+      </p>
+      <div class="modal-actions">
+        <button class="btn btn-cancel" onclick="closeDeleteModal()">Cancelar</button>
+        <button class="btn btn-danger" onclick="confirmDelete()">Eliminar Borrador</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let draftToDelete = null;
+
+    function loadDrafts() {
+      const drafts = JSON.parse(localStorage.getItem('projectDrafts') || '[]');
+      const container = document.getElementById('draftsContainer');
+      
+      // Update stats
+      document.getElementById('totalDrafts').textContent = drafts.length;
+      
+      if (drafts.length > 0) {
+        const lastDraft = drafts.reduce((latest, draft) => {
+          return new Date(draft.lastSaved) > new Date(latest.lastSaved) ? draft : latest;
+        });
+        document.getElementById('lastModified').textContent = formatRelativeTime(lastDraft.lastSaved);
+      }
+
+      if (drafts.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state" style="grid-column: 1/-1;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 11l3 3L22 4"></path>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+            </svg>
+            <h2>No hay borradores pendientes</h2>
+            <p>Todos tus proyectos están completados o no hay borradores guardados</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Sort by last saved (newest first)
+      drafts.sort((a, b) => new Date(b.lastSaved) - new Date(a.lastSaved));
+
+      container.innerHTML = drafts.map(draft => `
+        <div class="draft-card">
+          <div class="draft-header">
+            <div class="draft-id">${draft.idSync}</div>
+            <div class="draft-status">BORRADOR</div>
+          </div>
+          
+          <div class="draft-info">
+            <div class="draft-info-row">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 7h-9M14 3v4M10 21l4-9-9 4 2 2 3 3z"></path>
+              </svg>
+              <strong>Proyecto:</strong> 
+              <span>${draft.name || '<Sin nombre>'}</span>
+            </div>
+            
+            <div class="draft-info-row">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <strong>Cliente:</strong> 
+              <span>${draft.client || '<Sin cliente>'}</span>
+            </div>
+            
+            <div class="draft-info-row">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              <strong>Ubicación:</strong> 
+              <span>${draft.address || '<Sin dirección>'}</span>
+            </div>
+          </div>
+
+          <div class="draft-timestamp">
+            💾 Guardado ${formatRelativeTime(draft.lastSaved)}
+          </div>
+
+          <div class="draft-actions">
+            <button class="btn btn-primary" onclick="continueDraft('${draft.idSync}')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+              Continuar Editando
+            </button>
+            <button class="btn btn-danger" onclick="showDeleteModal('${draft.idSync}')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function formatRelativeTime(timestamp) {
+      const now = new Date();
+      const then = new Date(timestamp);
+      const diff = now - then;
+      const minutes = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
+
+      if (minutes < 1) return 'hace un momento';
+      if (minutes < 60) return `hace ${minutes} min`;
+      if (hours < 24) return `hace ${hours}h`;
+      return `hace ${days} día${days > 1 ? 's' : ''}`;
+    }
+
+    function continueDraft(idSync) {
+      window.location.href = `project-form.html?draft=${idSync}`;
+    }
+
+    function showDeleteModal(idSync) {
+      draftToDelete = idSync;
+      document.getElementById('modalIDSync').textContent = idSync;
+      document.getElementById('deleteModal').classList.add('show');
+    }
+
+    function closeDeleteModal() {
+      draftToDelete = null;
+      document.getElementById('deleteModal').classList.remove('show');
+    }
+
+    function confirmDelete() {
+      if (!draftToDelete) return;
+
+      // Eliminar borrador
+      const drafts = JSON.parse(localStorage.getItem('projectDrafts') || '[]');
+      const filteredDrafts = drafts.filter(d => d.idSync !== draftToDelete);
+      localStorage.setItem('projectDrafts', JSON.stringify(filteredDrafts));
+
+      // Registrar IDSync como cancelado
+      const usedIDs = JSON.parse(localStorage.getItem('usedIDSyncs') || '[]');
+      const existing = usedIDs.find(id => id.idSync === draftToDelete);
+      
+      if (!existing) {
+        usedIDs.push({
+          idSync: draftToDelete,
+          projectId: null,
+          projectName: 'CANCELADO - BORRADOR ELIMINADO',
+          status: 'cancelled',
+          reason: 'Usuario eliminó borrador manualmente',
+          createdAt: new Date().toISOString()
+        });
+        localStorage.setItem('usedIDSyncs', JSON.stringify(usedIDs));
+      }
+
+      closeDeleteModal();
+      loadDrafts();
+    }
+
+    // Cargar borradores al iniciar
+    window.addEventListener('DOMContentLoaded', () => {
+      loadDrafts();
+    });
+  </script>
+</body>
+</html>

@@ -273,114 +273,6 @@
       border-top: 2px solid #f1f5f9;
     }
 
-    .alert-warning {
-      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-      border: 2px solid #f59e0b;
-      border-radius: 12px;
-      padding: 12px 16px;
-      margin-top: 8px;
-      font-size: 13px;
-      color: #92400e;
-      display: none;
-    }
-
-    .alert-warning.show {
-      display: block;
-    }
-
-    .alert-success {
-      background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-      border: 2px solid #10b981;
-      border-radius: 12px;
-      padding: 12px 16px;
-      margin-top: 8px;
-      font-size: 13px;
-      color: #065f46;
-      display: none;
-    }
-
-    .alert-success.show {
-      display: block;
-    }
-
-    .module-marketing {
-      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-      border: 2px solid #f59e0b;
-      border-radius: 16px;
-      padding: 16px;
-      margin-top: 12px;
-      text-align: center;
-    }
-
-    .module-marketing h4 {
-      color: #92400e;
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .module-marketing p {
-      color: #78350f;
-      font-size: 13px;
-      margin-bottom: 12px;
-    }
-
-    .btn-upgrade {
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-      color: white;
-      border: none;
-      padding: 8px 20px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .btn-upgrade:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3);
-    }
-
-    .autosave-indicator {
-      position: fixed;
-      top: 80px;
-      right: 24px;
-      background: rgba(255, 255, 255, 0.95);
-      border: 2px solid #10b981;
-      border-radius: 12px;
-      padding: 8px 16px;
-      font-size: 13px;
-      color: #065f46;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      display: none;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .autosave-indicator.show {
-      display: flex;
-    }
-
-    .autosave-indicator .spinner {
-      width: 14px;
-      height: 14px;
-      border: 2px solid #10b981;
-      border-top-color: transparent;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .btn-generate:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
-    }
-
     .btn {
       padding: 16px 40px;
       border-radius: 16px;
@@ -530,12 +422,6 @@
       </div>
     </header>
 
-    <!-- Indicador de Autoguardado -->
-    <div class="autosave-indicator" id="autosaveIndicator">
-      <div class="spinner"></div>
-      <span>Guardando borrador...</span>
-    </div>
-
     <!-- Main Content -->
     <main>
       <div class="form-container">
@@ -559,7 +445,7 @@
                   </label>
                   <div style="display: flex; align-items: center; gap: 12px;">
                     <input type="text" class="form-input" id="idSync" readonly style="font-size: 20px; font-weight: 700; color: #02735E; background: white; border: 2px solid #02735E; max-width: 200px;">
-                    <button type="button" id="btnGenerateID" onclick="generateNextIDSync()" class="btn-secondary" style="padding: 12px 20px; border-radius: 12px; display: flex; align-items: center; gap: 8px;">
+                    <button type="button" onclick="generateNextIDSync()" class="btn-secondary" style="padding: 12px 20px; border-radius: 12px; display: flex; align-items: center; gap: 8px;">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="23 4 23 10 17 10"></polyline>
                         <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
@@ -572,19 +458,6 @@
                   <p style="font-weight: 600;">Este ID conectará todos los módulos</p>
                   <p style="opacity: 0.8;">Threads, TimeSync, ViewSync, etc.</p>
                 </div>
-              </div>
-              <div class="alert-warning" id="alertIDGenerated">
-                ⚠️ <strong>IDSync ya generado.</strong> No generes más IDs hasta guardar este proyecto.
-              </div>
-              <div class="alert-success" id="alertDraftSaved">
-                ✓ <strong>Borrador guardado automáticamente</strong>
-              </div>
-              <div class="module-marketing" id="moduleMarketing" style="display: none;">
-                <h4>🚀 Desbloquea el Poder Completo de ProjectSync</h4>
-                <p>Conecta con ThreadSync, TimeSync, ViewSync, FinanceSync y más módulos premium</p>
-                <button type="button" class="btn-upgrade" onclick="showUpgradeModal()">
-                  ⭐ Ver Módulos Premium
-                </button>
               </div>
             </div>
 
@@ -727,181 +600,19 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // Estado de la aplicación
-    let idSyncGenerated = false;
-    let autosaveTimer = null;
-    let currentDraftID = null;
-
-    // Verificar módulos premium de la compañía (simulado)
-    function checkPremiumModules() {
-      // En producción, esto vendría de Supabase
-      const hasPremiumModules = localStorage.getItem('hasPremiumModules') === 'true';
-      
-      if (!hasPremiumModules) {
-        document.getElementById('moduleMarketing').style.display = 'block';
-      }
-    }
-
     // IDSync Management
     function generateNextIDSync() {
-      if (idSyncGenerated) {
-        // Ya se generó un ID para este proyecto
-        document.getElementById('alertIDGenerated').classList.add('show');
-        setTimeout(() => {
-          document.getElementById('alertIDGenerated').classList.remove('show');
-        }, 3000);
-        return;
-      }
-
+      // TODO: In production, fetch the last IDSync from Supabase
+      // For now, generate based on current timestamp + random
       const lastID = parseInt(localStorage.getItem('lastIDSync') || '1000');
       const nextID = lastID + 1;
-      const idSyncValue = `IDSYNC-${nextID}`;
-      
-      document.getElementById('idSync').value = idSyncValue;
-      
-      // Marcar como generado y deshabilitar botón
-      idSyncGenerated = true;
-      const btnGenerate = document.getElementById('btnGenerateID');
-      btnGenerate.disabled = true;
-      btnGenerate.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M20 6L9 17l-5-5"/>
-        </svg>
-        ID Generado
-      `;
-
-      // Crear borrador automáticamente
-      currentDraftID = idSyncValue;
-      saveDraft();
-    }
-
-    // Sistema de autoguardado
-    function saveDraft() {
-      const formData = collectFormData();
-      
-      if (!formData.idSync) return;
-
-      // Mostrar indicador
-      const indicator = document.getElementById('autosaveIndicator');
-      indicator.classList.add('show');
-
-      // Guardar en localStorage (en producción sería Supabase)
-      const drafts = JSON.parse(localStorage.getItem('projectDrafts') || '[]');
-      
-      // Buscar si ya existe este borrador
-      const existingIndex = drafts.findIndex(d => d.idSync === formData.idSync);
-      
-      const draftData = {
-        ...formData,
-        lastSaved: new Date().toISOString(),
-        status: 'draft'
-      };
-
-      if (existingIndex >= 0) {
-        drafts[existingIndex] = draftData;
-      } else {
-        drafts.push(draftData);
-      }
-
-      localStorage.setItem('projectDrafts', JSON.stringify(drafts));
-
-      // Ocultar indicador después de 1 segundo
-      setTimeout(() => {
-        indicator.classList.remove('show');
-        // Mostrar confirmación
-        document.getElementById('alertDraftSaved').classList.add('show');
-        setTimeout(() => {
-          document.getElementById('alertDraftSaved').classList.remove('show');
-        }, 2000);
-      }, 1000);
-    }
-
-    // Recolectar datos del formulario
-    function collectFormData() {
-      return {
-        idSync: document.getElementById('idSync').value,
-        name: document.getElementById('projectName').value,
-        client: document.getElementById('clientName').value,
-        contact: document.getElementById('contactName').value,
-        startDate: document.getElementById('startDate').value,
-        endDate: document.getElementById('endDate').value,
-        description: document.getElementById('description').value,
-        address: document.getElementById('address').value,
-        latitude: document.getElementById('latitude').value,
-        longitude: document.getElementById('longitude').value
-      };
-    }
-
-    // Autoguardado cada 10 segundos si hay cambios
-    function startAutosave() {
-      const formInputs = document.querySelectorAll('input, textarea, select');
-      
-      formInputs.forEach(input => {
-        input.addEventListener('input', () => {
-          if (!idSyncGenerated) return;
-          
-          // Cancelar timer anterior
-          if (autosaveTimer) clearTimeout(autosaveTimer);
-          
-          // Nuevo timer de 10 segundos
-          autosaveTimer = setTimeout(() => {
-            saveDraft();
-          }, 10000);
-        });
-      });
-    }
-
-    // Cargar borrador si existe
-    function loadDraft(idSync) {
-      const drafts = JSON.parse(localStorage.getItem('projectDrafts') || '[]');
-      const draft = drafts.find(d => d.idSync === idSync);
-      
-      if (draft) {
-        document.getElementById('projectName').value = draft.name || '';
-        document.getElementById('clientName').value = draft.client || '';
-        document.getElementById('contactName').value = draft.contact || '';
-        document.getElementById('startDate').value = draft.startDate || '';
-        document.getElementById('endDate').value = draft.endDate || '';
-        document.getElementById('description').value = draft.description || '';
-        document.getElementById('address').value = draft.address || '';
-        document.getElementById('latitude').value = draft.latitude || '';
-        document.getElementById('longitude').value = draft.longitude || '';
-        
-        // Marcar como generado
-        idSyncGenerated = true;
-        document.getElementById('btnGenerateID').disabled = true;
-      }
-    }
-
-    // Mostrar modal de upgrade
-    function showUpgradeModal() {
-      alert('🚀 Módulos Premium Disponibles:\n\n' +
-            '✓ ThreadSync - Gestión de hilos de comunicación\n' +
-            '✓ TimeSync - Control de tiempo y asistencia\n' +
-            '✓ ViewSync - Visualización de planos\n' +
-            '✓ FinanceSync - Gestión financiera\n' +
-            '✓ EquipmentSync - Control de equipos\n\n' +
-            'Contacta a tu representante de ventas para activarlos.');
+      localStorage.setItem('lastIDSync', nextID.toString());
+      document.getElementById('idSync').value = `IDSYNC-${nextID}`;
     }
 
     // Initialize with first IDSync on page load
     window.addEventListener('DOMContentLoaded', () => {
-      // Verificar si viene de edición de borrador
-      const urlParams = new URLSearchParams(window.location.search);
-      const draftID = urlParams.get('draft');
-      
-      if (draftID) {
-        loadDraft(draftID);
-        document.getElementById('idSync').value = draftID;
-      } else {
-        generateNextIDSync();
-      }
-
-      // Iniciar autoguardado
-      startAutosave();
-
-      // Verificar módulos premium
-      checkPremiumModules();
+      generateNextIDSync();
     });
 
     // Initialize map
@@ -983,11 +694,9 @@
       submitBtn.disabled = true;
       submitBtn.innerHTML = '<span>Creando...</span>';
 
-      const idSyncValue = document.getElementById('idSync').value;
-
       // Collect form data
       const projectData = {
-        idSync: idSyncValue,
+        idSync: document.getElementById('idSync').value,
         id: 'ORD-' + Math.floor(Math.random() * 1000),
         name: document.getElementById('projectName').value,
         client: document.getElementById('clientName').value,
@@ -1004,26 +713,6 @@
         createdAt: new Date().toISOString()
       };
 
-      // Actualizar lastIDSync solo al guardar exitosamente
-      const currentID = parseInt(idSyncValue.replace('IDSYNC-', ''));
-      localStorage.setItem('lastIDSync', currentID.toString());
-
-      // Eliminar borrador
-      const drafts = JSON.parse(localStorage.getItem('projectDrafts') || '[]');
-      const filteredDrafts = drafts.filter(d => d.idSync !== idSyncValue);
-      localStorage.setItem('projectDrafts', JSON.stringify(filteredDrafts));
-
-      // Registrar IDSync como usado
-      const usedIDs = JSON.parse(localStorage.getItem('usedIDSyncs') || '[]');
-      usedIDs.push({
-        idSync: idSyncValue,
-        projectId: projectData.id,
-        projectName: projectData.name,
-        status: 'completed',
-        createdAt: new Date().toISOString()
-      });
-      localStorage.setItem('usedIDSyncs', JSON.stringify(usedIDs));
-
       // TODO: Save to Supabase
       console.log('Project data:', projectData);
 
@@ -1033,34 +722,6 @@
         window.location.href = 'projectsync.html?success=true&project=' + projectData.id;
       }, 1000);
     }
-
-    // Registrar IDSync cancelado al salir sin guardar
-    window.addEventListener('beforeunload', (e) => {
-      if (idSyncGenerated && currentDraftID) {
-        const formData = collectFormData();
-        
-        // Verificar si el formulario tiene datos
-        const hasData = formData.name || formData.client || formData.description;
-        
-        if (!hasData) {
-          // Registrar como cancelado
-          const usedIDs = JSON.parse(localStorage.getItem('usedIDSyncs') || '[]');
-          const existing = usedIDs.find(id => id.idSync === currentDraftID);
-          
-          if (!existing) {
-            usedIDs.push({
-              idSync: currentDraftID,
-              projectId: null,
-              projectName: 'CANCELADO',
-              status: 'cancelled',
-              reason: 'Usuario abandonó formulario sin guardar',
-              createdAt: new Date().toISOString()
-            });
-            localStorage.setItem('usedIDSyncs', JSON.stringify(usedIDs));
-          }
-        }
-      }
-    });
   </script>
 </body>
 </html>
