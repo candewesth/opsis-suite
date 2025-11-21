@@ -570,7 +570,10 @@
                 </div>
                 <div style="text-align: right; color: #047857; font-size: 13px;">
                   <p style="font-weight: 600;">Este ID conectará todos los módulos</p>
-                  <p style="opacity: 0.8;">Threads, TimeSync, ViewSync, etc.</p>
+                  <p style="opacity: 0.8;" id="modulesList">Threads, TimeSync, ViewSync, etc.</p>
+                  <p style="opacity: 0.6; font-size: 11px; margin-top: 4px; cursor: pointer;" onclick="showUpgradeModal()" id="upgradeHint">
+                    <span style="text-decoration: underline;">¿Más módulos disponibles?</span>
+                  </p>
                 </div>
               </div>
               <div class="alert-warning" id="alertIDGenerated">
@@ -578,13 +581,6 @@
               </div>
               <div class="alert-success" id="alertDraftSaved">
                 ✓ <strong>Borrador guardado automáticamente</strong>
-              </div>
-              <div class="module-marketing" id="moduleMarketing" style="display: none;">
-                <h4>🚀 Desbloquea el Poder Completo de ProjectSync</h4>
-                <p>Conecta con ThreadSync, TimeSync, ViewSync, FinanceSync y más módulos premium</p>
-                <button type="button" class="btn-upgrade" onclick="showUpgradeModal()">
-                  ⭐ Ver Módulos Premium
-                </button>
               </div>
             </div>
 
@@ -737,8 +733,25 @@
       // En producción, esto vendría de Supabase
       const hasPremiumModules = localStorage.getItem('hasPremiumModules') === 'true';
       
+      const upgradeHint = document.getElementById('upgradeHint');
+      const modulesList = document.getElementById('modulesList');
+      
       if (!hasPremiumModules) {
-        document.getElementById('moduleMarketing').style.display = 'block';
+        // Mostrar hint sutil con efecto hover
+        upgradeHint.style.display = 'block';
+        upgradeHint.addEventListener('mouseenter', () => {
+          upgradeHint.style.color = '#f59e0b';
+          upgradeHint.style.opacity = '1';
+        });
+        upgradeHint.addEventListener('mouseleave', () => {
+          upgradeHint.style.color = 'inherit';
+          upgradeHint.style.opacity = '0.6';
+        });
+      } else {
+        // Si tiene módulos premium, ocultar hint
+        upgradeHint.style.display = 'none';
+        modulesList.textContent = 'ThreadSync, TimeSync, ViewSync, FinanceSync activos ✓';
+        modulesList.style.color = '#10b981';
       }
     }
 
