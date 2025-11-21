@@ -548,7 +548,7 @@
           <div class="form-grid">
             <!-- IDSync Display -->
             <div class="form-group full-width" style="margin-bottom: 24px;">
-              <div style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 2px solid rgba(2, 115, 94, 0.2); border-radius: 16px; padding: 20px; display: flex; align-items: center; justify-content: space-between;">
+              <div id="idSyncContainer" style="background: linear-gradient(to right, #f0fdf4 0%, #fef3c7 100%); border: 2px solid rgba(2, 115, 94, 0.2); border-radius: 16px; padding: 20px; display: flex; align-items: center; justify-content: space-between;">
                 <div>
                   <label class="form-label" style="margin-bottom: 8px; display: block;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -568,10 +568,10 @@
                     </button>
                   </div>
                 </div>
-                <div style="text-align: right; color: #047857; font-size: 13px;">
-                  <p style="font-weight: 600;">Este ID conectará todos los módulos</p>
-                  <p style="opacity: 0.8;" id="modulesList">Threads, TimeSync, ViewSync, etc.</p>
-                  <p style="opacity: 0.6; font-size: 11px; margin-top: 4px; cursor: pointer;" onclick="showUpgradeModal()" id="upgradeHint">
+                <div id="modulesInfo" style="text-align: right; font-size: 13px;">
+                  <p style="font-weight: 600; color: #047857;">🔑 API Key Universal</p>
+                  <p style="opacity: 0.8; color: #065f46;" id="modulesList">Threads, TimeSync, ViewSync, etc.</p>
+                  <p style="opacity: 0.6; font-size: 11px; margin-top: 4px; cursor: pointer; color: #92400e;" onclick="showUpgradeModal()" id="upgradeHint">
                     <span style="text-decoration: underline;">¿Más módulos disponibles?</span>
                   </p>
                 </div>
@@ -735,23 +735,31 @@
       
       const upgradeHint = document.getElementById('upgradeHint');
       const modulesList = document.getElementById('modulesList');
+      const modulesInfo = document.getElementById('modulesInfo');
+      const idSyncContainer = document.getElementById('idSyncContainer');
       
       if (!hasPremiumModules) {
-        // Mostrar hint sutil con efecto hover
+        // Mostrar hint sutil con gradiente verde → amarillo
         upgradeHint.style.display = 'block';
+        idSyncContainer.style.background = 'linear-gradient(to right, #f0fdf4 0%, #fef3c7 100%)';
+        
+        // Efecto hover en el hint
         upgradeHint.addEventListener('mouseenter', () => {
           upgradeHint.style.color = '#f59e0b';
           upgradeHint.style.opacity = '1';
+          upgradeHint.style.transform = 'translateY(-1px)';
         });
         upgradeHint.addEventListener('mouseleave', () => {
-          upgradeHint.style.color = 'inherit';
+          upgradeHint.style.color = '#92400e';
           upgradeHint.style.opacity = '0.6';
+          upgradeHint.style.transform = 'translateY(0)';
         });
       } else {
-        // Si tiene módulos premium, ocultar hint
+        // Si tiene módulos premium: fondo verde puro, sin gradiente
         upgradeHint.style.display = 'none';
-        modulesList.textContent = 'ThreadSync, TimeSync, ViewSync, FinanceSync activos ✓';
-        modulesList.style.color = '#10b981';
+        idSyncContainer.style.background = 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)';
+        modulesList.innerHTML = '<span style="color: #10b981;">✓</span> ThreadSync, TimeSync, ViewSync, FinanceSync';
+        modulesInfo.querySelector('p:first-child').innerHTML = '🔑 API Key Universal - <span style="color: #10b981; font-weight: 700;">Activa</span>';
       }
     }
 
