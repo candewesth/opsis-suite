@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light" style="--primary-color: #02735E;">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ProjectSync - Gestión de Proyectos | Opsis Suite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;500;600;700;900&display=swap">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <style>
+    :root {
+      /* VERDI Color Palette */
+      --verdi-dark: #022326;
+      --verdi-mid: #034040;
+      --verdi-accent: #035951;
+      --verdi-light: #02735E;
+      
+      --primary-color: #02735E;
+      --accent-color: #035951;
+      --text-primary: #1e293b;
+      --text-secondary: #475569;
+      --bg-body: #fafafa;
+      --bg-card: #ffffff;
+      --border-color: #ebebeb;
+      --surface-page-a: #fafafa;
+      --surface-page-b: #f7f7f7;
+      --surface-page-dark-a: #1b2538;
+      --surface-page-dark-b: #151d2c;
+      --table-header-bg: #fafafa;
+    }
+
+    [data-theme='dark'] {
+      --text-primary: #f8fafc;
+      --text-secondary: #b8c4dd;
+      --bg-body: #0f172a;
+      --bg-card: #0f1316;
+      --border-color: rgba(255,255,255,0.04);
+      --surface-page-dark-a: #2b2f33;
+      --surface-page-dark-b: #0f1214;
+      --surface-page-a: var(--surface-page-dark-a);
+      --surface-page-b: var(--surface-page-dark-b);
+      --table-header-bg: #0b1220;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Helvetica Neue', Helvetica, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-body);
+      color: var(--text-primary);
+      font-weight: 400;
+    }
+
+    @keyframes aire {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .app-content {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      flex: 1;
+    }
+
+    header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 20px;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    .logo-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+    }
+
+    .logo-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: #ffffff;
+      text-transform: none;
+      letter-spacing: -0.3px;
+    }
+
+    .module-tab {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.7);
+      background: transparent;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .module-tab:hover {
+      background: rgba(255,255,255,0.2) !important;
+      color: rgba(255,255,255,1) !important;
+    }
+
+    .module-tab.active {
+      background: rgba(255,255,255,0.15) !important;
+      color: rgba(255,255,255,0.95) !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    aside {
+      background: var(--bg-card);
+      border-right: 1px solid var(--border-color);
+      padding: 24px 0;
+      position: sticky;
+      top: 64px;
+      height: calc(100vh - 64px);
+      overflow-y: auto;
+      transition: all 0.3s ease;
+      width: 250px;
+      z-index: 100;
+    }
+
+    .sidebar-item {
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      border-left: 3px solid transparent;
+      text-decoration: none;
+    }
+
+    .sidebar-item.active,
+    .sidebar-item:hover {
+      background: rgba(2, 115, 94, 0.06);
+      color: #02735E;
+      border-left-color: #02735E;
+    }
+
+    main {
+      padding: 16px 24px;
+    }
+
+    .page {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      background: var(--surface-page-a);
+      border-radius: 20px;
+      padding: 20px;
+      border: 1px solid rgba(28, 37, 54, 0.08);
+      box-shadow: 0 30px 50px rgba(15, 23, 42, 0.08);
+    }
+
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #02735E 0%, #035951 100%);
+      color: #fff;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(2, 115, 94, 0.25);
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      background: #035951;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: rgba(15, 23, 42, 0.05);
+      color: var(--text-secondary);
+    }
+
+    .segmented-control {
+      display: inline-flex;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.05);
+      padding: 4px;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      flex-wrap: wrap;
+      gap: 4px;
+      width: 100%;
+    }
+
+    .segmented-control button {
+      border: none;
+      background: transparent;
+      padding: 6px 18px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 150ms ease;
+      flex: 1 1 140px;
+      text-align: center;
+    }
+
+    .segmented-control button.active {
+      background: linear-gradient(135deg, #02735E 0%, #035951 50%, #034040 100%) !important;
+      background-size: 200% 200%;
+      animation: aire 8s ease infinite;
+      color: #fff !important;
+      font-weight: 700;
+      box-shadow: 0 8px 24px rgba(2, 115, 94, 0.3);
+    }
+
+    .projectsync-panel {
+      display: none;
+    }
+
+    .projectsync-panel.active {
+      display: block;
+      animation: fadeInUp 0.35s ease;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(250, 250, 250, 0.95));
+      border: 1px solid rgba(2, 115, 94, 0.08);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 8px 24px rgba(2, 115, 94, 0.08);
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      border-color: rgba(2, 115, 94, 0.15);
+      box-shadow: 0 12px 32px rgba(2, 115, 94, 0.12);
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      padding: 0 0 16px 0;
+      border: none;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .grid-4 {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, #02735E, #035951);
+      border: none;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 14px 32px rgba(2, 115, 94, 0.22);
+      transition: all 0.3s ease;
+      color: #ffffff;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 22px 48px rgba(2, 115, 94, 0.3);
+    }
+
+    .stat-card .stat-label {
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0.4px;
+      color: rgba(255, 255, 255, 0.78);
+    }
+
+    .stat-card .stat-value {
+      font-size: 34px;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 8px 0;
+    }
+
+    .stat-card .stat-change {
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 13px;
+    }
+
+    .stat-change.positive {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .chip-filter {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .chip-filter:hover {
+      border-color: rgba(2, 115, 94, 0.4);
+      background: rgba(2, 115, 94, 0.05);
+    }
+
+    .chip-filter.active {
+      background: linear-gradient(135deg, #02735E, #035951);
+      color: white;
+      border-color: transparent;
+    }
+
+    .map-filter-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    #projects-map,
+    #projects-map-projects {
+      width: 100% !important;
+      height: 500px !important;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      background: #f0f0f0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--bg-card);
+    }
+
+    table th {
+      text-align: left;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--text-secondary);
+      padding: 14px 16px;
+      border-bottom: 2px solid var(--border-color);
+      background: var(--table-header-bg);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    table td {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+
+    table tbody tr:hover {
+      background: rgba(2, 115, 94, 0.02);
+    }
+
+    .badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .leaflet-container {
+      background: #e5e3df;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .leaflet-popup-content-wrapper {
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .leaflet-control-attribution {
+      background: rgba(255,255,255,0.8);
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell" data-theme="light" data-accent="#02735E">
+    <header style="background: linear-gradient(135deg, #02735E 0%, #035951 50%, #034040 100%); background-size: 200% 200%; animation: aire 8s ease infinite; padding: 18px 32px; display: flex; align-items: center; gap: 32px;">
+      <div class="logo" aria-label="Opsis Suite">
+        <div class="logo-text">
+          <div class="logo-title">Opsis Suite</div>
+          <div id="company-name-header" style="font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.85); margin-top: 2px;">CVE San Diego</div>
+        </div>
+      </div>
+      
+      <!-- Module Tabs -->
+      <div class="module-tabs" style="display: flex; gap: 8px; margin-left: auto;">
+        <a href="motorsync.html" class="module-tab active" style="padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; color: #02735E; background: white; text-decoration: none; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"></path>
+            <path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"></path>
+            <path d="M12 2v2"></path>
+            <path d="M12 22v-2"></path>
+          </svg>
+          MotorSync
+        </a>
+        <a href="../timesync/timesync.html" class="module-tab" style="padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.7); background: transparent; text-decoration: none; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          TimeSync
+        </a>
+      </div>
+    </header>
+
+    <div class="app-content">
+    <aside id="sidebar">
+      <div class="sidebar-item" onclick="window.location.href='motorsync.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="9"></rect>
+          <rect x="14" y="3" width="7" height="5"></rect>
+          <rect x="14" y="12" width="7" height="9"></rect>
+          <rect x="3" y="16" width="7" height="5"></rect>
+        </svg>
+        <span>Dashboard</span>
+      </div>
+      
+      <a href="projectsync.html" class="sidebar-item active">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="9" y1="3" x2="9" y2="21"></line>
+        </svg>
+        <span>ProjectSync</span>
+      </a>
+      <a href="threadsync-list.html" class="sidebar-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          <line x1="9" y1="10" x2="15" y2="10"></line>
+          <line x1="12" y1="7" x2="12" y2="13"></line>
+        </svg>
+        <span>ThreadSync</span>
+      </a>
+      
+      <div class="sidebar-item" onclick="window.location.href='motorsync.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87m-3-12.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <span>Clientes</span>
+      </div>
+      <div class="sidebar-item" onclick="window.location.href='motorsync.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="1" x2="12" y2="23"></line>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+        </svg>
+        <span>Management</span>
+      </div>
+      <div class="sidebar-item" onclick="window.location.href='motorsync.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4"></path>
+          <path d="M3 12h18"></path>
+        </svg>
+        <span>ToolSync - Inventario</span>
+      </div>
+      <div class="sidebar-item" onclick="window.location.href='motorsync.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M12 1v6m0 6v6m9-9h-6m-6 0H3m15.4-6.4l-4.2 4.2m-7.1 0L2.6 5.6m18.8 12.8l-4.2-4.2m-7.1 0l-4.5 4.5"></path>
+        </svg>
+        <span>Configuración</span>
+      </div>
+    </aside>
+
+    <main id="main">
+      <section class="page">
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-left: 4px solid var(--primary-color); border-radius: 16px; padding: 20px 24px; margin-bottom: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div>
+              <p style="font-size: 11px; color: #047857; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 6px;">Gestión de Proyectos</p>
+              <h2 style="font-size: 28px; font-weight: 800; color: #065f46; margin: 0;">ProjectSync</h2>
+            </div>
+            <div style="display: flex; gap: 12px;">
+              <button class="btn btn-secondary" onclick="alert('Exportar proyectos')" style="border: 1px solid #10b981; color: #10b981;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Exportar
+              </button>
+              <button class="btn btn-primary" onclick="alert('Nuevo proyecto')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Nuevo Proyecto
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="segmented-control projectsync-tabs" role="tablist">
+          <button class="btn btn-secondary active" data-projectsync-tab="overview">Resumen</button>
+          <button class="btn btn-secondary" data-projectsync-tab="projects">Proyectos</button>
+          <button class="btn btn-secondary" data-projectsync-tab="agenda">Agenda</button>
+        </div>
+
+        <!-- Overview Panel -->
+        <div class="projectsync-panel active" data-projectsync-panel="overview">
+          <div class="grid grid-4 kpi-grid">
+            <div class="stat-card">
+              <div class="stat-label">Total Proyectos</div>
+              <div class="stat-value">24</div>
+              <div class="stat-change">8 activos</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">En Curso</div>
+              <div class="stat-value">8</div>
+              <div class="stat-change positive">↑ 2 esta semana</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Completados</div>
+              <div class="stat-value">12</div>
+              <div class="stat-change">Este mes</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Programados</div>
+              <div class="stat-value">4</div>
+              <div class="stat-change">Próximos 7 días</div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top: 24px;">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Mapa de Proyectos</h3>
+                <p style="color: #94a3b8; font-size: 13px; margin-top: 4px;">Integra rutas, cuadrillas y estado operativo en un solo lugar.</p>
+              </div>
+              <div class="map-filter-group">
+                <button class="chip-filter active" data-map-filter="all">Todos</button>
+                <button class="chip-filter" data-map-filter="active">Activos</button>
+                <button class="chip-filter" data-map-filter="scheduled">Programados</button>
+                <button class="chip-filter" data-map-filter="completed">Completados</button>
+              </div>
+            </div>
+            <div id="projects-map"></div>
+          </div>
+        </div>
+
+        <!-- Projects Panel -->
+        <div class="projectsync-panel" data-projectsync-panel="projects">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Mapa de Proyectos</h3>
+                <p style="color: #94a3b8; font-size: 13px; margin-top: 4px;">Visualiza y filtra todos tus proyectos en el mapa</p>
+              </div>
+              <div class="map-filter-group">
+                <button class="chip-filter active" data-project-filter="all">Todos (24)</button>
+                <button class="chip-filter" data-project-filter="active">Activos (8)</button>
+                <button class="chip-filter" data-project-filter="scheduled">Programados (4)</button>
+                <button class="chip-filter" data-project-filter="completed">Completados (12)</button>
+              </div>
+            </div>
+            <div id="projects-map-projects"></div>
+          </div>
+
+          <div class="card" style="margin-top: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h3 class="card-title">Lista de Proyectos</h3>
+              <div style="display: flex; gap: 8px;">
+                <button class="chip-filter active">Todos (24)</button>
+                <button class="chip-filter">Activos (8)</button>
+                <button class="chip-filter">Programados (4)</button>
+                <button class="chip-filter">Completados (12)</button>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>IDSync</th>
+                    <th>Proyecto</th>
+                    <th>Cliente</th>
+                    <th>Estado</th>
+                    <th>Inicio</th>
+                    <th>Fin Estimado</th>
+                    <th>Monto</th>
+                    <th>Progreso</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <strong>ORD-201</strong>
+                      <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0 0;">Proyecto #1024</p>
+                    </td>
+                    <td>
+                      <strong>Instalación HVAC Completo</strong>
+                      <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">Av. Universidad #456</p>
+                    </td>
+                    <td>Residencial Torres</td>
+                    <td><span class="badge" style="background: rgba(2, 115, 94, 0.1); color: #02735E;">EN CURSO</span></td>
+                    <td>10 Nov 2024</td>
+                    <td>20 Nov 2024</td>
+                    <td><strong>$12,500</strong></td>
+                    <td>
+                      <div style="width: 100%;">
+                        <div style="background: #e0e0e0; height: 8px; border-radius: 4px; overflow: hidden;">
+                          <div style="background: linear-gradient(135deg, #02735E, #035951); width: 65%; height: 100%;"></div>
+                        </div>
+                        <p style="font-size: 11px; color: #64748b; margin: 4px 0 0 0;">65%</p>
+                      </div>
+                    </td>
+                    <td>
+                      <button class="btn btn-small btn-secondary">Ver</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>ORD-202</strong>
+                      <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0 0;">Proyecto #1023</p>
+                    </td>
+                    <td>
+                      <strong>Reparación Sistema Eléctrico</strong>
+                      <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">Calle Principal #123</p>
+                    </td>
+                    <td>Comercial Plaza</td>
+                    <td><span class="badge" style="background: rgba(234, 179, 8, 0.1); color: #eab308;">PROGRAMADO</span></td>
+                    <td>18 Nov 2024</td>
+                    <td>22 Nov 2024</td>
+                    <td><strong>$8,200</strong></td>
+                    <td>
+                      <div style="width: 100%;">
+                        <div style="background: #e0e0e0; height: 8px; border-radius: 4px; overflow: hidden;">
+                          <div style="background: #eab308; width: 0%; height: 100%;"></div>
+                        </div>
+                        <p style="font-size: 11px; color: #64748b; margin: 4px 0 0 0;">0%</p>
+                      </div>
+                    </td>
+                    <td>
+                      <button class="btn btn-small btn-secondary">Ver</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>ORD-203</strong>
+                      <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0 0;">Proyecto #1022</p>
+                    </td>
+                    <td>
+                      <strong>Mantenimiento de Calderas</strong>
+                      <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">Hotel Zona Centro</p>
+                    </td>
+                    <td>Hotel Pacífico</td>
+                    <td><span class="badge" style="background: rgba(5, 150, 105, 0.1); color: #059669;">COMPLETADO</span></td>
+                    <td>05 Nov 2024</td>
+                    <td>08 Nov 2024</td>
+                    <td><strong>$15,400</strong></td>
+                    <td>
+                      <div style="width: 100%;">
+                        <div style="background: #e0e0e0; height: 8px; border-radius: 4px; overflow: hidden;">
+                          <div style="background: #059669; width: 100%; height: 100%;"></div>
+                        </div>
+                        <p style="font-size: 11px; color: #64748b; margin: 4px 0 0 0;">100%</p>
+                      </div>
+                    </td>
+                    <td>
+                      <button class="btn btn-small btn-secondary">Ver</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Agenda Panel -->
+        <div class="projectsync-panel" data-projectsync-panel="agenda">
+          <div class="grid grid-4 kpi-grid">
+            <div class="stat-card">
+              <div class="stat-label">Hoy</div>
+              <div class="stat-value">5</div>
+              <div class="stat-change">3 confirmadas</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Esta Semana</div>
+              <div class="stat-value">18</div>
+              <div class="stat-change positive">↑ 4 vs semana pasada</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Próximos 7 días</div>
+              <div class="stat-value">24</div>
+              <div class="stat-change">12 proyectos activos</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Pendientes</div>
+              <div class="stat-value">7</div>
+              <div class="stat-change">Sin confirmar</div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top: 24px;">
+            <h3 class="card-title" style="margin-bottom: 16px;">Agenda de la Semana</h3>
+            <p style="color: #94a3b8; text-align: center; padding: 40px;">Vista de agenda en desarrollo...</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // Tab functionality
+    document.addEventListener('DOMContentLoaded', () => {
+      const projectTabs = document.querySelectorAll('[data-projectsync-tab]');
+      const projectPanels = document.querySelectorAll('[data-projectsync-panel]');
+      
+      projectTabs.forEach((tab) => {
+        tab.addEventListener('click', () => {
+          const target = tab.dataset.projectsyncTab;
+          projectTabs.forEach((btn) => btn.classList.remove('active'));
+          tab.classList.add('active');
+          projectPanels.forEach((panel) => {
+            panel.classList.toggle('active', panel.dataset.projectsyncPanel === target);
+          });
+          
+          // Reinitialize map when switching to overview or projects tabs
+          if (target === 'overview' || target === 'projects') {
+            setTimeout(() => {
+              const mapId = target === 'overview' ? 'projects-map' : 'projects-map-projects';
+              initializeMap(mapId);
+            }, 100);
+          }
+        });
+      });
+
+      // Initialize map on load
+      initializeMap('projects-map');
+    });
+
+    // Map initialization
+    let map = null;
+    let markers = [];
+
+    function initializeMap(mapId) {
+      const mapElement = document.getElementById(mapId);
+      if (!mapElement) return;
+
+      // Clear existing map if any
+      if (map) {
+        map.remove();
+        map = null;
+        markers = [];
+      }
+
+      // Initialize new map
+      map = L.map(mapId).setView([32.7157, -117.1611], 11);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+
+      // Sample project markers
+      const projects = [
+        { lat: 32.7157, lng: -117.1611, name: 'Instalación HVAC', status: 'active', color: '#02735E' },
+        { lat: 32.7357, lng: -117.1411, name: 'Sistema Eléctrico', status: 'scheduled', color: '#eab308' },
+        { lat: 32.6957, lng: -117.1811, name: 'Calderas Hotel', status: 'completed', color: '#059669' }
+      ];
+
+      projects.forEach(project => {
+        const marker = L.circleMarker([project.lat, project.lng], {
+          radius: 8,
+          fillColor: project.color,
+          color: '#fff',
+          weight: 2,
+          opacity: 1,
+          fillOpacity: 0.8
+        }).addTo(map);
+
+        marker.bindPopup(`<b>${project.name}</b><br>${project.status}`);
+        markers.push(marker);
+      });
+    }
+
+    // Filter functionality
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.chip-filter').forEach(filter => {
+        filter.addEventListener('click', () => {
+          const group = filter.closest('.map-filter-group');
+          group.querySelectorAll('.chip-filter').forEach(f => f.classList.remove('active'));
+          filter.classList.add('active');
+        });
+      });
+    });
+  </script>
+  
+  </div><!-- /app-content -->
+  </div><!-- /app-shell -->
+</body>
+</html>

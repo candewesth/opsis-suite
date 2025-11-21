@@ -33,48 +33,68 @@
       line-height: 1.6;
     }
 
-    /* Header */
-    .thread-header {
-      background: #02735E;
-      color: white;
-      padding: 20px 32px;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-      position: sticky;
-      top: 0;
-      z-index: 100;
+    @keyframes aire {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
     }
 
-    .header-top {
+    .app-shell {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
+      flex-direction: column;
+      min-height: 100vh;
     }
 
-    .back-button {
-      background: transparent;
-      color: rgba(255,255,255,0.9);
-      border: none;
-      padding: 8px 12px;
-      border-radius: 4px;
-      font-size: 13px;
-      font-weight: 600;
+    .app-content {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      flex: 1;
+    }
+
+    #sidebar {
+      background: var(--bg-card);
+      border-right: 1px solid var(--border-color);
+      padding: 20px 0;
+      overflow-y: auto;
+    }
+
+    .sidebar-item {
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-secondary);
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
       transition: all 0.2s;
+      font-size: 14px;
+      font-weight: 500;
     }
 
+    .sidebar-item:hover {
+      background: rgba(2, 115, 94, 0.05);
+      color: var(--primary-color);
+    }
+
+    .sidebar-item.active {
+      background: rgba(2, 115, 94, 0.08);
+      color: var(--primary-color);
+      border-left: 3px solid var(--primary-color);
+      font-weight: 600;
+    }
+
+    .module-tab:hover {
+      background: rgba(255,255,255,0.2) !important;
+      color: rgba(255,255,255,1) !important;
+    }
+
+    .module-tab.active {
+      background: rgba(255,255,255,0.15) !important;
+      color: rgba(255,255,255,0.95) !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    /* Header */
     .back-button:hover {
       background: rgba(255, 255, 255, 0.15);
-    }
-
-    .thread-brand {
-      font-size: 20px;
-      font-weight: 600;
-      color: white;
-      letter-spacing: -0.3px;
     }
 
     .header-actions {
@@ -134,25 +154,7 @@
       background: #4b5563;
     }
 
-    .thread-info {
-      margin-top: 16px;
-      text-align: center;
-    }
 
-    .thread-title {
-      font-size: 28px;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .thread-meta {
-      display: flex;
-      gap: 24px;
-      flex-wrap: wrap;
-      justify-content: center;
-      font-size: 14px;
-      opacity: 0.95;
-    }
 
     .meta-item {
       display: flex;
@@ -435,6 +437,77 @@
       min-height: 100px;
     }
 
+    /* Address Autocomplete */
+    .address-wrapper {
+      position: relative;
+    }
+
+    .address-suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 2px solid var(--primary-color);
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      max-height: 250px;
+      overflow-y: auto;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .address-suggestion-item {
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background-color 0.15s;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .address-suggestion-item:last-child {
+      border-bottom: none;
+    }
+
+    .address-suggestion-item:hover {
+      background-color: #f0f9f7;
+    }
+
+    .address-suggestion-item.active {
+      background-color: #e6f7f4;
+    }
+
+    .address-icon {
+      color: var(--primary-color);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .address-suggestion-content {
+      flex: 1;
+    }
+
+    .address-suggestion-main {
+      font-size: 14px;
+      color: #1d2433;
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+
+    .address-suggestion-secondary {
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .address-loading {
+      padding: 12px 16px;
+      text-align: center;
+      color: #64748b;
+      font-size: 13px;
+    }
+
     /* Modal */
     .modal-overlay {
       position: fixed;
@@ -673,54 +746,147 @@
 </head>
 <body>
 
-  <div class="thread-header">
-    <div class="header-top">
-      <div style="display: flex; align-items: center; gap: 16px;">
-        <button class="back-button" onclick="window.location.href='motorsync.html'">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
-          Volver a MotorSync
-        </button>
-        <span class="thread-brand">ThreadSync</span>
-      </div>
-      
-      <div class="header-actions">
-        <button class="btn btn-white" onclick="editThread()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-          </svg>
-          Editar
-        </button>
-        <button class="btn btn-success" onclick="convertToProject()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-            <polyline points="9 22 9 12 15 12 15 22"/>
-          </svg>
-          Convertir a Proyecto
-        </button>
-      </div>
-    </div>
-
-    <div class="thread-info">
-      <h1 class="thread-title" id="threadTitle">Instalación HVAC - Edificio Corporativo Guadalajara</h1>
-      <div class="thread-meta">
-        <div class="meta-item">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-            <line x1="16" y1="2" x2="16" y2="6"/>
-            <line x1="8" y1="2" x2="8" y2="6"/>
-            <line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
-          <span>Creado: 15 Nov 2024</span>
+  <div class="app-shell">
+    <header style="background: linear-gradient(135deg, #02735E 0%, #035951 50%, #034040 100%); background-size: 200% 200%; animation: aire 8s ease infinite; padding: 18px 32px; display: flex; align-items: center; gap: 32px; grid-column: 1 / -1; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid rgba(0, 0, 0, 0.1);">
+      <div class="logo" aria-label="Opsis Suite">
+        <div class="logo-text">
+          <div class="logo-title" style="font-size: 26px; font-weight: 700; color: #ffffff; letter-spacing: -0.3px;">Opsis Suite</div>
+          <div id="company-name-header" style="font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.85); margin-top: 2px;">CVE San Diego</div>
         </div>
       </div>
-    </div>
-  </div>
+      
+      <!-- Module Tabs -->
+      <div class="module-tabs" style="display: flex; gap: 8px; margin-left: auto;">
+        <a href="motorsync.html" class="module-tab active" style="padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; color: #02735E; background: white; text-decoration: none; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"></path>
+            <path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"></path>
+            <path d="M12 2v2"></path>
+            <path d="M12 22v-2"></path>
+          </svg>
+          MotorSync
+        </a>
+        <a href="../timesync/timesync.html" class="module-tab" style="padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.7); background: transparent; text-decoration: none; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          TimeSync
+        </a>
+      </div>
+    </header>
 
-  <div class="container">
-    <div>
+    <div class="app-content">
+    <aside id="sidebar" style="background: var(--bg-card); border-right: 1px solid var(--border-color); padding: 20px 0; overflow-y: auto;">
+      <div class="sidebar-item" data-page="dashboard" style="display: flex; align-items: center; gap: 12px; padding: 14px 24px; color: var(--text-secondary); cursor: pointer; transition: all 0.2s;" onclick="window.location.href='motorsync.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="min-width: 20px;">
+          <rect x="3" y="3" width="7" height="9"></rect>
+          <rect x="14" y="3" width="7" height="5"></rect>
+          <rect x="14" y="12" width="7" height="9"></rect>
+          <rect x="3" y="16" width="7" height="5"></rect>
+        </svg>
+        <span>Dashboard</span>
+      </div>
+      
+      <a href="projectsync.html" class="sidebar-item" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; padding: 14px 24px; transition: all 0.2s;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="min-width: 20px;">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="9" y1="3" x2="9" y2="21"></line>
+        </svg>
+        <span>ProjectSync</span>
+      </a>
+      <a href="threadsync-list.html" class="sidebar-item active" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--primary-color); background: rgba(2, 115, 94, 0.08); padding: 14px 24px; transition: all 0.2s; border-left: 3px solid var(--primary-color);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="min-width: 20px;">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          <line x1="9" y1="10" x2="15" y2="10"></line>
+          <line x1="12" y1="7" x2="12" y2="13"></line>
+        </svg>
+        <span>ThreadSync</span>
+      </a>
+      
+      <div class="sidebar-item" data-page="customers" style="display: flex; align-items: center; gap: 12px; padding: 14px 24px; color: var(--text-secondary); cursor: pointer; transition: all 0.2s;" onclick="window.location.href='motorsync.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="min-width: 20px;">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87m-3-12.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <span>Clientes</span>
+      </div>
+      <div class="sidebar-item" data-page="management" style="display: flex; align-items: center; gap: 12px; padding: 14px 24px; color: var(--text-secondary); cursor: pointer; transition: all 0.2s;" onclick="window.location.href='motorsync.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="min-width: 20px;">
+          <line x1="12" y1="1" x2="12" y2="23"></line>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+        </svg>
+        <span>Management</span>
+      </div>
+      <div class="sidebar-item" data-page="toolsync" style="display: flex; align-items: center; gap: 12px; padding: 14px 24px; color: var(--text-secondary); cursor: pointer; transition: all 0.2s;" onclick="window.location.href='motorsync.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="min-width: 20px;">
+          <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4"></path>
+          <path d="M3 12h18"></path>
+        </svg>
+        <span>ToolSync</span>
+      </div>
+      <div class="sidebar-item" data-page="settings" style="display: flex; align-items: center; gap: 12px; padding: 14px 24px; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; margin-top: auto;" onclick="window.location.href='motorsync.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="min-width: 20px;">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M12 1v6m0 6v6m9-9h-6m-6 0H3m15.4-6.4l-4.2 4.2m-7.1 0L2.6 5.6m18.8 12.8l-4.2-4.2m-7.1 0l-4.5 4.5"></path>
+        </svg>
+        <span>Configuración</span>
+      </div>
+    </aside>
+
+    <main id="main" style="padding: 0;">
+      <div class="thread-header" style="background: #02735E; color: white; padding: 20px 32px; border-bottom: 1px solid rgba(0, 0, 0, 0.1);">
+        <div class="header-top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <button class="back-button" onclick="window.location.href='threadsync-list.html'" style="background: transparent; color: rgba(255,255,255,0.9); border: none; padding: 8px 12px; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+              </svg>
+              ← Volver a ThreadSync
+            </button>
+          </div>
+          
+          <div class="header-actions" style="display: flex; gap: 12px;">
+            <button class="btn btn-white" onclick="editThread()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              Editar
+            </button>
+            <!-- Botón cuando NO está convertido -->
+            <div id="notConvertedSection">
+              <button class="btn btn-success" onclick="convertToProject()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                  <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                Convertir a Proyecto
+              </button>
+            </div>
+            <!-- Botón cuando YA está convertido -->
+            <div id="convertedSection" style="display: none;">
+              <button class="btn btn-primary" onclick="goToProject()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                  <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                Ir al Proyecto
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="thread-info" style="margin-top: 16px; text-align: center;">
+          <h1 class="thread-title" id="threadTitle" style="font-size: 28px; font-weight: 700; margin-bottom: 8px;"></h1>
+          <p class="thread-address" id="threadAddress" style="display: none; font-size: 14px; color: rgba(255, 255, 255, 0.8); margin-bottom: 12px;"></p>
+          <div class="thread-meta" id="threadMeta" style="display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; font-size: 14px; opacity: 0.95;"></div>
+        </div>
+      </div>
+
+      <div class="container">
+        <div>
       <div class="card">
           <div class="timeline">
             <!-- Comentario 1 -->
@@ -737,7 +903,7 @@
                 </div>
               </div>
               <div class="comment-body">
-                <div class="comment-text" style="background: white; border: 1px solid #e1e4e8; border-radius: 6px; padding: 16px; margin-top: 12px;">
+                <div class="comment-text thread-description" style="background: white; border: 1px solid #e1e4e8; border-radius: 6px; padding: 16px; margin-top: 12px;">
                   El cliente mencionó que tiene presupuesto aprobado pero quiere ver opciones de financiamiento a 12 meses. Revisar con finanzas.
                 </div>
                 <div style="display: flex; gap: 12px; margin-top: 12px; align-items: center; justify-content: space-between;">
@@ -914,14 +1080,498 @@
             Agregar Comentario
           </button>
         </div>
+        </div>
       </div>
-    </div>
+    </main>
   </div>
 
   <script>
+    function detectCurrentUser() {
+      // Intentar obtener del objeto global de sesión
+      if (window.opsisCurrentUser?.displayName) {
+        return window.opsisCurrentUser.displayName;
+      }
+
+      if (window.opsisCurrentUser?.name) {
+        return window.opsisCurrentUser.name;
+      }
+
+      // Intentar obtener de localStorage
+      try {
+        const stored = localStorage.getItem('opsisCurrentUser');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed?.displayName) return parsed.displayName;
+          if (parsed?.fullName) return parsed.fullName;
+          if (parsed?.name) return parsed.name;
+        }
+      } catch (error) {
+        console.warn('No se pudo leer el usuario de localStorage', error);
+      }
+
+      // Intentar obtener de sessionStorage
+      try {
+        const sessionUser = sessionStorage.getItem('currentUser');
+        if (sessionUser) {
+          const parsed = JSON.parse(sessionUser);
+          if (parsed?.displayName) return parsed.displayName;
+          if (parsed?.fullName) return parsed.fullName;
+          if (parsed?.name) return parsed.name;
+        }
+      } catch (error) {
+        console.warn('No se pudo leer el usuario de sessionStorage', error);
+      }
+
+      // Intentar obtener del token JWT si existe
+      try {
+        const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+        if (token) {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          if (payload?.name) return payload.name;
+          if (payload?.displayName) return payload.displayName;
+          if (payload?.email) return payload.email.split('@')[0];
+        }
+      } catch (error) {
+        // Token inválido o no existe
+      }
+
+      // Por defecto usar el nombre genérico
+      return 'Usuario Actual';
+    }
+
+    function getCurrentDateISO() {
+      return new Date().toISOString().split('T')[0];
+    }
+
+    function getCurrentTimeHHMM() {
+      const now = new Date();
+      return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    }
+
+    // Base de datos simulada de threads
+    const threadsDatabase = {
+      'thread-1': {
+        title: '📋 Cambios en especificaciones técnicas',
+        address: 'Instalación HVAC Completo - Proyecto #1024',
+        description: 'El cliente solicita modificar el tipo de refrigerante de R-410A a R-32 para cumplir nuevas normativas ambientales',
+        createdBy: 'Juan Pérez',
+        createdDate: '2025-11-20',
+        createdTime: '14:30',
+        project: 'Instalación HVAC Completo',
+        projectId: 'project-1',
+        status: 'unread',
+        comments: 15,
+        files: 3
+      },
+      'thread-2': {
+        title: '🔧 Coordinación de instalación',
+        address: 'Instalación HVAC Completo - Proyecto #1024',
+        description: 'Confirmar acceso al sitio el martes 21 nov a las 8:00 AM. Coordinación con seguridad del edificio',
+        createdBy: 'María García',
+        createdDate: '2025-11-19',
+        createdTime: '10:15',
+        project: 'Instalación HVAC Completo',
+        projectId: 'project-1',
+        status: 'read',
+        comments: 8,
+        files: 1
+      },
+      'thread-3': {
+        title: '📸 Fotos del progreso - Semana 1',
+        address: 'Instalación HVAC Completo - Proyecto #1024',
+        description: 'Documentación fotográfica del avance de obra hasta el viernes. Todo según cronograma',
+        createdBy: 'Carlos López',
+        createdDate: '2025-11-17',
+        createdTime: '16:45',
+        project: 'Instalación HVAC Completo',
+        projectId: 'project-1',
+        status: 'read',
+        comments: 12,
+        files: 24
+      },
+      'thread-4': {
+        title: '⚡ Inspección de seguridad eléctrica',
+        address: 'Reparación Sistema Eléctrico - Proyecto #1025',
+        description: 'Resultados de la inspección inicial y recomendaciones de actualización del sistema',
+        createdBy: 'Ana Martínez',
+        createdDate: '2025-11-20',
+        createdTime: '11:00',
+        project: 'Reparación Sistema Eléctrico',
+        projectId: 'project-2',
+        status: 'unread',
+        comments: 6,
+        files: 2
+      }
+    };
+
+    const threadState = {
+      title: 'Instalación HVAC - Edificio Corporativo Guadalajara',
+      address: 'Av. Empresarial 345, Guadalajara, Jal.',
+      createdBy: '',
+      createdDate: '',
+      createdTime: '',
+      isConverted: false,
+      projectId: null
+    };
+
+    function hydrateThreadDefaults() {
+      // Detectar si hay un ID de thread en la URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const threadId = urlParams.get('id');
+      
+      // Si hay un ID, cargar datos del thread desde la base de datos
+      if (threadId && threadsDatabase[threadId]) {
+        const threadData = threadsDatabase[threadId];
+        threadState.title = threadData.title;
+        threadState.address = threadData.address;
+        threadState.createdBy = threadData.createdBy;
+        threadState.createdDate = threadData.createdDate;
+        threadState.createdTime = threadData.createdTime;
+        threadState.projectId = threadData.projectId;
+        
+        // Agregar descripción al primer comentario si existe
+        const descriptionElement = document.querySelector('.thread-description');
+        if (descriptionElement && threadData.description) {
+          descriptionElement.textContent = threadData.description;
+        }
+      } else {
+        // Valores por defecto si no hay ID
+        if (!threadState.createdBy) {
+          threadState.createdBy = detectCurrentUser();
+        }
+
+        if (!threadState.createdDate) {
+          threadState.createdDate = getCurrentDateISO();
+        }
+
+        if (!threadState.createdTime) {
+          threadState.createdTime = getCurrentTimeHHMM();
+        }
+      }
+    }
+
+    function formatDateForDisplay(isoDate) {
+      if (!isoDate) return '';
+      const date = new Date(`${isoDate}T00:00:00`);
+      if (Number.isNaN(date.getTime())) {
+        return isoDate;
+      }
+      const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+      return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+    }
+
+    function formatTimeForDisplay(time24h) {
+      if (!time24h) return '';
+      const [rawHours, rawMinutes] = time24h.split(':');
+      if (rawHours === undefined || rawMinutes === undefined) {
+        return time24h;
+      }
+      const hours = parseInt(rawHours, 10);
+      if (Number.isNaN(hours)) {
+        return time24h;
+      }
+      const minutes = rawMinutes.padStart(2, '0');
+      const suffix = hours >= 12 ? 'PM' : 'AM';
+      const normalizedHour = ((hours + 11) % 12) + 1;
+      return `${String(normalizedHour).padStart(2, '0')}:${minutes} ${suffix}`;
+    }
+
+    function escapeAttribute(value = '') {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function renderThreadHeader() {
+      hydrateThreadDefaults();
+
+      const titleElement = document.getElementById('threadTitle');
+      if (titleElement) {
+        titleElement.textContent = threadState.title;
+      }
+
+      const addressElement = document.getElementById('threadAddress');
+      if (addressElement) {
+        if (threadState.address) {
+          addressElement.textContent = threadState.address;
+          addressElement.style.display = 'block';
+        } else {
+          addressElement.textContent = '';
+          addressElement.style.display = 'none';
+        }
+      }
+
+      const metaElement = document.getElementById('threadMeta');
+      if (metaElement) {
+        const createdDate = formatDateForDisplay(threadState.createdDate);
+        const createdTime = formatTimeForDisplay(threadState.createdTime);
+        metaElement.innerHTML = `
+          <div class="meta-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <span>Creado: ${createdDate}${createdTime ? ` · ${createdTime}` : ''}</span>
+          </div>
+          <div class="meta-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            <span>Creado por: ${threadState.createdBy}</span>
+          </div>
+        `;
+      }
+    }
+
     // Función para editar thread
     function editThread() {
-      alert('✏️ Editar ThreadSync\n\nEn desarrollo: Modal para editar información del thread.');
+      hydrateThreadDefaults();
+
+      const existingModal = document.getElementById('editThreadModal');
+      if (existingModal) {
+        existingModal.remove();
+      }
+
+      const modalHTML = `
+        <div class="modal-overlay" id="editThreadModal" onclick="if(event.target === this) closeModal('editThreadModal')">
+          <div class="modal">
+            <div class="modal-header">
+              <div class="modal-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Editar ThreadSync
+              </div>
+              <button class="modal-close" onclick="closeModal('editThreadModal')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="form-group">
+                <label class="form-label" for="editThreadTitle">Título *</label>
+                <input type="text" id="editThreadTitle" class="form-input" value="${escapeAttribute(threadState.title)}" placeholder="Nombre del proyecto" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="editThreadAddress">Dirección (opcional)</label>
+                <div class="address-wrapper">
+                  <input 
+                    type="text" 
+                    id="editThreadAddress" 
+                    class="form-input" 
+                    value="${escapeAttribute(threadState.address)}" 
+                    placeholder="Escribe para buscar dirección..."
+                    autocomplete="off"
+                  />
+                  <div id="addressSuggestions" class="address-suggestions" style="display: none;"></div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" onclick="closeModal('editThreadModal')">Cancelar</button>
+              <button class="btn btn-primary" onclick="saveThreadDetails()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Guardar Cambios
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+      requestAnimationFrame(() => {
+        const titleField = document.getElementById('editThreadTitle');
+        if (titleField) {
+          titleField.focus();
+        }
+        initAddressAutocomplete();
+      });
+    }
+
+    // Inicializar autocomplete de direcciones con Nominatim (OpenStreetMap - Gratuito)
+    function initAddressAutocomplete() {
+      const addressInput = document.getElementById('editThreadAddress');
+      const suggestionsContainer = document.getElementById('addressSuggestions');
+      
+      if (!addressInput || !suggestionsContainer) return;
+
+      let debounceTimer = null;
+      let selectedIndex = -1;
+      let currentController = null;
+
+      addressInput.addEventListener('input', function(e) {
+        const query = e.target.value.trim();
+        
+        clearTimeout(debounceTimer);
+        
+        // Cancelar petición anterior si existe
+        if (currentController) {
+          currentController.abort();
+        }
+        
+        if (query.length < 3) {
+          suggestionsContainer.style.display = 'none';
+          return;
+        }
+
+        suggestionsContainer.innerHTML = '<div class="address-loading">Buscando direcciones...</div>';
+        suggestionsContainer.style.display = 'block';
+
+        debounceTimer = setTimeout(async () => {
+          try {
+            currentController = new AbortController();
+            
+            // Nominatim API de OpenStreetMap (100% gratuito)
+            const url = `https://nominatim.openstreetmap.org/search?` + new URLSearchParams({
+              q: query,
+              countrycodes: 'mx',
+              format: 'json',
+              addressdetails: '1',
+              limit: '8'
+            });
+
+            const response = await fetch(url, {
+              signal: currentController.signal,
+              headers: {
+                'Accept': 'application/json',
+                'User-Agent': 'OpsisSuite/1.0'
+              }
+            });
+
+            if (!response.ok) throw new Error('Error en la búsqueda');
+
+            const results = await response.json();
+            
+            if (results.length === 0) {
+              suggestionsContainer.innerHTML = '<div class="address-loading">No se encontraron direcciones</div>';
+              return;
+            }
+
+            renderSuggestions(results);
+          } catch (error) {
+            if (error.name === 'AbortError') return;
+            suggestionsContainer.innerHTML = '<div class="address-loading">Error al buscar direcciones</div>';
+          }
+        }, 400);
+      });
+
+      function renderSuggestions(results) {
+        selectedIndex = -1;
+        suggestionsContainer.innerHTML = '';
+        
+        results.forEach((result, index) => {
+          const item = document.createElement('div');
+          item.className = 'address-suggestion-item';
+          item.dataset.index = index;
+          
+          // Construir dirección legible
+          const address = result.address || {};
+          const mainText = result.display_name.split(',')[0];
+          const secondaryParts = [];
+          
+          if (address.city || address.town || address.village) {
+            secondaryParts.push(address.city || address.town || address.village);
+          }
+          if (address.state) {
+            secondaryParts.push(address.state);
+          }
+          
+          const secondaryText = secondaryParts.join(', ');
+          
+          item.innerHTML = `
+            <svg class="address-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            <div class="address-suggestion-content">
+              <div class="address-suggestion-main">${mainText}</div>
+              ${secondaryText ? `<div class="address-suggestion-secondary">${secondaryText}</div>` : ''}
+            </div>
+          `;
+          
+          item.addEventListener('click', () => selectAddress(result));
+          suggestionsContainer.appendChild(item);
+        });
+        
+        suggestionsContainer.style.display = 'block';
+      }
+
+      function selectAddress(result) {
+        addressInput.value = result.display_name;
+        suggestionsContainer.style.display = 'none';
+      }
+
+      // Navegación con teclado
+      addressInput.addEventListener('keydown', function(e) {
+        const items = suggestionsContainer.querySelectorAll('.address-suggestion-item');
+        
+        if (items.length === 0) return;
+
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+          updateSelectedItem(items);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          selectedIndex = Math.max(selectedIndex - 1, -1);
+          updateSelectedItem(items);
+        } else if (e.key === 'Enter' && selectedIndex >= 0) {
+          e.preventDefault();
+          items[selectedIndex].click();
+        } else if (e.key === 'Escape') {
+          suggestionsContainer.style.display = 'none';
+        }
+      });
+
+      function updateSelectedItem(items) {
+        items.forEach((item, index) => {
+          if (index === selectedIndex) {
+            item.classList.add('active');
+            item.scrollIntoView({ block: 'nearest' });
+          } else {
+            item.classList.remove('active');
+          }
+        });
+      }
+
+      // Cerrar sugerencias al hacer click fuera
+      document.addEventListener('click', function(e) {
+        if (!addressInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+          suggestionsContainer.style.display = 'none';
+        }
+      });
+    }
+
+    function saveThreadDetails() {
+      const titleField = document.getElementById('editThreadTitle');
+      const addressField = document.getElementById('editThreadAddress');
+
+      const newTitle = titleField?.value.trim() || '';
+      const newAddress = addressField?.value.trim() || '';
+
+      if (!newTitle) {
+        alert('⚠️ El título es obligatorio.');
+        return;
+      }
+
+      threadState.title = newTitle;
+      threadState.address = newAddress;
+
+      hydrateThreadDefaults();
+      renderThreadHeader();
+      closeModal('editThreadModal');
+      alert('✓ Información de ThreadSync actualizada');
     }
 
     // Función para agregar actualización
@@ -1024,23 +1674,6 @@
       closeModal('addCommentModal');
       alert('✓ Comentario agregado exitosamente');
     }
-                <circle cx="12" cy="7" r="4"/>
-              </svg>
-              Usuario Actual
-            </div>
-            <div class="timeline-date">${formattedDate}</div>
-            <div class="timeline-text">${commentText}${attachmentsHTML}</div>
-          </div>
-        </div>
-      `;
-
-      // Insertar al inicio del timeline
-      const timeline = document.querySelector('.timeline');
-      timeline.insertAdjacentHTML('afterbegin', newComment);
-
-      closeModal('addCommentModal');
-      alert('✓ Comentario agregado exitosamente');
-    }
 
     function saveUpdate() {
       const title = document.getElementById('updateTitle').value.trim();
@@ -1093,11 +1726,6 @@
         
         attachmentsHTML += '</div>';
       }
-
-      // Formatear fecha para mostrar
-      const dateObj = new Date(dateDone + 'T' + timeDone);
-      const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-      const formattedDate = `${dateObj.getDate()} ${months[dateObj.getMonth()]} ${dateObj.getFullYear()} - ${timeDone}`;
 
       // Iconos según tipo
       const icons = {
@@ -1228,11 +1856,8 @@
 
               <div class="form-group">
                 <label class="form-label">Cuadrilla Asignada *</label>
-                <select class="form-select">
-                  <option value="">Seleccionar cuadrilla...</option>
-                  <option>Cuadrilla A - Juan Pérez</option>
-                  <option>Cuadrilla B - Luis García</option>
-                  <option>Cuadrilla C - Ana Martínez</option>
+                <select id="crewSelect" class="form-select">
+                  <option value="">Cargando cuadrillas...</option>
                 </select>
               </div>
 
@@ -1259,6 +1884,44 @@
         </div>
       `;
       document.body.insertAdjacentHTML('beforeend', modalHTML);
+      
+      // Cargar cuadrillas dinámicamente después de insertar el modal
+      loadCrewsForProject();
+    }
+
+    // Función para cargar cuadrillas disponibles
+    async function loadCrewsForProject() {
+      const crewSelect = document.getElementById('crewSelect');
+      if (!crewSelect) return;
+      
+      try {
+        // En producción, esto vendría de la API/base de datos
+        // const response = await fetch('/api/crews/available');
+        // const crews = await response.json();
+        
+        // SIMULACIÓN: Datos de cuadrillas
+        const crews = [
+          { id: 'crew_001', name: 'Cuadrilla A', leader: 'Juan Pérez', available: true },
+          { id: 'crew_002', name: 'Cuadrilla B', leader: 'Luis García', available: true },
+          { id: 'crew_003', name: 'Cuadrilla C', leader: 'Ana Martínez', available: false },
+          { id: 'crew_004', name: 'Cuadrilla D', leader: 'Carlos Ruiz', available: true }
+        ];
+        
+        // Limpiar y llenar el select
+        crewSelect.innerHTML = '<option value="">Seleccionar cuadrilla...</option>';
+        
+        crews.forEach(crew => {
+          const option = document.createElement('option');
+          option.value = crew.id;
+          option.textContent = `${crew.name} - ${crew.leader}${!crew.available ? ' (No disponible)' : ''}`;
+          option.disabled = !crew.available;
+          crewSelect.appendChild(option);
+        });
+        
+      } catch (error) {
+        console.error('Error al cargar cuadrillas:', error);
+        crewSelect.innerHTML = '<option value="">Error al cargar cuadrillas</option>';
+      }
     }
 
     function closeModal(modalId) {
@@ -1269,9 +1932,29 @@
       }
     }
 
+    function goToProject() {
+      // Redirigir al proyecto creado
+      if (threadState.projectId) {
+        // En producción, esto navegaría al proyecto real
+        window.location.href = `projects.html?id=${threadState.projectId}`;
+      } else {
+        alert('⚠️ No se encontró el proyecto asociado');
+      }
+    }
+
     function confirmConversion() {
       // Cerrar el modal
       closeModal('convertModal');
+      
+      // Marcar como convertido y guardar ID de proyecto
+      threadState.isConverted = true;
+      threadState.projectId = 'PROJ-' + Date.now(); // Simulación de ID
+      
+      // Guardar estado en localStorage para persistencia
+      localStorage.setItem('threadState_current', JSON.stringify({
+        isConverted: threadState.isConverted,
+        projectId: threadState.projectId
+      }));
       
       // Ocultar botón de conversión y mostrar botón "Ir al Proyecto"
       document.getElementById('notConvertedSection').style.display = 'none';
@@ -1458,6 +2141,22 @@
 
     // Filtros de búsqueda
     document.addEventListener('DOMContentLoaded', function() {
+      // SIMULACIÓN: Usuario de sesión actual (esto vendrá del login real)
+      // En producción, esto se establecerá cuando el usuario haga login en motorsync.html
+      if (!sessionStorage.getItem('currentUser')) {
+        sessionStorage.setItem('currentUser', JSON.stringify({
+          displayName: 'Rodolfo Real',
+          email: 'rodolfo@opsis.com',
+          role: 'estimator_pm',
+          userId: 'user_001'
+        }));
+      }
+      
+      // Verificar si el thread ya está convertido (de localStorage o base de datos)
+      checkThreadConversionStatus();
+      
+      hydrateThreadDefaults();
+      renderThreadHeader();
       const searchInput = document.getElementById('searchComments');
       const filterAuthor = document.getElementById('filterAuthor');
       const filterDate = document.getElementById('filterDate');
@@ -1472,6 +2171,21 @@
         filterDate.addEventListener('change', filterComments);
       }
     });
+
+    // Verificar si el thread ya fue convertido a proyecto
+    function checkThreadConversionStatus() {
+      // Simulación: En producción esto vendría de la base de datos
+      const savedThread = localStorage.getItem('threadState_current');
+      if (savedThread) {
+        const saved = JSON.parse(savedThread);
+        if (saved.isConverted) {
+          threadState.isConverted = true;
+          threadState.projectId = saved.projectId;
+          document.getElementById('notConvertedSection').style.display = 'none';
+          document.getElementById('convertedSection').style.display = 'block';
+        }
+      }
+    }
 
     function filterComments() {
       const search = document.getElementById('searchComments')?.value.toLowerCase() || '';
@@ -1493,6 +2207,9 @@
       });
     }
   </script>
+
+  </div><!-- /app-content -->
+</div><!-- /app-shell -->
 
 </body>
 </html>

@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light" style="--primary-color: #02735E;">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ThreadSync - Lista de Threads | Opsis Suite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;500;600;700;900&display=swap">
+  <style>
+    :root {
+      /* VERDI Color Palette */
+      --verdi-dark: #022326;
+      --verdi-mid: #034040;
+      --verdi-accent: #035951;
+      --verdi-light: #02735E;
+      
+      --primary-color: #02735E;
+      --accent-color: #035951;
+      --text-primary: #1e293b;
+      --text-secondary: #475569;
+      --bg-body: #fafafa;
+      --bg-card: #ffffff;
+      --border-color: #ebebeb;
+      --surface-page-a: #fafafa;
+      --surface-page-b: #f7f7f7;
+      --surface-page-dark-a: #1b2538;
+      --surface-page-dark-b: #151d2c;
+      --table-header-bg: #fafafa;
+    }
+
+    [data-theme='dark'] {
+      --text-primary: #f8fafc;
+      --text-secondary: #b8c4dd;
+      --bg-body: #0f172a;
+      --bg-card: #0f1316;
+      --border-color: rgba(255,255,255,0.04);
+      --surface-page-dark-a: #2b2f33;
+      --surface-page-dark-b: #0f1214;
+      --surface-page-a: var(--surface-page-dark-a);
+      --surface-page-b: var(--surface-page-dark-b);
+      --table-header-bg: #0b1220;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Helvetica Neue', Helvetica, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-body);
+      color: var(--text-primary);
+      font-weight: 400;
+    }
+
+    @keyframes aire {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .app-content {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      flex: 1;
+    }
+
+    header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 20px;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    .logo-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+    }
+
+    .logo-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: #ffffff;
+      text-transform: none;
+      letter-spacing: -0.3px;
+    }
+
+    .module-tab {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.7);
+      background: transparent;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .module-tab:hover {
+      background: rgba(255,255,255,0.2) !important;
+      color: rgba(255,255,255,1) !important;
+    }
+
+    .module-tab.active {
+      background: rgba(255,255,255,0.15) !important;
+      color: rgba(255,255,255,0.95) !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    aside {
+      background: var(--bg-card);
+      border-right: 1px solid var(--border-color);
+      padding: 24px 0;
+      position: sticky;
+      top: 64px;
+      height: calc(100vh - 64px);
+      overflow-y: auto;
+      transition: all 0.3s ease;
+      width: 250px;
+      z-index: 100;
+    }
+
+    .sidebar-item {
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      border-left: 3px solid transparent;
+      text-decoration: none;
+    }
+
+    .sidebar-item.active,
+    .sidebar-item:hover {
+      background: rgba(2, 115, 94, 0.06);
+      color: #02735E;
+      border-left-color: #02735E;
+    }
+
+    main {
+      padding: 16px 24px;
+    }
+
+    .page {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      background: var(--surface-page-a);
+      border-radius: 20px;
+      padding: 20px;
+      border: 1px solid rgba(28, 37, 54, 0.08);
+      box-shadow: 0 30px 50px rgba(15, 23, 42, 0.08);
+    }
+
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #02735E 0%, #035951 100%);
+      color: #fff;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(2, 115, 94, 0.25);
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      background: #035951;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .btn-white {
+      background: white;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-white:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+
+    .btn-icon {
+      background: none;
+      border: none;
+      padding: 4px;
+      cursor: pointer;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .btn-icon:hover {
+      color: #64748b;
+      background: rgba(0,0,0,0.05);
+      border-radius: 4px;
+    }
+
+    .chip-filter {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chip-filter:hover {
+      border-color: rgba(2, 115, 94, 0.4);
+      background: rgba(2, 115, 94, 0.05);
+    }
+
+    .chip-filter.active {
+      background: linear-gradient(135deg, #02735E, #035951);
+      color: white;
+      border-color: transparent;
+    }
+
+    .threads-list {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .thread-project-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .thread-project-header {
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      border-left: 4px solid #10b981;
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+
+    .thread-card {
+      background: white;
+      border-left: 3px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .thread-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transform: translateY(-2px);
+    }
+
+    .thread-card.unread {
+      border-left-color: #10b981;
+      background: #fafffe;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 9999;
+      overflow-y: auto;
+    }
+
+    .modal-content {
+      background: white;
+      margin: 80px auto;
+      max-width: 600px;
+      border-radius: 16px;
+      position: relative;
+    }
+
+    .project-select-card {
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .project-select-card:hover {
+      border-color: #02735E;
+      background: rgba(2, 115, 94, 0.02);
+    }
+
+    .badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell" data-theme="light" data-accent="#02735E">
+    <header style="background: linear-gradient(135deg, #02735E 0%, #035951 50%, #034040 100%); background-size: 200% 200%; animation: aire 8s ease infinite; padding: 18px 32px; display: flex; align-items: center; gap: 32px;">
+      <div class="logo" aria-label="Opsis Suite">
+        <div class="logo-text">
+          <div class="logo-title">Opsis Suite</div>
+          <div id="company-name-header" style="font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.85); margin-top: 2px;">CVE San Diego</div>
+        </div>
+      </div>
+      
+      <!-- Module Tabs -->
+      <div class="module-tabs" style="display: flex; gap: 8px; margin-left: auto;">
+        <a href="motorsync.html" class="module-tab active" style="padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; color: #02735E; background: white; text-decoration: none; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"></path>
+            <path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"></path>
+            <path d="M12 2v2"></path>
+            <path d="M12 22v-2"></path>
+          </svg>
+          MotorSync
+        </a>
+        <a href="../timesync/timesync.html" class="module-tab" style="padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.7); background: transparent; text-decoration: none; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          TimeSync
+        </a>
+      </div>
+    </header>
+
+    <div class="app-content">
+    <aside id="sidebar">
+      <div class="sidebar-item" onclick="window.location.href='motorsync.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="9"></rect>
+          <rect x="14" y="3" width="7" height="5"></rect>
+          <rect x="14" y="12" width="7" height="9"></rect>
+          <rect x="3" y="16" width="7" height="5"></rect>
+        </svg>
+        <span>Dashboard</span>
+      </div>
+      
+      <a href="projectsync.html" class="sidebar-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="9" y1="3" x2="9" y2="21"></line>
+        </svg>
+        <span>ProjectSync</span>
+      </a>
+      <a href="threadsync-list.html" class="sidebar-item active">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          <line x1="9" y1="10" x2="15" y2="10"></line>
+          <line x1="12" y1="7" x2="12" y2="13"></line>
+        </svg>
+        <span>ThreadSync</span>
+      </a>
+      
+      <div class="sidebar-item" onclick="window.location.href='motorsync.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87m-3-12.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <span>Clientes</span>
+      </div>
+      <div class="sidebar-item" onclick="window.location.href='motorsync.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="1" x2="12" y2="23"></line>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+        </svg>
+        <span>Management</span>
+      </div>
+      <div class="sidebar-item" onclick="window.location.href='motorsync.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4"></path>
+          <path d="M3 12h18"></path>
+        </svg>
+        <span>ToolSync - Inventario</span>
+      </div>
+      <div class="sidebar-item" onclick="window.location.href='motorsync.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M12 1v6m0 6v6m9-9h-6m-6 0H3m15.4-6.4l-4.2 4.2m-7.1 0L2.6 5.6m18.8 12.8l-4.2-4.2m-7.1 0l-4.5 4.5"></path>
+        </svg>
+        <span>Configuración</span>
+      </div>
+    </aside>
+
+    <main id="main">
+      <section class="page">
+        <!-- Header con acciones principales -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+          <div>
+            <h2 style="font-size: 24px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">ThreadSync</h2>
+            <p style="color: #64748b; font-size: 14px;">Seguimiento de oportunidades y conversaciones de proyectos</p>
+          </div>
+          <div style="display: flex; gap: 12px;">
+            <button class="btn btn-white" onclick="refreshThreads()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <polyline points="1 20 1 14 7 14"></polyline>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+              </svg>
+              Actualizar
+            </button>
+            <button class="btn btn-primary" onclick="createNewThread()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Nuevo Thread
+            </button>
+          </div>
+        </div>
+
+        <!-- Filtros tipo chips -->
+        <div style="display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; align-items: center;">
+          <span style="font-size: 13px; font-weight: 600; color: #64748b; margin-right: 4px;">Filtrar:</span>
+          <button class="chip-filter active" data-thread-filter="all" onclick="filterThreads('all')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 3h18v18H3z"></path>
+            </svg>
+            Todos
+          </button>
+          <button class="chip-filter" data-thread-filter="my-threads" onclick="filterThreads('my-threads')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            Mis Threads
+          </button>
+          <button class="chip-filter" data-thread-filter="mentions" onclick="filterThreads('mentions')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path>
+            </svg>
+            Menciones
+          </button>
+          <button class="chip-filter" data-thread-filter="unread" onclick="filterThreads('unread')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="12" r="3" fill="currentColor"></circle>
+            </svg>
+            No Leídos
+            <span style="background: #ef4444; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-left: 4px;">3</span>
+          </button>
+          <button class="chip-filter" data-thread-filter="archived" onclick="filterThreads('archived')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="21 8 21 21 3 21 3 8"></polyline>
+              <rect x="1" y="3" width="22" height="5"></rect>
+              <line x1="10" y1="12" x2="14" y2="12"></line>
+            </svg>
+            Archivados
+          </button>
+        </div>
+
+        <!-- Lista de threads agrupados por proyecto -->
+        <div class="threads-list">
+          
+          <!-- Proyecto 1 -->
+          <div class="thread-project-group">
+            <div class="thread-project-header" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-left: 4px solid #10b981;">
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div>
+                  <h3 style="font-size: 15px; font-weight: 700; color: #065f46; line-height: 1.3;">
+                    Instalación HVAC Completo
+                  </h3>
+                </div>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                  <span style="background: white; color: #10b981; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 10px; border: 1px solid #10b981;">
+                    ACTIVO
+                  </span>
+                  <span style="background: #10b981; color: white; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 10px;">
+                    3 threads
+                  </span>
+                </div>
+                <p style="color: #047857; font-size: 11px; opacity: 0.9; line-height: 1.4;">
+                  Proyecto #1024 • 1 no leído
+                </p>
+                <div style="display: flex; gap: 6px; margin-top: 4px;">
+                  <button class="btn btn-small" style="background: #10b981; border: 1px solid #10b981; color: white; font-size: 11px; padding: 6px 12px; flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px;" onclick="event.stopPropagation(); goToProject('project-1', true)" title="Proyecto activo">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M9 18l6-6-6-6"></path>
+                    </svg>
+                    Ir al Proyecto
+                  </button>
+                  <button class="btn btn-small" style="background: white; border: 1px solid #10b981; color: #10b981; font-size: 11px; padding: 6px 10px;" onclick="event.stopPropagation(); createThreadForProject('project-1')" title="Nuevo Thread">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div id="threads-project-1" class="threads-container" style="display: grid;">
+              
+              <!-- Thread 1 - No leído -->
+              <div class="thread-card unread" onclick="openThread('thread-1')">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;">
+                  <h4 style="font-size: 13px; font-weight: 600; color: #0f172a; line-height: 1.3;">
+                    📋 Cambios en especificaciones
+                    <span style="background: #ef4444; color: white; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 8px; margin-left: 4px;">3</span>
+                  </h4>
+                  <button class="btn-icon" onclick="event.stopPropagation(); archiveThread('thread-1')" title="Archivar">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                      <rect x="1" y="3" width="22" height="5"></rect>
+                    </svg>
+                  </button>
+                </div>
+                
+                <p style="font-size: 11px; color: #64748b; line-height: 1.4; margin-bottom: 8px;">
+                  El cliente solicita modificar el refrigerante de R-410A a R-32...
+                </p>
+                
+                <!-- Metadata compacta -->
+                <div style="display: flex; flex-direction: column; gap: 4px; font-size: 10px; color: #94a3b8;">
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <img src="https://ui-avatars.com/api/?name=Juan+Perez&size=18&background=10b981&color=fff" style="width: 18px; height: 18px; border-radius: 50%;">
+                    <span style="font-weight: 600;">Juan Pérez</span>
+                  </div>
+                  <div style="display: flex; gap: 8px;">
+                    <span>💬 15</span>
+                    <span>📎 3</span>
+                    <span>🕐 2h</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Thread 2 - Leído -->
+              <div class="thread-card" onclick="openThread('thread-2')">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;">
+                  <h4 style="font-size: 13px; font-weight: 600; color: #0f172a; line-height: 1.3;">
+                    🔧 Coordinación de instalación
+                  </h4>
+                  <button class="btn-icon" onclick="event.stopPropagation(); archiveThread('thread-2')" title="Archivar">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                      <rect x="1" y="3" width="22" height="5"></rect>
+                    </svg>
+                  </button>
+                </div>
+                
+                <p style="font-size: 11px; color: #64748b; line-height: 1.4; margin-bottom: 8px;">
+                  Confirmar acceso al sitio el martes 21 nov a las 8:00 AM...
+                </p>
+                
+                <!-- Metadata compacta -->
+                <div style="display: flex; flex-direction: column; gap: 4px; font-size: 10px; color: #94a3b8;">
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <img src="https://ui-avatars.com/api/?name=Maria+Garcia&size=18&background=f97316&color=fff" style="width: 18px; height: 18px; border-radius: 50%;">
+                    <span style="font-weight: 600;">María García</span>
+                  </div>
+                  <div style="display: flex; gap: 8px;">
+                    <span>💬 8</span>
+                    <span>📎 1</span>
+                    <span>🕐 1d</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Thread 3 - Con fotos -->
+              <div class="thread-card" onclick="openThread('thread-3')">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;">
+                  <h4 style="font-size: 13px; font-weight: 600; color: #0f172a; line-height: 1.3;">
+                    📸 Fotos del progreso
+                    <span style="background: #3b82f6; color: white; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 8px; margin-left: 4px;">24</span>
+                  </h4>
+                  <button class="btn-icon" onclick="event.stopPropagation(); archiveThread('thread-3')" title="Archivar">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                      <rect x="1" y="3" width="22" height="5"></rect>
+                    </svg>
+                  </button>
+                </div>
+                
+                <p style="font-size: 11px; color: #64748b; line-height: 1.4; margin-bottom: 8px;">
+                  Documentación fotográfica del avance de obra hasta el viernes...
+                </p>
+                
+                <!-- Metadata compacta -->
+                <div style="display: flex; flex-direction: column; gap: 4px; font-size: 10px; color: #94a3b8;">
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <img src="https://ui-avatars.com/api/?name=Carlos+Lopez&size=18&background=3b82f6&color=fff" style="width: 18px; height: 18px; border-radius: 50%;">
+                    <span style="font-weight: 600;">Carlos López</span>
+                  </div>
+                  <div style="display: flex; gap: 8px;">
+                    <span>💬 12</span>
+                    <span>📎 24</span>
+                    <span>🕐 3d</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Proyecto 2 -->
+          <div class="thread-project-group">
+            <div class="thread-project-header" style="background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border-left: 4px solid #f97316;">
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div>
+                  <h3 style="font-size: 15px; font-weight: 700; color: #c2410c; line-height: 1.3;">
+                    Reparación Sistema Eléctrico
+                  </h3>
+                </div>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                  <span style="background: white; color: #f97316; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 10px; border: 1px solid #f97316;">
+                    EN PROGRESO
+                  </span>
+                  <span style="background: #f97316; color: white; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 10px;">
+                    1 thread
+                  </span>
+                </div>
+                <p style="color: #ea580c; font-size: 11px; opacity: 0.9; line-height: 1.4;">
+                  Proyecto #1025 • 1 no leído
+                </p>
+                <div style="display: flex; gap: 6px; margin-top: 4px;">
+                  <button class="btn btn-small" style="background: #e5e7eb; border: 1px solid #9ca3af; color: #6b7280; font-size: 11px; padding: 6px 12px; flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; cursor: not-allowed; opacity: 0.7;" onclick="event.stopPropagation(); goToProject('project-2', false)" title="Sin proyecto activo">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M9 18l6-6-6-6"></path>
+                    </svg>
+                    Sin Activar
+                  </button>
+                  <button class="btn btn-small" style="background: white; border: 1px solid #f97316; color: #f97316; font-size: 11px; padding: 6px 10px;" onclick="event.stopPropagation(); createThreadForProject('project-2')" title="Nuevo Thread">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div id="threads-project-2" class="threads-container" style="display: grid;">
+              
+              <!-- Thread 1 - No leído -->
+              <div class="thread-card unread" style="border-left-color: #f97316;" onclick="openThread('thread-4')">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;">
+                  <h4 style="font-size: 13px; font-weight: 600; color: #0f172a; line-height: 1.3;">
+                    ⚡ Inspección de seguridad
+                    <span style="background: #ef4444; color: white; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 8px; margin-left: 4px;">1</span>
+                  </h4>
+                  <button class="btn-icon" onclick="event.stopPropagation(); archiveThread('thread-4')" title="Archivar">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                      <rect x="1" y="3" width="22" height="5"></rect>
+                    </svg>
+                  </button>
+                </div>
+                
+                <p style="font-size: 11px; color: #64748b; line-height: 1.4; margin-bottom: 8px;">
+                  Resultados de la inspección inicial y recomendaciones de actualización...
+                </p>
+                
+                <!-- Metadata compacta -->
+                <div style="display: flex; flex-direction: column; gap: 4px; font-size: 10px; color: #94a3b8;">
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <img src="https://ui-avatars.com/api/?name=Ana+Martinez&size=18&background=10b981&color=fff" style="width: 18px; height: 18px; border-radius: 50%;">
+                    <span style="font-weight: 600;">Ana Martínez</span>
+                  </div>
+                  <div style="display: flex; gap: 8px;">
+                    <span>💬 6</span>
+                    <span>📎 2</span>
+                    <span>🕐 5h</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Proyecto 3 -->
+          <div class="thread-project-group">
+            <div class="thread-project-header" style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-left: 4px solid #3b82f6;">
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div>
+                  <h3 style="font-size: 15px; font-weight: 700; color: #1e40af; line-height: 1.3;">
+                    Mantenimiento Preventivo Oficinas
+                  </h3>
+                </div>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                  <span style="background: white; color: #3b82f6; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 10px; border: 1px solid #3b82f6;">
+                    PROGRAMADO
+                  </span>
+                  <span style="background: #3b82f6; color: white; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 10px;">
+                    2 threads
+                  </span>
+                </div>
+                <p style="color: #2563eb; font-size: 11px; opacity: 0.9; line-height: 1.4;">
+                  Proyecto #1026 • Todo al día
+                </p>
+                <div style="display: flex; gap: 6px; margin-top: 4px;">
+                  <button class="btn btn-small" style="background: #e5e7eb; border: 1px solid #9ca3af; color: #6b7280; font-size: 11px; padding: 6px 12px; flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; cursor: not-allowed; opacity: 0.7;" onclick="event.stopPropagation(); goToProject('project-3', false)" title="Sin proyecto activo">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M9 18l6-6-6-6"></path>
+                    </svg>
+                    Sin Activar
+                  </button>
+                  <button class="btn btn-small" style="background: white; border: 1px solid #3b82f6; color: #3b82f6; font-size: 11px; padding: 6px 10px;" onclick="event.stopPropagation(); createThreadForProject('project-3')" title="Nuevo Thread">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div id="threads-project-3" class="threads-container" style="display: grid;">
+              
+              <!-- Thread 1 -->
+              <div class="thread-card" onclick="openThread('thread-5')">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;">
+                  <h4 style="font-size: 13px; font-weight: 600; color: #0f172a; line-height: 1.3;">
+                    📅 Programación inicial
+                  </h4>
+                  <button class="btn-icon" onclick="event.stopPropagation(); archiveThread('thread-5')" title="Archivar">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                      <rect x="1" y="3" width="22" height="5"></rect>
+                    </svg>
+                  </button>
+                </div>
+                
+                <p style="font-size: 11px; color: #64748b; line-height: 1.4; margin-bottom: 8px;">
+                  Coordinación de fechas y recursos para inicio del proyecto...
+                </p>
+                
+                <!-- Metadata compacta -->
+                <div style="display: flex; flex-direction: column; gap: 4px; font-size: 10px; color: #94a3b8;">
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <img src="https://ui-avatars.com/api/?name=Pedro+Sanchez&size=18&background=3b82f6&color=fff" style="width: 18px; height: 18px; border-radius: 50%;">
+                    <span style="font-weight: 600;">Pedro Sánchez</span>
+                  </div>
+                  <div style="display: flex; gap: 8px;">
+                    <span>💬 4</span>
+                    <span>📎 1</span>
+                    <span>🕐 2d</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Thread 2 -->
+              <div class="thread-card" onclick="openThread('thread-6')">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;">
+                  <h4 style="font-size: 13px; font-weight: 600; color: #0f172a; line-height: 1.3;">
+                    📝 Revisión de contrato
+                  </h4>
+                  <button class="btn-icon" onclick="event.stopPropagation(); archiveThread('thread-6')" title="Archivar">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                      <rect x="1" y="3" width="22" height="5"></rect>
+                    </svg>
+                  </button>
+                </div>
+                
+                <p style="font-size: 11px; color: #64748b; line-height: 1.4; margin-bottom: 8px;">
+                  Revisión de términos y condiciones antes de la firma...
+                </p>
+                
+                <!-- Metadata compacta -->
+                <div style="display: flex; flex-direction: column; gap: 4px; font-size: 10px; color: #94a3b8;">
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <img src="https://ui-avatars.com/api/?name=Laura+Torres&size=18&background=6366f1&color=fff" style="width: 18px; height: 18px; border-radius: 50%;">
+                    <span style="font-weight: 600;">Laura Torres</span>
+                  </div>
+                  <div style="display: flex; gap: 8px;">
+                    <span>💬 7</span>
+                    <span>📎 2</span>
+                    <span>🕐 5d</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+    </main>
+  </div>
+
+  <!-- MODAL: Seleccionar Proyecto para Nuevo Thread -->
+  <div id="newThreadModal" class="modal">
+    <div class="modal-content">
+      <button onclick="closeNewThreadModal()" style="position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 28px; cursor: pointer; color: #64748b; z-index: 10;">&times;</button>
+      
+      <div style="padding: 32px;">
+        <h2 style="font-size: 24px; font-weight: 700; color: #0f172a; margin-bottom: 8px;">Crear Nuevo Thread</h2>
+        <p style="color: #64748b; font-size: 14px; margin-bottom: 24px;">Selecciona el proyecto para el cual deseas crear el thread</p>
+        
+        <!-- Lista de proyectos -->
+        <div style="display: grid; gap: 12px; margin-bottom: 24px;">
+          
+          <!-- Proyecto 1 -->
+          <div class="project-select-card" onclick="selectProjectForThread('project-1', 'Instalación HVAC Completo')">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 12px; height: 12px; background: #10b981; border-radius: 50%; flex-shrink: 0;"></div>
+              <div style="flex: 1;">
+                <h3 style="font-size: 15px; font-weight: 600; color: #0f172a; margin-bottom: 4px;">Instalación HVAC Completo</h3>
+                <p style="font-size: 13px; color: #64748b;">Proyecto #1024 • Activo • 3 threads existentes</p>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 18l6-6-6-6"></path>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Proyecto 2 -->
+          <div class="project-select-card" onclick="selectProjectForThread('project-2', 'Reparación Sistema Eléctrico')">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 12px; height: 12px; background: #f97316; border-radius: 50%; flex-shrink: 0;"></div>
+              <div style="flex: 1;">
+                <h3 style="font-size: 15px; font-weight: 600; color: #0f172a; margin-bottom: 4px;">Reparación Sistema Eléctrico</h3>
+                <p style="font-size: 13px; color: #64748b;">Proyecto #1025 • En Progreso • 1 thread existente</p>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 18l6-6-6-6"></path>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Proyecto 3 -->
+          <div class="project-select-card" onclick="selectProjectForThread('project-3', 'Mantenimiento Preventivo Oficinas')">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 12px; height: 12px; background: #3b82f6; border-radius: 50%; flex-shrink: 0;"></div>
+              <div style="flex: 1;">
+                <h3 style="font-size: 15px; font-weight: 600; color: #0f172a; margin-bottom: 4px;">Mantenimiento Preventivo Oficinas</h3>
+                <p style="font-size: 13px; color: #64748b;">Proyecto #1026 • Programado • 2 threads</p>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 18l6-6-6-6"></path>
+              </svg>
+            </div>
+          </div>
+
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+          <button type="button" onclick="closeNewThreadModal()" style="padding: 10px 24px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; color: #64748b; font-weight: 600; cursor: pointer;">
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Filter functionality
+    function filterThreads(filter) {
+      // Update active state
+      document.querySelectorAll('[data-thread-filter]').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.querySelector(`[data-thread-filter="${filter}"]`).classList.add('active');
+      
+      // In production, this would filter the threads
+      console.log('Filter selected:', filter);
+    }
+
+    // Thread navigation
+    function openThread(threadId) {
+      window.location.href = `threadsync.html?id=${threadId}`;
+    }
+
+    // Create new thread
+    function createNewThread() {
+      document.getElementById('newThreadModal').style.display = 'block';
+    }
+
+    function closeNewThreadModal() {
+      document.getElementById('newThreadModal').style.display = 'none';
+    }
+
+    function selectProjectForThread(projectId, projectName) {
+      closeNewThreadModal();
+      const confirmMessage = `Crear nuevo thread para:\n\n${projectName}\n\n¿Continuar?`;
+      if (confirm(confirmMessage)) {
+        window.location.href = `threadsync.html?action=new&project=${projectId}&name=${encodeURIComponent(projectName)}`;
+      }
+    }
+
+    // Create thread for specific project
+    function createThreadForProject(projectId) {
+      window.location.href = `threadsync.html?action=new&project=${projectId}`;
+    }
+
+    // Go to project
+    function goToProject(projectId, isActive) {
+      if (isActive) {
+        window.location.href = `motorsync.html?project=${projectId}&tab=project`;
+      } else {
+        const confirmMessage = '¿Activar este proyecto?\n\nEsto te llevará a la vista del proyecto en ProjectSync.';
+        if (confirm(confirmMessage)) {
+          alert(`✓ Proyecto activado correctamente\n\nRedirigiendo a ProjectSync...`);
+          window.location.href = `motorsync.html?project=${projectId}&tab=project&action=activate`;
+        }
+      }
+    }
+
+    // Archive thread
+    function archiveThread(threadId) {
+      if (confirm('¿Archivar este thread?\n\nPodrás encontrarlo en la sección de Archivados.')) {
+        alert(`✓ Thread ${threadId} archivado correctamente`);
+        location.reload();
+      }
+    }
+
+    // Refresh threads
+    function refreshThreads() {
+      alert('🔄 Actualizando threads...');
+      location.reload();
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('newThreadModal');
+      if (event.target === modal) {
+        closeNewThreadModal();
+      }
+    }
+  </script>
+  
+  </div><!-- /app-content -->
+  </div><!-- /app-shell -->
+</body>
+</html>
