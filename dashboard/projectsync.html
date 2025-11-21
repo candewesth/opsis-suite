@@ -70,8 +70,9 @@
 
     .app-content {
       display: grid;
-      grid-template-columns: 250px 1fr;
+      grid-template-columns: 70px 1fr;
       flex: 1;
+      transition: grid-template-columns 0.3s ease;
     }
 
     header {
@@ -108,28 +109,27 @@
     }
 
     .module-tab {
-      padding: 8px 16px;
-      border-radius: 6px;
+      padding: 10px 28px;
+      border-radius: 10px 10px 0 0;
       font-size: 14px;
-      font-weight: 500;
-      color: rgba(255,255,255,0.7);
-      background: transparent;
-      text-decoration: none;
+      font-weight: 600;
       transition: all 0.2s ease;
+      background: rgba(2, 115, 94, 0.15);
+      color: #64748b;
+      text-decoration: none;
       display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
     }
 
     .module-tab:hover {
-      background: rgba(255,255,255,0.2) !important;
-      color: rgba(255,255,255,1) !important;
+      background: rgba(2, 115, 94, 0.25) !important;
+      color: #475569 !important;
     }
 
     .module-tab.active {
-      background: rgba(255,255,255,0.15) !important;
-      color: rgba(255,255,255,0.95) !important;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      background: white !important;
+      color: #02735E !important;
     }
 
     aside {
@@ -140,9 +140,18 @@
       top: 64px;
       height: calc(100vh - 64px);
       overflow-y: auto;
+      overflow-x: hidden;
       transition: all 0.3s ease;
-      width: 250px;
+      width: 70px;
       z-index: 100;
+    }
+
+    aside:hover {
+      width: 250px;
+    }
+
+    aside.collapsed {
+      width: 70px;
     }
 
     .sidebar-item {
@@ -157,9 +166,36 @@
       transition: all 0.3s ease;
       border-left: 3px solid transparent;
       text-decoration: none;
+      white-space: nowrap;
     }
 
-    .sidebar-item.active,
+    aside:not(:hover) .sidebar-item {
+      justify-content: center;
+      padding: 14px;
+    }
+
+    aside:not(:hover) .sidebar-item svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    aside:not(:hover) .sidebar-item span {
+      opacity: 0;
+      width: 0;
+      overflow: hidden;
+    }
+
+    aside:hover .sidebar-item span {
+      opacity: 1;
+      width: auto;
+    }
+
+    .sidebar-item.active {
+      background: white;
+      color: #02735E;
+      border-left-color: #02735E;
+    }
+
     .sidebar-item:hover {
       background: rgba(2, 115, 94, 0.06);
       color: #02735E;
@@ -447,8 +483,8 @@
 </head>
 <body>
   <div class="app-shell" data-theme="light" data-accent="#02735E">
-    <header style="background: linear-gradient(135deg, #02735E 0%, #035951 50%, #034040 100%); background-size: 200% 200%; animation: aire 8s ease infinite; padding: 18px 32px; display: flex; align-items: center; gap: 32px;">
-      <div class="logo" aria-label="Opsis Suite">
+    <header style="background: linear-gradient(135deg, #02735E 0%, #035951 50%, #034040 100%); background-size: 200% 200%; animation: aire 8s ease infinite; padding: 0; display: flex; align-items: flex-end;">
+      <div class="logo" aria-label="Opsis Suite" style="padding: 18px 32px;">
         <div class="logo-text">
           <div class="logo-title">Opsis Suite</div>
           <div id="company-name-header" style="font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.85); margin-top: 2px;">CVE San Diego</div>
@@ -456,25 +492,32 @@
       </div>
       
       <!-- Module Tabs -->
-      <div class="module-tabs" style="display: flex; gap: 8px; margin-left: auto;">
-        <a href="motorsync.html" class="module-tab active" style="padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; color: #02735E; background: white; text-decoration: none; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"></path>
-            <path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"></path>
-            <path d="M12 2v2"></path>
-            <path d="M12 22v-2"></path>
-          </svg>
-          MotorSync
-        </a>
-        <a href="../timesync/timesync.html" class="module-tab" style="padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.7); background: transparent; text-decoration: none; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
-          TimeSync
-        </a>
-      </div>
+      <div class="module-tabs" id="module-tabs-container" style="display: flex; gap: 0;"></div>
     </header>
+    
+    <script>
+    const MODULE_REGISTRY = {
+        motorsync: { name: 'MotorSync', url: 'motorsync.html', order: 1, enabled: true },
+        timesync: { name: 'TimeSync', url: '../timesync/timesync.html', order: 2, enabled: true }
+    };
+    
+    function renderModuleTabs() {
+        const container = document.getElementById('module-tabs-container');
+        if (!container) return;
+        
+        const currentPage = window.location.pathname.split('/').pop();
+        const sortedModules = Object.entries(MODULE_REGISTRY)
+            .filter(([_, module]) => module.enabled)
+            .sort((a, b) => a[1].order - b[1].order);
+        
+        container.innerHTML = sortedModules.map(([key, module]) => {
+            const isActive = currentPage === module.url || currentPage.includes(key);
+            return `<a href="${module.url}" class="module-tab ${isActive ? 'active' : ''}">${module.name}</a>`;
+        }).join('');
+    }
+    
+    renderModuleTabs();
+    </script>
 
     <div class="app-content">
     <aside id="sidebar">
@@ -521,13 +564,6 @@
       </div>
       <div class="sidebar-item" onclick="window.location.href='motorsync.html'">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4"></path>
-          <path d="M3 12h18"></path>
-        </svg>
-        <span>ToolSync - Inventario</span>
-      </div>
-      <div class="sidebar-item" onclick="window.location.href='motorsync.html'">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="3"></circle>
           <path d="M12 1v6m0 6v6m9-9h-6m-6 0H3m15.4-6.4l-4.2 4.2m-7.1 0L2.6 5.6m18.8 12.8l-4.2-4.2m-7.1 0l-4.5 4.5"></path>
         </svg>
@@ -545,13 +581,13 @@
               <h2 style="font-size: 28px; font-weight: 800; color: #065f46; margin: 0;">ProjectSync</h2>
             </div>
             <div style="display: flex; gap: 12px;">
-              <button class="btn btn-secondary" onclick="alert('Exportar proyectos')" style="border: 1px solid #10b981; color: #10b981;">
+              <button class="btn btn-secondary" onclick="refreshProjects()" style="border: 1px solid #10b981; color: #10b981;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <polyline points="1 20 1 14 7 14"></polyline>
+                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
                 </svg>
-                Exportar
+                Actualizar
               </button>
               <button class="btn btn-primary" onclick="alert('Nuevo proyecto')">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -856,6 +892,20 @@
           group.querySelectorAll('.chip-filter').forEach(f => f.classList.remove('active'));
           filter.classList.add('active');
         });
+      });
+
+      // Sidebar collapse functionality
+      const sidebar = document.getElementById('sidebar');
+      const sidebarItems = document.querySelectorAll('.sidebar-item');
+      
+      sidebarItems.forEach(item => {
+        item.addEventListener('click', () => {
+          sidebar.classList.add('collapsed');
+        });
+      });
+
+      sidebar.addEventListener('mouseenter', () => {
+        sidebar.classList.remove('collapsed');
       });
     });
   </script>

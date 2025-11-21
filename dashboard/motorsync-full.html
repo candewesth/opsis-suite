@@ -715,16 +715,48 @@
     </style>
 </head>
 <body>
-    <header>
-        <div class="logo-section">
-            <div class="logo">Opsis Suite</div>
-            <div class="module-badge">MotorSync</div>
+    <header style="background: linear-gradient(135deg, #02735E 0%, #035951 50%, #034040 100%); background-size: 200% 200%; animation: aire 8s ease infinite; padding: 0; display: flex; align-items: flex-end; justify-content: space-between;">
+        <div style="display: flex; align-items: flex-end;">
+            <div class="logo" aria-label="Opsis Suite" style="padding: 18px 32px;">
+                <div class="logo-text">
+                    <div class="logo-title">Opsis Suite</div>
+                    <div id="company-name-header" style="font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.85); margin-top: 2px;">CVE San Diego</div>
+                </div>
+            </div>
+            
+            <!-- Module Tabs -->
+            <div class="module-tabs" id="module-tabs-container" style="display: flex; gap: 0;"></div>
         </div>
-        <div class="header-actions">
+        
+        <div class="header-actions" style="padding: 18px 32px;">
             <span class="category-badge" id="categoryBadge">🔧 Plomería</span>
             <button class="theme-toggle" onclick="toggleTheme()">🌙 Tema</button>
         </div>
     </header>
+    
+    <script>
+    const MODULE_REGISTRY = {
+        motorsync: { name: 'MotorSync', url: 'motorsync-full.html', order: 1, enabled: true },
+        timesync: { name: 'TimeSync', url: '../timesync/timesync.html', order: 2, enabled: true }
+    };
+    
+    function renderModuleTabs() {
+        const container = document.getElementById('module-tabs-container');
+        if (!container) return;
+        
+        const currentPage = window.location.pathname.split('/').pop();
+        const sortedModules = Object.entries(MODULE_REGISTRY)
+            .filter(([_, module]) => module.enabled)
+            .sort((a, b) => a[1].order - b[1].order);
+        
+        container.innerHTML = sortedModules.map(([key, module]) => {
+            const isActive = currentPage === module.url || currentPage.includes(key);
+            return `<a href="${module.url}" class="module-tab ${isActive ? 'active' : ''}" style="padding: 10px 28px; font-size: 14px; font-weight: 600; color: ${isActive ? '#1e293b' : '#64748b'}; background: ${isActive ? 'white' : 'rgba(2, 115, 94, 0.15)'}; text-decoration: none; display: flex; align-items: center; justify-content: center; border-radius: 10px 10px 0 0; transition: 0.2s;">${module.name}</a>`;
+        }).join('');
+    }
+    
+    renderModuleTabs();
+    </script>
 
     <div class="app-container">
         <aside>

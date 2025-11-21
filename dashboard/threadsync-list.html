@@ -68,8 +68,9 @@
 
     .app-content {
       display: grid;
-      grid-template-columns: 250px 1fr;
+      grid-template-columns: 70px 1fr;
       flex: 1;
+      transition: grid-template-columns 0.3s ease;
     }
 
     header {
@@ -106,28 +107,27 @@
     }
 
     .module-tab {
-      padding: 8px 16px;
-      border-radius: 6px;
+      padding: 10px 28px;
+      border-radius: 10px 10px 0 0;
       font-size: 14px;
-      font-weight: 500;
-      color: rgba(255,255,255,0.7);
-      background: transparent;
-      text-decoration: none;
+      font-weight: 600;
       transition: all 0.2s ease;
+      background: rgba(2, 115, 94, 0.15);
+      color: #64748b;
+      text-decoration: none;
       display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
     }
 
     .module-tab:hover {
-      background: rgba(255,255,255,0.2) !important;
-      color: rgba(255,255,255,1) !important;
+      background: rgba(2, 115, 94, 0.25) !important;
+      color: #475569 !important;
     }
 
     .module-tab.active {
-      background: rgba(255,255,255,0.15) !important;
-      color: rgba(255,255,255,0.95) !important;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      background: white !important;
+      color: #02735E !important;
     }
 
     aside {
@@ -138,9 +138,18 @@
       top: 64px;
       height: calc(100vh - 64px);
       overflow-y: auto;
+      overflow-x: hidden;
       transition: all 0.3s ease;
-      width: 250px;
+      width: 70px;
       z-index: 100;
+    }
+
+    aside:hover {
+      width: 250px;
+    }
+
+    aside.collapsed {
+      width: 70px;
     }
 
     .sidebar-item {
@@ -155,9 +164,36 @@
       transition: all 0.3s ease;
       border-left: 3px solid transparent;
       text-decoration: none;
+      white-space: nowrap;
     }
 
-    .sidebar-item.active,
+    aside:not(:hover) .sidebar-item {
+      justify-content: center;
+      padding: 14px;
+    }
+
+    aside:not(:hover) .sidebar-item svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    aside:not(:hover) .sidebar-item span {
+      opacity: 0;
+      width: 0;
+      overflow: hidden;
+    }
+
+    aside:hover .sidebar-item span {
+      opacity: 1;
+      width: auto;
+    }
+
+    .sidebar-item.active {
+      background: white;
+      color: #02735E;
+      border-left-color: #02735E;
+    }
+
     .sidebar-item:hover {
       background: rgba(2, 115, 94, 0.06);
       color: #02735E;
@@ -349,8 +385,8 @@
 </head>
 <body>
   <div class="app-shell" data-theme="light" data-accent="#02735E">
-    <header style="background: linear-gradient(135deg, #02735E 0%, #035951 50%, #034040 100%); background-size: 200% 200%; animation: aire 8s ease infinite; padding: 18px 32px; display: flex; align-items: center; gap: 32px;">
-      <div class="logo" aria-label="Opsis Suite">
+    <header style="background: linear-gradient(135deg, #02735E 0%, #035951 50%, #034040 100%); background-size: 200% 200%; animation: aire 8s ease infinite; padding: 0; display: flex; align-items: flex-end;">
+      <div class="logo" aria-label="Opsis Suite" style="padding: 18px 32px;">
         <div class="logo-text">
           <div class="logo-title">Opsis Suite</div>
           <div id="company-name-header" style="font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.85); margin-top: 2px;">CVE San Diego</div>
@@ -358,25 +394,32 @@
       </div>
       
       <!-- Module Tabs -->
-      <div class="module-tabs" style="display: flex; gap: 8px; margin-left: auto;">
-        <a href="motorsync.html" class="module-tab active" style="padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; color: #02735E; background: white; text-decoration: none; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"></path>
-            <path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"></path>
-            <path d="M12 2v2"></path>
-            <path d="M12 22v-2"></path>
-          </svg>
-          MotorSync
-        </a>
-        <a href="../timesync/timesync.html" class="module-tab" style="padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.7); background: transparent; text-decoration: none; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
-          TimeSync
-        </a>
-      </div>
+      <div class="module-tabs" id="module-tabs-container" style="display: flex; gap: 0;"></div>
     </header>
+    
+    <script>
+    const MODULE_REGISTRY = {
+        motorsync: { name: 'MotorSync', url: 'motorsync.html', order: 1, enabled: true },
+        timesync: { name: 'TimeSync', url: '../timesync/timesync.html', order: 2, enabled: true }
+    };
+    
+    function renderModuleTabs() {
+        const container = document.getElementById('module-tabs-container');
+        if (!container) return;
+        
+        const currentPage = window.location.pathname.split('/').pop();
+        const sortedModules = Object.entries(MODULE_REGISTRY)
+            .filter(([_, module]) => module.enabled)
+            .sort((a, b) => a[1].order - b[1].order);
+        
+        container.innerHTML = sortedModules.map(([key, module]) => {
+            const isActive = currentPage === module.url || currentPage.includes(key);
+            return `<a href="${module.url}" class="module-tab ${isActive ? 'active' : ''}">${module.name}</a>`;
+        }).join('');
+    }
+    
+    renderModuleTabs();
+    </script>
 
     <div class="app-content">
     <aside id="sidebar">
@@ -423,13 +466,6 @@
       </div>
       <div class="sidebar-item" onclick="window.location.href='motorsync.html'">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4"></path>
-          <path d="M3 12h18"></path>
-        </svg>
-        <span>ToolSync - Inventario</span>
-      </div>
-      <div class="sidebar-item" onclick="window.location.href='motorsync.html'">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="3"></circle>
           <path d="M12 1v6m0 6v6m9-9h-6m-6 0H3m15.4-6.4l-4.2 4.2m-7.1 0L2.6 5.6m18.8 12.8l-4.2-4.2m-7.1 0l-4.5 4.5"></path>
         </svg>
@@ -439,8 +475,35 @@
 
     <main id="main">
       <section class="page">
+        <!-- Banner de ThreadSync con estilo ProjectSync -->
+        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-left: 4px solid var(--primary-color); border-radius: 16px; padding: 20px 24px; margin-bottom: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div>
+              <p style="font-size: 11px; color: #047857; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 6px;">Seguimiento de Oportunidades</p>
+              <h2 style="font-size: 28px; font-weight: 800; color: #065f46; margin: 0;">ThreadSync</h2>
+            </div>
+            <div style="display: flex; gap: 12px;">
+              <button class="btn btn-secondary" onclick="refreshThreads()" style="border: 1px solid #10b981; color: #10b981;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <polyline points="1 20 1 14 7 14"></polyline>
+                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                Actualizar
+              </button>
+              <button class="btn btn-primary" onclick="createNewThread()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Nuevo Thread
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- Header con acciones principales -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <div style="display: none; justify-content: space-between; align-items: center; margin-bottom: 24px;">
           <div>
             <h2 style="font-size: 24px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">ThreadSync</h2>
             <p style="color: #64748b; font-size: 14px;">Seguimiento de oportunidades y conversaciones de proyectos</p>
@@ -974,6 +1037,100 @@
         closeNewThreadModal();
       }
     }
+  </script>
+
+  <script>
+    // ===================================
+    // MODULE TABS DYNAMIC LOADER
+    // ===================================
+    const MODULE_REGISTRY = {
+      motorsync: {
+        name: 'MotorSync',
+        url: 'motorsync.html',
+        order: 1,
+        enabled: true
+      },
+      timesync: {
+        name: 'TimeSync',
+        url: '../timesync/timesync.html',
+        order: 2,
+        enabled: true
+      },
+      projectsync: {
+        name: 'ProjectSync',
+        url: 'projectsync.html',
+        order: 3,
+        enabled: false
+      },
+      warehousesync: {
+        name: 'WarehouseSync',
+        url: '../warehouse/inventory.html',
+        order: 4,
+        enabled: false
+      }
+    };
+
+    function renderModuleTabs() {
+      const container = document.getElementById('module-tabs-container');
+      if (!container) return;
+
+      container.innerHTML = '';
+      const enabledModules = Object.entries(MODULE_REGISTRY)
+        .filter(([key, module]) => module.enabled)
+        .sort((a, b) => a[1].order - b[1].order);
+
+      const currentPage = window.location.pathname.split('/').pop();
+
+      enabledModules.forEach(([key, module]) => {
+        const isActive = currentPage === module.url.split('/').pop() || 
+                        (currentPage.includes('threadsync') && key === 'motorsync');
+        
+        const tab = document.createElement('a');
+        tab.href = module.url;
+        tab.className = `module-tab${isActive ? ' active' : ''}`;
+        tab.style.cssText = `
+          padding: 10px 28px;
+          font-size: 14px;
+          font-weight: 600;
+          color: ${isActive ? '#1e293b' : '#64748b'};
+          background: ${isActive ? 'white' : '#e2e8f0'};
+          text-decoration: none;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 10px 10px 0 0;
+          transition: all 0.2s ease;
+        `;
+        tab.textContent = module.name;
+        
+        tab.addEventListener('mouseenter', () => {
+          if (!isActive) tab.style.background = '#cbd5e1';
+        });
+        tab.addEventListener('mouseleave', () => {
+          if (!isActive) tab.style.background = '#e2e8f0';
+        });
+        
+        container.appendChild(tab);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderModuleTabs();
+      
+      // Sidebar collapse functionality
+      const sidebar = document.getElementById('sidebar');
+      const sidebarItems = document.querySelectorAll('.sidebar-item');
+      
+      sidebarItems.forEach(item => {
+        item.addEventListener('click', () => {
+          sidebar.classList.add('collapsed');
+        });
+      });
+
+      sidebar.addEventListener('mouseenter', () => {
+        sidebar.classList.remove('collapsed');
+      });
+    });
   </script>
   
   </div><!-- /app-content -->
