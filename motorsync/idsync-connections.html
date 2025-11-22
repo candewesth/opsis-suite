@@ -27,8 +27,8 @@
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-      color: white;
+      background: linear-gradient(135deg, #f8fafb 0%, #e8f4f2 100%);
+      color: var(--text-primary);
       line-height: 1.6;
       min-height: 100vh;
       overflow-x: hidden;
@@ -41,9 +41,9 @@
     }
 
     header {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      background: linear-gradient(135deg, var(--verdi-light) 0%, var(--verdi-accent) 100%);
+      color: white;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
       padding: 20px 24px;
       position: sticky;
       top: 0;
@@ -51,12 +51,13 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     .back-button {
-      background: rgba(2, 115, 94, 0.2);
-      border: 2px solid rgba(2, 115, 94, 0.4);
-      color: #10b981;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      color: white;
       padding: 10px 20px;
       border-radius: 12px;
       cursor: pointer;
@@ -70,14 +71,14 @@
     }
 
     .back-button:hover {
-      background: rgba(2, 115, 94, 0.3);
+      background: rgba(255, 255, 255, 0.3);
       transform: translateX(-4px);
     }
 
     .header-title {
       font-size: 20px;
       font-weight: 700;
-      color: #10b981;
+      color: white;
     }
 
     main {
@@ -258,14 +259,14 @@
 <body>
   <div class="app-shell">
     <header>
-      <a href="project-form.html" class="back-button">
+      <a href="#" id="backButton" class="back-button">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="19" y1="12" x2="5" y2="12"></line>
           <polyline points="12 19 5 12 12 5"></polyline>
         </svg>
-        Volver al Formulario
+        <span id="backButtonText">Volver</span>
       </a>
-      <div class="header-title">IDSync Connection Map</div>
+      <div class="header-title">🔗 HowSync — Conexión Inteligente de Módulos</div>
     </header>
 
     <main>
@@ -572,6 +573,36 @@
           canvas.style.cursor = 'pointer';
         }
       });
+    });
+  </script>
+
+  <script>
+    // Smart back button - detecta desde dónde vino el usuario
+    document.addEventListener('DOMContentLoaded', () => {
+      const backButton = document.getElementById('backButton');
+      const backButtonText = document.getElementById('backButtonText');
+      const referrer = document.referrer;
+
+      // Detectar desde dónde vino el usuario
+      if (referrer.includes('project-form.html') || referrer.includes('thread-form.html')) {
+        // Vino desde un formulario
+        backButton.href = referrer;
+        backButtonText.textContent = 'Volver al Formulario';
+      } else if (referrer.includes('projectsync.html') || referrer.includes('motorsync')) {
+        // Vino desde MotorSync dashboard
+        backButton.href = 'projectsync.html';
+        backButtonText.textContent = 'Volver a MotorSync';
+      } else {
+        // Default: ir a MotorSync
+        backButton.href = 'projectsync.html';
+        backButtonText.textContent = 'Volver a MotorSync';
+      }
+
+      // Si no hay referrer (acceso directo), usar MotorSync
+      if (!referrer) {
+        backButton.href = 'projectsync.html';
+        backButtonText.textContent = 'Volver a MotorSync';
+      }
     });
   </script>
 </body>

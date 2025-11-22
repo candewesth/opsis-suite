@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thread Connector - Vincular Conversaciones | MotorSync</title>
+  <style>
+    :root {
+      --verdi-dark: #022326;
+      --verdi-mid: #034040;
+      --verdi-accent: #035951;
+      --verdi-light: #02735E;
+      --primary-color: #02735E;
+      --accent-color: #035951;
+      --text-primary: #1e293b;
+      --text-secondary: #475569;
+      --bg-body: #fafafa;
+      --bg-card: #ffffff;
+      --border-color: #ebebeb;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Helvetica Neue', Helvetica, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-body);
+      color: var(--text-primary);
+    }
+
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .top-nav {
+      background: linear-gradient(135deg, var(--verdi-light) 0%, var(--verdi-accent) 100%);
+      color: white;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .nav-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-title h1 {
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .back-btn {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .back-btn:hover {
+      background: rgba(255,255,255,0.3);
+      transform: translateX(-2px);
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      padding: 40px;
+      max-width: 1600px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .stats-bar {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      flex: 1;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .stat-icon.threads {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    }
+
+    .stat-icon.projects {
+      background: linear-gradient(135deg, var(--verdi-light) 0%, var(--verdi-accent) 100%);
+    }
+
+    .stat-icon.linked {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .stat-info h3 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .stat-info p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* Grid Layout */
+    .connector-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+
+    .column {
+      background: white;
+      border-radius: 16px;
+      border: 2px solid var(--border-color);
+      overflow: hidden;
+    }
+
+    .column-header {
+      background: linear-gradient(135deg, #f8fafb 0%, #e8f4f2 100%);
+      padding: 20px 24px;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .column-header h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .column-header .count {
+      background: var(--verdi-light);
+      color: white;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .column-body {
+      padding: 20px;
+      min-height: 400px;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    /* Thread Card */
+    .thread-card {
+      background: white;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      cursor: grab;
+      transition: all 0.2s;
+    }
+
+    .thread-card:active {
+      cursor: grabbing;
+    }
+
+    .thread-card:hover {
+      border-color: #3b82f6;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .thread-card.dragging {
+      opacity: 0.5;
+      transform: scale(0.95);
+    }
+
+    .thread-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .thread-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .thread-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      flex: 1;
+    }
+
+    .thread-meta {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .thread-description {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 10px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .thread-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 10px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .thread-date {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* Project Card */
+    .project-card {
+      background: white;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .project-card.drop-target {
+      border-color: var(--verdi-light);
+      background: #f0fdf4;
+      box-shadow: 0 0 0 4px rgba(2, 115, 94, 0.1);
+    }
+
+    .project-card.matched {
+      border-color: #fbbf24;
+      background: #fef3c7;
+    }
+
+    .project-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .project-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--verdi-light) 0%, var(--verdi-accent) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .project-idsync {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--verdi-light);
+      flex: 1;
+    }
+
+    .match-badge {
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .project-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .project-details {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .project-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 10px;
+      border-top: 1px solid #e2e8f0;
+      margin-top: 10px;
+    }
+
+    .project-status {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-weight: 500;
+    }
+
+    .project-status.active {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .project-status.pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .project-status.progress {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    /* Linked Section */
+    .linked-section {
+      background: white;
+      border-radius: 16px;
+      border: 2px solid var(--border-color);
+      overflow: hidden;
+    }
+
+    .linked-header {
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      padding: 20px 24px;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .linked-header h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .linked-body {
+      padding: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .linked-card {
+      background: white;
+      border: 2px solid #10b981;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .link-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .linked-info {
+      flex: 1;
+    }
+
+    .linked-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .linked-meta {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .unlink-btn {
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .unlink-btn:hover {
+      background: #fecaca;
+      transform: scale(1.05);
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-secondary);
+    }
+
+    .empty-state svg {
+      opacity: 0.3;
+      margin-bottom: 16px;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow: auto;
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, var(--verdi-light) 0%, var(--verdi-accent) 100%);
+      color: white;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .modal-header h2 {
+      font-size: 20px;
+      font-weight: 600;
+      flex: 1;
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .confirm-preview {
+      background: #f8fafb;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .preview-item {
+      margin-bottom: 16px;
+    }
+
+    .preview-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .preview-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .preview-content {
+      font-size: 14px;
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+
+    .preview-idsync {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--verdi-light);
+    }
+
+    .link-arrow {
+      text-align: center;
+      font-size: 24px;
+      margin: 16px 0;
+      color: var(--verdi-light);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-cancel {
+      background: #f1f5f9;
+      color: var(--text-secondary);
+    }
+
+    .btn-cancel:hover {
+      background: #e2e8f0;
+    }
+
+    .btn-confirm {
+      background: linear-gradient(135deg, var(--verdi-light) 0%, var(--verdi-accent) 100%);
+      color: white;
+    }
+
+    .btn-confirm:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(2, 115, 94, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+      <div class="nav-title">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+        </svg>
+        <h1>Thread Connector</h1>
+      </div>
+      <a href="projectsync.html" class="back-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        Volver a ProjectSync
+      </a>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Stats Bar -->
+      <div class="stats-bar">
+        <div class="stat-card">
+          <div class="stat-icon threads">💬</div>
+          <div class="stat-info">
+            <h3 id="threadsCount">0</h3>
+            <p>Threads sin vincular</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon projects">📦</div>
+          <div class="stat-info">
+            <h3 id="projectsCount">0</h3>
+            <p>Proyectos sin thread</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon linked">🔗</div>
+          <div class="stat-info">
+            <h3 id="linkedCount">0</h3>
+            <p>Vinculaciones activas</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Connector Grid -->
+      <div class="connector-grid">
+        <!-- Threads Column -->
+        <div class="column">
+          <div class="column-header">
+            <h2>
+              💬 Threads sin Vincular
+              <span class="count" id="threadsHeaderCount">0</span>
+            </h2>
+          </div>
+          <div class="column-body" id="threadsColumn">
+            <div class="empty-state">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <p>No hay threads sin vincular</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Projects Column -->
+        <div class="column">
+          <div class="column-header">
+            <h2>
+              📦 Proyectos sin Thread
+              <span class="count" id="projectsHeaderCount">0</span>
+            </h2>
+          </div>
+          <div class="column-body" id="projectsColumn">
+            <div class="empty-state">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              </svg>
+              <p>No hay proyectos sin thread</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Linked Section -->
+      <div class="linked-section">
+        <div class="linked-header">
+          <h2>
+            🔗 Vinculaciones Activas
+            <span class="count" id="linkedHeaderCount">0</span>
+          </h2>
+        </div>
+        <div class="linked-body" id="linkedSection">
+          <div class="empty-state">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+            <p>No hay vinculaciones activas</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+        </svg>
+        <h2>Confirmar Vinculación</h2>
+      </div>
+      <div class="modal-body">
+        <div class="confirm-preview">
+          <div class="preview-item">
+            <div class="preview-label">Thread</div>
+            <div class="preview-content" id="modalThreadInfo">—</div>
+          </div>
+          <div class="link-arrow">↓</div>
+          <div class="preview-item">
+            <div class="preview-label">Proyecto</div>
+            <div class="preview-idsync" id="modalProjectIDSync">—</div>
+            <div class="preview-content" id="modalProjectInfo">—</div>
+          </div>
+        </div>
+        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;">
+          Esta vinculación conectará el thread con el proyecto. Ambos permanecerán vinculados hasta que decidas desconectarlos.
+        </p>
+        <div class="modal-actions" style="margin-top: 24px;">
+          <button class="btn btn-cancel" onclick="closeConfirmModal()">Cancelar</button>
+          <button class="btn btn-confirm" onclick="confirmLink()">Confirmar Vinculación</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Mock data
+    let threads = [
+      {
+        uuid: 'thread-uuid-001',
+        subject: 'Juan Pérez - Instalación HVAC',
+        description: 'Cliente solicita cotización para instalación completa de sistema HVAC en edificio comercial',
+        contact: 'Juan Pérez',
+        address: 'Av. Reforma 123, CDMX',
+        createdAt: '2025-11-20T10:30:00Z'
+      },
+      {
+        uuid: 'thread-uuid-002',
+        subject: 'María González - Mantenimiento',
+        description: 'Consulta sobre plan de mantenimiento preventivo para sistema de aire acondicionado',
+        contact: 'María González',
+        address: 'Insurgentes 456, CDMX',
+        createdAt: '2025-11-19T14:20:00Z'
+      },
+      {
+        uuid: 'thread-uuid-003',
+        subject: 'Cotización urgente - Cliente nuevo',
+        description: 'Requiere cotización express para reparación de unidad industrial',
+        contact: null,
+        address: null,
+        createdAt: '2025-11-21T09:15:00Z'
+      }
+    ];
+
+    let projects = [
+      {
+        uuid: 'project-uuid-001',
+        idsync: 'IDSYNC-1001',
+        name: 'Instalación HVAC - Edificio Central',
+        contact: 'Juan Pérez',
+        address: 'Av. Reforma 123, CDMX',
+        status: 'progress'
+      },
+      {
+        uuid: 'project-uuid-002',
+        idsync: 'IDSYNC-1002',
+        name: 'Mantenimiento Sistema Aire',
+        contact: 'María González',
+        address: 'Insurgentes 456, CDMX',
+        status: 'active'
+      },
+      {
+        uuid: 'project-uuid-003',
+        idsync: 'IDSYNC-1003',
+        name: 'Reparación Urgente HVAC',
+        contact: 'Carlos López',
+        address: 'Polanco 789, CDMX',
+        status: 'pending'
+      },
+      {
+        uuid: 'project-uuid-004',
+        idsync: 'IDSYNC-1004',
+        name: 'Instalación Nueva Unidad',
+        contact: 'Ana Martínez',
+        address: 'Reforma 120, CDMX',
+        status: 'progress'
+      }
+    ];
+
+    let linkedPairs = [];
+
+    let draggedThread = null;
+    let pendingLink = null;
+
+    // Initialize
+    function init() {
+      renderThreads();
+      renderProjects();
+      renderLinked();
+      updateStats();
+    }
+
+    // Calculate match score
+    function calculateMatch(thread, project) {
+      let score = 0;
+      
+      if (thread.contact && project.contact) {
+        if (thread.contact.toLowerCase() === project.contact.toLowerCase()) {
+          score += 50;
+        } else if (thread.contact.toLowerCase().includes(project.contact.toLowerCase()) || 
+                   project.contact.toLowerCase().includes(thread.contact.toLowerCase())) {
+          score += 25;
+        }
+      }
+      
+      if (thread.address && project.address) {
+        const threadAddr = thread.address.toLowerCase();
+        const projectAddr = project.address.toLowerCase();
+        
+        if (threadAddr === projectAddr) {
+          score += 40;
+        } else {
+          const threadWords = threadAddr.split(/[\s,]+/);
+          const projectWords = projectAddr.split(/[\s,]+/);
+          const matches = threadWords.filter(w => projectWords.includes(w) && w.length > 2);
+          score += matches.length * 5;
+        }
+      }
+      
+      return Math.min(score, 100);
+    }
+
+    // Render threads
+    function renderThreads() {
+      const container = document.getElementById('threadsColumn');
+      const unlinkedThreads = threads.filter(t => !linkedPairs.some(p => p.threadUUID === t.uuid));
+      
+      if (unlinkedThreads.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <p>No hay threads sin vincular</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = unlinkedThreads.map(thread => {
+        const date = new Date(thread.createdAt);
+        const formattedDate = date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+        
+        return `
+          <div class="thread-card" draggable="true" data-uuid="${thread.uuid}">
+            <div class="thread-header">
+              <div class="thread-icon">💬</div>
+              <div class="thread-title">${thread.subject}</div>
+            </div>
+            <div class="thread-meta">${thread.contact || 'Sin contacto'}</div>
+            <div class="thread-description">${thread.description}</div>
+            <div class="thread-footer">
+              <div class="thread-date">Creado: ${formattedDate}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      // Add drag listeners
+      container.querySelectorAll('.thread-card').forEach(card => {
+        card.addEventListener('dragstart', handleDragStart);
+        card.addEventListener('dragend', handleDragEnd);
+      });
+    }
+
+    // Render projects
+    function renderProjects() {
+      const container = document.getElementById('projectsColumn');
+      const unlinkedProjects = projects.filter(p => !linkedPairs.some(l => l.projectUUID === p.uuid));
+      
+      if (unlinkedProjects.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            </svg>
+            <p>No hay proyectos sin thread</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = unlinkedProjects.map(project => {
+        let matchBadge = '';
+        let matchClass = '';
+        
+        if (draggedThread) {
+          const thread = threads.find(t => t.uuid === draggedThread);
+          const matchScore = calculateMatch(thread, project);
+          if (matchScore > 30) {
+            matchBadge = `<span class="match-badge">✨ ${matchScore}% match</span>`;
+            matchClass = 'matched';
+          }
+        }
+        
+        const statusLabels = {
+          active: 'Activo',
+          pending: 'Pendiente',
+          progress: 'En Progreso'
+        };
+        
+        return `
+          <div class="project-card ${matchClass}" data-uuid="${project.uuid}">
+            <div class="project-header">
+              <div class="project-icon">📦</div>
+              <div class="project-idsync">${project.idsync}</div>
+              ${matchBadge}
+            </div>
+            <div class="project-name">${project.name}</div>
+            <div class="project-details">
+              ${project.contact || 'Sin contacto'}<br>
+              ${project.address || 'Sin dirección'}
+            </div>
+            <div class="project-footer">
+              <span class="project-status ${project.status}">${statusLabels[project.status]}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      // Add drop listeners
+      container.querySelectorAll('.project-card').forEach(card => {
+        card.addEventListener('dragover', handleDragOver);
+        card.addEventListener('drop', handleDrop);
+        card.addEventListener('dragleave', handleDragLeave);
+      });
+    }
+
+    // Render linked
+    function renderLinked() {
+      const container = document.getElementById('linkedSection');
+      
+      if (linkedPairs.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+            <p>No hay vinculaciones activas</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = linkedPairs.map(link => {
+        const thread = threads.find(t => t.uuid === link.threadUUID);
+        const project = projects.find(p => p.uuid === link.projectUUID);
+        const date = new Date(link.linkedAt);
+        const formattedDate = date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        
+        return `
+          <div class="linked-card">
+            <div class="link-icon">🔗</div>
+            <div class="linked-info">
+              <div class="linked-title">💬 ${thread.subject} → 📦 ${project.idsync}</div>
+              <div class="linked-meta">${project.name} • Vinculado: ${formattedDate}</div>
+            </div>
+            <button class="unlink-btn" onclick="unlinkPair('${link.threadUUID}', '${link.projectUUID}')">
+              Desvincular
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Update stats
+    function updateStats() {
+      const unlinkedThreads = threads.filter(t => !linkedPairs.some(p => p.threadUUID === t.uuid)).length;
+      const unlinkedProjects = projects.filter(p => !linkedPairs.some(l => l.projectUUID === p.uuid)).length;
+      const linked = linkedPairs.length;
+      
+      document.getElementById('threadsCount').textContent = unlinkedThreads;
+      document.getElementById('projectsCount').textContent = unlinkedProjects;
+      document.getElementById('linkedCount').textContent = linked;
+      document.getElementById('threadsHeaderCount').textContent = unlinkedThreads;
+      document.getElementById('projectsHeaderCount').textContent = unlinkedProjects;
+      document.getElementById('linkedHeaderCount').textContent = linked;
+    }
+
+    // Drag handlers
+    function handleDragStart(e) {
+      draggedThread = e.currentTarget.dataset.uuid;
+      e.currentTarget.classList.add('dragging');
+      renderProjects(); // Re-render to show match badges
+    }
+
+    function handleDragEnd(e) {
+      e.currentTarget.classList.remove('dragging');
+      draggedThread = null;
+      renderProjects(); // Remove match badges
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.currentTarget.classList.add('drop-target');
+    }
+
+    function handleDragLeave(e) {
+      e.currentTarget.classList.remove('drop-target');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('drop-target');
+      
+      const projectUUID = e.currentTarget.dataset.uuid;
+      const thread = threads.find(t => t.uuid === draggedThread);
+      const project = projects.find(p => p.uuid === projectUUID);
+      
+      pendingLink = { thread, project };
+      openConfirmModal();
+    }
+
+    // Modal functions
+    function openConfirmModal() {
+      const { thread, project } = pendingLink;
+      
+      document.getElementById('modalThreadInfo').textContent = `${thread.subject} - ${thread.contact || 'Sin contacto'}`;
+      document.getElementById('modalProjectIDSync').textContent = project.idsync;
+      document.getElementById('modalProjectInfo').textContent = project.name;
+      
+      document.getElementById('confirmModal').classList.add('active');
+    }
+
+    function closeConfirmModal() {
+      document.getElementById('confirmModal').classList.remove('active');
+      pendingLink = null;
+    }
+
+    function confirmLink() {
+      const { thread, project } = pendingLink;
+      
+      linkedPairs.push({
+        threadUUID: thread.uuid,
+        projectUUID: project.uuid,
+        projectIDSync: project.idsync,
+        linkedAt: new Date().toISOString()
+      });
+      
+      closeConfirmModal();
+      renderThreads();
+      renderProjects();
+      renderLinked();
+      updateStats();
+    }
+
+    function unlinkPair(threadUUID, projectUUID) {
+      if (!confirm('¿Estás seguro de que quieres desvincular este thread del proyecto?')) {
+        return;
+      }
+      
+      linkedPairs = linkedPairs.filter(p => !(p.threadUUID === threadUUID && p.projectUUID === projectUUID));
+      
+      renderThreads();
+      renderProjects();
+      renderLinked();
+      updateStats();
+    }
+
+    // Click outside modal to close
+    document.getElementById('confirmModal').addEventListener('click', (e) => {
+      if (e.target.id === 'confirmModal') {
+        closeConfirmModal();
+      }
+    });
+
+    // Initialize on load
+    init();
+  </script>
+</body>
+</html>
