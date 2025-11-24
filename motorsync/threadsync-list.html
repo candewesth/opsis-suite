@@ -558,7 +558,7 @@
               <h2 style="font-size: 28px; font-weight: 800; color: #065f46; margin: 0;">ThreadSync</h2>
             </div>
             <div style="display: flex; gap: 12px;">
-              <button class="btn btn-secondary" onclick="refreshThreads()" style="border: 1px solid #10b981; color: #10b981;">
+              <button class="btn btn-secondary" onclick="refreshThreads(this)" style="border: 1px solid #10b981; color: #10b981;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="23 4 23 10 17 10"></polyline>
                   <polyline points="1 20 1 14 7 14"></polyline>
@@ -584,7 +584,7 @@
             <p style="color: #64748b; font-size: 14px;">Seguimiento de oportunidades y conversaciones de proyectos</p>
           </div>
           <div style="display: flex; gap: 12px;">
-            <button class="btn btn-white" onclick="refreshThreads()">
+            <button class="btn btn-white" onclick="refreshThreads(this)">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="23 4 23 10 17 10"></polyline>
                 <polyline points="1 20 1 14 7 14"></polyline>
@@ -1962,14 +1962,31 @@
     });
 
     // Refresh threads
-    function refreshThreads() {
-      updateUnreadBadge();
-      const activeFilter = document.querySelector('.chip-filter.active');
-      if (activeFilter) {
-        const filterType = activeFilter.getAttribute('data-thread-filter');
-        filterThreads(filterType);
+    function refreshThreads(btnElement) {
+      const btn = btnElement || (typeof event !== 'undefined' ? event.target.closest('button') : null);
+      if (!btn) return;
+
+      const icon = btn.querySelector('svg');
+      if (icon) {
+        // Add rotation animation
+        icon.style.transition = 'transform 0.6s ease';
+        icon.style.transform = 'rotate(360deg)';
       }
-      alert('✓ Threads actualizados');
+
+      // Simulate refresh
+      setTimeout(() => {
+        if (icon) {
+          icon.style.transform = 'rotate(0deg)';
+        }
+        
+        updateUnreadBadge();
+        const activeFilter = document.querySelector('.chip-filter.active');
+        if (activeFilter) {
+          const filterType = activeFilter.getAttribute('data-thread-filter');
+          filterThreads(filterType);
+        }
+        console.log('✅ Threads actualizados');
+      }, 600);
     }
 
     // 🔄 RESET LOCALSTORAGE - Útil para pruebas

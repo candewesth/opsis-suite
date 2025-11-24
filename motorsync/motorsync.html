@@ -4162,6 +4162,13 @@
         </svg>
         <span>ThreadSync</span>
       </a>
+      <a href="howsync.html" class="sidebar-item" data-nav="page" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="min-width: 20px;">
+          <circle cx="12" cy="12" r="2"></circle>
+          <path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path>
+        </svg>
+        <span>HowSync</span>
+      </a>
       <div class="sidebar-item" data-page="customers" style="display: flex; align-items: center; gap: 12px;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="min-width: 20px;">
           <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
@@ -17010,18 +17017,146 @@
       }, 800);
     });
 
+    // ========================================
+    // DASHBOARD DATA & COUNTERS
+    // ========================================
+
+    // Default projects data if localStorage is empty
+    function getDefaultProjectsData() {
+      return [
+        { id: 'ORD-201', name: 'Instalación HVAC Completo', client: 'Residencial Torres', status: 'active', amount: 12500, startDate: '2024-11-10', endDate: '2024-11-20' },
+        { id: 'ORD-202', name: 'Reparación Sistema Eléctrico', client: 'Planta Industrial', status: 'active', amount: 8400, startDate: '2024-11-12', endDate: '2024-11-15' },
+        { id: 'ORD-203', name: 'Mantenimiento Preventivo', client: 'Oficinas Corp', status: 'scheduled', amount: 4200, startDate: '2024-11-18', endDate: '2024-11-19' },
+        { id: 'ORD-204', name: 'Renovación Plomería', client: 'Edificio Norte', status: 'active', amount: 15600, startDate: '2024-11-05', endDate: '2024-11-25' },
+        { id: 'ORD-205', name: 'Sistema Contra Incendios', client: 'Centro Comercial', status: 'completed', amount: 22000, startDate: '2024-10-15', endDate: '2024-10-30' },
+        { id: 'ORD-206', name: 'Cableado Estructurado', client: 'Tech Hub', status: 'active', amount: 9800, startDate: '2024-11-14', endDate: '2024-11-22' },
+        { id: 'ORD-207', name: 'Pintura Exterior', client: 'Hotel Plaza', status: 'scheduled', amount: 35000, startDate: '2024-12-01', endDate: '2024-12-15' },
+        { id: 'ORD-208', name: 'Jardinería General', client: 'Parque Central', status: 'active', amount: 3200, startDate: '2024-11-01', endDate: '2024-11-30' },
+        { id: 'ORD-209', name: 'Impermeabilización', client: 'Bodegas Sur', status: 'completed', amount: 18500, startDate: '2024-10-01', endDate: '2024-10-10' },
+        { id: 'ORD-210', name: 'Instalación Cámaras', client: 'Seguridad Total', status: 'active', amount: 7500, startDate: '2024-11-15', endDate: '2024-11-18' },
+        { id: 'ORD-211', name: 'Reparación Techo', client: 'Casa Blanca', status: 'completed', amount: 5600, startDate: '2024-10-20', endDate: '2024-10-22' },
+        { id: 'ORD-212', name: 'Limpieza Industrial', client: 'Fabrica X', status: 'active', amount: 4500, startDate: '2024-11-01', endDate: '2024-11-30' },
+        { id: 'ORD-213', name: 'Mantenimiento Elevadores', client: 'Torre Ejecutiva', status: 'scheduled', amount: 8900, startDate: '2024-11-25', endDate: '2024-11-26' },
+        { id: 'ORD-214', name: 'Instalación Paneles Solares', client: 'Eco House', status: 'active', amount: 45000, startDate: '2024-11-10', endDate: '2024-11-20' },
+        { id: 'ORD-215', name: 'Remodelación Baños', client: 'Restaurante Y', status: 'completed', amount: 12000, startDate: '2024-10-05', endDate: '2024-10-15' },
+        { id: 'ORD-216', name: 'Cambio Luminarias', client: 'Oficinas Z', status: 'completed', amount: 3400, startDate: '2024-10-25', endDate: '2024-10-26' }
+      ];
+    }
+
+    function loadProjectsFromStorage() {
+      const stored = localStorage.getItem('projectsync_projects');
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          console.error('Error parsing projects from localStorage', e);
+        }
+      }
+      const defaults = getDefaultProjectsData();
+      saveProjectsToStorage(defaults);
+      return defaults;
+    }
+
+    function saveProjectsToStorage(projects) {
+      localStorage.setItem('projectsync_projects', JSON.stringify(projects));
+    }
+
+    function updateDashboardCounters() {
+      const projects = loadProjectsFromStorage();
+      
+      // Calculate counts
+      const completed = projects.filter(p => p.status === 'completed').length;
+      const active = projects.filter(p => p.status === 'active').length;
+      const scheduled = projects.filter(p => p.status === 'scheduled').length;
+      const total = projects.length;
+      
+      // Calculate financials
+      const totalRevenue = projects.reduce((sum, p) => sum + (p.amount || 0), 0);
+      const activeClients = new Set(projects.map(p => p.client)).size;
+      const avgTicket = projects.length ? Math.round(totalRevenue / projects.length) : 0;
+
+      // Update DOM - Dashboard Summary
+      const summaryCards = document.querySelectorAll('#dashboard-summary .summary-card');
+      if (summaryCards.length >= 3) {
+        // Completed
+        summaryCards[0].querySelector('.summary-card-value').textContent = completed;
+        // Active
+        summaryCards[1].querySelector('.summary-card-value').textContent = active;
+        // Scheduled
+        summaryCards[2].querySelector('.summary-card-value').textContent = scheduled;
+      }
+
+      // Update DOM - KPI Grids
+      // We have two .kpi-grid elements.
+      // Grid 1: Financials (indices 0-3)
+      // Grid 2: Project Stats (indices 4-7)
+      const kpiCards = document.querySelectorAll('.kpi-grid .stat-card');
+      
+      // Grid 1
+      if (kpiCards.length > 0) kpiCards[0].querySelector('.stat-value').textContent = '$' + totalRevenue.toLocaleString();
+      if (kpiCards.length > 1) kpiCards[1].querySelector('.stat-value').textContent = activeClients;
+      if (kpiCards.length > 2) kpiCards[2].querySelector('.stat-value').textContent = '$' + avgTicket.toLocaleString();
+      // kpiCards[3] is Satisfaction (static for now)
+
+      // Grid 2 (ProjectSync Overview)
+      if (kpiCards.length > 4) {
+          kpiCards[4].querySelector('.stat-value').textContent = total;
+          kpiCards[4].querySelector('.stat-change').textContent = `${active} activos`;
+      }
+      if (kpiCards.length > 5) kpiCards[5].querySelector('.stat-value').textContent = active;
+      if (kpiCards.length > 6) kpiCards[6].querySelector('.stat-value').textContent = completed;
+      if (kpiCards.length > 7) kpiCards[7].querySelector('.stat-value').textContent = scheduled;
+      
+      console.log('✅ Dashboard counters updated from real data');
+    }
+
+    function updateThreadCounters() {
+      const storedThreads = localStorage.getItem('threadsync_threads');
+      if (!storedThreads) return;
+      
+      try {
+        const threads = JSON.parse(storedThreads);
+        const unreadCount = Object.values(threads).filter(t => !t.isRead && !t.isArchived).length;
+        
+        const unreadBadge = document.querySelector('[data-thread-filter="unread"] span');
+        if (unreadBadge) {
+          unreadBadge.textContent = unreadCount;
+          unreadBadge.style.display = unreadCount > 0 ? 'inline-block' : 'none';
+        }
+        console.log('✅ Thread counters updated from real data');
+      } catch (e) {
+        console.error('Error updating thread counters', e);
+      }
+    }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', () => {
+      updateDashboardCounters();
+      updateThreadCounters();
+    });
+    
+    // Update counters when page becomes visible (user returns from another page)
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        updateDashboardCounters();
+        updateThreadCounters();
+        console.log('🔄 Page visible - counters refreshed');
+      }
+    });
+    
+    // Also update on window focus (when switching back to this tab)
+    window.addEventListener('focus', () => {
+      updateDashboardCounters();
+      updateThreadCounters();
+      console.log('🔄 Window focused - counters refreshed');
+    });
+
     // Mapa real con Leaflet + OpenStreetMap (100% gratuito)
     let currentMapFilter = 'all';
     let map = null;
     let markers = [];
 
-    const projectsData = [
-      { id: 1, name: 'Instalación Plomería', client: 'ABC Corp', status: 'active', lat: 32.7157, lng: -117.1611 },
-      { id: 2, name: 'Reparación Electricidad', client: 'XYZ Inc', status: 'scheduled', lat: 32.7260, lng: -117.1799 },
-      { id: 3, name: 'Inspección HVAC', client: 'Tech Services', status: 'completed', lat: 32.7355, lng: -117.1450 },
-      { id: 4, name: 'Obra General', client: 'Constructora Mar', status: 'active', lat: 32.7490, lng: -117.2300 },
-      { id: 5, name: 'Demolición', client: 'Demo Corp', status: 'cancelled', lat: 32.7050, lng: -117.2050 }
-    ];
+    // projectsData removed - using localStorage
 
     const statusColors = {
       active: '#10b981',
@@ -17052,6 +17187,7 @@
       if (map) {
         // Si el mapa ya existe, solo actualizar tamaño
         map.invalidateSize();
+        updateMapMarkers();
         return;
       }
 
@@ -17064,44 +17200,7 @@
         attribution: '© OpenStreetMap'
       }).addTo(map);
 
-      // Crear marcadores
-      projectsData.forEach(project => {
-        const icon = L.divIcon({
-          className: 'custom-marker',
-          html: `<div style="
-            width: 36px;
-            height: 36px;
-            background: ${statusColors[project.status]};
-            border: 3px solid white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: white;
-            font-size: 14px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            cursor: pointer;
-          " data-status="${project.status}">${project.id}</div>`,
-          iconSize: [36, 36],
-          iconAnchor: [18, 18]
-        });
-
-        const marker = L.marker([project.lat, project.lng], { icon: icon })
-          .bindPopup(`
-            <div style="font-size: 12px; min-width: 150px;">
-              <strong style="font-size: 13px;">${project.name}</strong><br/>
-              <span style="color: #64748b;">Cliente: ${project.client}</span><br/>
-              <span style="display: inline-block; margin-top: 6px; padding: 3px 8px; border-radius: 4px; background: ${statusColors[project.status]}22; color: ${statusColors[project.status]}; font-weight: 600; font-size: 10px;">
-                ${statusLabels[project.status]}
-              </span>
-            </div>
-          `)
-          .addTo(map);
-
-        marker.projectData = project;
-        markers.push(marker);
-      });
+      updateMapMarkers();
 
       // Configurar filtros
       const filterButtons = document.querySelectorAll('[data-map-filter], [data-project-filter]');
@@ -17122,6 +17221,63 @@
       setTimeout(() => {
         map.invalidateSize();
       }, 100);
+    }
+
+    function updateMapMarkers() {
+      if (!map) return;
+      
+      // Clear existing markers
+      markers.forEach(marker => map.removeLayer(marker));
+      markers = [];
+      
+      const projects = loadProjectsFromStorage();
+      
+      // Crear marcadores
+      projects.forEach(project => {
+        // Generate random coordinates around San Diego if not present
+        const lat = project.lat || (32.7157 + (Math.random() - 0.5) * 0.1);
+        const lng = project.lng || (-117.1611 + (Math.random() - 0.5) * 0.1);
+        
+        const icon = L.divIcon({
+          className: 'custom-marker',
+          html: `<div style="
+            width: 36px;
+            height: 36px;
+            background: ${statusColors[project.status] || '#94a3b8'};
+            border: 3px solid white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            cursor: pointer;
+            overflow: hidden;
+            white-space: nowrap;
+          " data-status="${project.status}">${project.id.replace('ORD-', '')}</div>`,
+          iconSize: [36, 36],
+          iconAnchor: [18, 18]
+        });
+
+        const marker = L.marker([lat, lng], { icon: icon })
+          .bindPopup(`
+            <div style="font-size: 12px; min-width: 150px;">
+              <strong style="font-size: 13px;">${project.name}</strong><br/>
+              <span style="color: #64748b;">Cliente: ${project.client}</span><br/>
+              <span style="display: inline-block; margin-top: 6px; padding: 3px 8px; border-radius: 4px; background: ${(statusColors[project.status] || '#94a3b8')}22; color: ${statusColors[project.status] || '#94a3b8'}; font-weight: 600; font-size: 10px;">
+                ${statusLabels[project.status] || project.status}
+              </span>
+            </div>
+          `)
+          .addTo(map);
+
+        marker.projectData = project;
+        markers.push(marker);
+      });
+      
+      updateMapVisibility();
     }
 
     function updateMapVisibility() {
@@ -17803,6 +17959,18 @@
       }
     }
     */
+
+    // Guardar la ruta actual antes de abrir HowSync para regresar de forma inteligente
+    document.addEventListener('DOMContentLoaded', () => {
+      const howSyncLinks = document.querySelectorAll('a[href="howsync.html"]');
+      if (!howSyncLinks.length) return;
+
+      howSyncLinks.forEach(link => {
+        link.addEventListener('click', () => {
+          sessionStorage.setItem('lastHowSyncReferrer', window.location.href);
+        });
+      });
+    });
   </script>
 
   </div><!-- /app-content -->

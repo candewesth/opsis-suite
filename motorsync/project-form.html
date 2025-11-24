@@ -572,7 +572,7 @@
                   <p style="font-weight: 600; color: #047857;">Este ID conectará todos los módulos</p>
                   <p style="opacity: 0.8; color: #065f46;" id="modulesList">Threads, TimeSync, ViewSync, etc.</p>
                   <p style="opacity: 0.6; font-size: 11px; margin-top: 4px; color: #92400e;" id="upgradeHint">
-                    <a href="idsync-connections.html" 
+                    <a href="howsync.html" 
                        style="text-decoration: underline; cursor: pointer; color: #92400e; transition: all 0.2s;"
                        onmouseover="this.style.color='#f59e0b'; this.style.transform='translateY(-1px)'" 
                        onmouseout="this.style.color='#92400e'; this.style.transform='translateY(0)'">¿Más módulos disponibles?</a>
@@ -900,7 +900,7 @@
     // Mostrar modal de upgrade
     function showUpgradeModal() {
       // Redirigir a página de conexiones IDSync
-      window.open('idsync-connections.html', '_blank');
+      window.open('howsync.html', '_blank');
     }
 
     // Initialize with first IDSync on page load
@@ -1004,10 +1004,18 @@
 
       const idSyncValue = document.getElementById('idSync').value;
 
-      // Collect form data
+      // Generate unique project ID
+      const existingProjects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+      const maxId = existingProjects.reduce((max, p) => {
+        const num = parseInt(p.id.replace('ORD-', ''));
+        return num > max ? num : max;
+      }, 200);
+      const newProjectId = 'ORD-' + (maxId + 1);
+
+      // Collect form data with correct structure
       const projectData = {
         idSync: idSyncValue,
-        id: 'ORD-' + Math.floor(Math.random() * 1000),
+        id: newProjectId,
         name: document.getElementById('projectName').value,
         client: document.getElementById('clientName').value,
         contact: document.getElementById('contactName').value,
@@ -1020,8 +1028,22 @@
         startDate: document.getElementById('startDate').value,
         endDate: document.getElementById('endDate').value,
         description: document.getElementById('description').value,
+        amount: 0, // Will be updated later
+        progress: 0,
         createdAt: new Date().toISOString()
       };
+
+      // Load existing projects
+      const projects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+      
+      // Add new project to array
+      projects.push(projectData);
+      
+      // Save back to localStorage
+      localStorage.setItem('projectsync_projects', JSON.stringify(projects));
+      
+      console.log('✅ Project saved to localStorage:', projectData);
+      console.log('📊 Total projects now:', projects.length);
 
       // Actualizar lastIDSync solo al guardar exitosamente
       const currentID = parseInt(idSyncValue.replace('IDSYNC-', ''));
@@ -1043,14 +1065,10 @@
       });
       localStorage.setItem('usedIDSyncs', JSON.stringify(usedIDs));
 
-      // TODO: Save to Supabase
-      console.log('Project data:', projectData);
-
-      // Simulate API call
+      // Redirect back to projects with success message
       setTimeout(() => {
-        // Redirect back to projects with success message
-        window.location.href = 'projectsync.html?success=true&project=' + projectData.id;
-      }, 1000);
+        window.location.href = `viewsync.html?id=${projectData.id}`;
+      }, 500);
     }
 
     // Registrar IDSync cancelado al salir sin guardar

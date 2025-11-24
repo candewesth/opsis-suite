@@ -654,7 +654,7 @@
         <span>ThreadSync</span>
       </a>
 
-      <a href="idsync-connections.html" class="sidebar-item">
+      <a href="howsync.html" class="sidebar-item">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="2"></circle>
           <path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path>
@@ -919,9 +919,34 @@
   <script>
     // View Project Function
     function viewProject(projectId) {
-      // TODO: En producción, esto se conectará con Supabase para obtener los datos del proyecto
-      // Por ahora, navegamos a una página de proyecto con el ID como parámetro
-      window.location.href = `project-detail.html?id=${projectId}`;
+      // Redirect to ViewSync with project ID
+      window.location.href = `viewsync.html?id=${projectId}`;
+    }
+    
+    // Show success message
+    function showSuccessMessage(message) {
+      const alert = document.createElement('div');
+      alert.style.cssText = `
+        position: fixed;
+        top: 80px;
+        right: 24px;
+        background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+        border: 2px solid #10b981;
+        color: #065f46;
+        padding: 16px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+      `;
+      alert.textContent = message;
+      document.body.appendChild(alert);
+      
+      setTimeout(() => {
+        alert.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => alert.remove(), 300);
+      }, 4000);
     }
 
     // Refresh Projects Function
@@ -933,20 +958,25 @@
       icon.style.transition = 'transform 0.6s ease';
       icon.style.transform = 'rotate(360deg)';
       
-      // Simulate refresh
+      // Reload data
       setTimeout(() => {
         icon.style.transform = 'rotate(0deg)';
         
-        // Reload map
-        if (map) {
-          map.invalidateSize();
-          console.log('✅ Proyectos actualizados');
-        }
+        // Re-render table and map
+        renderProjectsTable();
+        initializeMap('projects-map');
+        updateFilterCounters();
+        
+        console.log('✅ Proyectos actualizados');
+        showSuccessMessage('✅ Proyectos actualizados');
       }, 600);
     }
 
     // Tab functionality
     document.addEventListener('DOMContentLoaded', () => {
+      // Render projects on load
+      renderProjectsTable();
+      
       const projectTabs = document.querySelectorAll('[data-projectsync-tab]');
       const projectPanels = document.querySelectorAll('[data-projectsync-panel]');
       
@@ -973,30 +1003,96 @@
       
       // Initialize counters
       updateFilterCounters();
+      
+      // Check for success message
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('success') === 'true') {
+        const projectId = urlParams.get('project');
+        showSuccessMessage(`✅ Proyecto ${projectId} creado exitosamente`);
+        // Clean URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
     });
 
     // Map initialization
     let map = null;
     let allMarkers = [];
     
-    // DATOS DE PROYECTOS
-    // IMPORTANTE: Esta estructura debe sincronizarse con:
-    // 1. Supabase tabla 'projects' cuando se implemente
-    // 2. ThreadSync cuando un thread se convierte a proyecto (threadsync.html)
-    // 3. Modal de "Nuevo Proyecto" cuando se crea directamente
-    // 
-    // Campos requeridos:
-    // - id: ID único del proyecto (ej: ORD-201)
-    // - lat/lng: Coordenadas para el mapa
-    // - name: Nombre del proyecto
-    // - status: 'active' | 'scheduled' | 'completed'
-    // - color: Color del marcador en el mapa
-    // - badge: Texto del badge ('EN CURSO' | 'PROGRAMADO' | 'COMPLETADO')
-    const projectsData = [
-      { id: 'ORD-201', lat: 32.7157, lng: -117.1611, name: 'Instalación HVAC', status: 'active', color: '#02735E', badge: 'EN CURSO' },
-      { id: 'ORD-202', lat: 32.7357, lng: -117.1411, name: 'Sistema Eléctrico', status: 'scheduled', color: '#eab308', badge: 'PROGRAMADO' },
-      { id: 'ORD-203', lat: 32.6957, lng: -117.1811, name: 'Calderas Hotel', status: 'completed', color: '#059669', badge: 'COMPLETADO' }
-    ];
+    // Status mapping for display
+    const statusConfig = {
+      active: { color: '#02735E', badge: 'EN CURSO' },
+      scheduled: { color: '#eab308', badge: 'PROGRAMADO' },
+      completed: { color: '#059669', badge: 'COMPLETADO' }
+    };
+    
+    // Load projects from localStorage
+    function loadProjectsFromStorage() {
+      const stored = localStorage.getItem('projectsync_projects');
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          console.error('Error parsing projects:', e);
+        }
+      }
+      return [];
+    }
+    
+    // Render projects table
+    function renderProjectsTable() {
+      const projects = loadProjectsFromStorage();
+      const tbody = document.querySelector('tbody');
+      
+      if (!tbody) return;
+      
+      if (projects.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px; color: #94a3b8;">No hay proyectos. <a href="project-form.html" style="color: #02735E; text-decoration: underline;">Crear nuevo proyecto</a></td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = projects.map(project => {
+        const config = statusConfig[project.status] || statusConfig.active;
+        const progress = project.progress || 0;
+        
+        return `
+          <tr data-project-id="${project.id}">
+            <td>
+              <strong>${project.id}</strong>
+              <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0 0;">${project.idSync || 'Sin IDSync'}</p>
+            </td>
+            <td>
+              <strong>${project.name}</strong>
+              <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">${project.address || 'Sin dirección'}</p>
+            </td>
+            <td>${project.client}</td>
+            <td><span class="badge" style="background: ${config.color}22; color: ${config.color};">${config.badge}</span></td>
+            <td>${formatDate(project.startDate)}</td>
+            <td>${formatDate(project.endDate)}</td>
+            <td><strong>$${(project.amount || 0).toLocaleString()}</strong></td>
+            <td>
+              <div style="width: 100%;">
+                <div style="background: #e0e0e0; height: 8px; border-radius: 4px; overflow: hidden;">
+                  <div style="background: linear-gradient(135deg, ${config.color}, ${config.color}dd); width: ${progress}%; height: 100%;"></div>
+                </div>
+                <p style="font-size: 11px; color: #64748b; margin: 4px 0 0 0;">${progress}%</p>
+              </div>
+            </td>
+            <td>
+              <button class="btn btn-small btn-secondary" onclick="viewProject('${project.id}')">Ver</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      
+      console.log('✅ Rendered', projects.length, 'projects in table');
+    }
+    
+    // Format date helper
+    function formatDate(dateString) {
+      if (!dateString) return 'N/A';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
 
     function initializeMap(mapId) {
       const mapElement = document.getElementById(mapId);
@@ -1016,22 +1112,30 @@
         attribution: '© OpenStreetMap contributors'
       }).addTo(map);
 
-      // Create markers for all projects
-      projectsData.forEach(project => {
-        const marker = L.circleMarker([project.lat, project.lng], {
+      // Load projects and create markers
+      const projects = loadProjectsFromStorage();
+      
+      projects.forEach(project => {
+        const config = statusConfig[project.status] || statusConfig.active;
+        const lat = project.lat || (32.7157 + (Math.random() - 0.5) * 0.2);
+        const lng = project.lng || (-117.1611 + (Math.random() - 0.5) * 0.2);
+        
+        const marker = L.circleMarker([lat, lng], {
           radius: 8,
-          fillColor: project.color,
+          fillColor: config.color,
           color: '#fff',
           weight: 2,
           opacity: 1,
           fillOpacity: 0.8
         }).addTo(map);
 
-        marker.bindPopup(`<b>${project.name}</b><br><span style="text-transform: uppercase; font-size: 11px;">${project.badge}</span>`);
+        marker.bindPopup(`<b>${project.name}</b><br><span style="text-transform: uppercase; font-size: 11px;">${config.badge}</span>`);
         marker.projectStatus = project.status;
         marker.projectId = project.id;
         allMarkers.push(marker);
       });
+      
+      console.log('✅ Initialized map with', allMarkers.length, 'markers');
     }
 
     // Filter functionality
@@ -1407,6 +1511,28 @@
       from { opacity: 0; }
       to { opacity: 1; }
     }
+    
+    @keyframes slideIn {
+      from { 
+        opacity: 0; 
+        transform: translateX(100px);
+      }
+      to { 
+        opacity: 1; 
+        transform: translateX(0);
+      }
+    }
+    
+    @keyframes slideOut {
+      from { 
+        opacity: 1; 
+        transform: translateX(0);
+      }
+      to { 
+        opacity: 0; 
+        transform: translateX(100px);
+      }
+    }
 
     .modal-content {
       background: white;
@@ -1541,5 +1667,18 @@
   
   </div><!-- /app-content -->
   </div><!-- /app-shell -->
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const howSyncLinks = document.querySelectorAll('a[href="howsync.html"]');
+      if (!howSyncLinks.length) return;
+
+      howSyncLinks.forEach(link => {
+        link.addEventListener('click', () => {
+          sessionStorage.setItem('lastHowSyncReferrer', window.location.href);
+        });
+      });
+    });
+  </script>
 </body>
 </html>
