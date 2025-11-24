@@ -736,70 +736,78 @@
   </div>
 
   <script>
-    // Mock data
-    let threads = [
-      {
-        uuid: 'thread-uuid-001',
-        subject: 'Juan Pérez - Instalación HVAC',
-        description: 'Cliente solicita cotización para instalación completa de sistema HVAC en edificio comercial',
-        contact: 'Juan Pérez',
-        address: 'Av. Reforma 123, CDMX',
-        createdAt: '2025-11-20T10:30:00Z'
-      },
-      {
-        uuid: 'thread-uuid-002',
-        subject: 'María González - Mantenimiento',
-        description: 'Consulta sobre plan de mantenimiento preventivo para sistema de aire acondicionado',
-        contact: 'María González',
-        address: 'Insurgentes 456, CDMX',
-        createdAt: '2025-11-19T14:20:00Z'
-      },
-      {
-        uuid: 'thread-uuid-003',
-        subject: 'Cotización urgente - Cliente nuevo',
-        description: 'Requiere cotización express para reparación de unidad industrial',
-        contact: null,
-        address: null,
-        createdAt: '2025-11-21T09:15:00Z'
+    // ========================================
+    // LOAD REAL DATA FROM LOCALSTORAGE
+    // ========================================
+    
+    function loadThreadsFromStorage() {
+      const stored = localStorage.getItem('threadsync_threads');
+      if (!stored) return [];
+      
+      try {
+        const threadsData = JSON.parse(stored);
+        // Convert to array format expected by connector
+        return Object.entries(threadsData).map(([id, thread]) => ({
+          uuid: id,
+          subject: `${thread.clientName || 'Sin cliente'} - ${thread.subject || 'Sin asunto'}`,
+          description: thread.subject || 'Sin descripción',
+          contact: thread.clientName || null,
+          address: thread.location && thread.location !== '-' ? thread.location : null,
+          createdAt: thread.createdAt || new Date().toISOString(),
+          projectId: thread.projectId || null
+        }));
+      } catch (e) {
+        console.error('Error loading threads:', e);
+        return [];
       }
-    ];
-
-    let projects = [
-      {
-        uuid: 'project-uuid-001',
-        idsync: 'IDSYNC-1001',
-        name: 'Instalación HVAC - Edificio Central',
-        contact: 'Juan Pérez',
-        address: 'Av. Reforma 123, CDMX',
-        status: 'progress'
-      },
-      {
-        uuid: 'project-uuid-002',
-        idsync: 'IDSYNC-1002',
-        name: 'Mantenimiento Sistema Aire',
-        contact: 'María González',
-        address: 'Insurgentes 456, CDMX',
-        status: 'active'
-      },
-      {
-        uuid: 'project-uuid-003',
-        idsync: 'IDSYNC-1003',
-        name: 'Reparación Urgente HVAC',
-        contact: 'Carlos López',
-        address: 'Polanco 789, CDMX',
-        status: 'pending'
-      },
-      {
-        uuid: 'project-uuid-004',
-        idsync: 'IDSYNC-1004',
-        name: 'Instalación Nueva Unidad',
-        contact: 'Ana Martínez',
-        address: 'Reforma 120, CDMX',
-        status: 'progress'
+    }
+    
+    function loadProjectsFromStorage() {
+      const stored = localStorage.getItem('projectsync_projects');
+      if (!stored) return [];
+      
+      try {
+        const projects = JSON.parse(stored);
+        return projects.map(p => ({
+          uuid: p.id,
+          idsync: p.idSync || p.id,
+          name: p.name,
+          contact: p.client || null,
+          address: p.address || null,
+          status: p.status || 'active',
+          linkedThreadId: null // Will be populated from threads
+        }));
+      } catch (e) {
+        console.error('Error loading projects:', e);
+        return [];
       }
-    ];
-
-    let linkedPairs = [];
+    }
+    
+    function saveLinkedPairs() {
+      try {
+        localStorage.setItem('thread_project_links', JSON.stringify(linkedPairs));
+        console.log('✅ Vinculaciones guardadas:', linkedPairs.length);
+      } catch (e) {
+        console.error('Error saving links:', e);
+      }
+    }
+    
+    function loadLinkedPairs() {
+      const stored = localStorage.getItem('thread_project_links');
+      if (!stored) return [];
+      
+      try {
+        return JSON.parse(stored);
+      } catch (e) {
+        console.error('Error loading links:', e);
+        return [];
+      }
+    }
+    
+    // Load real data
+    let threads = loadThreadsFromStorage();
+    let projects = loadProjectsFromStorage();
+    let linkedPairs = loadLinkedPairs();
 
     let draggedThread = null;
     let pendingLink = null;
@@ -1053,12 +1061,42 @@
     function confirmLink() {
       const { thread, project } = pendingLink;
       
+      // Save to linked pairs
       linkedPairs.push({
         threadUUID: thread.uuid,
         projectUUID: project.uuid,
         projectIDSync: project.idsync,
         linkedAt: new Date().toISOString()
       });
+      saveLinkedPairs();
+      
+      // Update threads localStorage with bidirectional link
+      try {
+        const threadsData = JSON.parse(localStorage.getItem('threadsync_threads') || '{}');
+        if (threadsData[thread.uuid]) {
+          threadsData[thread.uuid].projectId = project.uuid;
+          threadsData[thread.uuid].isLinked = true;
+          threadsData[thread.uuid].linkedAt = new Date().toISOString();
+          localStorage.setItem('threadsync_threads', JSON.stringify(threadsData));
+        }
+
+        // Update projects localStorage
+        const projectsData = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+        const projectIndex = projectsData.findIndex(p => p.id === project.uuid);
+        if (projectIndex !== -1) {
+          if (!projectsData[projectIndex].linkedThreads) {
+            projectsData[projectIndex].linkedThreads = [];
+          }
+          if (!projectsData[projectIndex].linkedThreads.includes(thread.uuid)) {
+            projectsData[projectIndex].linkedThreads.push(thread.uuid);
+          }
+          localStorage.setItem('projectsync_projects', JSON.stringify(projectsData));
+        }
+        
+        console.log('✅ Vinculación guardada:', { threadId: thread.uuid, projectId: project.uuid });
+      } catch (e) {
+        console.error('Error updating localStorage:', e);
+      }
       
       closeConfirmModal();
       renderThreads();
@@ -1073,6 +1111,30 @@
       }
       
       linkedPairs = linkedPairs.filter(p => !(p.threadUUID === threadUUID && p.projectUUID === projectUUID));
+      saveLinkedPairs();
+      
+      // Remove from threads localStorage
+      try {
+        const threadsData = JSON.parse(localStorage.getItem('threadsync_threads') || '{}');
+        if (threadsData[threadUUID]) {
+          delete threadsData[threadUUID].projectId;
+          delete threadsData[threadUUID].isLinked;
+          delete threadsData[threadUUID].linkedAt;
+          localStorage.setItem('threadsync_threads', JSON.stringify(threadsData));
+        }
+
+        // Remove from projects localStorage
+        const projectsData = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+        const projectIndex = projectsData.findIndex(p => p.id === projectUUID);
+        if (projectIndex !== -1 && projectsData[projectIndex].linkedThreads) {
+          projectsData[projectIndex].linkedThreads = projectsData[projectIndex].linkedThreads.filter(t => t !== threadUUID);
+          localStorage.setItem('projectsync_projects', JSON.stringify(projectsData));
+        }
+        
+        console.log('✅ Desvinculación completada:', { threadUUID, projectUUID });
+      } catch (e) {
+        console.error('Error updating localStorage:', e);
+      }
       
       renderThreads();
       renderProjects();

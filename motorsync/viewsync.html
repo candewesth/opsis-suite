@@ -1565,16 +1565,55 @@
 
     // Función para abrir ThreadSync en nueva ventana/pestaña
     function openThreadSync() {
-      // Simular verificación si existe thread vinculado
-      // En producción, esto vendría de la base de datos
-      const hasLinkedThread = false; // Cambiar a true para simular thread existente
-      const projectId = currentProject ? (currentProject.idSync || currentProject.id) : 'IDSync250001'; // IDSync + año (25) + número secuencial (0001)
+      const projectId = currentProject ? (currentProject.id || currentProject.idSync) : null;
       
-      if (hasLinkedThread) {
-        // Si tiene thread vinculado, abrir en la misma ventana
-        window.location.href = 'threadsync-detail.html?project=' + projectId + '&returnTo=viewsync';
+      if (!projectId) {
+        alert('Error: No se pudo identificar el proyecto');
+        return;
+      }
+      
+      // Search for linked thread in localStorage
+      let linkedThreadId = null;
+      
+      try {
+        // Method 1: Check if project has linkedThreads array
+        const projectsData = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+        const project = projectsData.find(p => p.id === projectId);
+        
+        if (project && project.linkedThreads && project.linkedThreads.length > 0) {
+          linkedThreadId = project.linkedThreads[0]; // Get first linked thread
+        }
+        
+        // Method 2: Check threads for projectId reference
+        if (!linkedThreadId) {
+          const threadsData = JSON.parse(localStorage.getItem('threadsync_threads') || '{}');
+          const linkedThread = Object.entries(threadsData).find(([id, thread]) => thread.projectId === projectId);
+          
+          if (linkedThread) {
+            linkedThreadId = linkedThread[0];
+          }
+        }
+        
+        // Method 3: Check thread-project links registry
+        if (!linkedThreadId) {
+          const links = JSON.parse(localStorage.getItem('thread_project_links') || '[]');
+          const link = links.find(l => l.projectUUID === projectId);
+          
+          if (link) {
+            linkedThreadId = link.threadUUID;
+          }
+        }
+      } catch (e) {
+        console.error('Error searching for linked thread:', e);
+      }
+      
+      if (linkedThreadId) {
+        // Has linked thread - open it directly
+        console.log('✅ Thread vinculado encontrado:', linkedThreadId);
+        window.location.href = `threadsync.html?id=${linkedThreadId}&returnTo=viewsync&projectId=${projectId}`;
       } else {
-        // Si NO tiene thread, mostrar modal para crear uno
+        // No linked thread - show creation modal
+        console.log('ℹ️ No hay thread vinculado, mostrando modal de creación');
         showCreateThreadModal(projectId);
       }
     }

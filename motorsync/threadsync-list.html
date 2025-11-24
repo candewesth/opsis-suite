@@ -1159,17 +1159,12 @@
 
     // Función para cargar proyectos disponibles (sin threads conectados)
     function loadAvailableProjects() {
-      // Lista de todos los proyectos en ProjectSync
-      const allProjects = [
-        { id: 'project-1', name: 'Instalación HVAC Completo', status: 'active' },
-        { id: 'project-2', name: 'Reparación Sistema Eléctrico', status: 'active' },
-        { id: 'project-3', name: 'Mantenimiento Preventivo Oficinas', status: 'active' },
-        { id: 'project-4', name: 'Renovación Plomería Edificio Norte', status: 'active' },
-        { id: 'project-5', name: 'Instalación Sistema Contra Incendios', status: 'active' },
-        { id: 'project-6', name: 'Actualización Tableros Eléctricos', status: 'active' },
-        { id: 'project-7', name: 'Impermeabilización Azotea Principal', status: 'active' },
-        { id: 'project-8', name: 'Instalación Equipo A/C Torre B', status: 'active' }
-      ];
+      // Cargar proyectos reales desde localStorage
+      const allProjects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]').map(p => ({
+        id: p.id,
+        name: p.name,
+        status: p.status || 'active'
+      }));
 
       // Obtener todos los threads para saber cuáles tienen proyecto asignado
       let threadsWithProjects = new Set();

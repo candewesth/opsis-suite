@@ -1537,17 +1537,12 @@
 
     // Función para obtener proyectos disponibles (sin threads conectados)
     function getAvailableProjectsOptions() {
-      // Lista de todos los proyectos en ProjectSync
-      const allProjects = [
-        { id: 'project-1', name: 'Instalación HVAC Completo', status: 'active' },
-        { id: 'project-2', name: 'Reparación Sistema Eléctrico', status: 'active' },
-        { id: 'project-3', name: 'Mantenimiento Preventivo Oficinas', status: 'active' },
-        { id: 'project-4', name: 'Renovación Plomería Edificio Norte', status: 'active' },
-        { id: 'project-5', name: 'Instalación Sistema Contra Incendios', status: 'active' },
-        { id: 'project-6', name: 'Actualización Tableros Eléctricos', status: 'active' },
-        { id: 'project-7', name: 'Impermeabilización Azotea Principal', status: 'active' },
-        { id: 'project-8', name: 'Instalación Equipo A/C Torre B', status: 'active' }
-      ];
+      // Cargar proyectos reales desde localStorage
+      const allProjects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]').map(p => ({
+        id: p.id,
+        name: p.name,
+        status: p.status || 'active'
+      }));
 
       // Obtener todos los threads para saber cuáles tienen proyecto asignado
       let threadsWithProjects = new Set();
@@ -2510,57 +2505,116 @@
     }
 
     function confirmConversion() {
-      // Cerrar el modal
+      // Obtener datos del formulario
+      const address = document.getElementById('projectAddress')?.value;
+      const startDate = document.getElementById('projectStartDate')?.value;
+      const endDate = document.getElementById('projectEndDate')?.value;
+      const notes = document.getElementById('projectNotes')?.value;
+      
+      // Validar campos requeridos
+      if (!address || !startDate || !endDate) {
+        alert('⚠️ Por favor completa todos los campos requeridos:\n- Dirección del Proyecto\n- Fecha de Inicio\n- Fecha de Fin');
+        return;
+      }
+      
+      // Obtener datos del thread
+      const urlParams = new URLSearchParams(window.location.search);
+      const threadId = urlParams.get('id');
+      
+      let threadData = null;
+      try {
+        const storedThreads = localStorage.getItem('threadsync_threads');
+        if (storedThreads) {
+          const threadsData = JSON.parse(storedThreads);
+          threadData = threadsData[threadId];
+        }
+      } catch (e) {
+        console.error('Error al cargar thread:', e);
+      }
+      
+      // Generar IDSync automático
+      const lastID = parseInt(localStorage.getItem('lastIDSync') || '1000');
+      const nextID = lastID + 1;
+      const idSyncValue = `IDSYNC-${nextID}`;
+      
+      // Generar ID de proyecto
+      const existingProjects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+      const maxId = existingProjects.reduce((max, p) => {
+        const num = parseInt(p.id.replace('ORD-', ''));
+        return num > max ? num : max;
+      }, 200);
+      const newProjectId = 'ORD-' + (maxId + 1);
+      
+      // Crear objeto de proyecto completo
+      const projectData = {
+        idSync: idSyncValue,
+        id: newProjectId,
+        name: threadData?.clientName || 'Proyecto desde Thread',
+        client: threadData?.clientName || 'Cliente',
+        contact: threadData?.contactInfo && threadData.contactInfo !== '-' ? threadData.contactInfo : '',
+        phone: '',
+        email: '',
+        address: address,
+        lat: null, // Se puede agregar geocodificación después
+        lng: null,
+        status: 'active',
+        startDate: startDate,
+        endDate: endDate,
+        description: (threadData?.subject || '') + (notes ? '\n\n' + notes : ''),
+        amount: 0,
+        progress: 0,
+        createdAt: new Date().toISOString(),
+        convertedFromThread: threadId
+      };
+      
+      // Guardar proyecto en localStorage
+      const projects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+      projects.push(projectData);
+      localStorage.setItem('projectsync_projects', JSON.stringify(projects));
+      
+      // Actualizar lastIDSync
+      localStorage.setItem('lastIDSync', nextID.toString());
+      
+      // Registrar IDSync como usado
+      const usedIDs = JSON.parse(localStorage.getItem('usedIDSyncs') || '[]');
+      usedIDs.push({
+        idSync: idSyncValue,
+        projectId: newProjectId,
+        projectName: projectData.name,
+        status: 'completed',
+        createdAt: new Date().toISOString(),
+        convertedFromThread: true
+      });
+      localStorage.setItem('usedIDSyncs', JSON.stringify(usedIDs));
+      
+      // Actualizar thread con vinculación al proyecto
+      if (threadData && threadId) {
+        try {
+          const storedThreads = localStorage.getItem('threadsync_threads');
+          if (storedThreads) {
+            const threadsData = JSON.parse(storedThreads);
+            if (threadsData[threadId]) {
+              threadsData[threadId].projectId = newProjectId;
+              threadsData[threadId].projectName = projectData.name;
+              threadsData[threadId].isConverted = true;
+              localStorage.setItem('threadsync_threads', JSON.stringify(threadsData));
+            }
+          }
+        } catch (e) {
+          console.error('Error al actualizar thread:', e);
+        }
+      }
+      
+      console.log('✅ Proyecto creado:', projectData);
+      console.log('🔗 Thread vinculado:', threadId, '→', newProjectId);
+      
+      // Cerrar modal
       closeModal('convertModal');
       
-      // Marcar como convertido y guardar ID de proyecto
-      threadState.isConverted = true;
-      threadState.projectId = 'PROJ-' + Date.now(); // Simulación de ID
-      
-      // Guardar estado en localStorage para persistencia
-      localStorage.setItem('threadState_current', JSON.stringify({
-        isConverted: threadState.isConverted,
-        projectId: threadState.projectId
-      }));
-      
-      // Ocultar botón de conversión y mostrar botón "Ir al Proyecto"
-      document.getElementById('notConvertedSection').style.display = 'none';
-      document.getElementById('convertedSection').style.display = 'block';
-      
-      // Mostrar mensaje de éxito
-      const successMessage = document.createElement('div');
-      successMessage.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #10b981;
-        color: white;
-        padding: 20px 24px;
-        border-radius: 12px;
-        box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
-        z-index: 10000;
-        font-weight: 600;
-        max-width: 400px;
-        animation: slideIn 0.3s ease-out;
-      `;
-      successMessage.innerHTML = `
-        <div style="display: flex; align-items: flex-start; gap: 12px;">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
-          <div>
-            <div style="font-size: 16px; margin-bottom: 4px;">Proyecto Creado</div>
-            <div style="font-size: 13px; opacity: 0.9;">ThreadSync convertido a proyecto confirmado</div>
-          </div>
-        </div>
-      `;
-      document.body.appendChild(successMessage);
-      
-      // Remover mensaje después de 3 segundos
+      // Redirigir a ViewSync del proyecto creado
       setTimeout(() => {
-        successMessage.style.animation = 'fadeOut 0.3s ease-out';
-        setTimeout(() => successMessage.remove(), 300);
-      }, 3000);
+        window.location.href = `viewsync.html?id=${newProjectId}`;
+      }, 300);
     }
 
 
