@@ -60,6 +60,10 @@
       50% { background-position: 100% 50%; }
     }
 
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     .app-shell {
       display: flex;
       flex-direction: column;
@@ -275,69 +279,73 @@
       border-radius: 4px;
     }
 
-    .chip-filter {
-      background: transparent;
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 8px 16px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .chip-filter:hover {
-      border-color: rgba(2, 115, 94, 0.4);
-      background: rgba(2, 115, 94, 0.05);
-    }
-
-    .chip-filter.active {
-      background: linear-gradient(135deg, #02735E, #035951);
-      color: white;
-      border-color: transparent;
-    }
-
     .threads-list {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
     }
 
     .thread-project-group {
-      display: flex;
-      flex-direction: column;
+      margin-bottom: 48px;
     }
 
-    .thread-project-header {
-      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-      border-left: 4px solid #10b981;
-      padding: 16px;
-      border-radius: 12px;
-      margin-bottom: 12px;
+    .threads-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      align-items: stretch;
+      grid-auto-rows: 1fr;
     }
 
+    /* Thread card sin proyecto - Gris */
     .thread-card {
       background: white;
-      border-left: 3px solid #cbd5e1;
-      border-radius: 8px;
-      padding: 10px;
-      margin-bottom: 8px;
+      border: 2px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 20px;
       cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      position: relative;
+      height: 100%;
+      max-height: 200px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
 
     .thread-card:hover {
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      transform: translateY(-2px);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      border-color: #cbd5e1;
     }
 
-    .thread-card.unread {
-      border-left-color: #10b981;
-      background: #fafffe;
+    /* Thread card CON proyecto conectado - Verde */
+    .thread-card.connected {
+      background: linear-gradient(135deg, #ecfdf5 0%, #f0fdfa 50%, white 100%);
+      border: 2px solid rgba(2, 115, 94, 0.3);
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.15);
+    }
+
+    .thread-card.connected:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
+      border-color: rgba(2, 115, 94, 0.5);
+    }
+
+    /* Eliminar el ::after de NUEVO */
+    .thread-card.unread::after {
+      content: '';
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: transparent;
+      color: transparent;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 6px 12px;
+      border-radius: 8px;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 12px rgba(2, 115, 94, 0.3);
     }
 
     .modal {
@@ -371,6 +379,66 @@
     .project-select-card:hover {
       border-color: #02735E;
       background: rgba(2, 115, 94, 0.02);
+    }
+
+    .chip-filter {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: white;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+
+    .chip-filter:hover {
+      border-color: var(--primary-color);
+      background: rgba(2, 115, 94, 0.05);
+      color: var(--primary-color);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(2, 115, 94, 0.1);
+    }
+
+    .chip-filter.active {
+      background: linear-gradient(135deg, var(--primary-color), #035951);
+      border-color: var(--primary-color);
+      color: white;
+      box-shadow: 0 4px 12px rgba(2, 115, 94, 0.3);
+    }
+
+    .chip-filter svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .thread-project-header {
+      background: white;
+      border: none;
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    .thread-project-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 5px;
+      height: 100%;
+    }
+
+    .threads-container {
+      margin-bottom: 32px;
     }
 
     .badge {
@@ -577,328 +645,365 @@
 
         <!-- Lista de threads agrupados por proyecto -->
         <div class="threads-list">
+          <div class="threads-container">
           
-          <!-- Proyecto 1 -->
-          <div class="thread-project-group">
-            <div class="thread-project-header" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-left: 4px solid #10b981;">
-              <div style="display: flex; flex-direction: column; gap: 8px;">
-                <div>
-                  <h3 style="font-size: 15px; font-weight: 700; color: #065f46; line-height: 1.3;">
-                    Instalación HVAC Completo
-                  </h3>
-                </div>
-                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                  <span style="background: white; color: #10b981; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 10px; border: 1px solid #10b981;">
-                    ACTIVO
-                  </span>
-                  <span style="background: #10b981; color: white; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 10px;">
-                    3 threads
-                  </span>
-                </div>
-                <p style="color: #047857; font-size: 11px; opacity: 0.9; line-height: 1.4;">
-                  Proyecto #1024 • 1 no leído
-                </p>
-                <div style="display: flex; gap: 6px; margin-top: 4px;">
-                  <button class="btn btn-small" style="background: #10b981; border: 1px solid #10b981; color: white; font-size: 11px; padding: 6px 12px; flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px;" onclick="event.stopPropagation(); goToProject('project-1', true)" title="Proyecto activo">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M9 18l6-6-6-6"></path>
-                    </svg>
-                    Ir al Proyecto
-                  </button>
-                  <button class="btn btn-small" style="background: white; border: 1px solid #10b981; color: #10b981; font-size: 11px; padding: 6px 10px;" onclick="event.stopPropagation(); createThreadForProject('project-1')" title="Nuevo Thread">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <line x1="12" y1="5" x2="12" y2="19"></line>
-                      <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div id="threads-project-1" class="threads-container" style="display: grid;">
-              
-              <!-- Thread 1 - No leído -->
-              <div class="thread-card unread" onclick="openThread('thread-1')">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;">
-                  <h4 style="font-size: 13px; font-weight: 600; color: #0f172a; line-height: 1.3;">
-                    📋 Cambios en especificaciones
-                    <span style="background: #ef4444; color: white; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 8px; margin-left: 4px;">3</span>
-                  </h4>
-                  <button class="btn-icon" onclick="event.stopPropagation(); archiveThread('thread-1')" title="Archivar">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <!-- Thread/Proyecto 1: Instalación HVAC -->
+          <div class="thread-card connected" onclick="openThread('thread-1')">
+            <div style="display: flex; gap: 16px;">
+              <!-- Contenido -->
+              <div style="flex: 1; min-width: 0;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                  <div style="flex: 1;">
+                    <h4 style="font-size: 16px; font-weight: 700; color: #0f172a; line-height: 1.3; margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+                      <span style="font-size: 20px;">🏗️</span>
+                      Instalación HVAC - Edificio Corporativo Guadalajara
+                    </h4>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                      <span style="font-weight: 600; color: #02735E; font-size: 13px;">Juan Pérez</span>
+                      <span style="width: 4px; height: 4px; background: #cbd5e1; border-radius: 50%;"></span>
+                      <span style="color: #94a3b8; font-size: 12px;">hace 2h</span>
+                    </div>
+                  </div>
+                  <button class="btn-icon" onclick="event.stopPropagation(); archiveThread('thread-1')" title="Archivar" style="padding: 8px; border-radius: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <polyline points="21 8 21 21 3 21 3 8"></polyline>
                       <rect x="1" y="3" width="22" height="5"></rect>
                     </svg>
                   </button>
                 </div>
                 
-                <p style="font-size: 11px; color: #64748b; line-height: 1.4; margin-bottom: 8px;">
-                  El cliente solicita modificar el refrigerante de R-410A a R-32...
-                </p>
-                
-                <!-- Metadata compacta -->
-                <div style="display: flex; flex-direction: column; gap: 4px; font-size: 10px; color: #94a3b8;">
-                  <div style="display: flex; align-items: center; gap: 6px;">
-                    <img src="https://ui-avatars.com/api/?name=Juan+Perez&size=18&background=10b981&color=fff" style="width: 18px; height: 18px; border-radius: 50%;">
-                    <span style="font-weight: 600;">Juan Pérez</span>
-                  </div>
-                  <div style="display: flex; gap: 8px;">
-                    <span>💬 15</span>
-                    <span>📎 3</span>
-                    <span>🕐 2h</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Thread 2 - Leído -->
-              <div class="thread-card" onclick="openThread('thread-2')">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;">
-                  <h4 style="font-size: 13px; font-weight: 600; color: #0f172a; line-height: 1.3;">
-                    🔧 Coordinación de instalación
-                  </h4>
-                  <button class="btn-icon" onclick="event.stopPropagation(); archiveThread('thread-2')" title="Archivar">
+                <!-- Stats con iconos -->
+                <div style="display: flex; gap: 16px; align-items: center;">
+                  <div style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: #f1f5f9; border-radius: 8px;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polyline points="21 8 21 21 3 21 3 8"></polyline>
-                      <rect x="1" y="3" width="22" height="5"></rect>
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                     </svg>
-                  </button>
-                </div>
-                
-                <p style="font-size: 11px; color: #64748b; line-height: 1.4; margin-bottom: 8px;">
-                  Confirmar acceso al sitio el martes 21 nov a las 8:00 AM...
-                </p>
-                
-                <!-- Metadata compacta -->
-                <div style="display: flex; flex-direction: column; gap: 4px; font-size: 10px; color: #94a3b8;">
-                  <div style="display: flex; align-items: center; gap: 6px;">
-                    <img src="https://ui-avatars.com/api/?name=Maria+Garcia&size=18&background=f97316&color=fff" style="width: 18px; height: 18px; border-radius: 50%;">
-                    <span style="font-weight: 600;">María García</span>
+                    <span data-counter="messages" style="font-weight: 600; font-size: 12px; color: #475569;">0</span>
                   </div>
-                  <div style="display: flex; gap: 8px;">
-                    <span>💬 8</span>
-                    <span>📎 1</span>
-                    <span>🕐 1d</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Thread 3 - Con fotos -->
-              <div class="thread-card" onclick="openThread('thread-3')">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;">
-                  <h4 style="font-size: 13px; font-weight: 600; color: #0f172a; line-height: 1.3;">
-                    📸 Fotos del progreso
-                    <span style="background: #3b82f6; color: white; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 8px; margin-left: 4px;">24</span>
-                  </h4>
-                  <button class="btn-icon" onclick="event.stopPropagation(); archiveThread('thread-3')" title="Archivar">
+                  <div style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: #f1f5f9; border-radius: 8px;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polyline points="21 8 21 21 3 21 3 8"></polyline>
-                      <rect x="1" y="3" width="22" height="5"></rect>
+                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
                     </svg>
-                  </button>
-                </div>
-                
-                <p style="font-size: 11px; color: #64748b; line-height: 1.4; margin-bottom: 8px;">
-                  Documentación fotográfica del avance de obra hasta el viernes...
-                </p>
-                
-                <!-- Metadata compacta -->
-                <div style="display: flex; flex-direction: column; gap: 4px; font-size: 10px; color: #94a3b8;">
-                  <div style="display: flex; align-items: center; gap: 6px;">
-                    <img src="https://ui-avatars.com/api/?name=Carlos+Lopez&size=18&background=3b82f6&color=fff" style="width: 18px; height: 18px; border-radius: 50%;">
-                    <span style="font-weight: 600;">Carlos López</span>
+                    <span data-counter="attachments" style="font-weight: 600; font-size: 12px; color: #475569;">0</span>
                   </div>
-                  <div style="display: flex; gap: 8px;">
-                    <span>💬 12</span>
-                    <span>📎 24</span>
-                    <span>🕐 3d</span>
+                  <div style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: #f1f5f9; border-radius: 8px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                      <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    <span data-info="location" style="font-weight: 600; font-size: 12px; color: #475569;">-</span>
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
 
-          <!-- Proyecto 2 -->
-          <div class="thread-project-group">
-            <div class="thread-project-header" style="background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border-left: 4px solid #f97316;">
-              <div style="display: flex; flex-direction: column; gap: 8px;">
-                <div>
-                  <h3 style="font-size: 15px; font-weight: 700; color: #c2410c; line-height: 1.3;">
-                    Reparación Sistema Eléctrico
-                  </h3>
+
+          <!-- Thread 2 - Reparación Sistema Eléctrico -->
+          <div class="thread-card connected" onclick="openThread('thread-4')">
+            <div style="display: flex; gap: 16px;">
+              <!-- Contenido -->
+              <div style="flex: 1; min-width: 0;">
+                <!-- Título -->
+                <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; line-height: 1.3; margin-bottom: 6px;">
+                  Reparación Sistema Eléctrico - Inspección de Seguridad
+                </h3>
+                
+                <!-- Metadata -->
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #64748b; margin-bottom: 8px; flex-wrap: wrap;">
+                  <span style="color: #02735E; font-weight: 600;">Ana Martínez</span>
+                  <span>•</span>
+                  <span>Hace 5h</span>
                 </div>
-                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                  <span style="background: white; color: #f97316; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 10px; border: 1px solid #f97316;">
-                    EN PROGRESO
-                  </span>
-                  <span style="background: #f97316; color: white; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 10px;">
-                    1 thread
-                  </span>
-                </div>
-                <p style="color: #ea580c; font-size: 11px; opacity: 0.9; line-height: 1.4;">
-                  Proyecto #1025 • 1 no leído
-                </p>
-                <div style="display: flex; gap: 6px; margin-top: 4px;">
-                  <button class="btn btn-small" style="background: #e5e7eb; border: 1px solid #9ca3af; color: #6b7280; font-size: 11px; padding: 6px 12px; flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; cursor: not-allowed; opacity: 0.7;" onclick="event.stopPropagation(); goToProject('project-2', false)" title="Sin proyecto activo">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M9 18l6-6-6-6"></path>
+                
+                <!-- Stats -->
+                <div style="display: flex; gap: 8px;">
+                  <div style="background: #f1f5f9; padding: 6px 12px; border-radius: 12px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                     </svg>
-                    Sin Activar
-                  </button>
-                  <button class="btn btn-small" style="background: white; border: 1px solid #f97316; color: #f97316; font-size: 11px; padding: 6px 10px;" onclick="event.stopPropagation(); createThreadForProject('project-2')" title="Nuevo Thread">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <line x1="12" y1="5" x2="12" y2="19"></line>
-                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <span data-counter="messages" style="font-size: 13px; color: #64748b; font-weight: 600;">0</span>
+                  </div>
+                  <div style="background: #f1f5f9; padding: 6px 12px; border-radius: 12px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2">
+                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
                     </svg>
-                  </button>
+                    <span data-counter="attachments" style="font-size: 13px; color: #64748b; font-weight: 600;">0</span>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div id="threads-project-2" class="threads-container" style="display: grid;">
               
-              <!-- Thread 1 - No leído -->
-              <div class="thread-card unread" style="border-left-color: #f97316;" onclick="openThread('thread-4')">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;">
-                  <h4 style="font-size: 13px; font-weight: 600; color: #0f172a; line-height: 1.3;">
-                    ⚡ Inspección de seguridad
-                    <span style="background: #ef4444; color: white; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 8px; margin-left: 4px;">1</span>
-                  </h4>
-                  <button class="btn-icon" onclick="event.stopPropagation(); archiveThread('thread-4')" title="Archivar">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polyline points="21 8 21 21 3 21 3 8"></polyline>
-                      <rect x="1" y="3" width="22" height="5"></rect>
-                    </svg>
-                  </button>
-                </div>
-                
-                <p style="font-size: 11px; color: #64748b; line-height: 1.4; margin-bottom: 8px;">
-                  Resultados de la inspección inicial y recomendaciones de actualización...
-                </p>
-                
-                <!-- Metadata compacta -->
-                <div style="display: flex; flex-direction: column; gap: 4px; font-size: 10px; color: #94a3b8;">
-                  <div style="display: flex; align-items: center; gap: 6px;">
-                    <img src="https://ui-avatars.com/api/?name=Ana+Martinez&size=18&background=10b981&color=fff" style="width: 18px; height: 18px; border-radius: 50%;">
-                    <span style="font-weight: 600;">Ana Martínez</span>
-                  </div>
-                  <div style="display: flex; gap: 8px;">
-                    <span>💬 6</span>
-                    <span>📎 2</span>
-                    <span>🕐 5h</span>
-                  </div>
-                </div>
-              </div>
-
+              <!-- Botón Archivar -->
+              <button class="btn-icon" onclick="event.stopPropagation(); archiveThread('thread-4')" title="Archivar" style="align-self: flex-start;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                  <rect x="1" y="3" width="22" height="5"></rect>
+                </svg>
+              </button>
             </div>
           </div>
 
-          <!-- Proyecto 3 -->
-          <div class="thread-project-group">
-            <div class="thread-project-header" style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-left: 4px solid #3b82f6;">
-              <div style="display: flex; flex-direction: column; gap: 8px;">
-                <div>
-                  <h3 style="font-size: 15px; font-weight: 700; color: #1e40af; line-height: 1.3;">
-                    Mantenimiento Preventivo Oficinas
-                  </h3>
+          <!-- Thread 3 - Mantenimiento Preventivo -->
+          <div class="thread-card" onclick="openThread('thread-5')">
+            <div style="display: flex; gap: 16px;">
+              <!-- Contenido -->
+              <div style="flex: 1; min-width: 0;">
+                <!-- Título -->
+                <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; line-height: 1.3; margin-bottom: 6px;">
+                  Mantenimiento Preventivo Oficinas - Programación Inicial
+                </h3>
+                
+                <!-- Metadata -->
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #64748b; margin-bottom: 8px; flex-wrap: wrap;">
+                  <span style="color: #02735E; font-weight: 600;">Pedro Sánchez</span>
+                  <span>•</span>
+                  <span>Hace 2d</span>
                 </div>
-                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                  <span style="background: white; color: #3b82f6; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 10px; border: 1px solid #3b82f6;">
-                    PROGRAMADO
-                  </span>
-                  <span style="background: #3b82f6; color: white; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 10px;">
-                    2 threads
-                  </span>
-                </div>
-                <p style="color: #2563eb; font-size: 11px; opacity: 0.9; line-height: 1.4;">
-                  Proyecto #1026 • Todo al día
-                </p>
-                <div style="display: flex; gap: 6px; margin-top: 4px;">
-                  <button class="btn btn-small" style="background: #e5e7eb; border: 1px solid #9ca3af; color: #6b7280; font-size: 11px; padding: 6px 12px; flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; cursor: not-allowed; opacity: 0.7;" onclick="event.stopPropagation(); goToProject('project-3', false)" title="Sin proyecto activo">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M9 18l6-6-6-6"></path>
+                
+                <!-- Stats -->
+                <div style="display: flex; gap: 8px;">
+                  <div style="background: #f1f5f9; padding: 6px 12px; border-radius: 12px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                     </svg>
-                    Sin Activar
-                  </button>
-                  <button class="btn btn-small" style="background: white; border: 1px solid #3b82f6; color: #3b82f6; font-size: 11px; padding: 6px 10px;" onclick="event.stopPropagation(); createThreadForProject('project-3')" title="Nuevo Thread">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <line x1="12" y1="5" x2="12" y2="19"></line>
-                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <span data-counter="messages" style="font-size: 13px; color: #64748b; font-weight: 600;">0</span>
+                  </div>
+                  <div style="background: #f1f5f9; padding: 6px 12px; border-radius: 12px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2">
+                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
                     </svg>
-                  </button>
+                    <span data-counter="messages" style="font-size: 13px; color: #64748b; font-weight: 600;">0</span>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div id="threads-project-3" class="threads-container" style="display: grid;">
               
-              <!-- Thread 1 -->
-              <div class="thread-card" onclick="openThread('thread-5')">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;">
-                  <h4 style="font-size: 13px; font-weight: 600; color: #0f172a; line-height: 1.3;">
-                    📅 Programación inicial
-                  </h4>
-                  <button class="btn-icon" onclick="event.stopPropagation(); archiveThread('thread-5')" title="Archivar">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polyline points="21 8 21 21 3 21 3 8"></polyline>
-                      <rect x="1" y="3" width="22" height="5"></rect>
-                    </svg>
-                  </button>
-                </div>
-                
-                <p style="font-size: 11px; color: #64748b; line-height: 1.4; margin-bottom: 8px;">
-                  Coordinación de fechas y recursos para inicio del proyecto...
-                </p>
-                
-                <!-- Metadata compacta -->
-                <div style="display: flex; flex-direction: column; gap: 4px; font-size: 10px; color: #94a3b8;">
-                  <div style="display: flex; align-items: center; gap: 6px;">
-                    <img src="https://ui-avatars.com/api/?name=Pedro+Sanchez&size=18&background=3b82f6&color=fff" style="width: 18px; height: 18px; border-radius: 50%;">
-                    <span style="font-weight: 600;">Pedro Sánchez</span>
-                  </div>
-                  <div style="display: flex; gap: 8px;">
-                    <span>💬 4</span>
-                    <span>📎 1</span>
-                    <span>🕐 2d</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Thread 2 -->
-              <div class="thread-card" onclick="openThread('thread-6')">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;">
-                  <h4 style="font-size: 13px; font-weight: 600; color: #0f172a; line-height: 1.3;">
-                    📝 Revisión de contrato
-                  </h4>
-                  <button class="btn-icon" onclick="event.stopPropagation(); archiveThread('thread-6')" title="Archivar">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polyline points="21 8 21 21 3 21 3 8"></polyline>
-                      <rect x="1" y="3" width="22" height="5"></rect>
-                    </svg>
-                  </button>
-                </div>
-                
-                <p style="font-size: 11px; color: #64748b; line-height: 1.4; margin-bottom: 8px;">
-                  Revisión de términos y condiciones antes de la firma...
-                </p>
-                
-                <!-- Metadata compacta -->
-                <div style="display: flex; flex-direction: column; gap: 4px; font-size: 10px; color: #94a3b8;">
-                  <div style="display: flex; align-items: center; gap: 6px;">
-                    <img src="https://ui-avatars.com/api/?name=Laura+Torres&size=18&background=6366f1&color=fff" style="width: 18px; height: 18px; border-radius: 50%;">
-                    <span style="font-weight: 600;">Laura Torres</span>
-                  </div>
-                  <div style="display: flex; gap: 8px;">
-                    <span>💬 7</span>
-                    <span>📎 2</span>
-                    <span>🕐 5d</span>
-                  </div>
-                </div>
-              </div>
-
+              <!-- Botón Archivar -->
+              <button class="btn-icon" onclick="event.stopPropagation(); archiveThread('thread-5')" title="Archivar" style="align-self: flex-start;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                  <rect x="1" y="3" width="22" height="5"></rect>
+                </svg>
+              </button>
             </div>
           </div>
 
+          <!-- Thread 4 - Remodelación Oficinas -->
+          <div class="thread-card connected" onclick="openThread('thread-6')">
+            <div style="display: flex; gap: 16px;">
+              <div style="flex: 1; min-width: 0;">
+                <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; line-height: 1.3; margin-bottom: 6px;">
+                  Remodelación Oficinas - Diseño Interior
+                </h3>
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #64748b; margin-bottom: 8px; flex-wrap: wrap;">
+                  <span style="color: #02735E; font-weight: 600;">Sofia Ruiz</span>
+                  <span>•</span>
+                  <span>Hace 3h</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <div style="background: #f1f5f9; padding: 6px 12px; border-radius: 12px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span data-counter="messages" style="font-size: 13px; color: #64748b; font-weight: 600;">0</span>
+                  </div>
+                  <div style="background: #f1f5f9; padding: 6px 12px; border-radius: 12px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2">
+                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                    </svg>
+                    <span data-counter="messages" style="font-size: 13px; color: #64748b; font-weight: 600;">0</span>
+                  </div>
+                </div>
+              </div>
+              <button class="btn-icon" onclick="event.stopPropagation(); archiveThread('thread-6')" title="Archivar" style="align-self: flex-start;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                  <rect x="1" y="3" width="22" height="5"></rect>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Thread 5 - Sistema Contra Incendios -->
+          <div class="thread-card" onclick="openThread('thread-7')">
+            <div style="display: flex; gap: 16px;">
+              <div style="flex: 1; min-width: 0;">
+                <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; line-height: 1.3; margin-bottom: 6px;">
+                  Sistema Contra Incendios - Certificación
+                </h3>
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #64748b; margin-bottom: 8px; flex-wrap: wrap;">
+                  <span style="color: #02735E; font-weight: 600;">Roberto Díaz</span>
+                  <span>•</span>
+                  <span>Hace 1d</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <div style="background: #f1f5f9; padding: 6px 12px; border-radius: 12px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span data-counter="messages" style="font-size: 13px; color: #64748b; font-weight: 600;">0</span>
+                  </div>
+                  <div style="background: #f1f5f9; padding: 6px 12px; border-radius: 12px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2">
+                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                    </svg>
+                    <span data-counter="messages" style="font-size: 13px; color: #64748b; font-weight: 600;">0</span>
+                  </div>
+                </div>
+              </div>
+              <button class="btn-icon" onclick="event.stopPropagation(); archiveThread('thread-7')" title="Archivar" style="align-self: flex-start;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                  <rect x="1" y="3" width="22" height="5"></rect>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Thread 6 - Plomería Industrial -->
+          <div class="thread-card connected" onclick="openThread('thread-8')">
+            <div style="display: flex; gap: 16px;">
+              <div style="flex: 1; min-width: 0;">
+                <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; line-height: 1.3; margin-bottom: 6px;">
+                  Plomería Industrial - Instalación de Tuberías
+                </h3>
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #64748b; margin-bottom: 8px; flex-wrap: wrap;">
+                  <span style="color: #02735E; font-weight: 600;">Miguel Ángel Mora</span>
+                  <span>•</span>
+                  <span>Hace 4h</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <div style="background: #f1f5f9; padding: 6px 12px; border-radius: 12px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span data-counter="messages" style="font-size: 13px; color: #64748b; font-weight: 600;">0</span>
+                  </div>
+                  <div style="background: #f1f5f9; padding: 6px 12px; border-radius: 12px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2">
+                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                    </svg>
+                    <span data-counter="messages" style="font-size: 13px; color: #64748b; font-weight: 600;">0</span>
+                  </div>
+                </div>
+              </div>
+              <button class="btn-icon" onclick="event.stopPropagation(); archiveThread('thread-8')" title="Archivar" style="align-self: flex-start;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                  <rect x="1" y="3" width="22" height="5"></rect>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Thread 7 - Red de Datos -->
+          <div class="thread-card" onclick="openThread('thread-9')">
+            <div style="display: flex; gap: 16px;">
+              <div style="flex: 1; min-width: 0;">
+                <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; line-height: 1.3; margin-bottom: 6px;">
+                  Red de Datos - Cableado Estructurado
+                </h3>
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #64748b; margin-bottom: 8px; flex-wrap: wrap;">
+                  <span style="color: #02735E; font-weight: 600;">Daniela Castro</span>
+                  <span>•</span>
+                  <span>Hace 6h</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <div style="background: #f1f5f9; padding: 6px 12px; border-radius: 12px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span data-counter="messages" style="font-size: 13px; color: #64748b; font-weight: 600;">0</span>
+                  </div>
+                  <div style="background: #f1f5f9; padding: 6px 12px; border-radius: 12px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2">
+                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                    </svg>
+                    <span data-counter="messages" style="font-size: 13px; color: #64748b; font-weight: 600;">0</span>
+                  </div>
+                </div>
+              </div>
+              <button class="btn-icon" onclick="event.stopPropagation(); archiveThread('thread-9')" title="Archivar" style="align-self: flex-start;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                  <rect x="1" y="3" width="22" height="5"></rect>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Thread 8 - Pintura Exterior -->
+          <div class="thread-card" onclick="openThread('thread-10')">
+            <div style="display: flex; gap: 16px;">
+              <div style="flex: 1; min-width: 0;">
+                <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; line-height: 1.3; margin-bottom: 6px;">
+                  Pintura Exterior - Fachada Principal
+                </h3>
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #64748b; margin-bottom: 8px; flex-wrap: wrap;">
+                  <span style="color: #02735E; font-weight: 600;">Fernando López</span>
+                  <span>•</span>
+                  <span>Hace 2d</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <div style="background: #f1f5f9; padding: 6px 12px; border-radius: 12px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span data-counter="messages" style="font-size: 13px; color: #64748b; font-weight: 600;">0</span>
+                  </div>
+                  <div style="background: #f1f5f9; padding: 6px 12px; border-radius: 12px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2">
+                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                    </svg>
+                    <span data-counter="messages" style="font-size: 13px; color: #64748b; font-weight: 600;">0</span>
+                  </div>
+                </div>
+              </div>
+              <button class="btn-icon" onclick="event.stopPropagation(); archiveThread('thread-10')" title="Archivar" style="align-self: flex-start;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                  <rect x="1" y="3" width="22" height="5"></rect>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Thread 9 - Jardinería -->
+          <div class="thread-card" onclick="openThread('thread-11')">
+            <div style="display: flex; gap: 16px;">
+              <div style="flex: 1; min-width: 0;">
+                <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; line-height: 1.3; margin-bottom: 6px;">
+                  Jardinería - Áreas Verdes
+                </h3>
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #64748b; margin-bottom: 8px; flex-wrap: wrap;">
+                  <span style="color: #02735E; font-weight: 600;">Gabriela Méndez</span>
+                  <span>•</span>
+                  <span>Hace 3d</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <div style="background: #f1f5f9; padding: 6px 12px; border-radius: 12px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span data-counter="messages" style="font-size: 13px; color: #64748b; font-weight: 600;">0</span>
+                  </div>
+                  <div style="background: #f1f5f9; padding: 6px 12px; border-radius: 12px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2">
+                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                    </svg>
+                    <span data-counter="messages" style="font-size: 13px; color: #64748b; font-weight: 600;">0</span>
+                  </div>
+                </div>
+              </div>
+              <button class="btn-icon" onclick="event.stopPropagation(); archiveThread('thread-11')" title="Archivar" style="align-self: flex-start;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                  <rect x="1" y="3" width="22" height="5"></rect>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          </div>
         </div>
 
       </section>
@@ -906,108 +1011,299 @@
   </div>
 
   <!-- MODAL: Seleccionar Proyecto para Nuevo Thread -->
-  <div id="newThreadModal" class="modal">
-    <div class="modal-content">
+  <!-- Modal de Crear Thread -->
+  <div id="newThreadModal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
       <button onclick="closeNewThreadModal()" style="position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 28px; cursor: pointer; color: #64748b; z-index: 10;">&times;</button>
       
-      <div style="padding: 32px;">
-        <h2 style="font-size: 24px; font-weight: 700; color: #0f172a; margin-bottom: 8px;">Crear Nuevo Thread</h2>
-        <p style="color: #64748b; font-size: 14px; margin-bottom: 24px;">Selecciona el proyecto para el cual deseas crear el thread</p>
+      <div style="padding: 40px;">
+        <div style="text-align: center; margin-bottom: 32px;">
+          <h2 style="font-size: 28px; font-weight: 700; color: #0f172a; margin-bottom: 8px;">Crear Nuevo Thread</h2>
+          <p style="color: #64748b; font-size: 14px;">Inicia una conversación con el equipo sobre una oportunidad o consulta de cliente</p>
+        </div>
         
-        <!-- Lista de proyectos -->
-        <div style="display: grid; gap: 12px; margin-bottom: 24px;">
-          
-          <!-- Proyecto 1 -->
-          <div class="project-select-card" onclick="selectProjectForThread('project-1', 'Instalación HVAC Completo')">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <div style="width: 12px; height: 12px; background: #10b981; border-radius: 50%; flex-shrink: 0;"></div>
-              <div style="flex: 1;">
-                <h3 style="font-size: 15px; font-weight: 600; color: #0f172a; margin-bottom: 4px;">Instalación HVAC Completo</h3>
-                <p style="font-size: 13px; color: #64748b;">Proyecto #1024 • Activo • 3 threads existentes</p>
-              </div>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 18l6-6-6-6"></path>
+        <form id="threadForm" onsubmit="handleThreadSubmit(event)">
+          <!-- Asunto/Cliente -->
+          <div style="margin-bottom: 24px;">
+            <label style="display: block; font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
               </svg>
-            </div>
+              Asunto o Cliente <span style="color: #ef4444;">*</span>
+            </label>
+            <input type="text" id="threadClientName" required 
+              placeholder="Ej: Cotización HVAC - Edificio Central"
+              style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; transition: all 0.3s;"
+              onfocus="this.style.borderColor='#02735E'; this.style.boxShadow='0 0 0 3px rgba(2,115,94,0.1)'"
+              onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
           </div>
 
-          <!-- Proyecto 2 -->
-          <div class="project-select-card" onclick="selectProjectForThread('project-2', 'Reparación Sistema Eléctrico')">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <div style="width: 12px; height: 12px; background: #f97316; border-radius: 50%; flex-shrink: 0;"></div>
-              <div style="flex: 1;">
-                <h3 style="font-size: 15px; font-weight: 600; color: #0f172a; margin-bottom: 4px;">Reparación Sistema Eléctrico</h3>
-                <p style="font-size: 13px; color: #64748b;">Proyecto #1025 • En Progreso • 1 thread existente</p>
-              </div>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 18l6-6-6-6"></path>
+          <!-- Descripción -->
+          <div style="margin-bottom: 24px;">
+            <label style="display: block; font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
               </svg>
-            </div>
+              Descripción <span style="color: #ef4444;">*</span>
+            </label>
+            <input type="text" id="threadSubject" required 
+              placeholder="Ej: Cliente pregunta por mantenimiento preventivo"
+              style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; transition: all 0.3s;"
+              onfocus="this.style.borderColor='#02735E'; this.style.boxShadow='0 0 0 3px rgba(2,115,94,0.1)'"
+              onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
           </div>
 
-          <!-- Proyecto 3 -->
-          <div class="project-select-card" onclick="selectProjectForThread('project-3', 'Mantenimiento Preventivo Oficinas')">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <div style="width: 12px; height: 12px; background: #3b82f6; border-radius: 50%; flex-shrink: 0;"></div>
-              <div style="flex: 1;">
-                <h3 style="font-size: 15px; font-weight: 600; color: #0f172a; margin-bottom: 4px;">Mantenimiento Preventivo Oficinas</h3>
-                <p style="font-size: 13px; color: #64748b;">Proyecto #1026 • Programado • 2 threads</p>
-              </div>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 18l6-6-6-6"></path>
+          <!-- Contacto -->
+          <div style="margin-bottom: 24px;">
+            <label style="display: block; font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
               </svg>
-            </div>
+              Contacto del Cliente (opcional)
+            </label>
+            <input type="text" id="threadContactInfo" 
+              placeholder="Teléfono, email o nombre"
+              style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; transition: all 0.3s;"
+              onfocus="this.style.borderColor='#02735E'; this.style.boxShadow='0 0 0 3px rgba(2,115,94,0.1)'"
+              onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
           </div>
 
-        </div>
+          <!-- Proyecto -->
+          <div style="margin-bottom: 24px;">
+            <label style="display: block; font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+              ¿Asociar a un proyecto?
+            </label>
+            <select id="threadProject" 
+              style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; background: white; cursor: pointer; transition: all 0.3s;"
+              onfocus="this.style.borderColor='#02735E'; this.style.boxShadow='0 0 0 3px rgba(2,115,94,0.1)'"
+              onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+              <!-- Proyectos se cargarán dinámicamente -->
+            </select>
+            <p style="font-size: 12px; color: #64748b; margin-top: 8px; display: flex; align-items: center; gap: 6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+              Solo se muestran proyectos sin thread conectado
+            </p>
+          </div>
 
-        <div style="display: flex; justify-content: flex-end; gap: 12px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
-          <button type="button" onclick="closeNewThreadModal()" style="padding: 10px 24px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; color: #64748b; font-weight: 600; cursor: pointer;">
-            Cancelar
-          </button>
-        </div>
+          <!-- Mensaje Inicial -->
+          <div style="margin-bottom: 32px;">
+            <label style="display: block; font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                <line x1="9" y1="10" x2="15" y2="10"></line>
+                <line x1="9" y1="14" x2="15" y2="14"></line>
+              </svg>
+              Mensaje Inicial (opcional)
+            </label>
+            <textarea id="threadInitialMessage" 
+              placeholder="Escribe el primer mensaje de la conversación..."
+              rows="4"
+              style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; resize: vertical; font-family: inherit; transition: all 0.3s;"
+              onfocus="this.style.borderColor='#02735E'; this.style.boxShadow='0 0 0 3px rgba(2,115,94,0.1)'"
+              onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'"></textarea>
+          </div>
+
+          <!-- Botones -->
+          <div style="display: flex; gap: 12px; justify-content: flex-end; padding-top: 24px; border-top: 2px solid #f1f5f9;">
+            <button type="button" onclick="closeNewThreadModal()" 
+              style="padding: 12px 32px; background: white; border: 2px solid #e2e8f0; border-radius: 12px; color: #64748b; font-weight: 600; cursor: pointer; transition: all 0.3s;"
+              onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#94a3b8'"
+              onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'">
+              Cancelar
+            </button>
+            <button type="submit" id="createThreadBtn"
+              style="padding: 12px 32px; background: linear-gradient(135deg, #02735E 0%, #035951 100%); border: none; border-radius: 12px; color: white; font-weight: 700; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(2,115,94,0.3);"
+              onmouseover="this.style.boxShadow='0 6px 20px rgba(2,115,94,0.4)'; this.style.transform='translateY(-2px)'"
+              onmouseout="this.style.boxShadow='0 4px 12px rgba(2,115,94,0.3)'; this.style.transform='translateY(0)'">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              Crear Thread
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 
   <script>
     // Filter functionality
-    function filterThreads(filter) {
-      // Update active state
-      document.querySelectorAll('[data-thread-filter]').forEach(btn => {
-        btn.classList.remove('active');
-      });
-      document.querySelector(`[data-thread-filter="${filter}"]`).classList.add('active');
-      
-      // In production, this would filter the threads
-      console.log('Filter selected:', filter);
-    }
-
     // Thread navigation
     function openThread(threadId) {
+      // Redirigir a la vista de conversación del thread (threadsync.html)
       window.location.href = `threadsync.html?id=${threadId}`;
     }
 
     // Create new thread
     function createNewThread() {
-      window.location.href = 'thread-form.html';
+      // Abrir el modal con formulario completo
+      document.getElementById('newThreadModal').style.display = 'block';
+      // Cargar proyectos disponibles
+      loadAvailableProjects();
     }
 
     function closeNewThreadModal() {
       document.getElementById('newThreadModal').style.display = 'none';
+      // Limpiar formulario
+      document.getElementById('threadForm').reset();
+    }
+
+    // Función para cargar proyectos disponibles (sin threads conectados)
+    function loadAvailableProjects() {
+      // Lista de todos los proyectos en ProjectSync
+      const allProjects = [
+        { id: 'project-1', name: 'Instalación HVAC Completo', status: 'active' },
+        { id: 'project-2', name: 'Reparación Sistema Eléctrico', status: 'active' },
+        { id: 'project-3', name: 'Mantenimiento Preventivo Oficinas', status: 'active' },
+        { id: 'project-4', name: 'Renovación Plomería Edificio Norte', status: 'active' },
+        { id: 'project-5', name: 'Instalación Sistema Contra Incendios', status: 'active' },
+        { id: 'project-6', name: 'Actualización Tableros Eléctricos', status: 'active' },
+        { id: 'project-7', name: 'Impermeabilización Azotea Principal', status: 'active' },
+        { id: 'project-8', name: 'Instalación Equipo A/C Torre B', status: 'active' }
+      ];
+
+      // Obtener todos los threads para saber cuáles tienen proyecto asignado
+      let threadsWithProjects = new Set();
+      
+      try {
+        const storedThreads = localStorage.getItem('threadsync_threads');
+        if (storedThreads) {
+          const threadsData = JSON.parse(storedThreads);
+          Object.values(threadsData).forEach(thread => {
+            if (thread.projectId) {
+              threadsWithProjects.add(thread.projectId);
+            }
+          });
+        }
+      } catch (e) {
+        console.error('Error al cargar threads:', e);
+      }
+
+      console.log('🔍 Proyectos ya conectados:', Array.from(threadsWithProjects));
+
+      // Filtrar proyectos disponibles
+      const availableProjects = allProjects.filter(project => {
+        return !threadsWithProjects.has(project.id);
+      });
+
+      console.log('✅ Proyectos disponibles para nuevo thread:', availableProjects.length);
+
+      // Actualizar el select
+      const projectSelect = document.getElementById('threadProject');
+      if (projectSelect) {
+        projectSelect.innerHTML = '<option value="">Sin proyecto (thread independiente)</option>';
+        
+        availableProjects.forEach(project => {
+          const option = document.createElement('option');
+          option.value = project.id;
+          option.textContent = project.name;
+          projectSelect.appendChild(option);
+        });
+
+        // Si no hay proyectos disponibles, mostrar mensaje
+        if (availableProjects.length === 0) {
+          const option = document.createElement('option');
+          option.value = '';
+          option.disabled = true;
+          option.textContent = 'No hay proyectos disponibles sin thread';
+          projectSelect.appendChild(option);
+        }
+      }
+    }
+
+    function handleThreadSubmit(event) {
+      event.preventDefault();
+      
+      const submitBtn = document.getElementById('createThreadBtn');
+      const originalText = submitBtn.innerHTML;
+      
+      // Deshabilitar botón y mostrar loading
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px; animation: spin 1s linear infinite;"><circle cx="12" cy="12" r="10"></circle></svg> Creando...';
+      
+      // Obtener datos del formulario
+      const clientName = document.getElementById('threadClientName').value;
+      const subject = document.getElementById('threadSubject').value;
+      const contactInfo = document.getElementById('threadContactInfo').value;
+      const projectId = document.getElementById('threadProject').value;
+      const initialMessage = document.getElementById('threadInitialMessage').value;
+      
+      // Crear nuevo thread con ID único
+      const newThreadId = 'thread-' + Date.now();
+      
+      // Obtener nombre del proyecto si hay uno seleccionado
+      let projectName = '';
+      if (projectId) {
+        const projectSelect = document.getElementById('threadProject');
+        projectName = projectSelect.options[projectSelect.selectedIndex].text;
+      }
+      
+      // Crear mensajes iniciales
+      const messages = [];
+      
+      // Solo agregar el mensaje inicial del usuario si existe
+      if (initialMessage) {
+        messages.push({
+          id: 1,
+          author: currentUser,
+          text: initialMessage,
+          attachments: []
+        });
+      }
+      
+      // Agregar thread a threadsData
+      threadsData[newThreadId] = {
+        owner: currentUser,
+        createdBy: currentUser,
+        participants: [currentUser],
+        mentions: [],
+        isRead: true,
+        isArchived: false,
+        messages: messages,
+        location: '-', // Sin ubicación hasta que se convierta en proyecto
+        contactInfo: contactInfo || '-', // Guardar contacto por separado
+        projectId: projectId || null,
+        projectName: projectName || null,
+        clientName: clientName,
+        subject: subject
+      };
+      
+      // 💾 GUARDAR EN LOCALSTORAGE
+      saveThreadsToStorage(threadsData);
+      
+      console.log('✅ Nuevo thread creado:', newThreadId, threadsData[newThreadId]);
+      console.log('💾 Thread guardado en localStorage');
+      
+      // Simular guardado (en producción sería llamada a API)
+      setTimeout(() => {
+        closeNewThreadModal();
+        
+        // Mostrar confirmación
+        const confirmMsg = `✓ Thread creado exitosamente\n\nAsunto: ${clientName}\nDescripción: ${subject}${contactInfo ? '\nContacto: ' + contactInfo : ''}${projectName ? '\nProyecto: ' + projectName : ''}`;
+        alert(confirmMsg);
+        
+        // Redirigir a ThreadSync (vista de conversación del thread)
+        window.location.href = `threadsync.html?id=${newThreadId}`;
+      }, 800);
     }
 
     function selectProjectForThread(projectId, projectName) {
-      closeNewThreadModal();
-      const confirmMessage = `Crear nuevo thread para:\n\n${projectName}\n\n¿Continuar?`;
-      if (confirm(confirmMessage)) {
-        window.location.href = `threadsync.html?action=new&project=${projectId}&name=${encodeURIComponent(projectName)}`;
-      }
+      // Esta función ya no se usa, pero la mantenemos por compatibilidad
+      window.location.href = `thread-form.html?project=${projectId}&projectName=${encodeURIComponent(projectName)}`;
     }
 
     // Create thread for specific project
     function createThreadForProject(projectId) {
-      window.location.href = `threadsync.html?action=new&project=${projectId}`;
+      window.location.href = `thread-form.html?project=${projectId}`;
     }
 
     // Go to project
@@ -1023,24 +1319,692 @@
       }
     }
 
-    // Archive thread
+    // Base de datos de threads con información real
+    // Usuario actual (simulado - en producción vendría de sesión)
+    const currentUser = 'Ana Martínez';
+    
+    // 🔥 SISTEMA DE PERSISTENCIA CON LOCALSTORAGE
+    // Cargar threads desde localStorage o usar datos por defecto
+    function loadThreadsFromStorage() {
+      const stored = localStorage.getItem('threadsync_threads');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          console.log('✅ Threads cargados desde localStorage:', Object.keys(parsed).length, 'threads');
+          return parsed;
+        } catch (e) {
+          console.error('❌ Error al parsear localStorage, usando datos por defecto');
+        }
+      }
+      
+      // Si no hay datos en localStorage, usar datos por defecto
+      console.log('📦 Inicializando threads con datos por defecto');
+      const defaultData = getDefaultThreadsData();
+      saveThreadsToStorage(defaultData);
+      return defaultData;
+    }
+    
+    // Guardar threads en localStorage
+    function saveThreadsToStorage(data) {
+      try {
+        localStorage.setItem('threadsync_threads', JSON.stringify(data));
+        console.log('💾 Threads guardados en localStorage:', Object.keys(data).length, 'threads');
+      } catch (e) {
+        console.error('❌ Error al guardar en localStorage:', e);
+      }
+    }
+    
+    // Obtener datos por defecto
+    function getDefaultThreadsData() {
+      return {
+        'thread-1': {
+          owner: 'Juan Pérez',
+          createdBy: 'Juan Pérez',
+          participants: ['Juan Pérez', 'Ana Martínez', 'Pedro Sánchez'],
+          mentions: ['Ana Martínez'],
+          isRead: true,
+          isArchived: false,
+          messages: [
+            { id: 1, author: 'Juan Pérez', text: 'Necesitamos revisar las especificaciones del refrigerante', attachments: ['spec_r32.pdf'] },
+            { id: 2, author: 'Ana Martínez', text: 'He revisado las regulaciones', attachments: [] },
+            { id: 3, author: 'Juan Pérez', text: 'Perfecto, adjunto el plano actualizado', attachments: ['plano_hvac_v2.dwg', 'calculos.xlsx'] },
+            { id: 4, author: 'Pedro Sánchez', text: '¿Cuándo podemos agendar la visita?', attachments: [] },
+            { id: 5, author: 'Juan Pérez', text: 'El martes está bien', attachments: [] }
+          ],
+          location: 'Guadalajara, Jal.',
+          projectId: 'project-1',
+          projectName: 'Instalación HVAC Completo',
+          clientName: 'Edificio Central',
+          subject: 'Especificaciones técnicas refrigerante'
+        },
+        'thread-4': {
+          owner: 'Ana Martínez',
+          createdBy: 'Ana Martínez',
+          participants: ['Ana Martínez', 'Roberto Díaz'],
+          mentions: [],
+          isRead: false,
+          isArchived: false,
+          messages: [
+            { id: 1, author: 'Ana Martínez', text: 'Propuesta inicial para reparación eléctrica', attachments: ['propuesta.pdf'] }
+          ],
+          location: 'Monterrey, N.L.',
+          projectId: 'project-2',
+          projectName: 'Reparación Sistema Eléctrico',
+          clientName: 'Planta Industrial',
+          subject: 'Reparación urgente sistema eléctrico'
+        },
+        'thread-5': {
+          owner: 'Luis García',
+          createdBy: 'Luis García',
+          participants: ['Luis García', 'Ana Martínez', 'María López'],
+          mentions: ['Ana Martínez'],
+          isRead: true,
+          isArchived: false,
+          messages: [
+            { id: 1, author: 'Luis García', text: 'Thread sobre mantenimiento', attachments: [] }
+          ],
+          location: 'CDMX',
+          projectId: null,
+          projectName: null,
+          clientName: 'Cliente XYZ',
+          subject: 'Consulta mantenimiento'
+        },
+        'thread-6': {
+          owner: 'Carlos Ruiz',
+          createdBy: 'Carlos Ruiz',
+          participants: ['Carlos Ruiz', 'Ana Martínez'],
+          mentions: ['Ana Martínez'],
+          isRead: false,
+          isArchived: false,
+          messages: [
+            { id: 1, author: 'Carlos Ruiz', text: 'Urgente - revisar cotización', attachments: ['cotizacion.xlsx'] }
+          ],
+          location: 'Puebla, Pue.',
+          projectId: null,
+          projectName: null,
+          clientName: 'Hotel Reforma',
+          subject: 'Cotización instalación AC'
+        },
+        'thread-7': {
+          owner: 'María López',
+          createdBy: 'María López',
+          participants: ['María López', 'Juan Pérez'],
+          mentions: [],
+          isRead: true,
+          isArchived: false,
+          messages: [
+            { id: 1, author: 'María López', text: 'Thread de ejemplo', attachments: [] }
+          ],
+          location: 'Querétaro, Qro.',
+          projectId: null,
+          projectName: null,
+          clientName: 'Corporativo ABC',
+          subject: 'Consulta general'
+        },
+        'thread-8': {
+          owner: 'Pedro Sánchez',
+          createdBy: 'Pedro Sánchez',
+          participants: ['Pedro Sánchez', 'Luis García'],
+          mentions: [],
+          isRead: true,
+          isArchived: false,
+          messages: [
+            { id: 1, author: 'Pedro Sánchez', text: 'Seguimiento proyecto', attachments: [] }
+          ],
+          location: 'León, Gto.',
+          projectId: 'project-3',
+          projectName: 'Mantenimiento Preventivo Oficinas',
+          clientName: 'Oficinas Corp',
+          subject: 'Seguimiento mantenimiento'
+        },
+        'thread-9': {
+          owner: 'Roberto Díaz',
+          createdBy: 'Roberto Díaz',
+          participants: ['Roberto Díaz', 'Carlos Ruiz'],
+          mentions: [],
+          isRead: false,
+          isArchived: false,
+          messages: [
+            { id: 1, author: 'Roberto Díaz', text: 'Nuevo lead', attachments: [] }
+          ],
+          location: 'Aguascalientes, Ags.',
+          projectId: null,
+          projectName: null,
+          clientName: 'Lead Nuevo',
+          subject: 'Oportunidad comercial'
+        },
+        'thread-10': {
+          owner: 'Juan Pérez',
+          createdBy: 'Juan Pérez',
+          participants: ['Juan Pérez', 'Ana Martínez'],
+          mentions: [],
+          isRead: true,
+          isArchived: false,
+          messages: [
+            { id: 1, author: 'Juan Pérez', text: 'Thread activo', attachments: [] }
+          ],
+          location: 'Mérida, Yuc.',
+          projectId: null,
+          projectName: null,
+          clientName: 'Cliente Mérida',
+          subject: 'Instalación nueva'
+        },
+        'thread-11': {
+          owner: 'Ana Martínez',
+          createdBy: 'Ana Martínez',
+          participants: ['Ana Martínez'],
+          mentions: [],
+          isRead: true,
+          isArchived: true,
+          messages: [
+            { id: 1, author: 'Ana Martínez', text: 'Thread completado', attachments: [] }
+          ],
+          location: 'Tijuana, B.C.',
+          projectId: null,
+          projectName: null,
+          clientName: 'Proyecto Finalizado',
+          subject: 'Proyecto completado'
+        }
+      };
+    }
+    
+    // Inicializar threadsData desde localStorage
+    let threadsData = loadThreadsFromStorage();
+    
+    // Las funciones anteriores siguen igual
+    const threadsData_OLD_BACKUP = {
+      'thread-1': {
+        owner: 'Juan Pérez',
+        createdBy: 'Juan Pérez',
+        participants: ['Juan Pérez', 'Ana Martínez', 'Pedro Sánchez'],
+        mentions: ['Ana Martínez'],
+        isRead: true,
+        isArchived: false,
+        messages: [
+          { id: 1, author: 'Juan Pérez', text: 'Necesitamos revisar las especificaciones del refrigerante', attachments: ['spec_r32.pdf'] },
+          { id: 2, author: 'Ana Martínez', text: 'He revisado las regulaciones', attachments: [] },
+          { id: 3, author: 'Juan Pérez', text: 'Perfecto, adjunto el plano actualizado', attachments: ['plano_hvac_v2.dwg', 'calculos.xlsx'] },
+          { id: 4, author: 'Pedro Sánchez', text: '¿Cuándo podemos agendar la visita?', attachments: [] },
+          { id: 5, author: 'Juan Pérez', text: 'El martes está bien', attachments: [] }
+        ],
+        location: 'Guadalajara, Jal.'
+      },
+      'thread-4': {
+        owner: 'Ana Martínez',
+        createdBy: 'Ana Martínez',
+        participants: ['Ana Martínez', 'Roberto Díaz'],
+        mentions: [],
+        isRead: false,
+        isArchived: false,
+        messages: [
+          { id: 1, author: 'Ana Martínez', text: 'Urgente: detectamos un problema en el panel 3B', attachments: ['foto_panel.jpg'] },
+          { id: 2, author: 'Roberto Díaz', text: 'Voy para allá', attachments: [] },
+          { id: 3, author: 'Ana Martínez', text: 'Adjunto el reporte de inspección', attachments: ['inspeccion_electrica.pdf'] }
+        ],
+        location: 'Monterrey, NL'
+      },
+      'thread-5': {
+        owner: 'Pedro Sánchez',
+        createdBy: 'Pedro Sánchez',
+        participants: ['Pedro Sánchez', 'Sofia Ruiz', 'Ana Martínez'],
+        mentions: ['Ana Martínez'],
+        isRead: true,
+        isArchived: false,
+        messages: [
+          { id: 1, author: 'Pedro Sánchez', text: 'Programar mantenimiento preventivo para el próximo mes', attachments: ['calendario_mant.pdf'] },
+          { id: 2, author: 'Sofia Ruiz', text: 'Revisado y aprobado', attachments: [] },
+          { id: 3, author: 'Pedro Sánchez', text: 'Confirmado para el día 15', attachments: [] },
+          { id: 4, author: 'Ana Martínez', text: 'Perfecto', attachments: [] }
+        ],
+        location: 'CDMX'
+      },
+      'thread-6': {
+        owner: 'Sofia Ruiz',
+        createdBy: 'Sofia Ruiz',
+        participants: ['Sofia Ruiz', 'Carlos López', 'Ana Martínez'],
+        mentions: ['Ana Martínez'],
+        isRead: false,
+        isArchived: false,
+        messages: [
+          { id: 1, author: 'Sofia Ruiz', text: 'Presupuesto para remodelación', attachments: ['presupuesto_v1.xlsx'] },
+          { id: 2, author: 'Carlos López', text: 'Adjunto renders del diseño', attachments: ['render_1.jpg', 'render_2.jpg', 'render_3.jpg'] },
+          { id: 3, author: 'Sofia Ruiz', text: 'Me gustan, procedemos', attachments: [] },
+          { id: 4, author: 'Carlos López', text: 'Excelente', attachments: [] },
+          { id: 5, author: 'Ana Martínez', text: '¿Cuál es el timeline?', attachments: [] },
+          { id: 6, author: 'Sofia Ruiz', text: 'Adjunto cronograma', attachments: ['cronograma.pdf'] }
+        ],
+        location: 'Puebla, Pue.'
+      },
+      'thread-7': {
+        owner: 'Roberto Díaz',
+        createdBy: 'Roberto Díaz',
+        participants: ['Roberto Díaz', 'Pedro Sánchez'],
+        mentions: [],
+        isRead: true,
+        isArchived: false,
+        messages: [
+          { id: 1, author: 'Roberto Díaz', text: 'Inicio de certificación del sistema contra incendios', attachments: ['checklist.pdf'] },
+          { id: 2, author: 'Pedro Sánchez', text: 'Adjunto documentación requerida', attachments: ['doc_bomberos.pdf', 'planos_incendios.dwg'] },
+          { id: 3, author: 'Roberto Díaz', text: 'Perfecto, agendando inspección', attachments: [] }
+        ],
+        location: 'Querétaro, Qro.'
+      },
+      'thread-8': {
+        owner: 'Miguel Ángel Mora',
+        createdBy: 'Miguel Ángel Mora',
+        participants: ['Miguel Ángel Mora', 'Ana Martínez'],
+        mentions: [],
+        isRead: true,
+        isArchived: false,
+        messages: [
+          { id: 1, author: 'Miguel Ángel Mora', text: 'Revisión de tuberías industriales', attachments: [] },
+          { id: 2, author: 'Ana Martínez', text: 'Encontré una fuga menor en la sección C', attachments: ['foto_fuga.jpg'] },
+          { id: 3, author: 'Miguel Ángel Mora', text: 'Procedo con la reparación', attachments: [] },
+          { id: 4, author: 'Miguel Ángel Mora', text: 'Reparación completada, adjunto reporte', attachments: ['reporte_reparacion.pdf'] }
+        ],
+        location: 'León, Gto.'
+      },
+      'thread-9': {
+        owner: 'Daniela Castro',
+        createdBy: 'Daniela Castro',
+        participants: ['Daniela Castro', 'Fernando López'],
+        mentions: [],
+        isRead: false,
+        isArchived: false,
+        messages: [
+          { id: 1, author: 'Daniela Castro', text: 'Proyecto de cableado estructurado - Piso 3', attachments: ['diagrama_red.pdf', 'lista_materiales.xlsx'] },
+          { id: 2, author: 'Fernando López', text: 'Revisando especificaciones', attachments: [] },
+          { id: 3, author: 'Daniela Castro', text: '¿Alguna duda?', attachments: [] }
+        ],
+        location: 'Tijuana, BC'
+      },
+      'thread-10': {
+        owner: 'Fernando López',
+        createdBy: 'Fernando López',
+        participants: ['Fernando López', 'Sofia Ruiz'],
+        mentions: [],
+        isRead: true,
+        isArchived: false,
+        messages: [
+          { id: 1, author: 'Fernando López', text: 'Inicio de trabajo de pintura exterior', attachments: ['cotizacion_pintura.pdf'] },
+          { id: 2, author: 'Sofia Ruiz', text: 'Aprobado', attachments: [] }
+        ],
+        location: 'Cancún, QR'
+      },
+      'thread-11': {
+        owner: 'Gabriela Méndez',
+        createdBy: 'Gabriela Méndez',
+        participants: ['Gabriela Méndez'],
+        mentions: [],
+        isRead: true,
+        isArchived: true,
+        messages: [
+          { id: 1, author: 'Gabriela Méndez', text: 'Mantenimiento de jardines completado', attachments: ['antes_despues.jpg', 'reporte_jardineria.pdf'] }
+        ],
+        location: 'Mérida, Yuc.'
+      }
+    };
+
+    // Función para contar mensajes de un thread
+    function getMessageCount(threadId) {
+      const thread = threadsData[threadId];
+      return thread ? thread.messages.length : 0;
+    }
+
+    // Función para contar archivos adjuntos de un thread
+    function getAttachmentCount(threadId) {
+      const thread = threadsData[threadId];
+      if (!thread) return 0;
+      
+      let totalAttachments = 0;
+      thread.messages.forEach(message => {
+        totalAttachments += message.attachments.length;
+      });
+      return totalAttachments;
+    }
+
+    // Función para obtener la ubicación de un thread
+    function getThreadLocation(threadId) {
+      const thread = threadsData[threadId];
+      return thread ? thread.location : '';
+    }
+    
+    // Función para contar threads no leídos
+    function getUnreadCount() {
+      let count = 0;
+      Object.keys(threadsData).forEach(threadId => {
+        const thread = threadsData[threadId];
+        if (!thread.isRead && !thread.isArchived) {
+          count++;
+        }
+      });
+      return count;
+    }
+
+    // ========== SISTEMA DE FILTROS ==========
+    
+    // Filtrar threads según criterio
+    function filterThreads(filterType) {
+      console.log('🔍 Aplicando filtro:', filterType);
+      console.log('👤 Usuario actual:', currentUser);
+      
+      // Actualizar botones activos
+      document.querySelectorAll('.chip-filter').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      const activeButton = document.querySelector(`[data-thread-filter="${filterType}"]`);
+      if (activeButton) {
+        activeButton.classList.add('active');
+      }
+      
+      // Obtener todos los thread cards
+      const allThreadCards = document.querySelectorAll('.thread-card');
+      console.log('📋 Total de cards encontrados:', allThreadCards.length);
+      
+      let matchCount = 0;
+      
+      allThreadCards.forEach(card => {
+        const onclickAttr = card.getAttribute('onclick');
+        if (!onclickAttr) {
+          card.style.display = 'none';
+          return;
+        }
+        
+        const match = onclickAttr.match(/'([^']+)'/);
+        if (!match) {
+          card.style.display = 'none';
+          return;
+        }
+        
+        const threadId = match[1];
+        const thread = threadsData[threadId];
+        
+        if (!thread) {
+          console.warn('⚠️ Thread no encontrado:', threadId);
+          card.style.display = 'none';
+          return;
+        }
+        
+        let shouldShow = false;
+        
+        switch(filterType) {
+          case 'all':
+            // Mostrar todos excepto archivados
+            shouldShow = !thread.isArchived;
+            break;
+            
+          case 'my-threads':
+            // Threads donde el usuario actual es owner/creador
+            shouldShow = !thread.isArchived && (thread.owner === currentUser || thread.createdBy === currentUser);
+            if (shouldShow) console.log('✅ Mi thread:', threadId, '- Owner:', thread.owner);
+            break;
+            
+          case 'mentions':
+            // Threads donde el usuario actual está mencionado
+            shouldShow = !thread.isArchived && thread.mentions && thread.mentions.includes(currentUser);
+            if (shouldShow) console.log('✅ Mencionado en:', threadId, '- Mentions:', thread.mentions);
+            break;
+            
+          case 'unread':
+            // Threads no leídos
+            shouldShow = !thread.isArchived && thread.isRead === false;
+            if (shouldShow) console.log('✅ No leído:', threadId, '- isRead:', thread.isRead);
+            break;
+            
+          case 'archived':
+            // Solo threads archivados
+            shouldShow = thread.isArchived === true;
+            if (shouldShow) console.log('✅ Archivado:', threadId);
+            break;
+            
+          default:
+            shouldShow = !thread.isArchived;
+        }
+        
+        // Aplicar visibilidad
+        card.style.display = shouldShow ? 'flex' : 'none';
+        if (shouldShow) matchCount++;
+      });
+      
+      console.log('✨ Threads mostrados:', matchCount);
+      
+      // Mostrar mensaje si no hay resultados
+      const visibleCards = Array.from(allThreadCards).filter(card => card.style.display !== 'none');
+      
+      // Remover mensaje previo si existe
+      const existingMessage = document.querySelector('.no-threads-message');
+      if (existingMessage) {
+        existingMessage.remove();
+      }
+      
+      if (visibleCards.length === 0) {
+        const container = document.querySelector('.threads-container');
+        const message = document.createElement('div');
+        message.className = 'no-threads-message';
+        message.style.cssText = 'grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #94a3b8;';
+        
+        let messageText = '';
+        switch(filterType) {
+          case 'my-threads':
+            messageText = '📭 No tienes threads creados';
+            break;
+          case 'mentions':
+            messageText = '🔔 No tienes menciones en ningún thread';
+            break;
+          case 'unread':
+            messageText = '✅ ¡Todo leído! No hay threads pendientes';
+            break;
+          case 'archived':
+            messageText = '📦 No hay threads archivados';
+            break;
+          default:
+            messageText = '📭 No hay threads para mostrar';
+        }
+        
+        message.innerHTML = `
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 16px;">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+          </svg>
+          <div style="font-size: 16px; font-weight: 500;">${messageText}</div>
+        `;
+        container.appendChild(message);
+      }
+      
+      // Actualizar iconos según estado de archivado
+      updateArchiveButtons();
+    }
+
+    // Archive thread (no borra, solo marca como archivado)
     function archiveThread(threadId) {
-      if (confirm('¿Archivar este thread?\n\nPodrás encontrarlo en la sección de Archivados.')) {
-        alert(`✓ Thread ${threadId} archivado correctamente`);
-        location.reload();
+      event.stopPropagation(); // Evitar que se abra el thread
+      
+      const thread = threadsData[threadId];
+      if (!thread) return;
+      
+      const isCurrentlyArchived = thread.isArchived;
+      
+      if (isCurrentlyArchived) {
+        // Desarchivar
+        if (confirm('¿Restaurar este thread?\n\nVolverá a aparecer en tu lista principal.')) {
+          thread.isArchived = false;
+          
+          // 💾 GUARDAR EN LOCALSTORAGE
+          saveThreadsToStorage(threadsData);
+          
+          alert('✓ Thread restaurado correctamente');
+          
+          // Actualizar iconos
+          updateArchiveButtons();
+          
+          // Si estamos en vista de archivados, aplicar el filtro nuevamente
+          const activeFilter = document.querySelector('.chip-filter.active');
+          if (activeFilter) {
+            const filterType = activeFilter.getAttribute('data-thread-filter');
+            filterThreads(filterType);
+          }
+        }
+      } else {
+        // Archivar
+        if (confirm('¿Archivar este thread?\n\nNo se eliminará, podrás encontrarlo en "Archivados".')) {
+          thread.isArchived = true;
+          
+          // 💾 GUARDAR EN LOCALSTORAGE
+          saveThreadsToStorage(threadsData);
+          
+          alert('✓ Thread archivado correctamente\n\nPuedes recuperarlo desde el filtro "Archivados"');
+          
+          // Actualizar iconos
+          updateArchiveButtons();
+          
+          // Aplicar filtro actual para ocultar el card archivado
+          const activeFilter = document.querySelector('.chip-filter.active');
+          if (activeFilter) {
+            const filterType = activeFilter.getAttribute('data-thread-filter');
+            filterThreads(filterType);
+          }
+          
+          // Actualizar contador de no leídos
+          updateUnreadBadge();
+        }
+      }
+    }
+    
+    // Actualizar badge de no leídos
+    function updateUnreadBadge() {
+      const unreadCount = getUnreadCount();
+      const badge = document.querySelector('[data-thread-filter="unread"] span');
+      
+      if (badge) {
+        badge.textContent = unreadCount;
+        badge.style.display = unreadCount > 0 ? 'inline-block' : 'none';
       }
     }
 
-    // Refresh threads
-    function refreshThreads() {
-      alert('🔄 Actualizando threads...');
-      location.reload();
+    // Actualizar iconos de botones archivar/restaurar
+    function updateArchiveButtons() {
+      document.querySelectorAll('.thread-card').forEach(card => {
+        const onclickAttr = card.getAttribute('onclick');
+        if (!onclickAttr) return;
+        
+        const match = onclickAttr.match(/'([^']+)'/);
+        if (!match) return;
+        
+        const threadId = match[1];
+        const thread = threadsData[threadId];
+        if (!thread) return;
+        
+        // Buscar el botón de archivar dentro de este card específico
+        const archiveBtn = card.querySelector('.btn-icon[onclick*="archiveThread"]');
+        if (!archiveBtn) return;
+        
+        const svg = archiveBtn.querySelector('svg');
+        if (!svg) return;
+        
+        const isArchived = thread.isArchived;
+        
+        // Actualizar tooltip y color del botón
+        archiveBtn.title = isArchived ? 'Restaurar' : 'Archivar';
+        archiveBtn.style.color = isArchived ? '#10b981' : '#94a3b8';
+        
+        // Actualizar contenido del SVG
+        if (isArchived) {
+          // Ícono de restaurar/desarchivar (flecha hacia arriba saliendo de caja)
+          svg.innerHTML = `
+            <path d="M3 3h18v4H3z"></path>
+            <path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7"></path>
+            <path d="M12 11v6"></path>
+            <path d="M9 14l3-3 3 3"></path>
+          `;
+        } else {
+          // Ícono de archivar (caja simple)
+          svg.innerHTML = `
+            <polyline points="21 8 21 21 3 21 3 8"></polyline>
+            <rect x="1" y="3" width="22" height="5"></rect>
+          `;
+        }
+      });
     }
 
-    // Close modal when clicking outside
+    // Actualizar contadores dinámicamente al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+      // Actualizar cada thread card
+      document.querySelectorAll('.thread-card').forEach(card => {
+        const threadId = card.getAttribute('onclick').match(/'([^']+)'/)[1];
+        
+        // Actualizar contador de mensajes
+        const messageCounter = card.querySelector('[data-counter="messages"]');
+        if (messageCounter) {
+          messageCounter.textContent = getMessageCount(threadId);
+        }
+        
+        // Actualizar contador de adjuntos
+        const attachmentCounter = card.querySelector('[data-counter="attachments"]');
+        if (attachmentCounter) {
+          attachmentCounter.textContent = getAttachmentCount(threadId);
+        }
+        
+        // Actualizar ubicación
+        const locationText = card.querySelector('[data-info="location"]');
+        if (locationText) {
+          locationText.textContent = getThreadLocation(threadId);
+        }
+      });
+      
+      // Actualizar badge de no leídos
+      updateUnreadBadge();
+      
+      // Actualizar iconos de archivar/restaurar
+      updateArchiveButtons();
+      
+      // Aplicar filtro "Todos" por defecto (oculta archivados)
+      filterThreads('all');
+    });
+
+    // Refresh threads
+    function refreshThreads() {
+      updateUnreadBadge();
+      const activeFilter = document.querySelector('.chip-filter.active');
+      if (activeFilter) {
+        const filterType = activeFilter.getAttribute('data-thread-filter');
+        filterThreads(filterType);
+      }
+      alert('✓ Threads actualizados');
+    }
+
+    // 🔄 RESET LOCALSTORAGE - Útil para pruebas
+    function resetLocalStorage() {
+      if (confirm('⚠️ ¿Resetear todos los threads?\n\nEsto eliminará todos los threads creados en tus pruebas y volverá a los datos por defecto.\n\n¿Continuar?')) {
+        // Limpiar localStorage
+        localStorage.removeItem('threadsync_threads');
+        
+        // Recargar datos por defecto
+        threadsData = getDefaultThreadsData();
+        saveThreadsToStorage(threadsData);
+        
+        console.log('🔄 LocalStorage reseteado, datos por defecto cargados');
+        
+        alert('✓ Threads reseteados correctamente\n\nRecargando página...');
+        
+        // Recargar página para mostrar cambios
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
+      }
+    }
+
+    // Close modal when clicking outside (but not when selecting text)
     window.onclick = function(event) {
       const modal = document.getElementById('newThreadModal');
       if (event.target === modal) {
+        // Verificar si hay texto seleccionado
+        const selection = window.getSelection();
+        if (selection && selection.toString().length > 0) {
+          // Hay texto seleccionado, no cerrar el modal
+          console.log('Texto seleccionado, modal no se cerrará');
+          return;
+        }
+        // No hay selección, cerrar el modal
         closeNewThreadModal();
       }
     }
