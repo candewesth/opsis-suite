@@ -2849,6 +2849,42 @@
       }
     }
 
+    function addProjectHistoryEntry(entry) {
+      if (!currentProject) return;
+      
+      const projectKey = `projectStatusHistory_${currentProject.idSync || currentProject.id}`;
+      const history = JSON.parse(localStorage.getItem(projectKey) || '[]');
+      
+      // Crear entrada de historial
+      const historyEntry = {
+        timestamp: entry.timestamp || new Date().toISOString(),
+        date: new Date(entry.timestamp || new Date()).toLocaleString('es-MX', { 
+          year: 'numeric', 
+          month: 'short', 
+          day: 'numeric', 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        }),
+        user: entry.user || 'Usuario Actual',
+        action: entry.action || 'update',
+        description: entry.description || 'Cambio realizado',
+        changes: entry.changes || ''
+      };
+      
+      // Agregar al inicio del historial
+      history.unshift(historyEntry);
+      
+      // Limitar a los últimos 50 registros
+      if (history.length > 50) {
+        history.splice(50);
+      }
+      
+      // Guardar
+      localStorage.setItem(projectKey, JSON.stringify(history));
+      
+      console.log('✅ History entry added:', historyEntry);
+    }
+
     function toggleChecklistItem(checkbox) {
       const label = checkbox.parentElement;
       if (checkbox.checked) {
