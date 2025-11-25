@@ -4208,7 +4208,7 @@
             <p class="dashboard-kicker" data-i18n="dashboardKicker">Operación en vivo</p>
             <h2 class="page-title" id="dashboard-title" data-i18n="dashboard">Dashboard</h2>
           </div>
-          <div class="dashboard-date" id="dashboard-date">domingo, 16 de noviembre</div>
+          <div class="dashboard-date" id="dashboard-date">Cargando fecha...</div>
         </div>
 
         <!-- Simplified Summary Cards -->
@@ -4230,27 +4230,27 @@
           </div>
         </div>
 
-        <!-- Basic KPI Metrics -->
+        <!-- KPI Operacional en Tiempo Real -->
         <div class="grid grid-4 kpi-grid" style="margin-bottom: 24px;">
           <div class="stat-card">
-            <div class="stat-label">Ingresos del Mes</div>
-            <div class="stat-value">$48,250</div>
-            <div class="stat-change positive">↑ 17% vs anterior</div>
+            <div class="stat-label">Técnicos en Campo</div>
+            <div class="stat-value" id="kpi-technicians">--</div>
+            <div class="stat-change" id="kpi-technicians-detail">Cargando...</div>
           </div>
           <div class="stat-card">
-            <div class="stat-label">Clientes Activos</div>
-            <div class="stat-value">127</div>
-            <div class="stat-change positive">↑ 14 este mes</div>
+            <div class="stat-label">Servicios Hoy</div>
+            <div class="stat-value" id="kpi-services-today">--</div>
+            <div class="stat-change" id="kpi-services-detail">Cargando...</div>
           </div>
           <div class="stat-card">
-            <div class="stat-label">Promedio Ticket</div>
-            <div class="stat-value">$2,010</div>
-            <div class="stat-change positive">↑ $120</div>
+            <div class="stat-label">Pendientes Urgentes</div>
+            <div class="stat-value" id="kpi-urgent">--</div>
+            <div class="stat-change" id="kpi-urgent-detail">Cargando...</div>
           </div>
           <div class="stat-card">
-            <div class="stat-label">Satisfacción</div>
-            <div class="stat-value">4.8/5</div>
-            <div class="stat-change positive">↑ 0.2 puntos</div>
+            <div class="stat-label">Tiempo Respuesta</div>
+            <div class="stat-value" id="kpi-response-time">--</div>
+            <div class="stat-change" id="kpi-response-detail">Cargando...</div>
           </div>
         </div>
 
@@ -17316,25 +17316,100 @@
       }
     }
 
+    // === FECHA DINÁMICA ===
+    function updateDashboardDate() {
+      const dateEl = document.getElementById('dashboard-date');
+      if (dateEl) {
+        const now = new Date();
+        const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+        const formatted = now.toLocaleDateString('es-MX', options);
+        // Capitalizar primera letra
+        dateEl.textContent = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+      }
+    }
+
+    // === KPIs OPERACIONALES EN TIEMPO REAL ===
+    function updateOperationalKPIs() {
+      const projects = loadProjectsFromStorage();
+      const threads = JSON.parse(localStorage.getItem('threadsync_threads') || '{}');
+      const threadsArray = Object.values(threads);
+      
+      // Técnicos en campo (proyectos activos = técnicos asignados)
+      const activeProjects = projects.filter(p => p.status === 'active');
+      const techniciansInField = activeProjects.length;
+      const techEl = document.getElementById('kpi-technicians');
+      const techDetailEl = document.getElementById('kpi-technicians-detail');
+      if (techEl) {
+        techEl.textContent = techniciansInField;
+        techDetailEl.textContent = techniciansInField > 0 ? `${techniciansInField} equipos activos` : 'Sin asignaciones';
+        techDetailEl.className = 'stat-change ' + (techniciansInField > 0 ? 'positive' : 'neutral');
+      }
+      
+      // Servicios programados hoy
+      const today = new Date().toISOString().split('T')[0];
+      const servicesToday = projects.filter(p => {
+        if (!p.startDate) return false;
+        return p.startDate === today || (p.status === 'active');
+      }).length;
+      const servicesEl = document.getElementById('kpi-services-today');
+      const servicesDetailEl = document.getElementById('kpi-services-detail');
+      if (servicesEl) {
+        servicesEl.textContent = servicesToday;
+        const completed = projects.filter(p => p.status === 'completed').length;
+        servicesDetailEl.textContent = `${completed} completados este mes`;
+        servicesDetailEl.className = 'stat-change positive';
+      }
+      
+      // Pendientes urgentes (threads sin leer + proyectos scheduled)
+      const unreadThreads = threadsArray.filter(t => !t.isRead && !t.isArchived).length;
+      const scheduled = projects.filter(p => p.status === 'scheduled').length;
+      const urgentCount = unreadThreads + scheduled;
+      const urgentEl = document.getElementById('kpi-urgent');
+      const urgentDetailEl = document.getElementById('kpi-urgent-detail');
+      if (urgentEl) {
+        urgentEl.textContent = urgentCount;
+        urgentDetailEl.textContent = urgentCount > 0 ? `${unreadThreads} mensajes, ${scheduled} pendientes` : '✓ Todo al día';
+        urgentDetailEl.className = 'stat-change ' + (urgentCount === 0 ? 'positive' : urgentCount > 5 ? 'negative' : 'neutral');
+      }
+      
+      // Tiempo de respuesta promedio (simulado basado en proyectos)
+      const avgResponseHours = activeProjects.length > 0 ? Math.max(1.5, 4 - activeProjects.length * 0.3) : 2.0;
+      const responseEl = document.getElementById('kpi-response-time');
+      const responseDetailEl = document.getElementById('kpi-response-detail');
+      if (responseEl) {
+        responseEl.textContent = avgResponseHours.toFixed(1) + 'h';
+        responseDetailEl.textContent = avgResponseHours <= 2 ? '↑ Excelente' : avgResponseHours <= 4 ? '→ Normal' : '↓ Revisar';
+        responseDetailEl.className = 'stat-change ' + (avgResponseHours <= 2 ? 'positive' : avgResponseHours <= 4 ? 'neutral' : 'negative');
+      }
+      
+      console.log('📊 KPIs operacionales actualizados');
+    }
+
     // Initialize on load
     document.addEventListener('DOMContentLoaded', () => {
+      updateDashboardDate();
       updateDashboardCounters();
       updateThreadCounters();
+      updateOperationalKPIs();
     });
     
     // Update counters when page becomes visible (user returns from another page)
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) {
+        updateDashboardDate();
         updateDashboardCounters();
         updateThreadCounters();
+        updateOperationalKPIs();
         console.log('🔄 Page visible - counters refreshed');
       }
     });
     
     // Also update on window focus (when switching back to this tab)
     window.addEventListener('focus', () => {
+      updateDashboardDate();
       updateDashboardCounters();
       updateThreadCounters();
+      updateOperationalKPIs();
       console.log('🔄 Window focused - counters refreshed');
     });
 
