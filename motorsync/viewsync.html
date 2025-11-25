@@ -1530,12 +1530,24 @@
     
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
-      currentProject = loadProjectData();
-      if (currentProject) {
-        renderProjectData(currentProject);
-        initializeProjectHistory();
-        updateHistoryCounter();
-        checkForActiveChangeOrder();
+      console.log('🚀 ViewSync initializing...');
+      
+      try {
+        currentProject = loadProjectData();
+        console.log('📦 Current project loaded:', currentProject);
+        
+        if (currentProject) {
+          renderProjectData(currentProject);
+          initializeProjectHistory();
+          updateHistoryCounter();
+          checkForActiveChangeOrder();
+          console.log('✅ ViewSync initialized successfully');
+        } else {
+          console.warn('⚠️ No project loaded');
+        }
+      } catch (error) {
+        console.error('❌ Error initializing ViewSync:', error);
+        alert('Error al cargar el proyecto: ' + error.message);
       }
     });
     
@@ -1726,12 +1738,16 @@
 
     // Función para editar proyecto
     function editProject() {
+      console.log('🔧 editProject() called');
+      console.log('Current project:', currentProject);
+      
       if (!currentProject) {
         alert('⚠️ No hay proyecto cargado');
         return;
       }
       
-      const modalHTML = `
+      try {
+        const modalHTML = `
         <div class="modal-overlay" id="editModal" onclick="if(event.target === this) closeModal('editModal')">
           <div class="modal">
             <div class="modal-header">
@@ -1838,7 +1854,12 @@
           </div>
         </div>
       `;
-      document.body.insertAdjacentHTML('beforeend', modalHTML);
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        console.log('✅ Edit modal created');
+      } catch (error) {
+        console.error('❌ Error in editProject():', error);
+        alert('Error al abrir el modal de edición: ' + error.message);
+      }
     }
 
     function saveProjectEdit() {
