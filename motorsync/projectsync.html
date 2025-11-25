@@ -1555,10 +1555,10 @@
               </select>
               <select id="agendaFilterStatus" onchange="filterAgendaAppointments()" style="padding: 10px 14px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 13px;">
                 <option value="">Todos los estados</option>
-                <option value="pending">🟡 Pendientes</option>
-                <option value="confirmed">🟢 Confirmadas</option>
-                <option value="completed">🔵 Completadas</option>
-                <option value="cancelled">🔴 Canceladas</option>
+                <option value="pending">● Pendientes</option>
+                <option value="confirmed">● Confirmadas</option>
+                <option value="completed">● Completadas</option>
+                <option value="cancelled">● Canceladas</option>
               </select>
             </div>
             <div style="display: flex; gap: 8px;">
@@ -1884,10 +1884,10 @@
                 <div class="form-group">
                   <label>Prioridad</label>
                   <select id="apt-priority">
-                    <option value="low">🟢 Baja</option>
-                    <option value="normal" selected>🟡 Normal</option>
-                    <option value="high">🟠 Alta</option>
-                    <option value="urgent">🔴 Urgente</option>
+                    <option value="low" style="color: #10b981;">● Baja</option>
+                    <option value="normal" selected style="color: #f59e0b;">● Normal</option>
+                    <option value="high" style="color: #f97316;">● Alta</option>
+                    <option value="urgent" style="color: #ef4444;">● Urgente</option>
                   </select>
                 </div>
 
@@ -1990,10 +1990,10 @@
                   <div class="form-group">
                     <label>Prioridad</label>
                     <select id="edit-apt-priority">
-                      <option value="low">🟢 Baja</option>
-                      <option value="normal">🟡 Normal</option>
-                      <option value="high">🟠 Alta</option>
-                      <option value="urgent">🔴 Urgente</option>
+                      <option value="low" style="color: #10b981;">● Baja</option>
+                      <option value="normal" style="color: #f59e0b;">● Normal</option>
+                      <option value="high" style="color: #f97316;">● Alta</option>
+                      <option value="urgent" style="color: #ef4444;">● Urgente</option>
                     </select>
                   </div>
                 </div>
@@ -2162,8 +2162,8 @@
         initializeMap('projects-map');
         updateFilterCounters();
         
-        console.log('✅ Proyectos actualizados');
-        showSuccessMessage('✅ Proyectos actualizados');
+        console.log('Proyectos actualizados');
+        showSuccessMessage('Proyectos actualizados');
       }, 600);
     }
 
@@ -2203,7 +2203,7 @@
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('success') === 'true') {
         const projectId = urlParams.get('project');
-        showSuccessMessage(`✅ Proyecto ${projectId} creado exitosamente`);
+        showSuccessMessage(`Proyecto ${projectId} creado exitosamente`);
         // Clean URL
         window.history.replaceState({}, document.title, window.location.pathname);
       }
@@ -2253,13 +2253,13 @@
           if (!project.idSync || project.idSync.startsWith('ORD-')) {
             project.idSync = generateIDSync();
             needsSave = true;
-            console.log(`📦 Migrated ${project.id} → ${project.idSync}`);
+            console.log(`[Package] Migrated ${project.id} → ${project.idSync}`);
           }
         });
         
         if (needsSave) {
           localStorage.setItem('projectsync_projects', JSON.stringify(projects));
-          console.log('✅ Migration complete');
+          console.log(' Migration complete');
         }
       } catch (e) {
         console.error('Migration error:', e);
@@ -2429,7 +2429,7 @@
       ];
       
       localStorage.setItem('projectsync_projects', JSON.stringify(sampleProjects));
-      console.log('✅ Initialized 10 sample projects in San Diego area');
+      console.log(' Initialized 10 sample projects in San Diego area');
     }
     
     // Inicializar proyectos de ejemplo
@@ -2498,7 +2498,7 @@
       // Actualizar contadores de filtros
       updateFilterCounts(projects);
       
-      console.log('✅ Rendered', projects.length, 'projects in table');
+      console.log(' Rendered', projects.length, 'projects in table');
     }
     
     // Calcular progreso del proyecto basado en fechas
@@ -2648,7 +2648,7 @@
         `;
       }).join('');
       
-      console.log(`🔍 Search results: ${filtered.length}/${projects.length} projects match "${query}"`);
+      console.log(`[Search] Search results: ${filtered.length}/${projects.length} projects match "${query}"`);
     }
 
     function initializeMap(mapId) {
@@ -2691,7 +2691,7 @@
         }
       });
       
-      console.log('✅ Initialized map');
+      console.log(' Initialized map');
     }
     
     // Crear marcador en el mapa
@@ -2740,7 +2740,7 @@
             if (data && data.length > 0) {
               project.lat = parseFloat(data[0].lat);
               project.lng = parseFloat(data[0].lon);
-              console.log(`📍 Geocoded: ${project.address} → [${project.lat}, ${project.lng}]`);
+              console.log(`[Location] Geocoded: ${project.address} → [${project.lat}, ${project.lng}]`);
               
               // Guardar coordenadas en localStorage para futuras cargas
               saveProjectCoordinates(project.idSync || project.id, project.lat, project.lng);
@@ -2882,21 +2882,37 @@
     // AGENDA CONFIGURATION SYSTEM
     // ========================================
 
+    // SVG Icons for appointment types
+    const AGENDA_SVG_ICONS = {
+      consultation: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>',
+      inspection: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+      installation: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>',
+      maintenance: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg>',
+      repair: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4L2 18"></path><circle cx="16.5" cy="7.5" r=".5"></circle></svg>',
+      delivery: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>',
+      review: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>',
+      meeting: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>',
+      training: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>',
+      quote: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>',
+      followup: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>',
+      other: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>'
+    };
+
     // Default configuration (can be customized per company)
     const DEFAULT_AGENDA_CONFIG = {
       appointmentTypes: [
-        { id: 'consultation', icon: '💬', name: 'Consulta', color: '#6366f1' },
-        { id: 'inspection', icon: '🔍', name: 'Inspección', color: '#02735E' },
-        { id: 'installation', icon: '🔧', name: 'Instalación', color: '#f59e0b' },
-        { id: 'maintenance', icon: '🛠️', name: 'Mantenimiento', color: '#10b981' },
-        { id: 'repair', icon: '🔨', name: 'Reparación', color: '#ef4444' },
-        { id: 'delivery', icon: '📦', name: 'Entrega', color: '#8b5cf6' },
-        { id: 'review', icon: '📋', name: 'Revisión', color: '#06b6d4' },
-        { id: 'meeting', icon: '👥', name: 'Reunión', color: '#ec4899' },
-        { id: 'training', icon: '📚', name: 'Capacitación', color: '#84cc16' },
-        { id: 'quote', icon: '💰', name: 'Cotización', color: '#14b8a6' },
-        { id: 'followup', icon: '📞', name: 'Seguimiento', color: '#f97316' },
-        { id: 'other', icon: '📌', name: 'Otro', color: '#64748b' }
+        { id: 'consultation', icon: 'consultation', name: 'Consulta', color: '#6366f1' },
+        { id: 'inspection', icon: 'inspection', name: 'Inspección', color: '#02735E' },
+        { id: 'installation', icon: 'installation', name: 'Instalación', color: '#f59e0b' },
+        { id: 'maintenance', icon: 'maintenance', name: 'Mantenimiento', color: '#10b981' },
+        { id: 'repair', icon: 'repair', name: 'Reparación', color: '#ef4444' },
+        { id: 'delivery', icon: 'delivery', name: 'Entrega', color: '#8b5cf6' },
+        { id: 'review', icon: 'review', name: 'Revisión', color: '#06b6d4' },
+        { id: 'meeting', icon: 'meeting', name: 'Reunión', color: '#ec4899' },
+        { id: 'training', icon: 'training', name: 'Capacitación', color: '#84cc16' },
+        { id: 'quote', icon: 'quote', name: 'Cotización', color: '#14b8a6' },
+        { id: 'followup', icon: 'followup', name: 'Seguimiento', color: '#f97316' },
+        { id: 'other', icon: 'other', name: 'Otro', color: '#64748b' }
       ],
       teamMembers: [
         { id: 'member-1', name: 'Sin asignar', role: '', color: '#94a3b8' }
@@ -3037,10 +3053,11 @@
       // Render Durations
       const durationsContainer = document.getElementById('durations-list');
       if (durationsContainer) {
+        const clockIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>';
         durationsContainer.innerHTML = config.durations.map(dur => `
           <div class="settings-item" data-value="${dur.value}">
             <div class="settings-item-info">
-              <div class="settings-item-icon">⏱️</div>
+              <div class="settings-item-icon">${clockIcon}</div>
               <div>
                 <strong style="color: var(--text-primary);">${dur.label}</strong>
                 <p style="font-size: 11px; color: var(--text-secondary);">${dur.value} minutos</p>
@@ -3055,7 +3072,7 @@
     }
 
     function addAppointmentType() {
-      const icon = document.getElementById('new-type-icon').value.trim() || '📌';
+      const icon = document.getElementById('new-type-icon').value.trim() || 'other';
       const name = document.getElementById('new-type-name').value.trim();
       
       if (!name) {
@@ -3085,7 +3102,7 @@
       document.getElementById('new-type-icon').value = '';
       document.getElementById('new-type-name').value = '';
       
-      showSuccessMessage('✅ Tipo de cita agregado');
+      showSuccessMessage('Tipo de cita agregado');
     }
 
     function deleteAppointmentType(id) {
@@ -3120,7 +3137,7 @@
       document.getElementById('new-member-name').value = '';
       document.getElementById('new-member-role').value = '';
       
-      showSuccessMessage('✅ Miembro del equipo agregado');
+      showSuccessMessage('Miembro del equipo agregado');
     }
 
     function deleteTeamMember(id) {
@@ -3159,7 +3176,7 @@
       document.getElementById('new-duration-value').value = '';
       document.getElementById('new-duration-label').value = '';
       
-      showSuccessMessage('✅ Duración agregada');
+      showSuccessMessage('Duración agregada');
     }
 
     function deleteDuration(value) {
@@ -3178,11 +3195,11 @@
       localStorage.setItem('agenda_config', JSON.stringify(DEFAULT_AGENDA_CONFIG));
       renderSettingsLists();
       populateAgendaDropdowns();
-      showSuccessMessage('✅ Configuración restaurada');
+      showSuccessMessage('Configuración restaurada');
     }
 
     function saveAgendaSettings() {
-      showSuccessMessage('✅ Configuración guardada');
+      showSuccessMessage('Configuración guardada');
     }
 
     // Initialize appointments from localStorage
@@ -3232,7 +3249,7 @@
         });
         
         localStorage.setItem('projectsync_appointments', JSON.stringify(sampleAppointments));
-        console.log('✅ Initialized sample appointments');
+        console.log(' Initialized sample appointments');
       }
     }
 
@@ -3402,24 +3419,18 @@
 
     // Create event card HTML
     function createEventCard(apt) {
-      const typeIcons = {
-        inspection: '🔍',
-        installation: '🔧',
-        maintenance: '🛠️',
-        review: '📋',
-        delivery: '📦',
-        meeting: '👥',
-        other: '📌'
-      };
+      const typeIcon = AGENDA_SVG_ICONS[apt.type] || AGENDA_SVG_ICONS.other;
       
       const statusBadge = apt.status === 'confirmed' 
         ? '<span class="event-status-badge confirmed">Confirmada</span>'
         : '<span class="event-status-badge pending">Pendiente</span>';
       
+      const locationIcon = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>';
+      
       return `
         <div class="event-card status-${apt.status}" onclick="viewAppointmentDetails('${apt.id}')">
           <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <div class="event-title">${typeIcons[apt.type] || '📌'} ${apt.title}</div>
+            <div class="event-title">${typeIcon} ${apt.title}</div>
             ${statusBadge}
           </div>
           <div style="font-size: 13px; color: #02735E; font-weight: 600; margin: 4px 0;">${apt.projectName}</div>
@@ -3439,7 +3450,7 @@
               ${apt.technician || 'Sin asignar'}
             </span>
           </div>
-          ${apt.address ? `<div style="font-size: 11px; color: #94a3b8; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">📍 ${apt.address}</div>` : ''}
+          ${apt.address ? `<div style="font-size: 11px; color: #94a3b8; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${locationIcon} ${apt.address}</div>` : ''}
         </div>
       `;
     }
@@ -3610,7 +3621,7 @@
       renderUpcomingEvents();
       updateAgendaKPIs();
       
-      showSuccessMessage('✅ Cita creada exitosamente');
+      showSuccessMessage('Cita creada exitosamente');
     }
 
     // View toggle
@@ -3769,7 +3780,7 @@
       localStorage.setItem('projectsync_appointments', JSON.stringify(appointments));
       closeEditAppointmentModal();
       refreshAgendaViews();
-      showSuccessMessage('✅ Cita actualizada');
+      showSuccessMessage('Cita actualizada');
     }
 
     function deleteAppointment() {
@@ -3782,7 +3793,7 @@
       
       closeEditAppointmentModal();
       refreshAgendaViews();
-      showSuccessMessage('🗑️ Cita eliminada');
+      showSuccessMessage('Cita eliminada');
     }
 
     // Refresh all agenda views
@@ -3915,7 +3926,7 @@
       };
       
       container.innerHTML = appointments.map(apt => {
-        const type = typeConfig[apt.type] || { icon: '📌', name: 'Otro' };
+        const type = typeConfig[apt.type] || { icon: 'other', name: 'Otro' };
         const aptDate = new Date(apt.date);
         
         return `
@@ -3963,7 +3974,7 @@
       link.download = `agenda_${new Date().toISOString().split('T')[0]}.csv`;
       link.click();
       
-      showSuccessMessage('📥 Agenda exportada');
+      showSuccessMessage('Agenda exportada');
     }
 
     // Set Agenda View (updated to include list)
