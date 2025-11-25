@@ -4374,6 +4374,29 @@
 
         <!-- PROJECTSYNC CONTENT -->
         <div class="motorsync-main-panel active" data-motorsync-main-panel="projectsync">
+          
+          <!-- Global Search Bar -->
+          <div style="background: white; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #e5e7eb;">
+            <div style="position: relative;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%);">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+              <input 
+                type="text" 
+                id="globalSearchInput" 
+                placeholder="Buscar proyectos por nombre, cliente, IDSync, contacto..." 
+                style="width: 100%; padding: 12px 12px 12px 44px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; font-weight: 500; transition: all 0.2s;"
+                onkeyup="performGlobalSearch(this.value)"
+                onfocus="this.style.borderColor='#02735E'"
+                onblur="this.style.borderColor='#e5e7eb'"
+              />
+              <div id="searchResultsDropdown" style="display: none; position: absolute; top: calc(100% + 8px); left: 0; right: 0; background: white; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); border: 1px solid #e5e7eb; max-height: 400px; overflow-y: auto; z-index: 1000;">
+                <!-- Search results will be populated here -->
+              </div>
+            </div>
+          </div>
+          
           <div class="segmented-control projectsync-tabs" role="tablist">
             <button class="btn btn-secondary active" data-projectsync-tab="overview">Resumen</button>
             <button class="btn btn-secondary" data-projectsync-tab="projects">Proyectos</button>
@@ -16430,6 +16453,165 @@
 
     window.addEventListener('DOMContentLoaded', () => app.init());
   </script>
+  
+  <script>
+    // ========== GLOBAL SEARCH FUNCTIONALITY ==========
+    let searchTimeout = null;
+    
+    function performGlobalSearch(query) {
+      // Clear previous timeout
+      clearTimeout(searchTimeout);
+      
+      const dropdown = document.getElementById('searchResultsDropdown');
+      
+      // Hide dropdown if query is too short
+      if (!query || query.trim().length < 2) {
+        dropdown.style.display = 'none';
+        return;
+      }
+      
+      // Debounce search
+      searchTimeout = setTimeout(() => {
+        executeSearch(query.trim().toLowerCase());
+      }, 300);
+    }
+    
+    function executeSearch(query) {
+      const dropdown = document.getElementById('searchResultsDropdown');
+      
+      // Search in projects
+      const projects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+      const projectResults = projects.filter(p => {
+        return (p.name && p.name.toLowerCase().includes(query)) ||
+               (p.client && p.client.toLowerCase().includes(query)) ||
+               (p.idSync && p.idSync.toLowerCase().includes(query)) ||
+               (p.id && p.id.toLowerCase().includes(query)) ||
+               (p.contact && p.contact.toLowerCase().includes(query)) ||
+               (p.phone && p.phone.toLowerCase().includes(query)) ||
+               (p.email && p.email.toLowerCase().includes(query)) ||
+               (p.address && p.address.toLowerCase().includes(query));
+      }).slice(0, 5); // Limit to 5 results
+      
+      // Search in threads
+      const threadsData = JSON.parse(localStorage.getItem('threadsync_threads') || '{}');
+      const threads = Object.values(threadsData);
+      const threadResults = threads.filter(t => {
+        return (t.clientName && t.clientName.toLowerCase().includes(query)) ||
+               (t.title && t.title.toLowerCase().includes(query)) ||
+               (t.subject && t.subject.toLowerCase().includes(query)) ||
+               (t.contactInfo && t.contactInfo.toLowerCase().includes(query)) ||
+               (t.owner && t.owner.toLowerCase().includes(query));
+      }).slice(0, 5); // Limit to 5 results
+      
+      // Build results HTML
+      let resultsHTML = '';
+      
+      if (projectResults.length > 0) {
+        resultsHTML += `
+          <div style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9; background: #fafafa;">
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b;">Proyectos (${projectResults.length})</div>
+          </div>
+        `;
+        
+        projectResults.forEach(project => {
+          resultsHTML += `
+            <div class="search-result-item" onclick="openProject('${project.id}')" style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.15s;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #02735E, #035951); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                  </svg>
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                  <div style="font-weight: 600; font-size: 14px; color: #1e293b; margin-bottom: 2px;">${project.name}</div>
+                  <div style="font-size: 12px; color: #64748b;">
+                    ${project.idSync || project.id} · ${project.client || 'Sin cliente'}
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px; color: #02735E;">
+                  <span style="font-size: 12px; font-weight: 600;">Ver</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+      }
+      
+      if (threadResults.length > 0) {
+        resultsHTML += `
+          <div style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9; background: #fafafa;">
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b;">Threads (${threadResults.length})</div>
+          </div>
+        `;
+        
+        threadResults.forEach(thread => {
+          const threadId = Object.keys(threadsData).find(key => threadsData[key] === thread);
+          resultsHTML += `
+            <div class="search-result-item" onclick="openThread('${threadId}')" style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.15s;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #10b981, #059669); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                  </svg>
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                  <div style="font-weight: 600; font-size: 14px; color: #1e293b; margin-bottom: 2px;">${thread.clientName || thread.title}</div>
+                  <div style="font-size: 12px; color: #64748b;">
+                    ${thread.subject || 'Sin descripción'} · ${thread.owner || 'Sin asignar'}
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px; color: #10b981;">
+                  <span style="font-size: 12px; font-weight: 600;">Ver</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+      }
+      
+      if (projectResults.length === 0 && threadResults.length === 0) {
+        resultsHTML = `
+          <div style="padding: 32px 16px; text-align: center;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" style="margin: 0 auto 12px;">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <div style="font-size: 14px; font-weight: 600; color: #64748b; margin-bottom: 4px;">Sin resultados</div>
+            <div style="font-size: 12px; color: #94a3b8;">No se encontraron proyectos ni threads con "${query}"</div>
+          </div>
+        `;
+      }
+      
+      dropdown.innerHTML = resultsHTML;
+      dropdown.style.display = 'block';
+    }
+    
+    function openProject(projectId) {
+      window.location.href = `viewsync.html?id=${projectId}`;
+    }
+    
+    function openThread(threadId) {
+      window.location.href = `threadsync.html?id=${threadId}`;
+    }
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      const searchInput = document.getElementById('globalSearchInput');
+      const dropdown = document.getElementById('searchResultsDropdown');
+      
+      if (searchInput && dropdown && !searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.style.display = 'none';
+      }
+    });
+  </script>
+  
   <script>
     // Forzador: reaplica estilos oscuros a los elementos de facturación si el tema es dark.
     (function forceBillingDark() {

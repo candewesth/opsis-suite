@@ -577,6 +577,28 @@
           </div>
         </div>
 
+        <!-- Search Bar -->
+        <div style="background: white; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #e5e7eb;">
+          <div style="position: relative;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%);">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input 
+              type="text" 
+              id="threadSearchInput" 
+              placeholder="Buscar threads por cliente, asunto, contacto, propietario..." 
+              style="width: 100%; padding: 12px 12px 12px 44px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; font-weight: 500; transition: all 0.2s;"
+              onkeyup="searchThreads(this.value)"
+              onfocus="this.style.borderColor='#02735E'"
+              onblur="this.style.borderColor='#e5e7eb'"
+            />
+          </div>
+          <div id="threadSearchStats" style="display: none; margin-top: 10px; font-size: 12px; color: #64748b; font-weight: 500;">
+            <!-- Search stats will appear here -->
+          </div>
+        </div>
+
         <!-- Header con acciones principales -->
         <div style="display: none; justify-content: space-between; align-items: center; margin-bottom: 24px;">
           <div>
@@ -1683,6 +1705,15 @@
       console.log('🔍 Aplicando filtro:', filterType);
       console.log('👤 Usuario actual:', currentUser);
       
+      // Clear search if applying a new filter
+      const searchInput = document.getElementById('threadSearchInput');
+      if (searchInput && searchInput.value) {
+        searchInput.value = '';
+        currentSearchTerm = '';
+        const searchStats = document.getElementById('threadSearchStats');
+        if (searchStats) searchStats.style.display = 'none';
+      }
+      
       // Actualizar botones activos
       document.querySelectorAll('.chip-filter').forEach(btn => {
         btn.classList.remove('active');
@@ -1808,6 +1839,113 @@
       
       // Actualizar iconos según estado de archivado
       updateArchiveButtons();
+    }
+
+    // ========== SEARCH FUNCTIONALITY ==========
+    let currentSearchTerm = '';
+    
+    function searchThreads(query) {
+      const searchStats = document.getElementById('threadSearchStats');
+      
+      // If query is empty, clear search and show current filter
+      if (!query || query.trim().length === 0) {
+        currentSearchTerm = '';
+        searchStats.style.display = 'none';
+        
+        // Reapply current filter
+        const activeFilter = document.querySelector('.chip-filter.active');
+        if (activeFilter) {
+          const filterType = activeFilter.getAttribute('data-thread-filter');
+          filterThreads(filterType);
+        }
+        return;
+      }
+      
+      currentSearchTerm = query.trim().toLowerCase();
+      
+      // Get all thread cards
+      const allThreadCards = document.querySelectorAll('.thread-card');
+      let matchCount = 0;
+      let totalThreads = 0;
+      
+      allThreadCards.forEach(card => {
+        const onclickAttr = card.getAttribute('onclick');
+        if (!onclickAttr) {
+          card.style.display = 'none';
+          return;
+        }
+        
+        const match = onclickAttr.match(/'([^']+)'/);
+        if (!match) {
+          card.style.display = 'none';
+          return;
+        }
+        
+        const threadId = match[1];
+        const thread = threadsData[threadId];
+        
+        if (!thread) {
+          card.style.display = 'none';
+          return;
+        }
+        
+        totalThreads++;
+        
+        // Search in multiple fields
+        const searchableText = [
+          thread.clientName || '',
+          thread.title || '',
+          thread.subject || '',
+          thread.contactInfo || '',
+          thread.owner || '',
+          thread.createdBy || '',
+          thread.projectName || ''
+        ].join(' ').toLowerCase();
+        
+        const matchesSearch = searchableText.includes(currentSearchTerm);
+        
+        card.style.display = matchesSearch ? 'flex' : 'none';
+        if (matchesSearch) matchCount++;
+      });
+      
+      // Update search stats
+      searchStats.style.display = 'block';
+      searchStats.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.35-4.35"></path>
+        </svg>
+        Se encontraron <strong>${matchCount}</strong> thread(s) con "${query}"
+        ${matchCount < totalThreads ? `<span style="margin-left: 8px; color: #94a3b8;">(${totalThreads - matchCount} ocultos)</span>` : ''}
+      `;
+      
+      // Show no results message if needed
+      const existingMessage = document.querySelector('.no-threads-message');
+      if (existingMessage) {
+        existingMessage.remove();
+      }
+      
+      if (matchCount === 0) {
+        const container = document.querySelector('.threads-container');
+        const message = document.createElement('div');
+        message.className = 'no-threads-message';
+        message.style.cssText = 'grid-column: 1 / -1; text-align: center; padding: 60px 20px;';
+        
+        message.innerHTML = `
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" style="margin: 0 auto 16px; display: block;">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+          <div style="font-size: 16px; font-weight: 600; color: #64748b; margin-bottom: 8px;">Sin resultados</div>
+          <div style="font-size: 14px; color: #94a3b8; margin-bottom: 16px;">No se encontraron threads con "${query}"</div>
+          <button class="btn btn-secondary" onclick="document.getElementById('threadSearchInput').value=''; searchThreads('');">
+            Limpiar búsqueda
+          </button>
+        `;
+        container.appendChild(message);
+      }
+      
+      console.log(`🔍 Search results: ${matchCount}/${totalThreads} threads match "${query}"`);
     }
 
     // Archive thread (no borra, solo marca como archivado)

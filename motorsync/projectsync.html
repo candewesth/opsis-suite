@@ -723,6 +723,28 @@
           </div>
         </div>
 
+        <!-- Search Bar -->
+        <div style="background: white; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #e5e7eb;">
+          <div style="position: relative;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%);">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input 
+              type="text" 
+              id="projectSearchInput" 
+              placeholder="Buscar por nombre, cliente, IDSync, contacto, dirección..." 
+              style="width: 100%; padding: 12px 12px 12px 44px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; font-weight: 500; transition: all 0.2s;"
+              onkeyup="searchProjects(this.value)"
+              onfocus="this.style.borderColor='#02735E'"
+              onblur="this.style.borderColor='#e5e7eb'"
+            />
+          </div>
+          <div id="searchStats" style="display: none; margin-top: 10px; font-size: 12px; color: #64748b; font-weight: 500;">
+            <!-- Search stats will appear here -->
+          </div>
+        </div>
+
         <!-- Tabs -->
         <div class="segmented-control projectsync-tabs" role="tablist">
           <button class="btn btn-secondary active" data-projectsync-tab="projects">Proyectos</button>
@@ -1092,6 +1114,104 @@
       if (!dateString) return 'N/A';
       const date = new Date(dateString);
       return date.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    // ========== SEARCH FUNCTIONALITY ==========
+    function searchProjects(query) {
+      const projects = loadProjectsFromStorage();
+      const tbody = document.querySelector('tbody');
+      const searchStats = document.getElementById('searchStats');
+      
+      if (!tbody) return;
+      
+      // If query is empty, show all projects
+      if (!query || query.trim().length === 0) {
+        renderProjectsTable();
+        searchStats.style.display = 'none';
+        return;
+      }
+      
+      const searchTerm = query.trim().toLowerCase();
+      
+      // Filter projects
+      const filtered = projects.filter(p => {
+        return (p.name && p.name.toLowerCase().includes(searchTerm)) ||
+               (p.client && p.client.toLowerCase().includes(searchTerm)) ||
+               (p.idSync && p.idSync.toLowerCase().includes(searchTerm)) ||
+               (p.id && p.id.toLowerCase().includes(searchTerm)) ||
+               (p.contact && p.contact.toLowerCase().includes(searchTerm)) ||
+               (p.phone && p.phone.toLowerCase().includes(searchTerm)) ||
+               (p.email && p.email.toLowerCase().includes(searchTerm)) ||
+               (p.address && p.address.toLowerCase().includes(searchTerm)) ||
+               (p.description && p.description.toLowerCase().includes(searchTerm));
+      });
+      
+      // Update stats
+      searchStats.style.display = 'block';
+      searchStats.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.35-4.35"></path>
+        </svg>
+        Se encontraron <strong>${filtered.length}</strong> proyecto(s) con "${query}"
+        ${filtered.length < projects.length ? `<span style="margin-left: 8px; color: #94a3b8;">(${projects.length - filtered.length} ocultos)</span>` : ''}
+      `;
+      
+      // Render filtered results
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" style="text-align: center; padding: 60px 20px;">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" style="margin: 0 auto 16px; display: block;">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+              <div style="font-size: 16px; font-weight: 600; color: #64748b; margin-bottom: 8px;">Sin resultados</div>
+              <div style="font-size: 14px; color: #94a3b8;">No se encontraron proyectos con "${query}"</div>
+              <button class="btn btn-secondary" onclick="document.getElementById('projectSearchInput').value=''; searchProjects('');" style="margin-top: 16px;">
+                Limpiar búsqueda
+              </button>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      tbody.innerHTML = filtered.map(project => {
+        const config = statusConfig[project.status] || statusConfig.active;
+        const progress = project.progress || 0;
+        
+        return `
+          <tr data-project-id="${project.id}">
+            <td>
+              <strong>${project.id}</strong>
+              <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0 0;">${project.idSync || 'Sin IDSync'}</p>
+            </td>
+            <td>
+              <strong>${project.name}</strong>
+              <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">${project.address || 'Sin dirección'}</p>
+            </td>
+            <td>${project.client}</td>
+            <td><span class="badge" style="background: ${config.color}22; color: ${config.color};">${config.badge}</span></td>
+            <td>${formatDate(project.startDate)}</td>
+            <td>${formatDate(project.endDate)}</td>
+            <td><strong>$${(project.amount || 0).toLocaleString()}</strong></td>
+            <td>
+              <div style="width: 100%;">
+                <div style="background: #e0e0e0; height: 8px; border-radius: 4px; overflow: hidden;">
+                  <div style="background: linear-gradient(135deg, ${config.color}, ${config.color}dd); width: ${progress}%; height: 100%;"></div>
+                </div>
+                <p style="font-size: 11px; color: #64748b; margin: 4px 0 0 0;">${progress}%</p>
+              </div>
+            </td>
+            <td>
+              <button class="btn btn-small btn-secondary" onclick="viewProject('${project.id}')">Ver</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      
+      console.log(`🔍 Search results: ${filtered.length}/${projects.length} projects match "${query}"`);
     }
 
     function initializeMap(mapId) {
