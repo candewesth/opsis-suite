@@ -859,12 +859,56 @@
     
     let existingProjects = loadExistingProjects();
 
+    // Mostrar proyectos recientes al cargar la página
+    function showRecentProjects() {
+      if (existingProjects.length === 0) return;
+      
+      // Mostrar los 3 proyectos más recientes
+      const recentProjects = existingProjects.slice(0, 3);
+      
+      recentProjects.forEach((project, index) => {
+        const cardNum = index + 1;
+        const card = document.getElementById(`project-card-${cardNum}`);
+        const radio = document.getElementById(`project-${cardNum}`);
+        const nameEl = document.getElementById(`project-${cardNum}-name`);
+        const statusEl = document.getElementById(`project-${cardNum}-status`);
+        
+        if (!card) return;
+        
+        card.style.display = 'block';
+        radio.value = project.id;
+        
+        const displayId = project.idSync || project.id;
+        nameEl.innerHTML = `<strong>${displayId}</strong> - ${project.name || 'Sin nombre'}`;
+        
+        const statusMap = {
+          'active': '🟢 Activo',
+          'pending': '🟡 Pendiente', 
+          'completed': '✅ Completado',
+          'on-hold': '⏸️ En Pausa'
+        };
+        const statusText = statusMap[project.status] || project.status || '🟢 Activo';
+        statusEl.innerHTML = `👤 ${project.client || 'Sin cliente'} &nbsp;•&nbsp; ${statusText}`;
+      });
+      
+      // Mostrar mensaje de proyectos disponibles
+      const suggestionBox = document.getElementById('projectSuggestions');
+      const suggestionText = document.getElementById('suggestionText');
+      suggestionBox.style.display = 'block';
+      suggestionBox.style.background = '#e0f2fe';
+      suggestionBox.style.borderColor = '#0284c7';
+      suggestionText.innerHTML = `<span style="color: #0369a1;">📋 Tienes <strong>${existingProjects.length}</strong> proyecto(s) disponibles. Escribe el nombre del cliente para encontrar coincidencias.</span>`;
+    }
+
     // Función para buscar proyectos relacionados de manera inteligente
     function findRelatedProjects(clientName, contactInfo) {
       const matches = [];
       const searchTerms = [clientName, contactInfo].filter(t => t && t.trim());
       
-      if (searchTerms.length === 0) return matches;
+      // Si no hay términos de búsqueda, devolver los más recientes
+      if (searchTerms.length === 0) {
+        return existingProjects.slice(0, 3).map(p => ({ ...p, score: 1 }));
+      }
 
       existingProjects.forEach(project => {
         let score = 0;
@@ -974,6 +1018,9 @@
 
     // Attach listeners para búsqueda en tiempo real
     document.addEventListener('DOMContentLoaded', () => {
+      // Mostrar proyectos recientes al cargar
+      showRecentProjects();
+      
       const clientNameInput = document.getElementById('clientName');
       const contactInfoInput = document.getElementById('contactInfo');
       
@@ -982,7 +1029,7 @@
       [clientNameInput, contactInfoInput].forEach(input => {
         input.addEventListener('input', () => {
           clearTimeout(searchTimer);
-          searchTimer = setTimeout(updateProjectSuggestions, 500); // 500ms debounce
+          searchTimer = setTimeout(updateProjectSuggestions, 300); // 300ms debounce
         });
       });
     });
