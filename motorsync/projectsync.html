@@ -820,84 +820,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr data-project-id="ORD-201">
-                    <td>
-                      <strong>ORD-201</strong>
-                      <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0 0;">Proyecto #1024</p>
-                    </td>
-                    <td>
-                      <strong>Instalación HVAC Completo</strong>
-                      <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">Av. Universidad #456</p>
-                    </td>
-                    <td>Residencial Torres</td>
-                    <td><span class="badge" style="background: rgba(2, 115, 94, 0.1); color: #02735E;">EN CURSO</span></td>
-                    <td>10 Nov 2024</td>
-                    <td>20 Nov 2024</td>
-                    <td><strong>$12,500</strong></td>
-                    <td>
-                      <div style="width: 100%;">
-                        <div style="background: #e0e0e0; height: 8px; border-radius: 4px; overflow: hidden;">
-                          <div style="background: linear-gradient(135deg, #02735E, #035951); width: 65%; height: 100%;"></div>
-                        </div>
-                        <p style="font-size: 11px; color: #64748b; margin: 4px 0 0 0;">65%</p>
-                      </div>
-                    </td>
-                    <td>
-                      <button class="btn btn-small btn-secondary" onclick="viewProject('ORD-201')">Ver</button>
-                    </td>
-                  </tr>
-                  <tr data-project-id="ORD-202">
-                    <td>
-                      <strong>ORD-202</strong>
-                      <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0 0;">Proyecto #1023</p>
-                    </td>
-                    <td>
-                      <strong>Reparación Sistema Eléctrico</strong>
-                      <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">Calle Principal #123</p>
-                    </td>
-                    <td>Comercial Plaza</td>
-                    <td><span class="badge" style="background: rgba(234, 179, 8, 0.1); color: #eab308;">PROGRAMADO</span></td>
-                    <td>18 Nov 2024</td>
-                    <td>22 Nov 2024</td>
-                    <td><strong>$8,200</strong></td>
-                    <td>
-                      <div style="width: 100%;">
-                        <div style="background: #e0e0e0; height: 8px; border-radius: 4px; overflow: hidden;">
-                          <div style="background: #eab308; width: 0%; height: 100%;"></div>
-                        </div>
-                        <p style="font-size: 11px; color: #64748b; margin: 4px 0 0 0;">0%</p>
-                      </div>
-                    </td>
-                    <td>
-                      <button class="btn btn-small btn-secondary" onclick="viewProject('ORD-202')">Ver</button>
-                    </td>
-                  </tr>
-                  <tr data-project-id="ORD-203">
-                    <td>
-                      <strong>ORD-203</strong>
-                      <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0 0;">Proyecto #1022</p>
-                    </td>
-                    <td>
-                      <strong>Mantenimiento de Calderas</strong>
-                      <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">Hotel Zona Centro</p>
-                    </td>
-                    <td>Hotel Pacífico</td>
-                    <td><span class="badge" style="background: rgba(5, 150, 105, 0.1); color: #059669;">COMPLETADO</span></td>
-                    <td>05 Nov 2024</td>
-                    <td>08 Nov 2024</td>
-                    <td><strong>$15,400</strong></td>
-                    <td>
-                      <div style="width: 100%;">
-                        <div style="background: #e0e0e0; height: 8px; border-radius: 4px; overflow: hidden;">
-                          <div style="background: #059669; width: 100%; height: 100%;"></div>
-                        </div>
-                        <p style="font-size: 11px; color: #64748b; margin: 4px 0 0 0;">100%</p>
-                      </div>
-                    </td>
-                    <td>
-                      <button class="btn btn-small btn-secondary" onclick="viewProject('ORD-203')">Ver</button>
-                    </td>
-                  </tr>
+                  <!-- Tabla se llena dinámicamente desde localStorage -->
                 </tbody>
               </table>
             </div>
@@ -1047,6 +970,221 @@
       completed: { color: '#059669', badge: 'COMPLETADO' }
     };
     
+    // Generar nuevo IDSync (formato: IDSyncYYNNNN donde YY=año, NNNN=consecutivo)
+    function generateIDSync() {
+      const projects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+      const year = new Date().getFullYear().toString().slice(-2); // "25" para 2025
+      
+      // Buscar el número más alto existente para este año
+      let maxNum = 0;
+      projects.forEach(p => {
+        if (p.idSync && p.idSync.startsWith(`IDSync${year}`)) {
+          const num = parseInt(p.idSync.replace(`IDSync${year}`, ''), 10);
+          if (num > maxNum) maxNum = num;
+        }
+      });
+      
+      // Generar siguiente número con padding de 4 dígitos
+      const nextNum = (maxNum + 1).toString().padStart(4, '0');
+      return `IDSync${year}${nextNum}`;
+    }
+    
+    // Migrar proyectos antiguos (ORD-XXX) a IDSync
+    function migrateOldProjects() {
+      const stored = localStorage.getItem('projectsync_projects');
+      if (!stored) return;
+      
+      try {
+        const projects = JSON.parse(stored);
+        let needsSave = false;
+        
+        projects.forEach(project => {
+          // Si no tiene idSync o tiene formato antiguo ORD-XXX
+          if (!project.idSync || project.idSync.startsWith('ORD-')) {
+            project.idSync = generateIDSync();
+            needsSave = true;
+            console.log(`📦 Migrated ${project.id} → ${project.idSync}`);
+          }
+        });
+        
+        if (needsSave) {
+          localStorage.setItem('projectsync_projects', JSON.stringify(projects));
+          console.log('✅ Migration complete');
+        }
+      } catch (e) {
+        console.error('Migration error:', e);
+      }
+    }
+    
+    // Ejecutar migración al cargar
+    migrateOldProjects();
+    
+    // Crear proyectos de ejemplo en San Diego si no hay datos
+    function initializeSampleProjects() {
+      const stored = localStorage.getItem('projectsync_projects');
+      if (stored && JSON.parse(stored).length > 0) return; // Ya hay proyectos
+      
+      // Proyectos de ejemplo en San Diego County - SIN coordenadas para geocodificar automáticamente
+      const sampleProjects = [
+        {
+          id: 'PRJ-001',
+          idSync: 'IDSync250001',
+          name: 'HVAC Installation - Downtown Office',
+          client: 'Gaslamp Quarter Properties',
+          contact: 'Michael Chen',
+          phone: '(619) 555-0101',
+          email: 'mchen@gaslampprops.com',
+          address: '701 Fifth Ave, San Diego, CA 92101',
+          description: 'Complete HVAC system installation for 3-story office building',
+          startDate: '2025-11-15',
+          endDate: '2025-12-15',
+          amount: 45000,
+          status: 'active'
+        },
+        {
+          id: 'PRJ-002',
+          idSync: 'IDSync250002',
+          name: 'Commercial Plumbing Repair',
+          client: 'La Jolla Shores Hotel',
+          contact: 'Sarah Martinez',
+          phone: '(858) 555-0202',
+          email: 'smartinez@ljshores.com',
+          address: '8110 Camino Del Oro, La Jolla, CA 92037',
+          description: 'Emergency plumbing repair and water heater replacement',
+          startDate: '2025-11-20',
+          endDate: '2025-11-25',
+          amount: 12500,
+          status: 'active'
+        },
+        {
+          id: 'PRJ-003',
+          idSync: 'IDSync250003',
+          name: 'Solar Panel Installation',
+          client: 'Rancho Bernardo Estates',
+          contact: 'David Thompson',
+          phone: '(858) 555-0303',
+          email: 'dthompson@rbhoa.com',
+          address: '16925 Hierba Dr, San Diego, CA 92128',
+          description: 'Residential solar panel system - 12kW capacity',
+          startDate: '2025-12-01',
+          endDate: '2025-12-20',
+          amount: 35000,
+          status: 'scheduled'
+        },
+        {
+          id: 'PRJ-004',
+          idSync: 'IDSync250004',
+          name: 'Electrical System Upgrade',
+          client: 'Coronado Island Resort',
+          contact: 'Jennifer Walsh',
+          phone: '(619) 555-0404',
+          email: 'jwalsh@coronadoresort.com',
+          address: '1500 Orange Ave, Coronado, CA 92118',
+          description: 'Main electrical panel upgrade and EV charger installation',
+          startDate: '2025-11-01',
+          endDate: '2025-11-10',
+          amount: 28000,
+          status: 'completed'
+        },
+        {
+          id: 'PRJ-005',
+          idSync: 'IDSync250005',
+          name: 'Fire Suppression System',
+          client: 'Mission Valley Mall',
+          contact: 'Robert Garcia',
+          phone: '(619) 555-0505',
+          email: 'rgarcia@mvmall.com',
+          address: '1640 Camino Del Rio N, San Diego, CA 92108',
+          description: 'Fire sprinkler system inspection and upgrade',
+          startDate: '2025-11-18',
+          endDate: '2025-11-30',
+          amount: 52000,
+          status: 'active'
+        },
+        {
+          id: 'PRJ-006',
+          idSync: 'IDSync250006',
+          name: 'Restaurant Kitchen Ventilation',
+          client: 'Pacific Beach Seafood',
+          contact: 'Tony Nguyen',
+          phone: '(858) 555-0606',
+          email: 'tnguyen@pbseafood.com',
+          address: '4150 Mission Blvd, San Diego, CA 92109',
+          description: 'Commercial kitchen hood and ventilation system installation',
+          startDate: '2025-10-15',
+          endDate: '2025-10-28',
+          amount: 18500,
+          status: 'completed'
+        },
+        {
+          id: 'PRJ-007',
+          idSync: 'IDSync250007',
+          name: 'Office Building Renovation',
+          client: 'Sorrento Valley Tech Park',
+          contact: 'Lisa Kim',
+          phone: '(858) 555-0707',
+          email: 'lkim@svtechpark.com',
+          address: '10770 Wateridge Cir, San Diego, CA 92121',
+          description: 'Complete MEP renovation for tech office space',
+          startDate: '2025-12-05',
+          endDate: '2026-01-15',
+          amount: 125000,
+          status: 'scheduled'
+        },
+        {
+          id: 'PRJ-008',
+          idSync: 'IDSync250008',
+          name: 'Pool Equipment Replacement',
+          client: 'Del Mar Heights Community',
+          contact: 'Amanda Foster',
+          phone: '(858) 555-0808',
+          email: 'afoster@dmhoa.com',
+          address: '3850 Valley Centre Dr, San Diego, CA 92130',
+          description: 'Community pool pump and filtration system replacement',
+          startDate: '2025-11-22',
+          endDate: '2025-11-28',
+          amount: 15000,
+          status: 'active'
+        },
+        {
+          id: 'PRJ-009',
+          idSync: 'IDSync250009',
+          name: 'Medical Office HVAC',
+          client: 'Scripps Clinic Carmel Valley',
+          contact: 'Dr. James Miller',
+          phone: '(858) 555-0909',
+          email: 'jmiller@scripps.org',
+          address: '3811 Valley Centre Dr, San Diego, CA 92130',
+          description: 'Specialized HVAC for medical facility with clean room requirements',
+          startDate: '2025-10-01',
+          endDate: '2025-10-20',
+          amount: 68000,
+          status: 'completed'
+        },
+        {
+          id: 'PRJ-010',
+          idSync: 'IDSync250010',
+          name: 'Warehouse Lighting Retrofit',
+          client: 'Otay Mesa Distribution',
+          contact: 'Carlos Mendez',
+          phone: '(619) 555-1010',
+          email: 'cmendez@otaydist.com',
+          address: '9855 Businesspark Ave, San Diego, CA 92154',
+          description: 'LED lighting upgrade for 50,000 sq ft warehouse',
+          startDate: '2025-12-10',
+          endDate: '2025-12-18',
+          amount: 42000,
+          status: 'scheduled'
+        }
+      ];
+      
+      localStorage.setItem('projectsync_projects', JSON.stringify(sampleProjects));
+      console.log('✅ Initialized 10 sample projects in San Diego area');
+    }
+    
+    // Inicializar proyectos de ejemplo
+    initializeSampleProjects();
+    
     // Load projects from localStorage
     function loadProjectsFromStorage() {
       const stored = localStorage.getItem('projectsync_projects');
@@ -1074,13 +1212,14 @@
       
       tbody.innerHTML = projects.map(project => {
         const config = statusConfig[project.status] || statusConfig.active;
-        const progress = project.progress || 0;
+        // Calcular progreso real basado en fechas
+        const progress = calculateProjectProgress(project);
         
         return `
-          <tr data-project-id="${project.id}">
+          <tr data-project-id="${project.idSync || project.id}">
             <td>
-              <strong>${project.id}</strong>
-              <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0 0;">${project.idSync || 'Sin IDSync'}</p>
+              <strong>${project.idSync || project.id}</strong>
+              ${project.idSync && project.id !== project.idSync ? `<p style="font-size: 11px; color: #94a3b8; margin: 4px 0 0 0;">Ref: ${project.id}</p>` : ''}
             </td>
             <td>
               <strong>${project.name}</strong>
@@ -1100,13 +1239,61 @@
               </div>
             </td>
             <td>
-              <button class="btn btn-small btn-secondary" onclick="viewProject('${project.id}')">Ver</button>
+              <button class="btn btn-small btn-secondary" onclick="viewProject('${project.idSync || project.id}')">Ver</button>
             </td>
           </tr>
         `;
       }).join('');
       
+      // Actualizar contadores de filtros
+      updateFilterCounts(projects);
+      
       console.log('✅ Rendered', projects.length, 'projects in table');
+    }
+    
+    // Calcular progreso del proyecto basado en fechas
+    function calculateProjectProgress(project) {
+      if (!project.startDate || !project.endDate) return 0;
+      if (project.status === 'completed' || project.status === 'closed') return 100;
+      
+      const startDate = new Date(project.startDate);
+      const endDate = new Date(project.endDate);
+      const today = new Date();
+      
+      startDate.setHours(0, 0, 0, 0);
+      endDate.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
+      
+      // Si aún no empieza
+      if (today < startDate) return 0;
+      
+      // Si ya terminó (vencido)
+      if (today > endDate) return 100;
+      
+      // Calcular progreso
+      const totalDays = (endDate - startDate) / (1000 * 60 * 60 * 24);
+      const elapsedDays = (today - startDate) / (1000 * 60 * 60 * 24);
+      
+      return Math.round((elapsedDays / totalDays) * 100);
+    }
+    
+    // Actualizar contadores de los filtros
+    function updateFilterCounts(projects) {
+      const counts = {
+        all: projects.length,
+        active: projects.filter(p => p.status === 'active').length,
+        scheduled: projects.filter(p => p.status === 'scheduled').length,
+        completed: projects.filter(p => p.status === 'completed' || p.status === 'closed').length
+      };
+      
+      const filters = document.querySelectorAll('.table-filter');
+      filters.forEach(filter => {
+        const type = filter.dataset.tableFilter;
+        if (type === 'all') filter.textContent = `Todos (${counts.all})`;
+        else if (type === 'active') filter.textContent = `Activos (${counts.active})`;
+        else if (type === 'scheduled') filter.textContent = `Programados (${counts.scheduled})`;
+        else if (type === 'completed') filter.textContent = `Completados (${counts.completed})`;
+      });
     }
     
     // Format date helper
@@ -1179,13 +1366,13 @@
       
       tbody.innerHTML = filtered.map(project => {
         const config = statusConfig[project.status] || statusConfig.active;
-        const progress = project.progress || 0;
+        const progress = calculateProjectProgress(project);
         
         return `
-          <tr data-project-id="${project.id}">
+          <tr data-project-id="${project.idSync || project.id}">
             <td>
-              <strong>${project.id}</strong>
-              <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0 0;">${project.idSync || 'Sin IDSync'}</p>
+              <strong>${project.idSync || project.id}</strong>
+              ${project.idSync && project.id !== project.idSync ? `<p style="font-size: 11px; color: #94a3b8; margin: 4px 0 0 0;">Ref: ${project.id}</p>` : ''}
             </td>
             <td>
               <strong>${project.name}</strong>
@@ -1205,7 +1392,7 @@
               </div>
             </td>
             <td>
-              <button class="btn btn-small btn-secondary" onclick="viewProject('${project.id}')">Ver</button>
+              <button class="btn btn-small btn-secondary" onclick="viewProject('${project.idSync || project.id}')">Ver</button>
             </td>
           </tr>
         `;
@@ -1225,7 +1412,7 @@
         allMarkers = [];
       }
 
-      // Initialize new map
+      // Initialize new map (centrado en San Diego, CA)
       map = L.map(mapId).setView([32.7157, -117.1611], 11);
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -1235,27 +1422,110 @@
       // Load projects and create markers
       const projects = loadProjectsFromStorage();
       
-      projects.forEach(project => {
+      projects.forEach((project, index) => {
         const config = statusConfig[project.status] || statusConfig.active;
-        const lat = project.lat || (32.7157 + (Math.random() - 0.5) * 0.2);
-        const lng = project.lng || (-117.1611 + (Math.random() - 0.5) * 0.2);
         
-        const marker = L.circleMarker([lat, lng], {
-          radius: 8,
-          fillColor: config.color,
-          color: '#fff',
-          weight: 2,
-          opacity: 1,
-          fillOpacity: 0.8
-        }).addTo(map);
-
-        marker.bindPopup(`<b>${project.name}</b><br><span style="text-transform: uppercase; font-size: 11px;">${config.badge}</span>`);
-        marker.projectStatus = project.status;
-        marker.projectId = project.id;
-        allMarkers.push(marker);
+        // Si ya tiene coordenadas, usar directamente
+        if (project.lat && project.lng) {
+          createMarker(project, config);
+        } 
+        // Si tiene dirección, geocodificar
+        else if (project.address) {
+          geocodeAddress(project, config, index);
+        }
+        // Si no tiene nada, posición por defecto en San Diego
+        else {
+          project.lat = 32.7157 + (Math.random() - 0.5) * 0.1;
+          project.lng = -117.1611 + (Math.random() - 0.5) * 0.1;
+          createMarker(project, config);
+        }
       });
       
-      console.log('✅ Initialized map with', allMarkers.length, 'markers');
+      console.log('✅ Initialized map');
+    }
+    
+    // Crear marcador en el mapa
+    function createMarker(project, config) {
+      const marker = L.circleMarker([project.lat, project.lng], {
+        radius: 10,
+        fillColor: config.color,
+        color: '#fff',
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.8
+      }).addTo(map);
+
+      const popupContent = `
+        <div style="min-width: 200px;">
+          <strong style="font-size: 14px;">${project.name}</strong><br>
+          <span style="color: ${config.color}; font-size: 11px; text-transform: uppercase; font-weight: 600;">${config.badge}</span>
+          <hr style="margin: 8px 0; border: none; border-top: 1px solid #e5e7eb;">
+          <div style="font-size: 12px; color: #64748b;">
+            <strong>Cliente:</strong> ${project.client || 'N/A'}<br>
+            <strong>Dirección:</strong> ${project.address || 'Sin dirección'}<br>
+            <strong>IDSync:</strong> ${project.idSync || project.id}
+          </div>
+          <button onclick="viewProject('${project.idSync || project.id}')" 
+                  style="margin-top: 10px; width: 100%; padding: 8px; background: ${config.color}; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+            Ver Proyecto
+          </button>
+        </div>
+      `;
+      
+      marker.bindPopup(popupContent);
+      marker.projectStatus = project.status;
+      marker.projectId = project.idSync || project.id;
+      allMarkers.push(marker);
+    }
+    
+    // Geocodificar dirección usando Nominatim (OpenStreetMap)
+    function geocodeAddress(project, config, index) {
+      // Delay para evitar rate limiting (1 request por segundo)
+      setTimeout(() => {
+        const address = encodeURIComponent(project.address + ', México');
+        
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${address}&limit=1`)
+          .then(response => response.json())
+          .then(data => {
+            if (data && data.length > 0) {
+              project.lat = parseFloat(data[0].lat);
+              project.lng = parseFloat(data[0].lon);
+              console.log(`📍 Geocoded: ${project.address} → [${project.lat}, ${project.lng}]`);
+              
+              // Guardar coordenadas en localStorage para futuras cargas
+              saveProjectCoordinates(project.idSync || project.id, project.lat, project.lng);
+            } else {
+              // Si no encuentra, usar posición por defecto en San Diego
+              project.lat = 32.7157 + (Math.random() - 0.5) * 0.1;
+              project.lng = -117.1611 + (Math.random() - 0.5) * 0.1;
+              console.log(`⚠️ No geocode result for: ${project.address}`);
+            }
+            createMarker(project, config);
+            
+            // Ajustar vista del mapa para mostrar todos los marcadores
+            if (allMarkers.length > 0) {
+              const group = L.featureGroup(allMarkers);
+              map.fitBounds(group.getBounds().pad(0.1));
+            }
+          })
+          .catch(error => {
+            console.error('Geocode error:', error);
+            project.lat = 32.7157 + (Math.random() - 0.5) * 0.1;
+            project.lng = -117.1611 + (Math.random() - 0.5) * 0.1;
+            createMarker(project, config);
+          });
+      }, index * 1100); // 1.1 segundos entre cada request
+    }
+    
+    // Guardar coordenadas geocodificadas
+    function saveProjectCoordinates(projectId, lat, lng) {
+      const projects = loadProjectsFromStorage();
+      const project = projects.find(p => (p.idSync || p.id) === projectId);
+      if (project) {
+        project.lat = lat;
+        project.lng = lng;
+        localStorage.setItem('projectsync_projects', JSON.stringify(projects));
+      }
     }
 
     // Filter functionality

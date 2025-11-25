@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ViewSync - Portal del Proyecto</title>
+  <!-- Cache-bust: v2024-11-25 -->
   <link rel="stylesheet" href="../assets/css/main.css">
   <style>
     :root {
@@ -902,7 +903,6 @@
       </div>
       
       <div class="header-actions">
-        <span class="status-badge status-active">En Curso</span>
         <button class="btn btn-white" onclick="editProject()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -1046,23 +1046,23 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
           <div>
             <h3 style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px;">Progreso del Proyecto</h3>
-            <p style="font-size: 12px; color: var(--text-secondary);">10 Nov - 20 Nov 2024 • 10 días</p>
+            <p id="progress-dates" style="font-size: 12px; color: var(--text-secondary);">Cargando...</p>
           </div>
           <div style="text-align: right;">
-            <div style="font-size: 24px; font-weight: 700; color: #10b981;">65%</div>
-            <div style="font-size: 11px; color: var(--text-secondary);">Día 7 de 10</div>
+            <div id="progress-percent" style="font-size: 24px; font-weight: 700; color: #10b981;">0%</div>
+            <div id="progress-day" style="font-size: 11px; color: var(--text-secondary);">Calculando...</div>
           </div>
         </div>
         
         <div style="position: relative; height: 40px; background: #e5e7eb; border-radius: 20px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);">
-          <div style="position: absolute; height: 100%; width: 65%; background: linear-gradient(90deg, #10b981, #059669); border-radius: 20px; display: flex; align-items: center; justify-content: flex-end; padding-right: 20px; transition: width 0.3s ease;">
-            <span style="color: white; font-size: 15px; font-weight: 600;">128 de 160 hrs</span>
+          <div id="progress-bar" style="position: absolute; height: 100%; width: 0%; background: linear-gradient(90deg, #10b981, #059669); border-radius: 20px; display: flex; align-items: center; justify-content: flex-end; padding-right: 20px; transition: width 0.5s ease;">
+            <span id="progress-hours" style="color: white; font-size: 15px; font-weight: 600;"></span>
           </div>
         </div>
         
         <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: var(--text-secondary);">
-          <span>🟢 7 días completados</span>
-          <span>⏰ 1 día restante</span>
+          <span id="progress-completed">🟢 Calculando...</span>
+          <span id="progress-remaining">⏰ Calculando...</span>
         </div>
       </div>
 
@@ -1457,6 +1457,8 @@
   </div>
 
   <script>
+    console.log('🔧 ViewSync JavaScript loaded - v2024-11-25');
+    
     // ========================================
     // LOAD PROJECT DATA DYNAMICALLY
     // ========================================
@@ -1528,11 +1530,117 @@
       return date.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
     }
     
+    // ========================================
+    // PROGRESS BAR - Sincronizado con fechas del proyecto
+    // ========================================
+    function updateProgressBar(project) {
+      if (!project || !project.startDate || !project.endDate) {
+        console.log('⚠️ No hay fechas de proyecto para calcular progreso');
+        return;
+      }
+      
+      const startDate = new Date(project.startDate);
+      const endDate = new Date(project.endDate);
+      const today = new Date();
+      
+      // Normalizar fechas a medianoche para cálculos precisos
+      startDate.setHours(0, 0, 0, 0);
+      endDate.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
+      
+      // Calcular días totales y días transcurridos
+      const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+      const daysElapsed = Math.ceil((today - startDate) / (1000 * 60 * 60 * 24)) + 1;
+      const daysRemaining = Math.max(0, Math.ceil((endDate - today) / (1000 * 60 * 60 * 24)));
+      
+      // Calcular porcentaje (limitar entre 0 y 100)
+      let percent = Math.round((daysElapsed / totalDays) * 100);
+      percent = Math.max(0, Math.min(100, percent));
+      
+      // Determinar si está antes, durante o después del proyecto
+      let status = 'in-progress';
+      let color = '#10b981'; // verde
+      
+      if (today < startDate) {
+        status = 'not-started';
+        percent = 0;
+        color = '#6b7280'; // gris
+      } else if (today > endDate) {
+        status = 'overdue';
+        percent = 100;
+        color = '#ef4444'; // rojo
+      }
+      
+      // Calcular horas estimadas (8 hrs por día)
+      const totalHours = totalDays * 8;
+      const hoursElapsed = Math.min(daysElapsed * 8, totalHours);
+      
+      // Actualizar elementos del DOM
+      const progressDates = document.getElementById('progress-dates');
+      const progressPercent = document.getElementById('progress-percent');
+      const progressDay = document.getElementById('progress-day');
+      const progressBar = document.getElementById('progress-bar');
+      const progressHours = document.getElementById('progress-hours');
+      const progressCompleted = document.getElementById('progress-completed');
+      const progressRemaining = document.getElementById('progress-remaining');
+      
+      if (progressDates) {
+        const startStr = formatDate(project.startDate);
+        const endStr = formatDate(project.endDate);
+        progressDates.textContent = `${startStr} - ${endStr} • ${totalDays} días`;
+      }
+      
+      if (progressPercent) {
+        progressPercent.textContent = `${percent}%`;
+        progressPercent.style.color = color;
+      }
+      
+      if (progressDay) {
+        if (status === 'not-started') {
+          progressDay.textContent = `Inicia en ${Math.abs(daysElapsed - 1)} días`;
+        } else if (status === 'overdue') {
+          const daysOver = Math.ceil((today - endDate) / (1000 * 60 * 60 * 24));
+          progressDay.textContent = `${daysOver} días de retraso`;
+          progressDay.style.color = '#ef4444';
+        } else {
+          progressDay.textContent = `Día ${Math.min(daysElapsed, totalDays)} de ${totalDays}`;
+        }
+      }
+      
+      if (progressBar) {
+        progressBar.style.width = `${percent}%`;
+        progressBar.style.background = `linear-gradient(90deg, ${color}, ${color}dd)`;
+      }
+      
+      if (progressHours) {
+        progressHours.textContent = `${hoursElapsed} de ${totalHours} hrs`;
+      }
+      
+      if (progressCompleted) {
+        const completedDays = Math.max(0, Math.min(daysElapsed, totalDays));
+        progressCompleted.textContent = `🟢 ${completedDays} días completados`;
+      }
+      
+      if (progressRemaining) {
+        if (status === 'overdue') {
+          progressRemaining.textContent = `⚠️ Proyecto vencido`;
+          progressRemaining.style.color = '#ef4444';
+        } else if (status === 'not-started') {
+          progressRemaining.textContent = `⏰ ${totalDays} días totales`;
+        } else {
+          progressRemaining.textContent = `⏰ ${daysRemaining} días restantes`;
+        }
+      }
+      
+      console.log('📊 Progress updated:', { percent, daysElapsed, totalDays, status });
+    }
+
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
       currentProject = loadProjectData();
       if (currentProject) {
         renderProjectData(currentProject);
+        updateProgressBar(currentProject);
         initializeProjectHistory();
         updateHistoryCounter();
         checkForActiveChangeOrder();
@@ -1726,6 +1834,7 @@
 
     // Función para editar proyecto
     function editProject() {
+      console.log('🔵 editProject() called');
       const modalHTML = `
         <div class="modal-overlay" id="editModal" onclick="if(event.target === this) closeModal('editModal')">
           <div class="modal">
@@ -2984,11 +3093,6 @@
       
       // Abrir modal de edición para definir nuevas etapas
       setTimeout(() => {
-        editProjectStatus();
-      }, 500);
-    }
-
-    // Función para CANCELAR proyecto
         editProjectStatus();
       }, 500);
     }
