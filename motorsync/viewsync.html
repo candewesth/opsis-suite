@@ -1467,16 +1467,30 @@
     function loadProjectData() {
       // Get project ID from URL
       const urlParams = new URLSearchParams(window.location.search);
-      const projectId = urlParams.get('id');
-      
-      if (!projectId) {
-        alert('⚠️ No se especificó un proyecto. Redirigiendo a ProjectSync...');
-        window.location.href = 'projectsync.html';
-        return null;
-      }
+      let projectId = urlParams.get('id');
       
       // Load from localStorage
       const projects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+      
+      // Si no hay ID en URL, intentar cargar el proyecto más reciente activo
+      if (!projectId) {
+        const activeProjects = projects.filter(p => p.status === 'active');
+        if (activeProjects.length > 0) {
+          // Usar el proyecto activo más reciente
+          const recentProject = activeProjects[0];
+          projectId = recentProject.id || recentProject.idSync;
+          console.log('🔄 No project ID in URL, loading most recent active:', projectId);
+        } else if (projects.length > 0) {
+          // Si no hay activos, usar el primero disponible
+          projectId = projects[0].id || projects[0].idSync;
+          console.log('🔄 No active projects, loading first available:', projectId);
+        } else {
+          alert('⚠️ No hay proyectos disponibles. Redirigiendo a ProjectSync...');
+          window.location.href = 'projectsync.html';
+          return null;
+        }
+      }
+      
       const project = projects.find(p => p.id === projectId || p.idSync === projectId);
       
       if (!project) {
@@ -1485,6 +1499,7 @@
         return null;
       }
       
+      console.log('✅ Project loaded:', project.name, project.idSync);
       return project;
     }
     
