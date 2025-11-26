@@ -2077,42 +2077,77 @@
       const action = urlParams.get('action');
       const source = urlParams.get('source');
       
+      console.log('🔍 URL Params:', { action, source });
+      
       if (action === 'new' && (source === 'thread' || source === 'project')) {
+        console.log('✅ Detected appointment creation from:', source);
+        
         // Load temporary appointment data
         const tempData = localStorage.getItem('temp_appointment_data');
+        console.log('📦 Temp data:', tempData);
+        
         if (tempData) {
           try {
             const appointmentData = JSON.parse(tempData);
+            console.log('📋 Appointment data:', appointmentData);
             
             // Pre-fill the appointment modal with data from thread/project
             setTimeout(() => {
+              console.log('🚀 Opening modal...');
               openNewAppointmentModal();
               
               // Fill form fields after modal opens
               setTimeout(() => {
+                console.log('📝 Filling form fields...');
+                
                 if (appointmentData.projectId) {
-                  document.getElementById('apt-project').value = appointmentData.projectId;
+                  const projectSelect = document.getElementById('apt-project');
+                  if (projectSelect) {
+                    projectSelect.value = appointmentData.projectId;
+                    console.log('Set project:', appointmentData.projectId);
+                  }
                 }
                 if (appointmentData.client) {
-                  document.getElementById('apt-client').value = appointmentData.client;
+                  const clientInput = document.getElementById('apt-client');
+                  if (clientInput) {
+                    clientInput.value = appointmentData.client;
+                    console.log('Set client:', appointmentData.client);
+                  }
                 }
                 if (appointmentData.title) {
-                  document.getElementById('apt-title').value = appointmentData.title;
+                  const titleInput = document.getElementById('apt-title');
+                  if (titleInput) {
+                    titleInput.value = appointmentData.title;
+                    console.log('Set title:', appointmentData.title);
+                  }
                 }
                 if (appointmentData.type) {
-                  document.getElementById('apt-type').value = appointmentData.type;
+                  const typeSelect = document.getElementById('apt-type');
+                  if (typeSelect) {
+                    typeSelect.value = appointmentData.type;
+                    console.log('Set type:', appointmentData.type);
+                  }
                 }
                 if (appointmentData.notes) {
-                  document.getElementById('apt-notes').value = appointmentData.notes;
+                  const notesTextarea = document.getElementById('apt-notes');
+                  if (notesTextarea) {
+                    notesTextarea.value = appointmentData.notes;
+                    console.log('Set notes:', appointmentData.notes);
+                  }
                 }
-              }, 100);
+                
+                console.log('✅ Form fields filled');
+              }, 200);
               
               // Clean up temporary data
               localStorage.removeItem('temp_appointment_data');
-            }, 300);
+              console.log('🗑️ Temp data removed');
+            }, 500);
           } catch (e) {
-            console.error('Error loading appointment data:', e);
+            console.error('❌ Error loading appointment data:', e);
           }
+        } else {
+          console.warn('⚠️ No temp data found in localStorage');
         }
       }
       
@@ -3509,29 +3544,39 @@
     // Modal functions
     function openNewAppointmentModal() {
       const modal = document.getElementById('appointment-modal');
+      if (!modal) {
+        console.error('Modal appointment-modal not found');
+        return;
+      }
+      
       modal.classList.add('active');
       
       // Populate projects dropdown
       const projectSelect = document.getElementById('apt-project');
-      const projects = loadProjectsFromStorage();
-      
-      projectSelect.innerHTML = '<option value="">Sin proyecto (Oportunidad)</option>' +
-        projects.filter(p => p.status !== 'completed').map(p => 
-          `<option value="${p.id}">${p.idSync || p.id} - ${p.name}</option>`
-        ).join('');
-        ).join('');
-      
-      // Populate dynamic selects from config
-      populateAppointmentTypeSelect();
-      populateTechnicianSelect();
+      if (projectSelect) {
+        const projects = loadProjectsFromStorage();
+        
+        projectSelect.innerHTML = '<option value="">Sin proyecto (Oportunidad)</option>' +
+          projects.filter(p => p.status !== 'completed').map(p => 
+            `<option value="${p.id}">${p.idSync || p.id} - ${p.name}</option>`
+          ).join('');
+      }
       
       // Set default date to selected date
-      document.getElementById('apt-date').value = selectedDate.toISOString().split('T')[0];
+      const dateInput = document.getElementById('apt-date');
+      if (dateInput && selectedDate) {
+        dateInput.value = selectedDate.toISOString().split('T')[0];
+      }
       
       // Set default time to current hour
-      const now = new Date();
-      const hours = String(now.getHours()).padStart(2, '0');
-      document.getElementById('apt-time').value = `${hours}:00`;
+      const timeInput = document.getElementById('apt-time');
+      if (timeInput) {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        timeInput.value = `${hours}:00`;
+      }
+      
+      console.log('✅ Modal opened successfully');
     }
 
     function closeAppointmentModal() {
