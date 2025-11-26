@@ -1370,8 +1370,16 @@
         return;
       }
       
+      // Cargar citas de la agenda para sincronizar estado
+      const appointments = JSON.parse(localStorage.getItem('projectsync_appointments') || '[]');
+      
       tbody.innerHTML = projects.map(project => {
-        const config = statusConfig[project.status] || statusConfig.active;
+        // Sincronizar estado con agenda
+        const projectId = project.idSync || project.id;
+        const projectAppointments = appointments.filter(apt => apt.projectId === projectId);
+        const actualStatus = getProjectStatusFromAgenda(project, projectAppointments);
+        
+        const config = statusConfig[actualStatus] || statusConfig.active;
         // Calcular progreso real basado en fechas
         const progress = calculateProjectProgress(project);
         
@@ -1419,6 +1427,72 @@
       updateFilterCounts(projects);
       
       console.log(' Rendered', projects.length, 'projects in table');
+    }
+    
+    // Determinar estado del proyecto basado en citas de la agenda
+    function getProjectStatusFromAgenda(project, appointments) {
+      // Si el proyecto original está completado, mantener ese estado
+      if (project.status === 'completed' || project.status === 'closed') {
+        return 'completed';
+      }
+      
+      // Si no hay citas, usar el estado original del proyecto
+      if (!appointments || appointments.length === 0) {
+        return project.status || 'active';
+      }
+      
+      // Verificar si hay citas pendientes o confirmadas (programado)
+      const hasPendingAppointments = appointments.some(apt => 
+        apt.status === 'pending' || apt.status === 'confirmed'
+      );
+      
+      // Verificar si hay citas completadas
+      const hasCompletedAppointments = appointments.some(apt => apt.status === 'completed');
+      
+      // Lógica de estado:
+      // - Si tiene citas pendientes/confirmadas -> PROGRAMADO
+      // - Si tiene citas completadas pero no pendientes -> EN CURSO
+      // - Si no tiene citas -> estado original
+      if (hasPendingAppointments) {
+        return 'scheduled';
+      } else if (hasCompletedAppointments) {
+        return 'active';
+      }
+      
+      return project.status || 'active';
+    }
+    
+    // Determinar estado del proyecto basado en citas de la agenda
+    function getProjectStatusFromAgenda(project, appointments) {
+      // Si el proyecto original está completado, mantener ese estado
+      if (project.status === 'completed' || project.status === 'closed') {
+        return 'completed';
+      }
+      
+      // Si no hay citas, usar el estado original del proyecto
+      if (!appointments || appointments.length === 0) {
+        return project.status || 'active';
+      }
+      
+      // Verificar si hay citas pendientes o confirmadas (programado)
+      const hasPendingAppointments = appointments.some(apt => 
+        apt.status === 'pending' || apt.status === 'confirmed'
+      );
+      
+      // Verificar si hay citas completadas
+      const hasCompletedAppointments = appointments.some(apt => apt.status === 'completed');
+      
+      // Lógica de estado:
+      // - Si tiene citas pendientes/confirmadas -> PROGRAMADO
+      // - Si tiene citas completadas pero no pendientes -> EN CURSO
+      // - Si no tiene citas -> estado original
+      if (hasPendingAppointments) {
+        return 'scheduled';
+      } else if (hasCompletedAppointments) {
+        return 'active';
+      }
+      
+      return project.status || 'active';
     }
     
     // Calcular progreso del proyecto basado en fechas
@@ -1978,7 +2052,7 @@
         projectName: project.name,
         client: project.client || 'Cliente no especificado',
         title: `Visita de trabajo - ${project.name}`,
-        notes: `Proyecto: ${project.name}\\nCliente: ${project.client}`,
+        notes: '', // Campo vacío para que el usuario agregue notas específicas
         type: 'installation', // Default for projects
         address: project.address || ''
       };

@@ -1720,7 +1720,7 @@
             </div>
             <div class="modal-body">
               <form id="appointment-form">
-                <div class="form-group">
+                <div class="form-group" id="apt-project-group">
                   <label>Proyecto Asociado (opcional)</label>
                   <select id="apt-project">
                     <option value="">Sin proyecto (Oportunidad)</option>
@@ -2119,6 +2119,15 @@
               setTimeout(() => {
                 console.log('📝 Filling form fields...');
                 
+                // Si viene desde un proyecto, ocultar el campo de proyecto asociado
+                if (appointmentData.sourceType === 'project' && appointmentData.projectId) {
+                  const projectGroup = document.getElementById('apt-project-group');
+                  if (projectGroup) {
+                    projectGroup.style.display = 'none';
+                    console.log('✓ Hidden project field (coming from ProjectSync)');
+                  }
+                }
+                
                 if (appointmentData.projectId) {
                   const projectSelect = document.getElementById('apt-project');
                   if (projectSelect) {
@@ -2155,7 +2164,8 @@
                     console.warn('⚠️ Type select not found');
                   }
                 }
-                if (appointmentData.notes) {
+                // Solo llenar notas si no están vacías
+                if (appointmentData.notes && appointmentData.notes.trim() !== '') {
                   const notesTextarea = document.getElementById('apt-notes');
                   if (notesTextarea) {
                     notesTextarea.value = appointmentData.notes;
