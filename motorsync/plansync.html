@@ -2072,29 +2072,48 @@
 
     // Tab functionality
     document.addEventListener('DOMContentLoaded', () => {
+      console.log('🎯 DOM Content Loaded');
+      
       // Check if coming from ThreadSync or ProjectSync with appointment data
       const urlParams = new URLSearchParams(window.location.search);
       const action = urlParams.get('action');
       const source = urlParams.get('source');
+      const sourceId = urlParams.get('id');
       
-      console.log('🔍 URL Params:', { action, source });
+      console.log('🔍 URL Params:', { action, source, sourceId });
+      
+      // Render projects on load first
+      renderProjectsTable();
       
       if (action === 'new' && (source === 'thread' || source === 'project')) {
         console.log('✅ Detected appointment creation from:', source);
         
         // Load temporary appointment data
         const tempData = localStorage.getItem('temp_appointment_data');
-        console.log('📦 Temp data:', tempData);
+        console.log('📦 Temp data from localStorage:', tempData);
         
         if (tempData) {
           try {
             const appointmentData = JSON.parse(tempData);
-            console.log('📋 Appointment data:', appointmentData);
+            console.log('📋 Parsed appointment data:', appointmentData);
             
-            // Pre-fill the appointment modal with data from thread/project
+            // Wait for DOM to be fully ready, then open modal
             setTimeout(() => {
-              console.log('🚀 Opening modal...');
+              console.log('🚀 Attempting to open modal...');
+              
+              // Verify modal exists
+              const modal = document.getElementById('appointment-modal');
+              console.log('🔍 Modal element found:', modal ? 'YES' : 'NO');
+              
+              if (!modal) {
+                console.error('❌ CRITICAL: Modal element not found in DOM!');
+                alert('Error: Modal no encontrado. Por favor reporta este error.');
+                return;
+              }
+              
+              // Open the modal
               openNewAppointmentModal();
+              console.log('✅ openNewAppointmentModal() called');
               
               // Fill form fields after modal opens
               setTimeout(() => {
@@ -2104,55 +2123,68 @@
                   const projectSelect = document.getElementById('apt-project');
                   if (projectSelect) {
                     projectSelect.value = appointmentData.projectId;
-                    console.log('Set project:', appointmentData.projectId);
+                    console.log('✓ Set project:', appointmentData.projectId);
+                  } else {
+                    console.warn('⚠️ Project select not found');
                   }
                 }
                 if (appointmentData.client) {
                   const clientInput = document.getElementById('apt-client');
                   if (clientInput) {
                     clientInput.value = appointmentData.client;
-                    console.log('Set client:', appointmentData.client);
+                    console.log('✓ Set client:', appointmentData.client);
+                  } else {
+                    console.warn('⚠️ Client input not found');
                   }
                 }
                 if (appointmentData.title) {
                   const titleInput = document.getElementById('apt-title');
                   if (titleInput) {
                     titleInput.value = appointmentData.title;
-                    console.log('Set title:', appointmentData.title);
+                    console.log('✓ Set title:', appointmentData.title);
+                  } else {
+                    console.warn('⚠️ Title input not found');
                   }
                 }
                 if (appointmentData.type) {
                   const typeSelect = document.getElementById('apt-type');
                   if (typeSelect) {
                     typeSelect.value = appointmentData.type;
-                    console.log('Set type:', appointmentData.type);
+                    console.log('✓ Set type:', appointmentData.type);
+                  } else {
+                    console.warn('⚠️ Type select not found');
                   }
                 }
                 if (appointmentData.notes) {
                   const notesTextarea = document.getElementById('apt-notes');
                   if (notesTextarea) {
                     notesTextarea.value = appointmentData.notes;
-                    console.log('Set notes:', appointmentData.notes);
+                    console.log('✓ Set notes:', appointmentData.notes);
+                  } else {
+                    console.warn('⚠️ Notes textarea not found');
                   }
                 }
                 
-                console.log('✅ Form fields filled');
-              }, 200);
+                console.log('✅ Form fields filling complete');
+              }, 300);
               
-              // Clean up temporary data
-              localStorage.removeItem('temp_appointment_data');
-              console.log('🗑️ Temp data removed');
-            }, 500);
+              // Clean up temporary data after successful use
+              setTimeout(() => {
+                localStorage.removeItem('temp_appointment_data');
+                console.log('🗑️ Temp data cleaned from localStorage');
+              }, 1000);
+              
+            }, 800);
           } catch (e) {
             console.error('❌ Error loading appointment data:', e);
+            console.error('Stack trace:', e.stack);
           }
         } else {
           console.warn('⚠️ No temp data found in localStorage');
+          console.log('💡 This might mean the data wasn\'t stored correctly from ThreadSync/ProjectSync');
         }
       }
       
-      // Render projects on load
-      renderProjectsTable();
       
       const projectTabs = document.querySelectorAll('[data-projectsync-tab]');
       const projectPanels = document.querySelectorAll('[data-projectsync-panel]');
