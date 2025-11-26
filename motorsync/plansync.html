@@ -2086,24 +2086,26 @@
             
             // Pre-fill the appointment modal with data from thread/project
             setTimeout(() => {
-              openAppointmentModal();
+              openNewAppointmentModal();
               
-              // Fill form fields
-              if (appointmentData.projectId) {
-                document.getElementById('apt-project').value = appointmentData.projectId;
-              }
-              if (appointmentData.client) {
-                document.getElementById('apt-client').value = appointmentData.client;
-              }
-              if (appointmentData.title) {
-                document.getElementById('apt-title').value = appointmentData.title;
-              }
-              if (appointmentData.type) {
-                document.getElementById('apt-type').value = appointmentData.type;
-              }
-              if (appointmentData.notes) {
-                document.getElementById('apt-notes').value = appointmentData.notes;
-              }
+              // Fill form fields after modal opens
+              setTimeout(() => {
+                if (appointmentData.projectId) {
+                  document.getElementById('apt-project').value = appointmentData.projectId;
+                }
+                if (appointmentData.client) {
+                  document.getElementById('apt-client').value = appointmentData.client;
+                }
+                if (appointmentData.title) {
+                  document.getElementById('apt-title').value = appointmentData.title;
+                }
+                if (appointmentData.type) {
+                  document.getElementById('apt-type').value = appointmentData.type;
+                }
+                if (appointmentData.notes) {
+                  document.getElementById('apt-notes').value = appointmentData.notes;
+                }
+              }, 100);
               
               // Clean up temporary data
               localStorage.removeItem('temp_appointment_data');
@@ -3513,9 +3515,10 @@
       const projectSelect = document.getElementById('apt-project');
       const projects = loadProjectsFromStorage();
       
-      projectSelect.innerHTML = '<option value="">Seleccionar proyecto...</option>' +
+      projectSelect.innerHTML = '<option value="">Sin proyecto (Oportunidad)</option>' +
         projects.filter(p => p.status !== 'completed').map(p => 
           `<option value="${p.id}">${p.idSync || p.id} - ${p.name}</option>`
+        ).join('');
         ).join('');
       
       // Populate dynamic selects from config
