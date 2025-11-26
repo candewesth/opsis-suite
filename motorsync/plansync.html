@@ -1721,14 +1721,19 @@
             <div class="modal-body">
               <form id="appointment-form">
                 <div class="form-group">
-                  <label>Proyecto Asociado</label>
-                  <select id="apt-project" required>
-                    <option value="">Seleccionar proyecto...</option>
+                  <label>Proyecto Asociado (opcional)</label>
+                  <select id="apt-project">
+                    <option value="">Sin proyecto (Oportunidad)</option>
                   </select>
+                </div>
+                
+                <div class="form-group">
+                  <label>Nombre del Cliente *</label>
+                  <input type="text" id="apt-client" placeholder="Nombre del cliente" required>
                 </div>
 
                 <div class="form-group">
-                  <label>Título de la Cita</label>
+                  <label>Título de la Cita *</label>
                   <input type="text" id="apt-title" placeholder="Ej: Inspección inicial, Revisión de avance..." required>
                 </div>
 
@@ -2067,6 +2072,48 @@
 
     // Tab functionality
     document.addEventListener('DOMContentLoaded', () => {
+      // Check if coming from ThreadSync or ProjectSync with appointment data
+      const urlParams = new URLSearchParams(window.location.search);
+      const action = urlParams.get('action');
+      const source = urlParams.get('source');
+      
+      if (action === 'new' && (source === 'thread' || source === 'project')) {
+        // Load temporary appointment data
+        const tempData = localStorage.getItem('temp_appointment_data');
+        if (tempData) {
+          try {
+            const appointmentData = JSON.parse(tempData);
+            
+            // Pre-fill the appointment modal with data from thread/project
+            setTimeout(() => {
+              openAppointmentModal();
+              
+              // Fill form fields
+              if (appointmentData.projectId) {
+                document.getElementById('apt-project').value = appointmentData.projectId;
+              }
+              if (appointmentData.client) {
+                document.getElementById('apt-client').value = appointmentData.client;
+              }
+              if (appointmentData.title) {
+                document.getElementById('apt-title').value = appointmentData.title;
+              }
+              if (appointmentData.type) {
+                document.getElementById('apt-type').value = appointmentData.type;
+              }
+              if (appointmentData.notes) {
+                document.getElementById('apt-notes').value = appointmentData.notes;
+              }
+              
+              // Clean up temporary data
+              localStorage.removeItem('temp_appointment_data');
+            }, 300);
+          } catch (e) {
+            console.error('Error loading appointment data:', e);
+          }
+        }
+      }
+      
       // Render projects on load
       renderProjectsTable();
       
@@ -3325,6 +3372,20 @@
       
       const locationIcon = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>';
       
+      // Show source origin if available
+      let sourceLink = '';
+      if (apt.sourceType && apt.sourceId) {
+        const sourceName = apt.sourceType === 'thread' ? 'ThreadSync' : 'ProjectSync';
+        const sourceUrl = apt.sourceType === 'thread' ? `threadsync.html?id=${apt.sourceId}` : `viewsync.html?id=${apt.sourceId}`;
+        const sourceIcon = apt.sourceType === 'thread' 
+          ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>'
+          : '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>';
+        
+        sourceLink = `<div style="font-size: 11px; color: #02735E; margin-top: 6px;">
+          ${sourceIcon} <a href="${sourceUrl}" style="color: #02735E; text-decoration: none; font-weight: 500;" onclick="event.stopPropagation();">Ver en ${sourceName} →</a>
+        </div>`;
+      }
+      
       return `
         <div class="event-card status-${apt.status}" onclick="viewAppointmentDetails('${apt.id}')">
           <div style="display: flex; justify-content: space-between; align-items: flex-start;">
@@ -3349,6 +3410,7 @@
             </span>
           </div>
           ${apt.address ? `<div style="font-size: 11px; color: #94a3b8; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${locationIcon} ${apt.address}</div>` : ''}
+          ${sourceLink}
         </div>
       `;
     }
@@ -3477,6 +3539,7 @@
 
     function saveAppointment() {
       const projectId = document.getElementById('apt-project').value;
+      const clientInput = document.getElementById('apt-client').value;
       const title = document.getElementById('apt-title').value;
       const date = document.getElementById('apt-date').value;
       const time = document.getElementById('apt-time').value;
@@ -3486,7 +3549,7 @@
       const technician = document.getElementById('apt-technician').options[document.getElementById('apt-technician').selectedIndex].text;
       const notes = document.getElementById('apt-notes').value;
       
-      if (!projectId || !title || !date || !time) {
+      if (!title || !date || !time || !clientInput) {
         alert('Por favor completa todos los campos requeridos');
         return;
       }
@@ -3494,11 +3557,16 @@
       const projects = loadProjectsFromStorage();
       const project = projects.find(p => p.id === projectId);
       
+      // Check if appointment was created from thread/project link
+      const urlParams = new URLSearchParams(window.location.search);
+      const source = urlParams.get('source');
+      const sourceId = urlParams.get('id');
+      
       const appointment = {
         id: `APT-${Date.now()}`,
-        projectId,
-        projectName: project?.name || 'Proyecto',
-        client: project?.client || '',
+        projectId: projectId || null,
+        projectName: project?.name || 'Sin proyecto',
+        client: clientInput || project?.client || '',
         title,
         date,
         time,
@@ -3507,7 +3575,10 @@
         technician: technician !== 'Sin asignar' ? technician : '',
         status,
         notes,
-        address: project?.address || ''
+        address: project?.address || '',
+        // Integration fields
+        sourceType: source || (projectId ? 'project' : null), // 'thread', 'project', or null
+        sourceId: sourceId || (projectId || null) // ID of the thread or project
       };
       
       saveAppointmentToStorage(appointment);
