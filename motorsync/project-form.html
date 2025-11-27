@@ -947,7 +947,69 @@
       }
     }
 
-    // IDSync Management
+    // ========================================
+    // IDSYNC VALIDATION & CLEANUP FUNCTIONS
+    // ========================================
+    
+    function cleanupCancelledIDs() {
+      try {
+        const usedIDs = JSON.parse(localStorage.getItem('usedIDSyncs') || '[]');
+        const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000); // 24 horas
+        
+        // Filtrar: mantener solo los IDs que NO estén cancelados O que sean recientes
+        const cleaned = usedIDs.filter(item => {
+          if (item.status === 'cancelled') {
+            const createdTime = new Date(item.createdAt).getTime();
+            return createdTime > oneDayAgo; // Mantener solo cancelados recientes
+          }
+          return true; // Mantener todos los no-cancelados
+        });
+        
+        const removed = usedIDs.length - cleaned.length;
+        if (removed > 0) {
+          localStorage.setItem('usedIDSyncs', JSON.stringify(cleaned));
+          console.log(`🧹 Limpiados ${removed} IDs cancelados antiguos`);
+        }
+      } catch (e) {
+        console.error('Error cleaning up cancelled IDs:', e);
+      }
+    }
+    
+    function findReusableIDSync() {
+      try {
+        const usedIDs = JSON.parse(localStorage.getItem('usedIDSyncs') || '[]');
+        const fiveMinutesAgo = Date.now() - (5 * 60 * 1000); // 5 minutos
+        
+        // Buscar IDs cancelados en los últimos 5 minutos
+        const recentCancelled = usedIDs.find(item => {
+          if (item.status === 'cancelled') {
+            const createdTime = new Date(item.createdAt).getTime();
+            return createdTime > fiveMinutesAgo;
+          }
+          return false;
+        });
+        
+        if (recentCancelled) {
+          // Cambiar status a 'reused' para tracking
+          const index = usedIDs.findIndex(item => item.idSync === recentCancelled.idSync);
+          if (index !== -1) {
+            usedIDs[index].status = 'reused';
+            usedIDs[index].reusedAt = new Date().toISOString();
+            localStorage.setItem('usedIDSyncs', JSON.stringify(usedIDs));
+          }
+          return recentCancelled.idSync;
+        }
+        
+        return null;
+      } catch (e) {
+        console.error('Error finding reusable ID:', e);
+        return null;
+      }
+    }
+
+    // ========================================
+    // IDSYNC MANAGEMENT
+    // ========================================
     function generateNextIDSync() {
       if (idSyncGenerated) {
         // Ya se generó un ID para este proyecto
@@ -958,9 +1020,23 @@
         return;
       }
 
-      const lastID = parseInt(localStorage.getItem('lastIDSync') || '1000');
-      const nextID = lastID + 1;
-      const idSyncValue = `IDSYNC-${nextID}`;
+      // Limpiar IDs cancelados antiguos (más de 1 día)
+      cleanupCancelledIDs();
+      
+      // Verificar si hay IDs cancelados recientes (menos de 5 minutos) que se puedan reutilizar
+      const reusableID = findReusableIDSync();
+      
+      let idSyncValue;
+      if (reusableID) {
+        idSyncValue = reusableID;
+        console.log('♻️ Reutilizando ID cancelado:', idSyncValue);
+      } else {
+        // Generar nuevo ID
+        const lastID = parseInt(localStorage.getItem('lastIDSync') || '1000');
+        const nextID = lastID + 1;
+        idSyncValue = `IDSYNC-${nextID}`;
+        console.log('🆕 Generando nuevo ID:', idSyncValue);
+      }
       
       document.getElementById('idSync').value = idSyncValue;
       

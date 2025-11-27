@@ -988,6 +988,14 @@
     <div class="project-title-row">
       <div style="flex: 1;">
         <h1 class="project-title" style="margin-bottom: 16px; text-align: center; font-size: 24px;">Instalación HVAC Completo - Residencial Torres</h1>
+        <div id="thread-link-container" style="display: none; text-align: center; margin-bottom: 12px;">
+          <button onclick="openLinkedThread()" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 8px 16px; border-radius: 8px; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span id="thread-link-text">Ver Conversación Original</span>
+          </button>
+        </div>
         <div style="display: grid; grid-template-columns: 1fr 2px 1fr; gap: 24px; align-items: center; border-top: 1px solid rgba(255,255,255,0.3); border-bottom: 1px solid rgba(255,255,255,0.3); padding: 12px 0;">
           <div class="project-id" style="justify-content: center;">
             <span class="id-badge">
@@ -1459,6 +1467,19 @@
   <script>
     console.log('🔧 ViewSync JavaScript loaded - v2024-11-25');
     
+    // Global variable for linked thread ID
+    window.linkedThreadId = null;
+    
+    // Function to open linked thread
+    function openLinkedThread() {
+      if (window.linkedThreadId) {
+        console.log('🔗 Abriendo thread vinculado:', window.linkedThreadId);
+        window.location.href = `threadsync.html?id=${window.linkedThreadId}`;
+      } else {
+        alert('⚠️ No se encontró el thread vinculado');
+      }
+    }
+    
     // ========================================
     // LOAD PROJECT DATA DYNAMICALLY
     // ========================================
@@ -1510,6 +1531,19 @@
       const titleElement = document.querySelector('.project-title');
       if (titleElement) {
         titleElement.textContent = `${project.name} - ${project.client}`;
+      }
+      
+      // Check if project was converted from thread
+      if (project.convertedFromThread) {
+        const threadLinkContainer = document.getElementById('thread-link-container');
+        if (threadLinkContainer) {
+          threadLinkContainer.style.display = 'block';
+          
+          // Store thread ID globally for openLinkedThread function
+          window.linkedThreadId = project.convertedFromThread;
+          
+          console.log('🔗 Proyecto convertido desde thread:', project.convertedFromThread);
+        }
       }
       
       // Update IDSync badge
