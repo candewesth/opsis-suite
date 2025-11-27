@@ -4416,23 +4416,23 @@
           <div class="grid grid-4 kpi-grid">
             <div class="stat-card">
               <div class="stat-label">Total Proyectos</div>
-              <div class="stat-value">24</div>
-              <div class="stat-change">8 activos</div>
+              <div class="stat-value" id="stat-total-projects">0</div>
+              <div class="stat-change" id="stat-active-projects">0 activos</div>
             </div>
             <div class="stat-card">
               <div class="stat-label">En Curso</div>
-              <div class="stat-value">8</div>
-              <div class="stat-change positive">↑ 2 esta semana</div>
+              <div class="stat-value" id="stat-in-progress">0</div>
+              <div class="stat-change positive" id="stat-in-progress-change">--</div>
             </div>
             <div class="stat-card">
               <div class="stat-label">Completados</div>
-              <div class="stat-value">12</div>
-              <div class="stat-change">Este mes</div>
+              <div class="stat-value" id="stat-completed">0</div>
+              <div class="stat-change" id="stat-completed-change">Este mes</div>
             </div>
             <div class="stat-card">
               <div class="stat-label">Programados</div>
-              <div class="stat-value">4</div>
-              <div class="stat-change">Próximos 7 días</div>
+              <div class="stat-value" id="stat-scheduled">0</div>
+              <div class="stat-change" id="stat-scheduled-change">Próximos 7 días</div>
             </div>
           </div>
 
@@ -4501,8 +4501,9 @@
                     <th>Acciones</th>
                   </tr>
                 </thead>
-                <tbody>
-                <tr data-order-id="ORD-201">
+                <tbody id="overview-projects-tbody">
+                <!-- Los proyectos se cargarán dinámicamente desde localStorage -->
+                <tr style="display: none;" data-order-id="ORD-201">
                   <td>
                     <strong data-order-idsync="ORD-201">────────</strong>
                     <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0 0;" data-order-projectcode="ORD-201">Proyecto #1024</p>
@@ -4705,22 +4706,22 @@
           <div class="grid grid-4 kpi-grid">
             <div class="stat-card">
               <div class="stat-label">Hoy</div>
-              <div class="stat-value">5</div>
-              <div class="stat-change">3 confirmadas</div>
+              <div class="stat-value" id="stat-appts-today">0</div>
+              <div class="stat-change" id="stat-appts-today-confirmed">0 confirmadas</div>
             </div>
             <div class="stat-card">
               <div class="stat-label">Esta Semana</div>
-              <div class="stat-value">18</div>
-              <div class="stat-change positive">↑ 4 vs semana pasada</div>
+              <div class="stat-value" id="stat-appts-week">0</div>
+              <div class="stat-change" id="stat-appts-week-change">--</div>
             </div>
             <div class="stat-card">
               <div class="stat-label">Próximos 7 días</div>
-              <div class="stat-value">24</div>
-              <div class="stat-change">12 proyectos activos</div>
+              <div class="stat-value" id="stat-appts-next7">0</div>
+              <div class="stat-change" id="stat-appts-projects">0 proyectos activos</div>
             </div>
             <div class="stat-card">
               <div class="stat-label">Pendientes</div>
-              <div class="stat-value">7</div>
+              <div class="stat-value" id="stat-appts-pending">0</div>
               <div class="stat-change">Sin confirmar</div>
             </div>
           </div>
@@ -5308,8 +5309,9 @@
                       <th>Acciones</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    <tr>
+                  <tbody id="agenda-appointments-tbody">
+                    <!-- Las citas se cargarán dinámicamente desde localStorage -->
+                    <tr style="display: none;">
                       <td><strong>19 Nov</strong></td>
                       <td>8:00 AM</td>
                       <td>Inspección Inicial - Plaza Comercial</td>
@@ -5389,18 +5391,18 @@
           <div class="grid grid-3 kpi-grid" style="margin-top: 24px;">
             <div class="stat-card">
               <div class="stat-label">Clientes activos</div>
-              <div class="stat-value">127</div>
-              <div class="stat-change positive">↑ 14 este mes</div>
+              <div class="stat-value" id="stat-clients-active">0</div>
+              <div class="stat-change" id="stat-clients-change">--</div>
             </div>
             <div class="stat-card">
               <div class="stat-label">Proyectos abiertos</div>
-              <div class="stat-value">24</div>
-              <div class="stat-change">8 en curso</div>
+              <div class="stat-value" id="stat-clients-projects">0</div>
+              <div class="stat-change" id="stat-clients-projects-status">0 en curso</div>
             </div>
             <div class="stat-card">
               <div class="stat-label">Facturación acumulada</div>
-              <div class="stat-value">$3.1M</div>
-              <div class="stat-change positive">↑ 9% vs 2023</div>
+              <div class="stat-value" id="stat-clients-revenue">$0</div>
+              <div class="stat-change" id="stat-clients-revenue-change">--</div>
             </div>
           </div>
 
@@ -18241,6 +18243,202 @@
           sessionStorage.setItem('lastHowSyncReferrer', window.location.href);
         });
       });
+    });
+
+    // ========================================================================
+    // SISTEMA DINÁMICO DE ESTADÍSTICAS DEL DASHBOARD
+    // ========================================================================
+    function calculateProjectStats() {
+      const projectsData = JSON.parse(localStorage.getItem('projectsync_projects') || '{}');
+      const projects = Object.values(projectsData);
+      
+      const total = projects.length;
+      const active = projects.filter(p => p.status === 'active').length;
+      const inProgress = projects.filter(p => p.status === 'in-progress').length;
+      const completed = projects.filter(p => p.status === 'completed').length;
+      const scheduled = projects.filter(p => p.status === 'scheduled').length;
+      
+      // Actualizar KPIs de Overview
+      const totalEl = document.getElementById('stat-total-projects');
+      const activeEl = document.getElementById('stat-active-projects');
+      const inProgressEl = document.getElementById('stat-in-progress');
+      const inProgressChangeEl = document.getElementById('stat-in-progress-change');
+      const completedEl = document.getElementById('stat-completed');
+      const scheduledEl = document.getElementById('stat-scheduled');
+      
+      if (totalEl) totalEl.textContent = total;
+      if (activeEl) activeEl.textContent = `${active} activos`;
+      if (inProgressEl) inProgressEl.textContent = inProgress;
+      if (inProgressChangeEl) inProgressChangeEl.textContent = inProgress > 0 ? `↑ ${inProgress} activos` : '--';
+      if (completedEl) completedEl.textContent = completed;
+      if (scheduledEl) scheduledEl.textContent = scheduled;
+      
+      return { total, active, inProgress, completed, scheduled, projects };
+    }
+    
+    function calculateAgendaStats() {
+      const appointmentsData = JSON.parse(localStorage.getItem('projectsync_appointments') || '{}');
+      const appointments = Object.values(appointmentsData);
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayTime = today.getTime();
+      const weekTime = todayTime + (7 * 24 * 60 * 60 * 1000);
+      
+      const apptToday = appointments.filter(a => {
+        if (!a.date) return false;
+        const apptDate = new Date(a.date);
+        apptDate.setHours(0, 0, 0, 0);
+        return apptDate.getTime() === todayTime;
+      }).length;
+      
+      const apptWeek = appointments.filter(a => {
+        if (!a.date) return false;
+        const apptDate = new Date(a.date);
+        return apptDate >= today && apptDate <= new Date(weekTime);
+      }).length;
+      
+      const pending = appointments.filter(a => a.status === 'pending').length;
+      
+      // Actualizar KPIs de Agenda
+      const todayEl = document.getElementById('stat-appts-today');
+      const weekEl = document.getElementById('stat-appts-week');
+      const next7El = document.getElementById('stat-appts-next7');
+      const pendingEl = document.getElementById('stat-appts-pending');
+      
+      if (todayEl) todayEl.textContent = apptToday;
+      if (weekEl) weekEl.textContent = apptWeek;
+      if (next7El) next7El.textContent = apptWeek;
+      if (pendingEl) pendingEl.textContent = pending;
+      
+      return { apptToday, apptWeek, pending, appointments };
+    }
+    
+    function renderOverviewProjectsTable() {
+      const tbody = document.getElementById('overview-projects-tbody');
+      if (!tbody) return;
+      
+      const projectsData = JSON.parse(localStorage.getItem('projectsync_projects') || '{}');
+      const projects = Object.values(projectsData).slice(0, 10); // Mostrar solo 10
+      
+      if (projects.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 40px; color: #94a3b8;">No hay proyectos aún. <a href="projectsync.html" style="color: #02735E;">Crea tu primer proyecto</a></td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = projects.map(project => {
+        const statusColors = {
+          'active': 'rgba(2, 115, 94, 0.1); color: #02735E',
+          'in-progress': 'rgba(2, 115, 94, 0.1); color: #02735E',
+          'scheduled': 'rgba(234, 179, 8, 0.1); color: #eab308',
+          'completed': 'rgba(5, 150, 105, 0.1); color: #059669',
+          'cancelled': 'rgba(239, 68, 68, 0.1); color: #ef4444'
+        };
+        const statusText = {
+          'active': 'ACTIVO',
+          'in-progress': 'EN CURSO',
+          'scheduled': 'PROGRAMADO',
+          'completed': 'COMPLETADO',
+          'cancelled': 'CANCELADO'
+        };
+        
+        return `
+          <tr data-order-id="${project.id}">
+            <td>
+              <strong>${project.idSync || '────────'}</strong>
+              <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 0 0;">${project.id}</p>
+            </td>
+            <td>
+              <strong>${project.name || 'Sin nombre'}</strong>
+              <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">${project.address || ''}</p>
+            </td>
+            <td>${project.client || 'Sin cliente'}</td>
+            <td><span class="badge" style="background: ${statusColors[project.status] || statusColors.active}; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">${statusText[project.status] || 'ACTIVO'}</span></td>
+            <td>${project.startDate || '--'}</td>
+            <td>${project.endDate || '--'}</td>
+            <td><strong>$${project.amount ? project.amount.toLocaleString() : '0'}</strong></td>
+            <td>
+              <div style="width: 100%;">
+                <div style="background: #e0e0e0; height: 8px; border-radius: 4px; overflow: hidden;">
+                  <div style="background: linear-gradient(135deg, #02735E, #035951); width: ${project.progress || 0}%; height: 100%;"></div>
+                </div>
+                <p style="font-size: 11px; color: #64748b; margin: 4px 0 0 0;">${project.progress || 0}%</p>
+              </div>
+            </td>
+            <td>
+              <button class="btn btn-small" style="background: #035951; color: white;" onclick="window.location.href='threadsync.html?project=${project.id}'">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+              </button>
+            </td>
+            <td>
+              <button class="btn btn-small btn-secondary" onclick="window.location.href='viewsync.html?id=${project.id}'">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+    
+    function renderAgendaAppointmentsTable() {
+      const tbody = document.getElementById('agenda-appointments-tbody');
+      if (!tbody) return;
+      
+      const appointmentsData = JSON.parse(localStorage.getItem('projectsync_appointments') || '{}');
+      const appointments = Object.values(appointmentsData).slice(0, 10);
+      
+      if (appointments.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #94a3b8;">No hay citas agendadas. <a href="plansync.html" style="color: #02735E;">Agenda tu primera cita</a></td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = appointments.map(appt => {
+        const statusColors = {
+          'confirmed': 'rgba(2,115,94,0.1); color: #02735E',
+          'pending': 'rgba(234,179,8,0.1); color: #eab308',
+          'en-route': 'rgba(59,130,246,0.1); color: #3b82f6',
+          'completed': 'rgba(5,150,105,0.1); color: #059669'
+        };
+        const statusText = {
+          'confirmed': 'Confirmado',
+          'pending': 'Pendiente',
+          'en-route': 'En ruta',
+          'completed': 'Completado'
+        };
+        
+        const apptDate = appt.date ? new Date(appt.date) : new Date();
+        const dateStr = apptDate.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+        
+        return `
+          <tr>
+            <td><strong>${dateStr}</strong></td>
+            <td>${appt.time || '--'}</td>
+            <td>${appt.title || appt.service || 'Sin descripción'}</td>
+            <td>${appt.client || 'Sin cliente'}</td>
+            <td>${appt.location || appt.address || 'Sin ubicación'}</td>
+            <td>${appt.crew || 'Sin asignar'}</td>
+            <td><span class="badge" style="background: ${statusColors[appt.status] || statusColors.pending}">${statusText[appt.status] || 'Pendiente'}</span></td>
+            <td><button class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px;" onclick="window.location.href='plansync.html?id=${appt.id}'">Ver</button></td>
+          </tr>
+        `;
+      }).join('');
+    }
+    
+    // Inicializar al cargar el dashboard
+    document.addEventListener('DOMContentLoaded', () => {
+      // Solo ejecutar si estamos en motorsync.html (dashboard principal)
+      if (window.location.pathname.includes('motorsync.html')) {
+        console.log('🔄 Cargando estadísticas dinámicas del dashboard...');
+        calculateProjectStats();
+        calculateAgendaStats();
+        renderOverviewProjectsTable();
+        renderAgendaAppointmentsTable();
+        console.log('✅ Dashboard actualizado con datos reales de localStorage');
+      }
     });
   </script>
 
