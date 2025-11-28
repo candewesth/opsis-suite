@@ -215,7 +215,7 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      color: var(--text-secondary);
+      color: #1e293b;
       cursor: pointer;
       font-weight: 600;
       font-size: 14px;
@@ -223,15 +223,19 @@
       border-left: 3px solid transparent;
       white-space: nowrap;
     }
+    
+    .sidebar-item svg {
+      color: #1e293b;
+      transition: color 0.3s ease;
+      width: 20px;
+      height: 20px;
+      min-width: 20px;
+      min-height: 20px;
+    }
 
     aside:not(:hover) .sidebar-item {
       justify-content: center;
       padding: 14px;
-    }
-
-    aside:not(:hover) .sidebar-item svg {
-      width: 24px;
-      height: 24px;
     }
 
     /* Sistema de opacity solo para sidebar NO colapsado */
@@ -251,11 +255,19 @@
       color: #02735E;
       border-left-color: #02735E;
     }
+    
+    .sidebar-item.active svg {
+      color: #02735E;
+    }
 
     .sidebar-item:hover {
       background: rgba(2, 115, 94, 0.06);
       color: #02735E;
       border-left-color: #02735E;
+    }
+    
+    .sidebar-item:hover svg {
+      color: #02735E;
     }
 
     aside {
@@ -309,7 +321,7 @@
     aside.collapsed.hover-expanded .sidebar-item {
       justify-content: flex-start !important;
       padding: 14px 16px !important;
-      color: var(--text-primary) !important;
+      color: #1e293b !important;
     }
     
     aside.collapsed.hover-expanded .sidebar-item.active {
@@ -320,10 +332,12 @@
     aside.collapsed.hover-expanded .sidebar-item svg {
       margin-right: 12px !important;
       margin-left: 0 !important;
+      color: inherit !important;
     }
     
     aside.collapsed.hover-expanded .sidebar-item:hover {
       background: rgba(2, 115, 94, 0.06) !important;
+      color: #02735E !important;
     }
 
     aside.collapsed .sidebar-item span {
@@ -1039,14 +1053,14 @@
       border: none;
       border-radius: 16px;
       padding: 16px;
-      box-shadow: 0 14px 32px rgba(2, 115, 94, 0.22);
+      box-shadow: 0 4px 12px rgba(2, 115, 94, 0.15);
       transition: all 0.3s ease;
       color: #ffffff;
     }
 
     .stat-card:hover {
       transform: translateY(-6px);
-      box-shadow: 0 22px 48px rgba(2, 115, 94, 0.3);
+      box-shadow: 0 8px 20px rgba(2, 115, 94, 0.2);
     }
 
     .stat-card .stat-label {
@@ -10234,6 +10248,9 @@
           } else if (item.dataset.page) {
             item.addEventListener('click', () => {
               console.log('Navegando a:', item.dataset.page);
+              
+              // Remover hover-expanded inmediatamente
+              sidebar.classList.remove('hover-expanded');
               
               // Colapsar sidebar para todas las páginas excepto Dashboard
               if (item.dataset.page === 'dashboard') {
