@@ -234,13 +234,14 @@
       height: 24px;
     }
 
-    aside:not(:hover) .sidebar-item span {
+    /* Sistema de opacity solo para sidebar NO colapsado */
+    aside:not(.collapsed):not(:hover) .sidebar-item span {
       opacity: 0;
       width: 0;
       overflow: hidden;
     }
 
-    aside:hover .sidebar-item span {
+    aside:not(.collapsed):hover .sidebar-item span {
       opacity: 1;
       width: auto;
     }
@@ -271,12 +272,58 @@
       z-index: 100;
     }
 
-    aside:hover {
+    /* NO expandir automáticamente si tiene clase collapsed - usar solo hover-expanded */
+    aside:not(.collapsed):hover {
       width: 250px;
     }
 
     aside.collapsed {
       width: 70px;
+    }
+    
+    /* Expandir sidebar temporalmente al hacer hover */
+    aside.collapsed.hover-expanded {
+      width: 250px;
+    }
+    
+    aside.collapsed.hover-expanded .sidebar-item span {
+      display: inline !important;
+      position: static !important;
+      transform: none !important;
+      background: transparent !important;
+      color: inherit !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      box-shadow: none !important;
+      white-space: normal !important;
+      pointer-events: auto !important;
+      font-size: inherit !important;
+      border-radius: 0 !important;
+      z-index: auto !important;
+    }
+    
+    aside.collapsed.hover-expanded .sidebar-item span::before {
+      display: none !important;
+    }
+    
+    aside.collapsed.hover-expanded .sidebar-item {
+      justify-content: flex-start !important;
+      padding: 14px 16px !important;
+      color: var(--text-primary) !important;
+    }
+    
+    aside.collapsed.hover-expanded .sidebar-item.active {
+      color: #02735E !important;
+      background: white !important;
+    }
+    
+    aside.collapsed.hover-expanded .sidebar-item svg {
+      margin-right: 12px !important;
+      margin-left: 0 !important;
+    }
+    
+    aside.collapsed.hover-expanded .sidebar-item:hover {
+      background: rgba(2, 115, 94, 0.06) !important;
     }
 
     aside.collapsed .sidebar-item span {
@@ -351,6 +398,12 @@
 
     aside.collapsed .sidebar-item:hover span {
       display: block;
+    }
+    
+    /* NO mostrar tooltip cuando sidebar está expandido por hover */
+    aside.collapsed.hover-expanded .sidebar-item span::before {
+      content: none !important;
+      display: none !important;
     }
 
     main {
@@ -4178,7 +4231,7 @@
         </svg>
         <span>HowSync</span>
       </a>
-      <div class="sidebar-item" data-page="customers" style="display: flex; align-items: center; gap: 12px;">
+      <div class="sidebar-item" data-page="customers" style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="min-width: 20px;">
           <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
           <circle cx="9" cy="7" r="4"></circle>
@@ -4186,7 +4239,7 @@
         </svg>
         <span data-i18n="customers">Clientes</span>
       </div>
-      <div class="sidebar-item" data-page="management" style="display: flex; align-items: center; gap: 12px;">
+      <div class="sidebar-item" data-page="management" style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="min-width: 20px;">
           <line x1="12" y1="1" x2="12" y2="23"></line>
           <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
@@ -6144,8 +6197,11 @@
 
       <section id="page-customers" class="page" aria-labelledby="customers-title" hidden>
         <div class="page-header">
-          <h2 class="page-title" id="customers-title" data-i18n="customers">Clientes</h2>
-          <button class="btn btn-primary" id="btn-new-customer" data-capability="customers.manage" data-capability-display="">＋ <span data-i18n="newCustomer">Nuevo cliente</span></button>
+          <div>
+            <h2 class="page-title" id="customers-title" data-i18n="customers">Clientes</h2>
+            <p class="schedule-subtitle">Gestión de Relaciones</p>
+          </div>
+          <button class="btn btn-primary" id="btn-new-customer" data-capability="customers.manage">＋ <span data-i18n="newCustomer">Nuevo cliente</span></button>
         </div>
 
         <!-- Stats -->
@@ -6447,7 +6503,7 @@
             <h2 class="page-title" id="management-title" data-i18n="management">Management</h2>
             <p class="schedule-subtitle" data-i18n="managementSubtitle">Controla accesos, permisos y responsables del sistema Opsis.</p>
           </div>
-          <button class="btn btn-primary" id="btn-new-manager" data-capability="management.manage" data-capability-display="">＋ <span data-i18n="managementAddUser">Nuevo administrador</span></button>
+          <button class="btn btn-primary" id="btn-new-manager" data-capability="management.manage">＋ <span data-i18n="managementAddUser">Nuevo administrador</span></button>
         </div>
         <div class="grid grid-3 kpi-grid" id="management-kpis">
           <div class="stat-card">
@@ -10146,6 +10202,23 @@
       bindUI() {
         const sidebar = document.getElementById('sidebar');
         const appShell = document.querySelector('.app-shell');
+        
+        // Expandir sidebar temporalmente al hacer hover cuando está colapsado
+        let hoverTimeout;
+        sidebar.addEventListener('mouseenter', () => {
+          if (sidebar.classList.contains('collapsed')) {
+            clearTimeout(hoverTimeout);
+            sidebar.classList.add('hover-expanded');
+          }
+        });
+        
+        sidebar.addEventListener('mouseleave', () => {
+          if (sidebar.classList.contains('collapsed')) {
+            hoverTimeout = setTimeout(() => {
+              sidebar.classList.remove('hover-expanded');
+            }, 300);
+          }
+        });
         
         document.querySelectorAll('.sidebar-item').forEach((item) => {
           // Skip navigation links - they handle their own navigation
@@ -18439,6 +18512,680 @@
         renderAgendaAppointmentsTable();
         console.log('✅ Dashboard actualizado con datos reales de localStorage');
       }
+    });
+  </script>
+
+  <!-- ==================== CUSTOMERS MANAGEMENT ==================== -->
+  <script>
+    // Customers localStorage key
+    const CUSTOMERS_KEY = 'motorsync_customers';
+
+    // Initialize demo customers if none exist (based on Opsis Plumbing structure)
+    function initializeDemoCustomers() {
+      let customers = JSON.parse(localStorage.getItem(CUSTOMERS_KEY) || '[]');
+      if (customers.length === 0) {
+        const now = new Date().toISOString();
+        customers = [
+          {
+            id: 'cus-001',
+            name: 'Constructora Atlas',
+            phone: '+52 55 6789 4321',
+            email: 'contacto@atlas.mx',
+            address_text: 'Av. Reforma 123, CDMX',
+            tags: ['B2B', 'VIP'],
+            type: 'commercial',
+            projects: [],
+            totalSpent: 186500,
+            lastService: '2025-01-10',
+            satisfaction: 4.9,
+            created_at: now
+          },
+          {
+            id: 'cus-002',
+            name: 'Residencial Alameda',
+            phone: '+52 55 1357 2468',
+            email: 'admin@alameda.mx',
+            address_text: 'Calle 5 #88, Naucalpan',
+            tags: ['Residencial', 'Recurrente'],
+            type: 'residential',
+            projects: [],
+            totalSpent: 75000,
+            lastService: '2025-01-08',
+            satisfaction: 4.7,
+            created_at: now
+          },
+          {
+            id: 'cus-003',
+            name: 'Fabricas Arali',
+            phone: '+52 722 555 9988',
+            email: 'mantenimiento@arali.mx',
+            address_text: 'Parque Industrial 45, Toluca',
+            tags: ['Industrial', 'B2B'],
+            type: 'commercial',
+            projects: [],
+            totalSpent: 320000,
+            lastService: '2025-01-05',
+            satisfaction: 4.8,
+            created_at: now
+          },
+          {
+            id: 'cus-004',
+            name: 'Hotel Aurora',
+            phone: '+52 998 222 4411',
+            email: 'ops@aurora.mx',
+            address_text: 'Zona Hotelera, Cancún',
+            tags: ['Hotel', 'VIP', 'Urgencias'],
+            type: 'commercial',
+            projects: [],
+            totalSpent: 560000,
+            lastService: '2025-01-12',
+            satisfaction: 5.0,
+            created_at: now
+          },
+          {
+            id: 'cus-005',
+            name: 'Colegio Faro',
+            phone: '+52 442 777 8899',
+            email: 'compras@faro.mx',
+            address_text: 'Av. Universidad 2000, Querétaro',
+            tags: ['Educación', 'Gubernamental'],
+            type: 'commercial',
+            projects: [],
+            totalSpent: 28000,
+            lastService: '2025-01-03',
+            satisfaction: 4.6,
+            created_at: now
+          },
+          {
+            id: 'cus-006',
+            name: 'Residencial Torres',
+            phone: '+52 33 1234 5678',
+            email: 'ops@torres.com',
+            address_text: 'Av. Vallarta 2020, Guadalajara, JAL',
+            tags: ['Residencial', 'Premium'],
+            type: 'residential',
+            projects: [],
+            totalSpent: 124500,
+            lastService: '2025-01-11',
+            satisfaction: 4.9,
+            created_at: now
+          }
+        ];
+        localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(customers));
+      }
+      return customers;
+    }
+
+    // Get all customers
+    function getCustomers() {
+      return JSON.parse(localStorage.getItem(CUSTOMERS_KEY) || '[]');
+    }
+
+    // Save customers
+    function saveCustomers(customers) {
+      localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(customers));
+    }
+
+    // Add new customer (improved structure from Opsis Plumbing)
+    function addCustomer(customerData) {
+      const customers = getCustomers();
+      const newId = `cus-${String(customers.length + 1).padStart(3, '0')}`;
+      const newCustomer = {
+        id: newId,
+        name: customerData.name,
+        phone: customerData.phone || null,
+        email: customerData.email || null,
+        address_text: customerData.address_text || null,
+        tags: customerData.tags || [],
+        type: customerData.type || 'residential',
+        projects: [],
+        totalSpent: 0,
+        satisfaction: 0,
+        created_at: new Date().toISOString()
+      };
+      customers.push(newCustomer);
+      saveCustomers(customers);
+      return newCustomer;
+    }
+
+    // Update customer
+    function updateCustomer(customerId, updates) {
+      const customers = getCustomers();
+      const index = customers.findIndex(c => c.id === customerId);
+      if (index !== -1) {
+        customers[index] = { ...customers[index], ...updates };
+        saveCustomers(customers);
+        return customers[index];
+      }
+      return null;
+    }
+
+    // Delete customer
+    function deleteCustomer(customerId) {
+      const customers = getCustomers();
+      const filtered = customers.filter(c => c.id !== customerId);
+      saveCustomers(filtered);
+    }
+
+    // Render customers table (improved with Opsis Plumbing design)
+    function renderCustomersTable() {
+      const customers = getCustomers();
+      const tbody = document.querySelector('#page-customers table tbody');
+      if (!tbody) return;
+
+      if (customers.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-secondary);">No hay clientes registrados. Haz clic en "+ Nuevo cliente" para agregar uno.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = customers.map(customer => {
+        const typeColors = {
+          residential: 'rgba(59, 130, 246, 0.1); color: #3b82f6',
+          commercial: 'rgba(251, 146, 60, 0.1); color: #fb923c'
+        };
+        const typeLabels = {
+          residential: 'Residencial',
+          commercial: 'Comercial'
+        };
+
+        const projectCount = customer.projects?.length || 0;
+        const tags = customer.tags?.join(', ') || '';
+
+        return `
+          <tr onclick="viewCustomerDetail('${customer.id}')" style="cursor: pointer;">
+            <td>
+              <strong>${customer.name}</strong>
+              <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">
+                ${customer.email || ''}
+                ${tags ? `<span style="margin-left: 8px; padding: 2px 6px; background: rgba(100,116,139,0.1); border-radius: 4px; font-size: 10px; text-transform: uppercase;">${tags}</span>` : ''}
+              </p>
+            </td>
+            <td><span class="badge" style="background: ${typeColors[customer.type] || typeColors.residential}">${typeLabels[customer.type] || 'Residencial'}</span></td>
+            <td>
+              ${customer.phone ? `📞 ${customer.phone}` : ''}
+              ${customer.address_text ? `<br><small style="color: #64748b;">📍 ${customer.address_text.substring(0, 30)}${customer.address_text.length > 30 ? '...' : ''}</small>` : ''}
+            </td>
+            <td><strong>${projectCount}</strong> proyecto${projectCount !== 1 ? 's' : ''}</td>
+            <td>${customer.lastService ? new Date(customer.lastService).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' }) : '--'}</td>
+            <td><strong>$${customer.totalSpent?.toLocaleString('es-MX')}</strong></td>
+            <td>
+              <button class="btn btn-small btn-primary" onclick="event.stopPropagation(); viewCustomerDetail('${customer.id}')">Ver</button>
+              <button class="btn btn-small btn-secondary" onclick="event.stopPropagation(); editCustomer('${customer.id}')" style="margin-left: 4px;">Editar</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      updateCustomerStats();
+    }
+
+    // Update customer statistics
+    function updateCustomerStats() {
+      const customers = getCustomers();
+      const projects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+
+      document.getElementById('customer-stat-total').textContent = customers.length;
+      document.getElementById('customer-stat-addresses').textContent = projects.length;
+      
+      const activeProjects = projects.filter(p => p.status !== 'completed' && p.status !== 'cancelled').length;
+      document.getElementById('customer-stat-active').textContent = activeProjects;
+    }
+
+    // View customer detail (improved modal similar to Opsis Plumbing)
+    function viewCustomerDetail(customerId) {
+      const customer = getCustomers().find(c => c.id === customerId);
+      if (!customer) return;
+
+      const projects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+      const customerProjects = projects.filter(p => p.customerId === customerId || p.customer === customer.name);
+      const tags = customer.tags?.join(', ') || 'Sin tags';
+
+      const detailHTML = `
+        <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;" onclick="this.remove()">
+          <div style="background: var(--bg-card); border-radius: 20px; padding: 32px; max-width: 700px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.3);" onclick="event.stopPropagation()">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 24px;">
+              <div>
+                <p style="font-size: 12px; text-transform: uppercase; color: #64748b; letter-spacing: 0.1em; margin-bottom: 8px;">${customer.type === 'commercial' ? 'Comercial' : 'Residencial'}</p>
+                <h2 style="font-size: 28px; font-weight: 700; margin-bottom: 8px;">${customer.name}</h2>
+                <p style="font-size: 14px; color: #64748b;">${tags}</p>
+              </div>
+              <button onclick="this.closest('[style*=fixed]').remove()" style="background: #f1f5f9; border: none; border-radius: 8px; padding: 8px 16px; cursor: pointer; font-weight: 600;">✕ Cerrar</button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px;">
+              <div style="background: linear-gradient(135deg, #02735E, #035951); color: white; padding: 16px; border-radius: 12px;">
+                <div style="font-size: 12px; opacity: 0.8; margin-bottom: 4px;">Total Proyectos</div>
+                <div style="font-size: 28px; font-weight: 700;">${customerProjects.length}</div>
+              </div>
+              <div style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 16px; border-radius: 12px;">
+                <div style="font-size: 12px; opacity: 0.8; margin-bottom: 4px;">Total Gastado</div>
+                <div style="font-size: 28px; font-weight: 700;">$${customer.totalSpent?.toLocaleString('es-MX')}</div>
+              </div>
+              <div style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 16px; border-radius: 12px;">
+                <div style="font-size: 12px; opacity: 0.8; margin-bottom: 4px;">Satisfacción</div>
+                <div style="font-size: 28px; font-weight: 700;">${customer.satisfaction?.toFixed(1) || '--'}/5</div>
+              </div>
+            </div>
+
+            <div style="background: #f8fafc; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+              <h3 style="font-size: 14px; font-weight: 600; text-transform: uppercase; color: #64748b; margin-bottom: 16px;">Información de Contacto</h3>
+              <div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px;">
+                ${customer.phone ? `<div>📞 <strong>Teléfono:</strong> ${customer.phone}</div>` : ''}
+                ${customer.email ? `<div>✉️ <strong>Email:</strong> ${customer.email}</div>` : ''}
+                ${customer.address_text ? `<div>📍 <strong>Dirección:</strong> ${customer.address_text}</div>` : ''}
+              </div>
+            </div>
+
+            <div>
+              <h3 style="font-size: 14px; font-weight: 600; text-transform: uppercase; color: #64748b; margin-bottom: 12px;">Proyectos Recientes</h3>
+              ${customerProjects.length > 0 ? customerProjects.slice(0, 5).map(p => `
+                <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 12px;">
+                  <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div>
+                      <strong style="font-size: 16px;">${p.name}</strong>
+                      <p style="font-size: 13px; color: #64748b; margin-top: 4px;">${p.description || 'Sin descripción'}</p>
+                    </div>
+                    <span style="padding: 4px 10px; background: rgba(2,115,94,0.1); color: #02735E; border-radius: 999px; font-size: 12px; font-weight: 600;">${p.status?.toUpperCase() || 'PENDIENTE'}</span>
+                  </div>
+                </div>
+              `).join('') : '<p style="text-align: center; color: #94a3b8; padding: 20px;">No hay proyectos registrados para este cliente.</p>'}
+            </div>
+
+            <div style="display: flex; gap: 12px; margin-top: 24px; padding-top: 24px; border-top: 1px solid #e2e8f0;">
+              <button onclick="editCustomer('${customer.id}'); this.closest('[style*=fixed]').remove();" class="btn btn-primary" style="flex: 1;">Editar Cliente</button>
+              <button onclick="alert('Crear proyecto para ${customer.name}'); this.closest('[style*=fixed]').remove();" class="btn btn-secondary" style="flex: 1;">+ Nuevo Proyecto</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.insertAdjacentHTML('beforeend', detailHTML);
+    }
+
+    // Edit customer
+    function editCustomer(customerId) {
+      const customer = getCustomers().find(c => c.id === customerId);
+      if (!customer) return;
+
+      const name = prompt('Nombre del cliente:', customer.name);
+      if (!name) return;
+
+      const email = prompt('Email:', customer.email);
+      const phone = prompt('Teléfono:', customer.phone);
+      const address = prompt('Dirección:', customer.address);
+      const type = prompt('Tipo (residential/commercial):', customer.type);
+
+      updateCustomer(customerId, {
+        name,
+        email: email || customer.email,
+        phone: phone || customer.phone,
+        address: address || customer.address,
+        type: type || customer.type
+      });
+
+      renderCustomersTable();
+    }
+
+    // Open new customer modal
+    document.addEventListener('DOMContentLoaded', () => {
+      const btnNewCustomer = document.getElementById('btn-new-customer');
+      if (btnNewCustomer) {
+        btnNewCustomer.addEventListener('click', () => {
+          // Create a proper modal form
+          const modalHTML = `
+            <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;" id="new-customer-modal">
+              <div style="background: var(--bg-card); border-radius: 20px; padding: 32px; max-width: 500px; width: 90%; box-shadow: 0 25px 50px rgba(0,0,0,0.3);" onclick="event.stopPropagation()">
+                <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 20px;">Nuevo Cliente</h2>
+                <form id="new-customer-form" style="display: flex; flex-direction: column; gap: 16px;">
+                  <div>
+                    <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #64748b;">Nombre del Cliente *</label>
+                    <input type="text" name="name" required style="width: 100%; padding: 10px 14px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div>
+                      <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #64748b;">Tipo</label>
+                      <select name="type" style="width: 100%; padding: 10px 14px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                        <option value="residential">Residencial</option>
+                        <option value="commercial">Comercial</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #64748b;">Teléfono</label>
+                      <input type="tel" name="phone" placeholder="+52 33 1234 5678" style="width: 100%; padding: 10px 14px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                    </div>
+                  </div>
+                  <div>
+                    <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #64748b;">Email</label>
+                    <input type="email" name="email" placeholder="contacto@empresa.com" style="width: 100%; padding: 10px 14px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                  </div>
+                  <div>
+                    <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #64748b;">Dirección</label>
+                    <input type="text" name="address_text" placeholder="Calle, Ciudad, Estado" style="width: 100%; padding: 10px 14px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                  </div>
+                  <div>
+                    <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #64748b;">Tags (separados por coma)</label>
+                    <input type="text" name="tags" placeholder="VIP, Recurrente, B2B" style="width: 100%; padding: 10px 14px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                  </div>
+                  <div style="display: flex; gap: 12px; margin-top: 8px;">
+                    <button type="button" onclick="document.getElementById('new-customer-modal').remove()" style="flex: 1; padding: 12px; background: #f1f5f9; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Cancelar</button>
+                    <button type="submit" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #02735E, #035951); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Guardar Cliente</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          `;
+          
+          document.body.insertAdjacentHTML('beforeend', modalHTML);
+          
+          document.getElementById('new-customer-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const tags = formData.get('tags')?.toString().split(',').map(t => t.trim()).filter(Boolean) || [];
+            
+            addCustomer({
+              name: formData.get('name'),
+              type: formData.get('type'),
+              phone: formData.get('phone'),
+              email: formData.get('email'),
+              address_text: formData.get('address_text'),
+              tags
+            });
+
+            renderCustomersTable();
+            document.getElementById('new-customer-modal').remove();
+            
+            const successHTML = `
+              <div style="position: fixed; top: 20px; right: 20px; background: #10b981; color: white; padding: 16px 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10001; font-weight: 600;">
+                ✓ Cliente "${formData.get('name')}" agregado exitosamente
+              </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', successHTML);
+            setTimeout(() => document.querySelector('[style*="top: 20px"]')?.remove(), 3000);
+          });
+        });
+      }
+
+      // Customer filter
+      document.querySelectorAll('[data-customer-filter]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('[data-customer-filter]').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          
+          const filter = btn.dataset.customerFilter;
+          filterCustomers(filter);
+        });
+      });
+
+      // Customer search
+      const searchInput = document.getElementById('customers-search');
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          searchCustomers(e.target.value);
+        });
+      }
+
+      // Initialize customers on page load
+      initializeDemoCustomers();
+      renderCustomersTable();
+    });
+
+    function filterCustomers(type) {
+      const customers = getCustomers();
+      const filtered = type === 'all' ? customers : customers.filter(c => c.type === type);
+      
+      const tbody = document.querySelector('#page-customers table tbody');
+      if (!tbody) return;
+
+      tbody.innerHTML = filtered.map(customer => {
+        const typeColors = {
+          residential: 'rgba(59, 130, 246, 0.1); color: #3b82f6',
+          commercial: 'rgba(251, 146, 60, 0.1); color: #fb923c'
+        };
+        const typeLabels = {
+          residential: 'Residencial',
+          commercial: 'Comercial'
+        };
+
+        return `
+          <tr onclick="viewCustomerDetail('${customer.id}')" style="cursor: pointer;">
+            <td>
+              <strong>${customer.name}</strong>
+              <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">${customer.email}</p>
+            </td>
+            <td><span class="badge" style="background: ${typeColors[customer.type] || typeColors.residential}">${typeLabels[customer.type] || 'Residencial'}</span></td>
+            <td>${customer.phone}</td>
+            <td><strong>${customer.projects?.length || 0}</strong> proyectos</td>
+            <td>${customer.lastService ? new Date(customer.lastService).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' }) : '--'}</td>
+            <td><strong>$${customer.totalSpent?.toLocaleString('es-MX')}</strong></td>
+            <td>
+              <button class="btn btn-small btn-primary" onclick="event.stopPropagation(); viewCustomerDetail('${customer.id}')">Ver Detalle</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function searchCustomers(query) {
+      const customers = getCustomers();
+      const lowerQuery = query.toLowerCase();
+      const filtered = customers.filter(c => 
+        c.name.toLowerCase().includes(lowerQuery) ||
+        c.email.toLowerCase().includes(lowerQuery) ||
+        c.phone.toLowerCase().includes(lowerQuery)
+      );
+
+      const tbody = document.querySelector('#page-customers table tbody');
+      if (!tbody) return;
+
+      tbody.innerHTML = filtered.map(customer => {
+        const typeColors = {
+          residential: 'rgba(59, 130, 246, 0.1); color: #3b82f6',
+          commercial: 'rgba(251, 146, 60, 0.1); color: #fb923c'
+        };
+        const typeLabels = {
+          residential: 'Residencial',
+          commercial: 'Comercial'
+        };
+
+        return `
+          <tr onclick="viewCustomerDetail('${customer.id}')" style="cursor: pointer;">
+            <td>
+              <strong>${customer.name}</strong>
+              <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">${customer.email}</p>
+            </td>
+            <td><span class="badge" style="background: ${typeColors[customer.type] || typeColors.residential}">${typeLabels[customer.type] || 'Residencial'}</span></td>
+            <td>${customer.phone}</td>
+            <td><strong>${customer.projects?.length || 0}</strong> proyectos</td>
+            <td>${customer.lastService ? new Date(customer.lastService).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' }) : '--'}</td>
+            <td><strong>$${customer.totalSpent?.toLocaleString('es-MX')}</strong></td>
+            <td>
+              <button class="btn btn-small btn-primary" onclick="event.stopPropagation(); viewCustomerDetail('${customer.id}')">Ver Detalle</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+  </script>
+
+  <!-- ==================== STAFF/EMPLOYEES MANAGEMENT ==================== -->
+  <script>
+    // Staff localStorage key
+    const STAFF_KEY = 'motorsync_staff';
+
+    // Initialize demo staff if none exist
+    function initializeDemoStaff() {
+      let staff = JSON.parse(localStorage.getItem(STAFF_KEY) || '[]');
+      if (staff.length === 0) {
+        staff = [
+          {
+            id: 'EMP-001',
+            name: 'Ana Owner',
+            email: 'ana@opsis.com',
+            phone: '+52 33 1111 2222',
+            role: 'owner',
+            status: 'active',
+            mfa: true,
+            lastAccess: '2025-06-16T07:20:00',
+            createdAt: '2024-01-01'
+          },
+          {
+            id: 'EMP-002',
+            name: 'Leo Admin',
+            email: 'leo@opsis.com',
+            phone: '+52 33 2222 3333',
+            role: 'admin',
+            status: 'active',
+            mfa: true,
+            lastAccess: '2025-06-15T11:45:00',
+            createdAt: '2024-02-01'
+          },
+          {
+            id: 'EMP-003',
+            name: 'Marco Tech',
+            email: 'marco@opsis.com',
+            phone: '+52 33 3333 4444',
+            role: 'tech',
+            status: 'active',
+            mfa: false,
+            lastAccess: '2025-06-12T01:30:00',
+            createdAt: '2024-03-01'
+          },
+          {
+            id: 'EMP-004',
+            name: 'María Compliance',
+            email: 'compliance@opsis.com',
+            phone: '+52 33 4444 5555',
+            role: 'admin',
+            status: 'away',
+            mfa: false,
+            lastAccess: '2025-06-10T04:05:00',
+            createdAt: '2024-04-01'
+          }
+        ];
+        localStorage.setItem(STAFF_KEY, JSON.stringify(staff));
+      }
+      return staff;
+    }
+
+    // Get all staff
+    function getStaff() {
+      return JSON.parse(localStorage.getItem(STAFF_KEY) || '[]');
+    }
+
+    // Save staff
+    function saveStaff(staff) {
+      localStorage.setItem(STAFF_KEY, JSON.stringify(staff));
+    }
+
+    // Add new staff member
+    function addStaffMember(staffData) {
+      const staff = getStaff();
+      const newId = `EMP-${String(staff.length + 1).padStart(3, '0')}`;
+      const newMember = {
+        id: newId,
+        ...staffData,
+        status: 'active',
+        mfa: false,
+        lastAccess: null,
+        createdAt: new Date().toISOString()
+      };
+      staff.push(newMember);
+      saveStaff(staff);
+      return newMember;
+    }
+
+    // Update staff member
+    function updateStaffMember(staffId, updates) {
+      const staff = getStaff();
+      const index = staff.findIndex(s => s.id === staffId);
+      if (index !== -1) {
+        staff[index] = { ...staff[index], ...updates };
+        saveStaff(staff);
+        return staff[index];
+      }
+      return null;
+    }
+
+    // Delete staff member
+    function deleteStaffMember(staffId) {
+      const staff = getStaff();
+      const filtered = staff.filter(s => s.id !== staffId);
+      saveStaff(filtered);
+    }
+
+    // Render staff table
+    function renderStaffTable() {
+      const staff = getStaff();
+      const tbody = document.querySelector('#management-tbody');
+      if (!tbody) return;
+
+      if (staff.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--text-secondary);">No hay empleados registrados.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = staff.map(member => {
+        const statusBadges = {
+          active: '<span class="management-badge active">Activo</span>',
+          away: '<span class="management-badge away">Fuera</span>',
+          inactive: '<span class="management-badge">Inactivo</span>'
+        };
+
+        const lastAccess = member.lastAccess 
+          ? new Date(member.lastAccess).toLocaleString('es-MX', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true })
+          : 'Nunca';
+
+        return `
+          <tr data-manager="${member.id}" class="${member.status === 'active' ? 'active' : ''}">
+            <td>${member.name}</td>
+            <td>${member.email}</td>
+            <td>${member.role}</td>
+            <td>${statusBadges[member.status] || statusBadges.inactive}</td>
+            <td>${lastAccess}</td>
+            <td>${member.mfa ? '✓' : '—'}</td>
+          </tr>
+        `;
+      }).join('');
+
+      updateStaffStats();
+    }
+
+    // Update staff statistics
+    function updateStaffStats() {
+      const staff = getStaff();
+      const admins = staff.filter(s => s.role === 'owner' || s.role === 'admin').length;
+      
+      document.getElementById('management-kpi-admins').textContent = admins;
+      document.getElementById('management-kpi-invites').textContent = '0'; // Can implement invites later
+    }
+
+    // Initialize staff management
+    document.addEventListener('DOMContentLoaded', () => {
+      const btnNewManager = document.getElementById('btn-new-manager');
+      if (btnNewManager) {
+        btnNewManager.addEventListener('click', () => {
+          const name = prompt('Nombre del empleado:');
+          if (!name) return;
+
+          const email = prompt('Email:');
+          const phone = prompt('Teléfono:');
+          const role = prompt('Rol (owner/admin/tech/labor):', 'tech');
+
+          addStaffMember({
+            name,
+            email: email || '',
+            phone: phone || '',
+            role: role || 'tech'
+          });
+
+          renderStaffTable();
+          alert(`Empleado "${name}" agregado exitosamente.`);
+        });
+      }
+
+      // Initialize staff
+      initializeDemoStaff();
+      renderStaffTable();
     });
   </script>
 
