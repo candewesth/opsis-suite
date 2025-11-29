@@ -882,6 +882,48 @@
     .btn-primary:hover {
       background: var(--verdi-accent);
     }
+
+    /* Animaciones para modales */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    /* Hover effects para photo-card */
+    .photo-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    }
+
+    /* Estilos para filtros de fotos */
+    .photo-filter {
+      transition: all 0.2s ease;
+    }
+
+    .photo-filter:hover {
+      background: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+    }
+
+    .photo-filter.active:hover {
+      background: linear-gradient(135deg, #02735E, #035951) !important;
+      border-color: transparent !important;
+    }
   </style>
 </head>
 <body>
@@ -1356,26 +1398,64 @@
 
     <!-- TAB: FOTOS -->
     <div id="tab-photos" class="tab-content">
-      <div class="card">
-        <h3 class="card-title">Galería del Proyecto</h3>
-        <div class="photo-grid">
-          <div class="photo-item">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <div class="card" style="padding: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+          <div>
+            <h3 class="card-title" style="margin-bottom: 4px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+              Galería de Evidencias
+            </h3>
+            <p style="font-size: 13px; color: var(--text-secondary);">Fotos organizadas por categoría del proyecto</p>
+          </div>
+          <button class="btn btn-primary" onclick="openUploadPhotoModal()" style="display: flex; align-items: center; gap: 8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            Subir Foto
+          </button>
+        </div>
+
+        <!-- Filtros de categoría -->
+        <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
+          <button class="photo-filter active" data-category="all" onclick="filterPhotos('all')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: linear-gradient(135deg, #02735E, #035951); color: white; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+            Todas (<span id="count-all">0</span>)
+          </button>
+          <button class="photo-filter" data-category="before" onclick="filterPhotos('before')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+            📷 Antes (<span id="count-before">0</span>)
+          </button>
+          <button class="photo-filter" data-category="during" onclick="filterPhotos('during')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+            🔧 En Proceso (<span id="count-during">0</span>)
+          </button>
+          <button class="photo-filter" data-category="after" onclick="filterPhotos('after')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+            ✅ Después (<span id="count-after">0</span>)
+          </button>
+          <button class="photo-filter" data-category="defect" onclick="filterPhotos('defect')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+            ⚠️ Defectos (<span id="count-defect">0</span>)
+          </button>
+          <button class="photo-filter" data-category="completion" onclick="filterPhotos('completion')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+            📋 Entrega (<span id="count-completion">0</span>)
+          </button>
+        </div>
+
+        <!-- Grid de fotos -->
+        <div id="photo-gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; min-height: 200px;">
+          <!-- Las fotos se cargarán dinámicamente aquí -->
+          <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #94a3b8;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 16px;">
               <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
               <circle cx="8.5" cy="8.5" r="1.5"/>
               <polyline points="21 15 16 10 5 21"/>
             </svg>
+            <p style="font-size: 15px; font-weight: 500; margin-bottom: 8px;">No hay fotos en este proyecto</p>
+            <p style="font-size: 13px; color: #cbd5e1;">Sube fotos para documentar el progreso del trabajo</p>
           </div>
-          <div class="photo-item">+</div>
         </div>
-        <button class="btn btn-primary" style="margin-top: 16px;" onclick="uploadPhotos()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="17 8 12 3 7 8"/>
-            <line x1="12" y1="3" x2="12" y2="15"/>
-          </svg>
-          Subir Fotos
-        </button>
       </div>
     </div>
 
@@ -3159,6 +3239,364 @@
         }
       }
     }
+
+    // ===================================
+    // SISTEMA DE FOTOS Y EVIDENCIAS
+    // ===================================
+
+    let currentFilter = 'all';
+    
+    // Cargar fotos del proyecto
+    function loadProjectPhotos() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const projectId = urlParams.get('id');
+      
+      if (!projectId) {
+        console.error('No project ID found');
+        return [];
+      }
+      
+      const key = `photo_gallery_${projectId}`;
+      const stored = localStorage.getItem(key);
+      
+      return stored ? JSON.parse(stored) : [];
+    }
+
+    // Guardar fotos del proyecto
+    function saveProjectPhotos(photos) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const projectId = urlParams.get('id');
+      
+      if (!projectId) {
+        console.error('No project ID found');
+        return;
+      }
+      
+      const key = `photo_gallery_${projectId}`;
+      localStorage.setItem(key, JSON.stringify(photos));
+      
+      // Recargar galería
+      renderPhotoGallery();
+    }
+
+    // Renderizar galería de fotos
+    function renderPhotoGallery() {
+      const photos = loadProjectPhotos();
+      const grid = document.getElementById('photo-gallery-grid');
+      
+      if (!grid) return;
+      
+      // Actualizar contadores
+      const counts = {
+        all: photos.length,
+        before: photos.filter(p => p.category === 'before').length,
+        during: photos.filter(p => p.category === 'during').length,
+        after: photos.filter(p => p.category === 'after').length,
+        defect: photos.filter(p => p.category === 'defect').length,
+        completion: photos.filter(p => p.category === 'completion').length
+      };
+      
+      Object.keys(counts).forEach(cat => {
+        const counter = document.getElementById(`count-${cat}`);
+        if (counter) counter.textContent = counts[cat];
+      });
+      
+      // Filtrar fotos según categoría activa
+      const filtered = currentFilter === 'all' 
+        ? photos 
+        : photos.filter(p => p.category === currentFilter);
+      
+      // Renderizar
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #94a3b8;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 16px;">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+            <p style="font-size: 15px; font-weight: 500; margin-bottom: 8px;">${currentFilter === 'all' ? 'No hay fotos en este proyecto' : 'No hay fotos en esta categoría'}</p>
+            <p style="font-size: 13px; color: #cbd5e1;">Sube fotos para documentar el progreso del trabajo</p>
+          </div>
+        `;
+        return;
+      }
+      
+      grid.innerHTML = filtered.map(photo => {
+        const categoryEmoji = {
+          before: '📷',
+          during: '🔧',
+          after: '✅',
+          defect: '⚠️',
+          completion: '📋'
+        };
+        
+        const categoryName = {
+          before: 'Antes',
+          during: 'En Proceso',
+          after: 'Después',
+          defect: 'Defecto',
+          completion: 'Entrega'
+        };
+        
+        const categoryColor = {
+          before: '#3b82f6',
+          during: '#f59e0b',
+          after: '#10b981',
+          defect: '#ef4444',
+          completion: '#8b5cf6'
+        };
+        
+        return `
+          <div class="photo-card" style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s;" onclick="openPhotoLightbox('${photo.id}')">
+            <div style="position: relative; padding-top: 75%; background: #f1f5f9; overflow: hidden;">
+              <img src="${photo.url}" alt="${photo.caption || 'Foto del proyecto'}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+              <div style="position: absolute; top: 8px; left: 8px;">
+                <span style="background: ${categoryColor[photo.category]}; color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                  ${categoryEmoji[photo.category]} ${categoryName[photo.category]}
+                </span>
+              </div>
+            </div>
+            <div style="padding: 12px;">
+              ${photo.caption ? `<p style="font-size: 13px; font-weight: 600; color: #1e293b; margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${photo.caption}</p>` : ''}
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <p style="font-size: 11px; color: #94a3b8; margin: 0;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                  ${new Date(photo.uploadDate).toLocaleDateString('es-MX', { month: 'short', day: 'numeric' })}
+                </p>
+                <button onclick="event.stopPropagation(); deletePhoto('${photo.id}')" style="background: #fee2e2; color: #dc2626; border: none; padding: 6px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'">
+                  🗑️ Eliminar
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Filtrar fotos por categoría
+    function filterPhotos(category) {
+      currentFilter = category;
+      
+      // Actualizar botones activos
+      document.querySelectorAll('.photo-filter').forEach(btn => {
+        if (btn.dataset.category === category) {
+          btn.style.background = 'linear-gradient(135deg, #02735E, #035951)';
+          btn.style.color = 'white';
+          btn.classList.add('active');
+        } else {
+          btn.style.background = 'white';
+          btn.style.color = '#64748b';
+          btn.classList.remove('active');
+        }
+      });
+      
+      renderPhotoGallery();
+    }
+
+    // Abrir modal de subir foto
+    function openUploadPhotoModal() {
+      const modalHTML = `
+        <div id="uploadPhotoModal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.2s;">
+          <div style="background: white; border-radius: 16px; padding: 32px; max-width: 500px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: slideUp 0.3s;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+              <h3 style="margin: 0; font-size: 20px; font-weight: 700; color: #1e293b;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 8px;">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                Subir Foto
+              </h3>
+              <button onclick="closeUploadPhotoModal()" style="background: none; border: none; font-size: 28px; color: #94a3b8; cursor: pointer; line-height: 1; padding: 0; width: 32px; height: 32px;">&times;</button>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+              <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #334155; font-size: 14px;">
+                Categoría *
+              </label>
+              <select id="photoCategory" style="width: 100%; padding: 12px 14px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; background: white;">
+                <option value="">Seleccionar categoría...</option>
+                <option value="before">📷 Antes - Condiciones iniciales</option>
+                <option value="during">🔧 En Proceso - Trabajo en progreso</option>
+                <option value="after">✅ Después - Trabajo completado</option>
+                <option value="defect">⚠️ Defecto - Problemas encontrados</option>
+                <option value="completion">📋 Entrega - Evidencia final</option>
+              </select>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+              <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #334155; font-size: 14px;">
+                Descripción (opcional)
+              </label>
+              <input type="text" id="photoCaption" placeholder="Ej: Instalación de tubería principal" style="width: 100%; padding: 12px 14px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px;">
+            </div>
+
+            <div style="margin-bottom: 24px;">
+              <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #334155; font-size: 14px;">
+                Seleccionar Foto *
+              </label>
+              <input type="file" id="photoFile" accept="image/*" style="width: 100%; padding: 12px 14px; border: 2px dashed #cbd5e1; border-radius: 8px; font-size: 14px; background: #f8fafc; cursor: pointer;">
+              <p style="font-size: 12px; color: #94a3b8; margin-top: 8px;">Formatos: JPG, PNG, HEIC (máx 10MB)</p>
+            </div>
+
+            <div style="display: flex; gap: 12px;">
+              <button onclick="closeUploadPhotoModal()" style="flex: 1; padding: 14px; border: 2px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;">
+                Cancelar
+              </button>
+              <button onclick="confirmUploadPhoto()" style="flex: 1; padding: 14px; border: none; background: linear-gradient(135deg, #02735E, #035951); color: white; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;">
+                Subir Foto
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+
+    // Cerrar modal de subir
+    function closeUploadPhotoModal() {
+      const modal = document.getElementById('uploadPhotoModal');
+      if (modal) modal.remove();
+    }
+
+    // Confirmar subida de foto
+    function confirmUploadPhoto() {
+      const category = document.getElementById('photoCategory').value;
+      const caption = document.getElementById('photoCaption').value.trim();
+      const fileInput = document.getElementById('photoFile');
+      
+      if (!category) {
+        alert('❌ Error\n\nPor favor selecciona una categoría para la foto.');
+        return;
+      }
+      
+      if (!fileInput.files || fileInput.files.length === 0) {
+        alert('❌ Error\n\nPor favor selecciona una foto para subir.');
+        return;
+      }
+      
+      const file = fileInput.files[0];
+      
+      // Validar tamaño (10MB máx)
+      if (file.size > 10 * 1024 * 1024) {
+        alert('❌ Error\n\nLa foto excede el tamaño máximo de 10MB.');
+        return;
+      }
+      
+      // Leer archivo como Base64
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const photos = loadProjectPhotos();
+        
+        const newPhoto = {
+          id: 'PHOTO-' + Date.now(),
+          category: category,
+          caption: caption || null,
+          url: e.target.result, // Base64 data URL
+          uploadDate: new Date().toISOString(),
+          uploadedBy: 'Usuario Actual', // TODO: integrar con sistema de auth
+          fileName: file.name,
+          fileSize: file.size
+        };
+        
+        photos.push(newPhoto);
+        saveProjectPhotos(photos);
+        
+        closeUploadPhotoModal();
+        
+        // Cambiar a la categoría de la foto subida
+        filterPhotos(category);
+        
+        alert(`✅ Foto Subida\n\n📁 Archivo: ${file.name}\n📂 Categoría: ${getCategoryName(category)}\n${caption ? '📝 Descripción: ' + caption : ''}\n\nLa foto se ha guardado correctamente.`);
+      };
+      
+      reader.readAsDataURL(file);
+    }
+
+    // Abrir lightbox para ver foto
+    function openPhotoLightbox(photoId) {
+      const photos = loadProjectPhotos();
+      const photo = photos.find(p => p.id === photoId);
+      
+      if (!photo) return;
+      
+      const categoryEmoji = {
+        before: '📷',
+        during: '🔧',
+        after: '✅',
+        defect: '⚠️',
+        completion: '📋'
+      };
+      
+      const lightboxHTML = `
+        <div id="photoLightbox" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 10001; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.2s;" onclick="closePhotoLightbox()">
+          <button onclick="closePhotoLightbox()" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; font-size: 36px; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; z-index: 10002; backdrop-filter: blur(10px);">&times;</button>
+          
+          <div style="max-width: 90vw; max-height: 90vh; text-align: center;" onclick="event.stopPropagation()">
+            <img src="${photo.url}" alt="${photo.caption || 'Foto del proyecto'}" style="max-width: 100%; max-height: 80vh; border-radius: 12px; box-shadow: 0 20px 80px rgba(0,0,0,0.5);">
+            
+            <div style="background: rgba(0,0,0,0.8); border-radius: 12px; padding: 20px; margin-top: 20px; backdrop-filter: blur(10px);">
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                <span style="background: rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 700;">
+                  ${categoryEmoji[photo.category]} ${getCategoryName(photo.category)}
+                </span>
+                <span style="color: #94a3b8; font-size: 13px;">
+                  ${new Date(photo.uploadDate).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}
+                </span>
+              </div>
+              ${photo.caption ? `<p style="color: white; font-size: 16px; font-weight: 500; margin: 0;">${photo.caption}</p>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.insertAdjacentHTML('beforeend', lightboxHTML);
+    }
+
+    // Cerrar lightbox
+    function closePhotoLightbox() {
+      const lightbox = document.getElementById('photoLightbox');
+      if (lightbox) lightbox.remove();
+    }
+
+    // Eliminar foto
+    function deletePhoto(photoId) {
+      if (!confirm('⚠️ Eliminar Foto\n\n¿Estás seguro de eliminar esta foto?\n\nEsta acción no se puede deshacer.')) {
+        return;
+      }
+      
+      const photos = loadProjectPhotos();
+      const filtered = photos.filter(p => p.id !== photoId);
+      
+      saveProjectPhotos(filtered);
+      
+      alert('✅ Foto eliminada correctamente.');
+    }
+
+    // Helper: obtener nombre de categoría
+    function getCategoryName(category) {
+      const names = {
+        before: 'Antes',
+        during: 'En Proceso',
+        after: 'Después',
+        defect: 'Defecto',
+        completion: 'Entrega'
+      };
+      return names[category] || category;
+    }
+
+    // Cargar galería al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+      // Solo ejecutar si estamos en viewsync.html
+      if (window.location.pathname.includes('viewsync.html')) {
+        renderPhotoGallery();
+      }
+    });
   </script>
 
 </body>
