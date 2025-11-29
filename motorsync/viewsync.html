@@ -944,9 +944,134 @@
     .doc-item:hover {
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
+
+    /* ============================================================================
+       TOAST NOTIFICATION SYSTEM
+       ============================================================================ */
+    
+    #toastContainer {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 400px;
+    }
+
+    .toast {
+      background: white;
+      border-radius: 12px;
+      padding: 16px 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: toastSlideIn 0.3s ease-out;
+      border-left: 4px solid #10b981;
+      min-width: 300px;
+    }
+
+    .toast.success {
+      border-left-color: #10b981;
+    }
+
+    .toast.error {
+      border-left-color: #ef4444;
+    }
+
+    .toast.warning {
+      border-left-color: #f59e0b;
+    }
+
+    .toast.info {
+      border-left-color: #3b82f6;
+    }
+
+    .toast-icon {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .toast.success .toast-icon {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .toast.error .toast-icon {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .toast.warning .toast-icon {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .toast.info .toast-icon {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .toast-message {
+      flex: 1;
+      font-size: 14px;
+      color: #1f2937;
+      font-weight: 500;
+    }
+
+    .toast-close {
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      color: #9ca3af;
+      cursor: pointer;
+      padding: 4px;
+      transition: color 0.2s;
+    }
+
+    .toast-close:hover {
+      color: #4b5563;
+    }
+
+    @keyframes toastSlideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes toastSlideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+    }
+
+    .toast.removing {
+      animation: toastSlideOut 0.3s ease-out;
+    }
+
   </style>
 </head>
 <body>
+
+  <!-- Toast Container -->
+  <div id="toastContainer"></div>
 
   <!-- HEADER -->
   <div class="portal-header">
@@ -2029,6 +2154,12 @@
     // Función para editar proyecto
     function editProject() {
       console.log('🔵 editProject() called');
+      
+      if (!currentProject) {
+        alert('⚠️ No se pudo cargar el proyecto actual');
+        return;
+      }
+
       const modalHTML = `
         <div class="modal-overlay" id="editModal" onclick="if(event.target === this) closeModal('editModal')">
           <div class="modal">
@@ -2038,7 +2169,7 @@
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                 </svg>
-                Editar Proyecto
+                Editar Proyecto ${currentProject.idSync || currentProject.id}
               </div>
               <button class="modal-close" onclick="closeModal('editModal')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2055,8 +2186,8 @@
                   <line x1="12" y1="16" x2="12.01" y2="16"/>
                 </svg>
                 <div style="font-size: 14px; color: #065f46;">
-                  <strong>Proyecto Confirmado</strong><br>
-                  Este proyecto está activo en el sistema y programado en la agenda.
+                  <strong>Editar Información del Proyecto</strong><br>
+                  Los cambios se guardarán en localStorage y se actualizarán en ProjectSync.
                 </div>
               </div>
 
@@ -2064,24 +2195,24 @@
 
               <div class="form-group">
                 <label class="form-label">Nombre del Proyecto</label>
-                <input type="text" class="form-input" id="editProjectName" value="Instalación HVAC Completo - Residencial Torres" />
+                <input type="text" class="form-input" id="editProjectName" value="${currentProject.projectName || ''}" />
               </div>
               <div class="form-group">
                 <label class="form-label">Cliente</label>
-                <input type="text" class="form-input" value="Residencial Torres" />
+                <input type="text" class="form-input" id="editClientName" value="${currentProject.clientName || ''}" />
               </div>
               <div class="form-group">
                 <label class="form-label">Contacto Principal</label>
-                <input type="text" class="form-input" value="María Torres" />
+                <input type="text" class="form-input" id="editContactName" value="${currentProject.contactName || ''}" />
               </div>
               <div class="grid-2" style="gap: 16px;">
                 <div class="form-group">
                   <label class="form-label">Teléfono</label>
-                  <input type="tel" class="form-input" value="+52 33 1234 5678" />
+                  <input type="tel" class="form-input" id="editPhone" value="${currentProject.phone || ''}" />
                 </div>
                 <div class="form-group">
                   <label class="form-label">Email</label>
-                  <input type="email" class="form-input" value="maria@torres.com" />
+                  <input type="email" class="form-input" id="editEmail" value="${currentProject.email || ''}" />
                 </div>
               </div>
 
@@ -2089,16 +2220,16 @@
 
               <div class="form-group">
                 <label class="form-label">Dirección del Proyecto</label>
-                <input type="text" class="form-input" value="Av. Universidad #456, Guadalajara" />
+                <input type="text" class="form-input" id="editAddress" value="${currentProject.address || ''}" />
               </div>
               <div class="grid-2" style="gap: 16px;">
                 <div class="form-group">
                   <label class="form-label">Fecha Inicio</label>
-                  <input type="date" class="form-input" value="2024-11-10" />
+                  <input type="date" class="form-input" id="editStartDate" value="${currentProject.startDate || ''}" />
                 </div>
                 <div class="form-group">
                   <label class="form-label">Fecha Fin</label>
-                  <input type="date" class="form-input" value="2024-11-20" />
+                  <input type="date" class="form-input" id="editEndDate" value="${currentProject.endDate || ''}" />
                 </div>
               </div>
 
@@ -2106,21 +2237,22 @@
 
               <div class="grid-2" style="gap: 16px;">
                 <div class="form-group">
-                  <label class="form-label">Presupuesto Estimado</label>
-                  <input type="text" class="form-input" value="$12,500 USD" />
+                  <label class="form-label">Presupuesto Estimado (USD)</label>
+                  <input type="number" class="form-input" id="editBudget" value="${currentProject.budget || ''}" placeholder="12500" />
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Tipo de Servicio</label>
-                  <select class="form-select">
-                    <option selected>Instalación HVAC</option>
-                    <option>Reparación</option>
-                    <option>Mantenimiento</option>
+                  <label class="form-label">Estado del Proyecto</label>
+                  <select class="form-select" id="editStatus">
+                    <option value="En Progreso" ${currentProject.status === 'En Progreso' ? 'selected' : ''}>En Progreso</option>
+                    <option value="Completado" ${currentProject.status === 'Completado' ? 'selected' : ''}>Completado</option>
+                    <option value="Pendiente" ${currentProject.status === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
+                    <option value="Cancelado" ${currentProject.status === 'Cancelado' ? 'selected' : ''}>Cancelado</option>
                   </select>
                 </div>
               </div>
               <div class="form-group">
-                <label class="form-label">Notas del Proyecto</label>
-                <textarea class="form-textarea" placeholder="Agregar notas adicionales...">Instalación completa de sistema HVAC en residencia unifamiliar.</textarea>
+                <label class="form-label">Descripción del Proyecto</label>
+                <textarea class="form-textarea" id="editDescription" placeholder="Agregar descripción del proyecto...">${currentProject.description || ''}</textarea>
               </div>
             </div>
             <div class="modal-footer">
@@ -2139,8 +2271,50 @@
     }
 
     function saveProjectEdit() {
-      const projectName = document.getElementById('editProjectName').value;
-      alert(`✓ Cambios guardados exitosamente\\n\\nProyecto: ${projectName}\\n\\nLa información ha sido actualizada.`);
+      if (!currentProject) {
+        alert('⚠️ Error: No se pudo identificar el proyecto');
+        return;
+      }
+
+      // Obtener valores del formulario
+      const updatedData = {
+        projectName: document.getElementById('editProjectName').value,
+        clientName: document.getElementById('editClientName').value,
+        contactName: document.getElementById('editContactName').value,
+        phone: document.getElementById('editPhone').value,
+        email: document.getElementById('editEmail').value,
+        address: document.getElementById('editAddress').value,
+        startDate: document.getElementById('editStartDate').value,
+        endDate: document.getElementById('editEndDate').value,
+        budget: document.getElementById('editBudget').value,
+        status: document.getElementById('editStatus').value,
+        description: document.getElementById('editDescription').value,
+        lastModified: new Date().toISOString()
+      };
+
+      // Actualizar currentProject
+      Object.assign(currentProject, updatedData);
+
+      // Actualizar en localStorage (projectsync_projects)
+      const projects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+      const projectIndex = projects.findIndex(p => 
+        (p.idSync && p.idSync === currentProject.idSync) || 
+        (p.id && p.id === currentProject.id)
+      );
+
+      if (projectIndex !== -1) {
+        projects[projectIndex] = { ...projects[projectIndex], ...updatedData };
+        localStorage.setItem('projectsync_projects', JSON.stringify(projects));
+        console.log('✅ Proyecto actualizado en localStorage:', projects[projectIndex]);
+      }
+
+      // Actualizar la UI
+      renderProjectData(currentProject);
+      updateProgressBar(currentProject);
+
+      // Mostrar toast de éxito
+      showToast('✓ Proyecto actualizado exitosamente', 'success');
+      
       closeModal('editModal');
     }
 
@@ -4607,6 +4781,80 @@
       };
       return names[category] || category;
     }
+
+    // ============================================================================
+    // TOAST NOTIFICATION SYSTEM
+    // ============================================================================
+
+    /**
+     * Muestra un toast notification
+     * @param {string} message - Mensaje a mostrar
+     * @param {string} type - Tipo: 'success', 'error', 'warning', 'info'
+     * @param {number} duration - Duración en ms (default: 4000)
+     */
+    function showToast(message, type = 'info', duration = 4000) {
+      const container = document.getElementById('toastContainer');
+      if (!container) {
+        console.error('❌ Toast container not found');
+        return;
+      }
+
+      const toastId = 'toast-' + Date.now();
+      
+      const icons = {
+        success: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>`,
+        error: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="15" y1="9" x2="9" y2="15"/>
+                  <line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>`,
+        warning: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                   <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                   <line x1="12" y1="9" x2="12" y2="13"/>
+                   <line x1="12" y1="17" x2="12.01" y2="17"/>
+                 </svg>`,
+        info: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                 <circle cx="12" cy="12" r="10"/>
+                 <line x1="12" y1="16" x2="12" y2="12"/>
+                 <line x1="12" y1="8" x2="12.01" y2="8"/>
+               </svg>`
+      };
+
+      const toastHTML = `
+        <div id="${toastId}" class="toast ${type}">
+          <div class="toast-icon">
+            ${icons[type] || icons.info}
+          </div>
+          <div class="toast-message">${message}</div>
+          <button class="toast-close" onclick="removeToast('${toastId}')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      `;
+
+      container.insertAdjacentHTML('beforeend', toastHTML);
+
+      // Auto-dismiss después de 'duration' ms
+      setTimeout(() => {
+        removeToast(toastId);
+      }, duration);
+    }
+
+    function removeToast(toastId) {
+      const toast = document.getElementById(toastId);
+      if (toast) {
+        toast.classList.add('removing');
+        setTimeout(() => {
+          toast.remove();
+        }, 300);
+      }
+    }
+
   </script>
 
 </body>
