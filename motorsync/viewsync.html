@@ -1136,6 +1136,70 @@
         </div>
       </div>
 
+      <!-- Estado del Proyecto Workflow -->
+      <div class="card" style="margin-bottom: 20px; padding: 20px; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 2px solid #e2e8f0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <h3 style="font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+              Estado Actual del Proyecto
+            </h3>
+            <p style="font-size: 12px; color: #64748b;">Workflow operativo con transiciones automáticas</p>
+          </div>
+          <button onclick="changeProjectState()" id="btnChangeState" style="background: rgba(2, 115, 94, 0.1); color: #02735E; border: 1px solid rgba(2, 115, 94, 0.3); padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.background='rgba(2, 115, 94, 0.15)'" onmouseout="this.style.background='rgba(2, 115, 94, 0.1)'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="1 4 1 10 7 10"/>
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+            </svg>
+            Cambiar Estado
+          </button>
+        </div>
+
+        <!-- Estado actual con badge grande -->
+        <div id="currentStateBadge" style="text-align: center; padding: 24px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+          <div style="font-size: 48px; margin-bottom: 12px;">⏳</div>
+          <div style="font-size: 22px; font-weight: 700; color: #1e293b; margin-bottom: 8px;">Cotizado</div>
+          <div style="font-size: 13px; color: #64748b;">Esperando aprobación del cliente</div>
+        </div>
+
+        <!-- Workflow visual -->
+        <div style="margin-top: 20px; padding: 16px; background: rgba(255,255,255,0.7); border-radius: 10px;">
+          <div style="font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 12px; text-align: center;">FLUJO DEL PROYECTO</div>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+            <div class="workflow-step" data-state="quoted" style="flex: 1; min-width: 100px; text-align: center; padding: 8px; background: #3b82f6; color: white; border-radius: 6px; font-size: 11px; font-weight: 600; opacity: 1;">
+              📋 Cotizado
+            </div>
+            <div style="color: #cbd5e1; font-weight: 700;">→</div>
+            <div class="workflow-step" data-state="approved" style="flex: 1; min-width: 100px; text-align: center; padding: 8px; background: #e5e7eb; color: #94a3b8; border-radius: 6px; font-size: 11px; font-weight: 600; opacity: 0.5;">
+              ✅ Aprobado
+            </div>
+            <div style="color: #cbd5e1; font-weight: 700;">→</div>
+            <div class="workflow-step" data-state="scheduled" style="flex: 1; min-width: 100px; text-align: center; padding: 8px; background: #e5e7eb; color: #94a3b8; border-radius: 6px; font-size: 11px; font-weight: 600; opacity: 0.5;">
+              📅 Programado
+            </div>
+            <div style="color: #cbd5e1; font-weight: 700;">→</div>
+            <div class="workflow-step" data-state="in-progress" style="flex: 1; min-width: 100px; text-align: center; padding: 8px; background: #e5e7eb; color: #94a3b8; border-radius: 6px; font-size: 11px; font-weight: 600; opacity: 0.5;">
+              🔧 En Proceso
+            </div>
+            <div style="color: #cbd5e1; font-weight: 700;">→</div>
+            <div class="workflow-step" data-state="completed" style="flex: 1; min-width: 100px; text-align: center; padding: 8px; background: #e5e7eb; color: #94a3b8; border-radius: 6px; font-size: 11px; font-weight: 600; opacity: 0.5;">
+              🎉 Completado
+            </div>
+          </div>
+          <div style="display: flex; justify-content: center; gap: 16px; margin-top: 12px; flex-wrap: wrap;">
+            <div class="workflow-step" data-state="paused" style="padding: 6px 12px; background: #fbbf24; color: white; border-radius: 6px; font-size: 10px; font-weight: 600; opacity: 0.4;">
+              ⏸️ Pausado
+            </div>
+            <div class="workflow-step" data-state="cancelled" style="padding: 6px 12px; background: #ef4444; color: white; border-radius: 6px; font-size: 10px; font-weight: 600; opacity: 0.4;">
+              ❌ Cancelado
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="grid-2">
         <div class="card">
           <h3 class="card-title">
@@ -3526,6 +3590,293 @@
     }
 
     // ===================================
+    // SISTEMA DE ESTADOS AVANZADOS
+    // ===================================
+
+    const PROJECT_STATES = {
+      quoted: {
+        name: 'Cotizado',
+        emoji: '📋',
+        description: 'Esperando aprobación del cliente',
+        color: '#3b82f6',
+        next: ['approved', 'cancelled']
+      },
+      approved: {
+        name: 'Aprobado',
+        emoji: '✅',
+        description: 'Aprobado por cliente, pendiente programación',
+        color: '#10b981',
+        next: ['scheduled', 'cancelled']
+      },
+      scheduled: {
+        name: 'Programado',
+        emoji: '📅',
+        description: 'Fechas confirmadas, listo para iniciar',
+        color: '#8b5cf6',
+        next: ['in-progress', 'paused', 'cancelled']
+      },
+      'in-progress': {
+        name: 'En Proceso',
+        emoji: '🔧',
+        description: 'Trabajo activo en sitio',
+        color: '#f59e0b',
+        next: ['paused', 'completed', 'cancelled']
+      },
+      paused: {
+        name: 'Pausado',
+        emoji: '⏸️',
+        description: 'Temporalmente detenido',
+        color: '#fbbf24',
+        next: ['in-progress', 'cancelled']
+      },
+      completed: {
+        name: 'Completado',
+        emoji: '🎉',
+        description: 'Proyecto finalizado exitosamente',
+        color: '#059669',
+        next: []
+      },
+      cancelled: {
+        name: 'Cancelado',
+        emoji: '❌',
+        description: 'Proyecto cancelado',
+        color: '#ef4444',
+        next: []
+      }
+    };
+
+    // Cargar estado actual del proyecto
+    function getCurrentProjectState() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const projectId = urlParams.get('id');
+      
+      if (!projectId) return 'quoted';
+      
+      const key = `project_state_${projectId}`;
+      return localStorage.getItem(key) || 'quoted';
+    }
+
+    // Guardar estado del proyecto
+    function saveProjectState(newState) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const projectId = urlParams.get('id');
+      
+      if (!projectId) return;
+      
+      const key = `project_state_${projectId}`;
+      localStorage.setItem(key, newState);
+      
+      // También actualizar en projectsync_projects
+      const projects = JSON.parse(localStorage.getItem('projectsync_projects') || '{}');
+      if (projects[projectId]) {
+        projects[projectId].state = newState;
+        projects[projectId].stateChangedAt = new Date().toISOString();
+        localStorage.setItem('projectsync_projects', JSON.stringify(projects));
+      }
+      
+      // Guardar en historial de cambios de estado
+      saveStateHistory(newState);
+      
+      // Actualizar UI
+      renderProjectState();
+    }
+
+    // Guardar historial de cambios de estado
+    function saveStateHistory(newState) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const projectId = urlParams.get('id');
+      
+      if (!projectId) return;
+      
+      const key = `project_state_history_${projectId}`;
+      const history = JSON.parse(localStorage.getItem(key) || '[]');
+      
+      const entry = {
+        state: newState,
+        timestamp: new Date().toISOString(),
+        user: 'Usuario Actual'
+      };
+      
+      history.push(entry);
+      localStorage.setItem(key, JSON.stringify(history));
+    }
+
+    // Renderizar estado actual
+    function renderProjectState() {
+      const currentState = getCurrentProjectState();
+      const stateConfig = PROJECT_STATES[currentState];
+      
+      if (!stateConfig) return;
+      
+      // Actualizar badge grande
+      const badge = document.getElementById('currentStateBadge');
+      if (badge) {
+        badge.innerHTML = `
+          <div style="font-size: 48px; margin-bottom: 12px;">${stateConfig.emoji}</div>
+          <div style="font-size: 22px; font-weight: 700; color: #1e293b; margin-bottom: 8px;">${stateConfig.name}</div>
+          <div style="font-size: 13px; color: #64748b;">${stateConfig.description}</div>
+        `;
+      }
+      
+      // Actualizar workflow steps
+      document.querySelectorAll('.workflow-step').forEach(step => {
+        const stepState = step.dataset.state;
+        
+        if (stepState === currentState) {
+          // Estado actual - resaltado
+          step.style.background = stateConfig.color;
+          step.style.color = 'white';
+          step.style.opacity = '1';
+          step.style.boxShadow = `0 4px 12px ${stateConfig.color}40`;
+          step.style.transform = 'scale(1.05)';
+        } else {
+          // Otros estados - grisados
+          step.style.background = '#e5e7eb';
+          step.style.color = '#94a3b8';
+          step.style.opacity = '0.5';
+          step.style.boxShadow = 'none';
+          step.style.transform = 'scale(1)';
+        }
+      });
+      
+      // Habilitar/deshabilitar botón de cambio según estado
+      const btnChange = document.getElementById('btnChangeState');
+      if (btnChange) {
+        if (currentState === 'completed' || currentState === 'cancelled') {
+          btnChange.disabled = true;
+          btnChange.style.opacity = '0.5';
+          btnChange.style.cursor = 'not-allowed';
+        } else {
+          btnChange.disabled = false;
+          btnChange.style.opacity = '1';
+          btnChange.style.cursor = 'pointer';
+        }
+      }
+    }
+
+    // Abrir modal de cambio de estado
+    function changeProjectState() {
+      const currentState = getCurrentProjectState();
+      const stateConfig = PROJECT_STATES[currentState];
+      
+      if (!stateConfig) return;
+      
+      if (currentState === 'completed' || currentState === 'cancelled') {
+        alert('⚠️ Estado Final\n\nEste proyecto está en un estado final y no puede ser modificado.');
+        return;
+      }
+      
+      const nextStates = stateConfig.next;
+      
+      if (nextStates.length === 0) {
+        alert('⚠️ Sin Transiciones\n\nNo hay estados disponibles para transición.');
+        return;
+      }
+      
+      const modalHTML = `
+        <div class="modal-overlay" id="stateChangeModal" onclick="if(event.target === this) closeModal('stateChangeModal')">
+          <div class="modal" style="max-width: 600px;">
+            <div class="modal-header">
+              <div class="modal-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="1 4 1 10 7 10"/>
+                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                </svg>
+                Cambiar Estado del Proyecto
+              </div>
+              <button class="modal-close" onclick="closeModal('stateChangeModal')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-left: 4px solid #3b82f6; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="font-size: 32px;">${stateConfig.emoji}</div>
+                  <div>
+                    <div style="font-weight: 700; font-size: 14px; color: #1e40af; margin-bottom: 2px;">Estado Actual: ${stateConfig.name}</div>
+                    <div style="font-size: 12px; color: #1e40af;">${stateConfig.description}</div>
+                  </div>
+                </div>
+              </div>
+
+              <p style="font-weight: 600; margin-bottom: 12px; color: #1e293b;">Selecciona el nuevo estado:</p>
+
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                ${nextStates.map(state => {
+                  const nextConfig = PROJECT_STATES[state];
+                  return `
+                    <label onclick="selectNewState('${state}')" style="display: flex; align-items: center; gap: 16px; padding: 16px; border: 2px solid #e5e7eb; border-radius: 12px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.borderColor='${nextConfig.color}'; this.style.background='rgba(${hexToRgb(nextConfig.color)}, 0.05)'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='white'">
+                      <input type="radio" name="newState" value="${state}" style="width: 20px; height: 20px; cursor: pointer;" />
+                      <div style="font-size: 36px;">${nextConfig.emoji}</div>
+                      <div style="flex: 1;">
+                        <div style="font-weight: 700; font-size: 15px; color: #1e293b; margin-bottom: 4px;">${nextConfig.name}</div>
+                        <div style="font-size: 12px; color: #64748b;">${nextConfig.description}</div>
+                      </div>
+                    </label>
+                  `;
+                }).join('')}
+              </div>
+
+              <div style="margin-top: 16px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                <div style="font-size: 13px; color: #1e40af; font-weight: 600; margin-bottom: 4px;">💡 Información</div>
+                <div style="font-size: 12px; color: #1e40af;">El cambio de estado se registrará en el historial del proyecto y será visible en toda la plataforma.</div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" onclick="closeModal('stateChangeModal')">Cancelar</button>
+              <button class="btn btn-primary" onclick="confirmStateChange()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; margin-right: 6px;">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Confirmar Cambio
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+
+    // Seleccionar nuevo estado (helper para radio)
+    function selectNewState(state) {
+      const radio = document.querySelector(`input[value="${state}"]`);
+      if (radio) radio.checked = true;
+    }
+
+    // Confirmar cambio de estado
+    function confirmStateChange() {
+      const selected = document.querySelector('input[name="newState"]:checked');
+      
+      if (!selected) {
+        alert('❌ Error\n\nPor favor selecciona un estado.');
+        return;
+      }
+      
+      const newState = selected.value;
+      const stateConfig = PROJECT_STATES[newState];
+      
+      if (!confirm(`🔄 Confirmar Cambio de Estado\n\n¿Confirmas cambiar el estado del proyecto a "${stateConfig.name}"?\n\n${stateConfig.emoji} ${stateConfig.description}\n\nEste cambio se registrará en el historial.`)) {
+        return;
+      }
+      
+      saveProjectState(newState);
+      
+      closeModal('stateChangeModal');
+      
+      alert(`✅ Estado Actualizado\n\n${stateConfig.emoji} Nuevo Estado: ${stateConfig.name}\n\nEl proyecto se ha actualizado correctamente.`);
+    }
+
+    // Helper: convertir hex a rgb para backgrounds
+    function hexToRgb(hex) {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '0, 0, 0';
+    }
+
+    // ===================================
     // SISTEMA DE FOTOS Y EVIDENCIAS
     // ===================================
 
@@ -3879,6 +4230,7 @@
     document.addEventListener('DOMContentLoaded', function() {
       // Solo ejecutar si estamos en viewsync.html
       if (window.location.pathname.includes('viewsync.html')) {
+        renderProjectState();
         renderPhotoGallery();
         renderDocumentsList();
       }

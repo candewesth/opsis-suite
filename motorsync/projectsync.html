@@ -1124,6 +1124,23 @@
       scheduled: { color: '#eab308', badge: 'PROGRAMADO' },
       completed: { color: '#059669', badge: 'COMPLETADO' }
     };
+
+    // Configuración de estados del workflow
+    const workflowStates = {
+      quoted: { color: '#3b82f6', emoji: '📋', name: 'Cotizado' },
+      approved: { color: '#10b981', emoji: '✅', name: 'Aprobado' },
+      scheduled: { color: '#8b5cf6', emoji: '📅', name: 'Programado' },
+      'in-progress': { color: '#f59e0b', emoji: '🔧', name: 'En Proceso' },
+      paused: { color: '#fbbf24', emoji: '⏸️', name: 'Pausado' },
+      completed: { color: '#059669', emoji: '🎉', name: 'Completado' },
+      cancelled: { color: '#ef4444', emoji: '❌', name: 'Cancelado' }
+    };
+
+    // Obtener estado del proyecto (workflow)
+    function getProjectWorkflowState(projectId) {
+      const key = `project_state_${projectId}`;
+      return localStorage.getItem(key) || 'quoted';
+    }
     
     // Generar nuevo IDSync (formato: IDSyncYYNNNN donde YY=año, NNNN=consecutivo)
     function generateIDSync() {
@@ -1369,12 +1386,11 @@
       const appointments = JSON.parse(localStorage.getItem('projectsync_appointments') || '[]');
       
       tbody.innerHTML = projects.map(project => {
-        // Sincronizar estado con agenda
+        // Obtener estado del workflow
         const projectId = project.idSync || project.id;
-        const projectAppointments = appointments.filter(apt => apt.projectId === projectId);
-        const actualStatus = getProjectStatusFromAgenda(project, projectAppointments);
+        const workflowState = getProjectWorkflowState(projectId);
+        const stateConfig = workflowStates[workflowState] || workflowStates.quoted;
         
-        const config = statusConfig[actualStatus] || statusConfig.active;
         // Calcular progreso real basado en fechas
         const progress = calculateProjectProgress(project);
         
@@ -1389,14 +1405,19 @@
               <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">${project.address || 'Sin dirección'}</p>
             </td>
             <td>${project.client}</td>
-            <td><span class="badge" style="background: ${config.color}22; color: ${config.color};">${config.badge}</span></td>
+            <td>
+              <span class="badge" style="background: ${stateConfig.color}22; color: ${stateConfig.color}; display: flex; align-items: center; gap: 6px; justify-content: center;">
+                <span style="font-size: 14px;">${stateConfig.emoji}</span>
+                ${stateConfig.name}
+              </span>
+            </td>
             <td>${formatDate(project.startDate)}</td>
             <td>${formatDate(project.endDate)}</td>
             <td><strong>$${(project.amount || 0).toLocaleString()}</strong></td>
             <td>
               <div style="width: 100%;">
                 <div style="background: #e0e0e0; height: 8px; border-radius: 4px; overflow: hidden;">
-                  <div style="background: linear-gradient(135deg, ${config.color}, ${config.color}dd); width: ${progress}%; height: 100%;"></div>
+                  <div style="background: linear-gradient(135deg, ${stateConfig.color}, ${stateConfig.color}dd); width: ${progress}%; height: 100%;"></div>
                 </div>
                 <p style="font-size: 11px; color: #64748b; margin: 4px 0 0 0;">${progress}%</p>
               </div>
@@ -1421,7 +1442,7 @@
       // Actualizar contadores de filtros
       updateFilterCounts(projects);
       
-      console.log(' Rendered', projects.length, 'projects in table');
+      console.log('✅ Rendered', projects.length, 'projects in table');
     }
     
     // Determinar estado del proyecto basado en citas de la agenda
