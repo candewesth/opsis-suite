@@ -6,6 +6,7 @@
   <title>NotifySync - Centro de Notificaciones | Opsis Suite</title>
   <link rel="stylesheet" href="../assets/css/main.css">
   <link rel="stylesheet" href="../assets/css/components.css">
+  <script src="notifications-manager.js"></script>
   <style>
     /* === NotifySync Styles === */
     :root {
@@ -610,7 +611,7 @@
           Volver
         </a>
         <h1 class="page-title">
-          📬 NotifySync
+          NotifySync
         </h1>
       </div>
       <div class="header-actions">
@@ -722,7 +723,6 @@
   </div>
 
   <script>
-    const NOTIFICATIONS_KEY = 'motorsync_notifications';
     let currentFilter = 'all';
     let allNotifications = [];
 
@@ -751,33 +751,34 @@
 
     // Initialize
     function init() {
-      allNotifications = JSON.parse(localStorage.getItem(NOTIFICATIONS_KEY) || '[]');
+      // Use NotifyManager instead of direct localStorage
+      allNotifications = NotifyManager.getAll();
       updateStats();
       renderNotifications();
+
+      // Listen for notification updates from other pages
+      window.addEventListener('notificationsUpdated', () => {
+        allNotifications = NotifyManager.getAll();
+        updateStats();
+        renderNotifications();
+      });
     }
 
     // Update Stats
     function updateStats() {
-      const stats = {
-        total: allNotifications.length,
-        success: allNotifications.filter(n => n.type === 'success').length,
-        info: allNotifications.filter(n => n.type === 'info').length,
-        warning: allNotifications.filter(n => n.type === 'warning').length,
-        error: allNotifications.filter(n => n.type === 'error').length,
-        unread: allNotifications.filter(n => !n.read).length
-      };
+      const stats = NotifyManager.getStats();
 
       document.getElementById('stat-total').textContent = stats.total;
-      document.getElementById('stat-success').textContent = stats.success;
-      document.getElementById('stat-info').textContent = stats.info;
-      document.getElementById('stat-warning').textContent = stats.warning;
+      document.getElementById('stat-success').textContent = stats.byType.success;
+      document.getElementById('stat-info').textContent = stats.byType.info;
+      document.getElementById('stat-warning').textContent = stats.byType.warning;
 
       document.getElementById('filter-count-all').textContent = stats.total;
       document.getElementById('filter-count-unread').textContent = stats.unread;
-      document.getElementById('filter-count-success').textContent = stats.success;
-      document.getElementById('filter-count-info').textContent = stats.info;
-      document.getElementById('filter-count-warning').textContent = stats.warning;
-      document.getElementById('filter-count-error').textContent = stats.error;
+      document.getElementById('filter-count-success').textContent = stats.byType.success;
+      document.getElementById('filter-count-info').textContent = stats.byType.info;
+      document.getElementById('filter-count-warning').textContent = stats.byType.warning;
+      document.getElementById('filter-count-error').textContent = stats.byType.error;
     }
 
     // Filter Notifications
@@ -867,10 +868,10 @@
       const notification = allNotifications.find(n => n.id === notificationId);
       if (!notification) return;
 
-      // Mark as read
+      // Mark as read using NotifyManager
       if (!notification.read) {
-        notification.read = true;
-        localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(allNotifications));
+        NotifyManager.markAsRead(notificationId);
+        allNotifications = NotifyManager.getAll();
         updateStats();
         renderNotifications();
       }
@@ -931,8 +932,8 @@
 
     // Mark All As Read
     function markAllAsRead() {
-      allNotifications.forEach(n => n.read = true);
-      localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(allNotifications));
+      NotifyManager.markAllAsRead();
+      allNotifications = NotifyManager.getAll();
       updateStats();
       renderNotifications();
       showToast('success', 'Todas las notificaciones marcadas como leídas');
@@ -941,7 +942,7 @@
     // Clear All
     function clearAllNotifications() {
       if (confirm('¿Estás seguro de que deseas eliminar todas las notificaciones?')) {
-        localStorage.setItem(NOTIFICATIONS_KEY, '[]');
+        NotifyManager.deleteAll();
         allNotifications = [];
         updateStats();
         renderNotifications();
