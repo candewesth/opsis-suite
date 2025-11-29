@@ -2364,16 +2364,19 @@
 
     // Función para editar el estado del proyecto como checklist
     function editProjectStatus() {
+      // Cargar checklist actual
+      const currentChecklist = loadProjectChecklist();
+      
       const modalHTML = `
         <div class="modal-overlay" id="statusModal" onclick="if(event.target === this) closeModal('statusModal')">
-          <div class="modal">
+          <div class="modal" style="max-width: 700px;">
             <div class="modal-header">
               <div class="modal-title">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M9 11l3 3L22 4"/>
                   <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
                 </svg>
-                Editar Checklist del Proyecto
+                Checklist Operativo del Proyecto
               </div>
               <button class="modal-close" onclick="closeModal('statusModal')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2383,63 +2386,82 @@
               </button>
             </div>
             <div class="modal-body">
-              <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px;">
-                Marca o desmarca las etapas del proyecto. También puedes agregar nuevas etapas al checklist.
-              </p>
+              <!-- Templates -->
+              ${currentChecklist.length === 0 ? `
+              <div style="margin-bottom: 24px; padding: 16px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 12px; border-left: 4px solid #f59e0b;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                  <div style="font-size: 28px;">🚀</div>
+                  <div>
+                    <div style="font-weight: 700; font-size: 15px; color: #92400e;">Checklist Vacío</div>
+                    <div style="font-size: 13px; color: #92400e;">Selecciona un template para comenzar o crea tu propio checklist</div>
+                  </div>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 12px;">
+                  <button onclick="loadTemplate('plomeria')" style="padding: 12px; background: white; border: 2px solid #fbbf24; color: #92400e; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; justify-content: center;" onmouseover="this.style.background='#fffbeb'" onmouseout="this.style.background='white'">
+                    🔧 Plomería
+                  </button>
+                  <button onclick="loadTemplate('hvac')" style="padding: 12px; background: white; border: 2px solid #fbbf24; color: #92400e; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; justify-content: center;" onmouseover="this.style.background='#fffbeb'" onmouseout="this.style.background='white'">
+                    ❄️ HVAC
+                  </button>
+                  <button onclick="loadTemplate('electrico')" style="padding: 12px; background: white; border: 2px solid #fbbf24; color: #92400e; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; justify-content: center;" onmouseover="this.style.background='#fffbeb'" onmouseout="this.style.background='white'">
+                    ⚡ Eléctrico
+                  </button>
+                  <button onclick="loadTemplate('construccion')" style="padding: 12px; background: white; border: 2px solid #fbbf24; color: #92400e; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; justify-content: center;" onmouseover="this.style.background='#fffbeb'" onmouseout="this.style.background='white'">
+                    🏗️ Construcción
+                  </button>
+                  <button onclick="loadTemplate('mantenimiento')" style="padding: 12px; background: white; border: 2px solid #fbbf24; color: #92400e; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; justify-content: center;" onmouseover="this.style.background='#fffbeb'" onmouseout="this.style.background='white'">
+                    🔨 Mantenimiento
+                  </button>
+                  <button onclick="loadTemplate('limpieza')" style="padding: 12px; background: white; border: 2px solid #fbbf24; color: #92400e; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; justify-content: center;" onmouseover="this.style.background='#fffbeb'" onmouseout="this.style.background='white'">
+                    🧹 Limpieza
+                  </button>
+                </div>
+              </div>
+              ` : ''}
               
-              <div id="checklistContainer" style="display: flex; flex-direction: column; gap: 12px;">
-                <label style="display: flex; align-items: center; gap: 12px; padding: 14px; background: #f0fdf4; border: 2px solid #10b981; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                  <input type="checkbox" checked style="width: 20px; height: 20px; cursor: pointer;" onchange="toggleChecklistItem(this)" />
-                  <div style="flex: 1;">
-                    <div style="font-weight: 600; font-size: 14px; color: #059669;">Inspección inicial completada</div>
-                    <div style="font-size: 12px; color: #047857; margin-top: 2px;">10 Nov 2024 - 08:00 AM</div>
-                  </div>
-                </label>
-
-                <label style="display: flex; align-items: center; gap: 12px; padding: 14px; background: #f0fdf4; border: 2px solid #10b981; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                  <input type="checkbox" checked style="width: 20px; height: 20px; cursor: pointer;" onchange="toggleChecklistItem(this)" />
-                  <div style="flex: 1;">
-                    <div style="font-weight: 600; font-size: 14px; color: #059669;">Instalación de ductos</div>
-                    <div style="font-size: 12px; color: #047857; margin-top: 2px;">11 Nov 2024 - 09:00 AM</div>
-                  </div>
-                </label>
-
-                <label style="display: flex; align-items: center; gap: 12px; padding: 14px; background: #f0fdf4; border: 2px solid #10b981; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                  <input type="checkbox" checked style="width: 20px; height: 20px; cursor: pointer;" onchange="toggleChecklistItem(this)" />
-                  <div style="flex: 1;">
-                    <div style="font-weight: 600; font-size: 14px; color: #059669;">Montaje de unidades</div>
-                    <div style="font-size: 12px; color: #047857; margin-top: 2px;">14 Nov 2024 - 10:00 AM</div>
-                  </div>
-                </label>
-
-                <label style="display: flex; align-items: center; gap: 12px; padding: 14px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                  <input type="checkbox" style="width: 20px; height: 20px; cursor: pointer;" onchange="toggleChecklistItem(this)" />
-                  <div style="flex: 1;">
-                    <div style="font-weight: 600; font-size: 14px;">Pruebas de sistema</div>
-                    <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">19 Nov 2024 - Programado</div>
-                  </div>
-                </label>
-
-                <label style="display: flex; align-items: center; gap: 12px; padding: 14px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                  <input type="checkbox" style="width: 20px; height: 20px; cursor: pointer;" onchange="toggleChecklistItem(this)" />
-                  <div style="flex: 1;">
-                    <div style="font-weight: 600; font-size: 14px;">Entrega final</div>
-                    <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">20 Nov 2024 - Pendiente</div>
-                  </div>
-                </label>
+              <!-- Progreso Visual -->
+              <div style="margin-bottom: 20px; padding: 16px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 12px; border-left: 4px solid #3b82f6;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <span style="font-weight: 700; font-size: 14px; color: #1e40af;">Progreso General</span>
+                  <span id="checklistProgress" style="font-weight: 700; font-size: 18px; color: #1e40af;">0%</span>
+                </div>
+                <div style="height: 8px; background: rgba(59, 130, 246, 0.2); border-radius: 4px; overflow: hidden;">
+                  <div id="checklistProgressBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, #3b82f6, #2563eb); border-radius: 4px; transition: width 0.3s;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: #1e40af;">
+                  <span id="checklistCompleted">0 completadas</span>
+                  <span id="checklistRemaining">0 pendientes</span>
+                </div>
+              </div>
+              
+              <!-- Lista de Checklist con Drag & Drop -->
+              <div id="checklistContainer" style="display: flex; flex-direction: column; gap: 10px; min-height: 200px;">
+                ${currentChecklist.length === 0 ? '<div style="text-align: center; padding: 40px 20px; color: #94a3b8;"><p style="font-size: 14px;">No hay tareas en el checklist</p></div>' : ''}
               </div>
 
-              <button onclick="addNewChecklistItem()" style="width: 100%; margin-top: 16px; padding: 12px; background: rgba(2, 115, 94, 0.1); color: #02735E; border: 2px dashed rgba(2, 115, 94, 0.3); border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;" onmouseover="this.style.background='rgba(2, 115, 94, 0.15)'" onmouseout="this.style.background='rgba(2, 115, 94, 0.1)'">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="12" y1="5" x2="12" y2="19"/>
-                  <line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-                Agregar Nueva Etapa
-              </button>
+              <div style="display: flex; gap: 12px; margin-top: 16px;">
+                <button onclick="addNewChecklistItem()" style="flex: 1; padding: 12px; background: rgba(2, 115, 94, 0.1); color: #02735E; border: 2px dashed rgba(2, 115, 94, 0.3); border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;" onmouseover="this.style.background='rgba(2, 115, 94, 0.15)'" onmouseout="this.style.background='rgba(2, 115, 94, 0.1)'">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  Nueva Tarea
+                </button>
+                
+                ${currentChecklist.length > 0 ? `
+                <button onclick="clearChecklist()" style="padding: 12px 16px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 2px solid rgba(239, 68, 68, 0.2); border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='rgba(239, 68, 68, 0.15)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'">
+                  🗑️ Limpiar Todo
+                </button>
+                ` : ''}
+              </div>
 
-              <div style="margin-top: 20px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #3b82f6;">
-                <div style="font-size: 13px; color: #1e40af; font-weight: 600; margin-bottom: 4px;">💡 Tip</div>
-                <div style="font-size: 12px; color: #1e40af;">Las etapas marcadas aparecerán como completadas en el timeline del proyecto.</div>
+              <div style="margin-top: 16px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                <div style="font-size: 13px; color: #1e40af; font-weight: 600; margin-bottom: 4px;">💡 Tips</div>
+                <ul style="font-size: 12px; color: #1e40af; margin-left: 16px; line-height: 1.6;">
+                  <li>Marca tareas conforme avanzas para actualizar el progreso</li>
+                  <li>Agrega fechas programadas para mejor seguimiento</li>
+                  <li>Usa templates predefinidos si el checklist está vacío</li>
+                </ul>
               </div>
             </div>
             <div class="modal-footer">
@@ -2462,28 +2484,283 @@
         </div>
       `;
       document.body.insertAdjacentHTML('beforeend', modalHTML);
+      
+      // Renderizar checklist actual
+      renderChecklistItems();
+      updateChecklistProgress();
+    }
+
+    // ===================================
+    // CHECKLIST OPERATIVO - FUNCIONES
+    // ===================================
+
+    // Templates predefinidos por tipo de servicio
+    const checklistTemplates = {
+      plomeria: [
+        { title: 'Inspección inicial del sitio', completed: false },
+        { title: 'Verificar permisos y códigos locales', completed: false },
+        { title: 'Preparar área de trabajo', completed: false },
+        { title: 'Instalar tubería principal', completed: false },
+        { title: 'Conectar ramales secundarios', completed: false },
+        { title: 'Instalar válvulas y accesorios', completed: false },
+        { title: 'Prueba de presión del sistema', completed: false },
+        { title: 'Inspección final y documentación', completed: false },
+        { title: 'Limpieza del sitio', completed: false },
+        { title: 'Entrega y capacitación al cliente', completed: false }
+      ],
+      hvac: [
+        { title: 'Evaluación térmica del espacio', completed: false },
+        { title: 'Diseño de layout de ductos', completed: false },
+        { title: 'Instalación de ductos principales', completed: false },
+        { title: 'Montaje de unidades interiores', completed: false },
+        { title: 'Instalación de unidad exterior', completed: false },
+        { title: 'Conexiones eléctricas', completed: false },
+        { title: 'Carga de refrigerante', completed: false },
+        { title: 'Pruebas de funcionamiento', completed: false },
+        { title: 'Calibración de termostatos', completed: false },
+        { title: 'Entrega y manual de operación', completed: false }
+      ],
+      electrico: [
+        { title: 'Inspección eléctrica inicial', completed: false },
+        { title: 'Verificar capacidad del panel', completed: false },
+        { title: 'Instalar cableado principal', completed: false },
+        { title: 'Montar cajas y ductos', completed: false },
+        { title: 'Conexiones de circuitos', completed: false },
+        { title: 'Instalar breakers y protecciones', completed: false },
+        { title: 'Puesta a tierra del sistema', completed: false },
+        { title: 'Pruebas de continuidad y voltaje', completed: false },
+        { title: 'Etiquetado de circuitos', completed: false },
+        { title: 'Inspección final y certificación', completed: false }
+      ],
+      construccion: [
+        { title: 'Preparación del terreno', completed: false },
+        { title: 'Excavación y cimentación', completed: false },
+        { title: 'Estructura principal', completed: false },
+        { title: 'Instalación de techos', completed: false },
+        { title: 'Instalaciones hidráulicas', completed: false },
+        { title: 'Instalaciones eléctricas', completed: false },
+        { title: 'Acabados interiores', completed: false },
+        { title: 'Acabados exteriores', completed: false },
+        { title: 'Limpieza final', completed: false },
+        { title: 'Entrega de obra', completed: false }
+      ],
+      mantenimiento: [
+        { title: 'Inspección general del equipo', completed: false },
+        { title: 'Limpieza de componentes', completed: false },
+        { title: 'Lubricación de partes móviles', completed: false },
+        { title: 'Revisión de conexiones eléctricas', completed: false },
+        { title: 'Verificar niveles de fluidos', completed: false },
+        { title: 'Reemplazo de filtros', completed: false },
+        { title: 'Ajuste de calibraciones', completed: false },
+        { title: 'Pruebas de funcionamiento', completed: false },
+        { title: 'Actualizar registro de mantenimiento', completed: false },
+        { title: 'Entrega de reporte técnico', completed: false }
+      ],
+      limpieza: [
+        { title: 'Evaluación del área', completed: false },
+        { title: 'Protección de superficies sensibles', completed: false },
+        { title: 'Limpieza profunda de pisos', completed: false },
+        { title: 'Limpieza de ventanas', completed: false },
+        { title: 'Desinfección de sanitarios', completed: false },
+        { title: 'Limpieza de áreas comunes', completed: false },
+        { title: 'Retiro de residuos', completed: false },
+        { title: 'Aspirado y trapeado final', completed: false },
+        { title: 'Inspección de calidad', completed: false },
+        { title: 'Entrega del espacio', completed: false }
+      ]
+    };
+
+    // Cargar checklist del proyecto
+    function loadProjectChecklist() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const projectId = urlParams.get('id');
+      
+      if (!projectId) return [];
+      
+      const key = `project_checklist_${projectId}`;
+      const stored = localStorage.getItem(key);
+      
+      return stored ? JSON.parse(stored) : [];
+    }
+
+    // Guardar checklist del proyecto
+    function saveProjectChecklist(checklist) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const projectId = urlParams.get('id');
+      
+      if (!projectId) return;
+      
+      const key = `project_checklist_${projectId}`;
+      localStorage.setItem(key, JSON.stringify(checklist));
+    }
+
+    // Cargar template
+    function loadTemplate(templateType) {
+      if (!checklistTemplates[templateType]) {
+        alert('❌ Error\n\nTemplate no encontrado.');
+        return;
+      }
+      
+      if (!confirm(`🚀 Cargar Template: ${templateType.toUpperCase()}\n\n¿Deseas cargar el template predefinido para ${templateType}?\n\nEsto agregará ${checklistTemplates[templateType].length} tareas al checklist.`)) {
+        return;
+      }
+      
+      const checklist = checklistTemplates[templateType].map((item, index) => ({
+        id: `TASK-${Date.now()}-${index}`,
+        title: item.title,
+        completed: false,
+        date: null,
+        completedDate: null
+      }));
+      
+      saveProjectChecklist(checklist);
+      renderChecklistItems();
+      updateChecklistProgress();
+      
+      alert(`✅ Template Cargado\n\nSe han agregado ${checklist.length} tareas al checklist.\n\nAhora puedes personalizarlas según tus necesidades.`);
+    }
+
+    // Renderizar items del checklist
+    function renderChecklistItems() {
+      const container = document.getElementById('checklistContainer');
+      if (!container) return;
+      
+      const checklist = loadProjectChecklist();
+      
+      if (checklist.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 40px 20px; color: #94a3b8;"><p style="font-size: 14px;">No hay tareas en el checklist</p></div>';
+        return;
+      }
+      
+      container.innerHTML = checklist.map(item => {
+        const isCompleted = item.completed;
+        const bgColor = isCompleted ? '#f0fdf4' : 'white';
+        const borderColor = isCompleted ? '#10b981' : '#e5e7eb';
+        const textColor = isCompleted ? '#059669' : '#1e293b';
+        const dateColor = isCompleted ? '#047857' : '#64748b';
+        
+        return `
+          <label data-task-id="${item.id}" style="display: flex; align-items: center; gap: 12px; padding: 14px; background: ${bgColor}; border: 2px solid ${borderColor}; border-radius: 8px; cursor: pointer; transition: all 0.2s;" onmouseover="if(!this.querySelector('input').checked) this.style.background='#f8fafc'" onmouseout="if(!this.querySelector('input').checked) this.style.background='white'">
+            <input type="checkbox" ${isCompleted ? 'checked' : ''} style="width: 20px; height: 20px; cursor: pointer;" onchange="toggleChecklistItem('${item.id}')" />
+            <div style="flex: 1;">
+              <div style="font-weight: 600; font-size: 14px; color: ${textColor}; ${isCompleted ? 'text-decoration: line-through;' : ''}">${item.title}</div>
+              <div style="font-size: 12px; color: ${dateColor}; margin-top: 2px;">
+                ${item.completedDate ? '✅ Completada: ' + new Date(item.completedDate).toLocaleDateString('es-MX', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : (item.date || 'Sin fecha programada')}
+              </div>
+            </div>
+            <button onclick="event.stopPropagation(); deleteChecklistItem('${item.id}')" style="background: #fee2e2; color: #dc2626; border: none; padding: 8px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'">
+              🗑️
+            </button>
+          </label>
+        `;
+      }).join('');
+    }
+
+    // Toggle checklist item
+    function toggleChecklistItem(taskId) {
+      const checklist = loadProjectChecklist();
+      const task = checklist.find(t => t.id === taskId);
+      
+      if (!task) return;
+      
+      task.completed = !task.completed;
+      task.completedDate = task.completed ? new Date().toISOString() : null;
+      
+      saveProjectChecklist(checklist);
+      renderChecklistItems();
+      updateChecklistProgress();
+    }
+
+    // Agregar nueva tarea
+    function addNewChecklistItem() {
+      const title = prompt('📝 Nueva Tarea\n\nEscribe el nombre de la nueva tarea:');
+      
+      if (!title || !title.trim()) {
+        return;
+      }
+      
+      const checklist = loadProjectChecklist();
+      
+      const newTask = {
+        id: `TASK-${Date.now()}`,
+        title: title.trim(),
+        completed: false,
+        date: null,
+        completedDate: null
+      };
+      
+      checklist.push(newTask);
+      saveProjectChecklist(checklist);
+      renderChecklistItems();
+      updateChecklistProgress();
+    }
+
+    // Eliminar tarea
+    function deleteChecklistItem(taskId) {
+      if (!confirm('⚠️ Eliminar Tarea\n\n¿Estás seguro de eliminar esta tarea?\n\nEsta acción no se puede deshacer.')) {
+        return;
+      }
+      
+      const checklist = loadProjectChecklist();
+      const filtered = checklist.filter(t => t.id !== taskId);
+      
+      saveProjectChecklist(filtered);
+      renderChecklistItems();
+      updateChecklistProgress();
+    }
+
+    // Limpiar todo el checklist
+    function clearChecklist() {
+      if (!confirm('⚠️ Limpiar Checklist\n\n¿Estás seguro de eliminar TODAS las tareas?\n\nEsta acción no se puede deshacer.')) {
+        return;
+      }
+      
+      saveProjectChecklist([]);
+      renderChecklistItems();
+      updateChecklistProgress();
+      
+      alert('✅ Checklist limpiado correctamente.');
+    }
+
+    // Actualizar progreso del checklist
+    function updateChecklistProgress() {
+      const checklist = loadProjectChecklist();
+      
+      const total = checklist.length;
+      const completed = checklist.filter(t => t.completed).length;
+      const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+      
+      const progressEl = document.getElementById('checklistProgress');
+      const barEl = document.getElementById('checklistProgressBar');
+      const completedEl = document.getElementById('checklistCompleted');
+      const remainingEl = document.getElementById('checklistRemaining');
+      
+      if (progressEl) progressEl.textContent = `${percentage}%`;
+      if (barEl) barEl.style.width = `${percentage}%`;
+      if (completedEl) completedEl.textContent = `${completed} completadas`;
+      if (remainingEl) remainingEl.textContent = `${total - completed} pendientes`;
     }
 
     function saveProjectStatus() {
-      // Recopilar todos los items del checklist
-      const checklistItems = [];
-      const container = document.getElementById('checklistContainer');
-      const labels = container.querySelectorAll('label');
+      // Obtener checklist del proyecto
+      const checklist = loadProjectChecklist();
       
-      labels.forEach((label, index) => {
-        const checkbox = label.querySelector('input[type="checkbox"]');
-        const titleEl = label.querySelector('div > div:first-child');
-        const dateEl = label.querySelector('div > div:last-child');
-        
-        checklistItems.push({
-          id: index + 1,
-          title: titleEl.textContent,
-          date: dateEl.textContent,
-          completed: checkbox.checked
-        });
-      });
+      if (checklist.length === 0) {
+        alert('⚠️ Checklist Vacío\n\nNo hay tareas para guardar.\nAgrega tareas manualmente o carga un template predefinido.');
+        return;
+      }
+      
+      // Convertir a formato de historial
+      const checklistItems = checklist.map((task, index) => ({
+        id: index + 1,
+        title: task.title,
+        date: task.completedDate 
+          ? new Date(task.completedDate).toLocaleString('es-MX', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+          : (task.date || 'Programado'),
+        completed: task.completed
+      }));
 
-      // Guardar en historial
+      // Crear entrada de historial
       const historyEntry = {
         timestamp: new Date().toISOString(),
         date: new Date().toLocaleString('es-MX', { 
@@ -2494,22 +2771,29 @@
           minute: '2-digit' 
         }),
         items: checklistItems,
-        user: 'Usuario Actual' // Aquí iría el usuario autenticado
+        user: 'Usuario Actual'
       };
 
-      // Guardar en localStorage
-      let history = JSON.parse(localStorage.getItem('projectStatusHistory_IDSync250001') || '[]');
+      // Guardar en historial (usando projectId dinámico)
+      const urlParams = new URLSearchParams(window.location.search);
+      const projectId = urlParams.get('id');
+      const historyKey = getProjectKey('projectStatusHistory');
+      
+      let history = JSON.parse(localStorage.getItem(historyKey) || '[]');
       history.unshift(historyEntry);
-      if (history.length > 50) history = history.slice(0, 50); // Mantener últimos 50 cambios
-      localStorage.setItem('projectStatusHistory_IDSync250001', JSON.stringify(history));
+      if (history.length > 50) history = history.slice(0, 50);
+      localStorage.setItem(historyKey, JSON.stringify(history));
 
-      // Actualizar el timeline visible en la página
+      // Actualizar timeline visible
       updateTimelineDisplay(checklistItems);
       
-      // Actualizar el contador de historial
+      // Actualizar contador de historial
       updateHistoryCounter();
       
-      alert('✓ Estado del proyecto actualizado\n\nLos cambios se han guardado en el historial.\nEl timeline se ha actualizado automáticamente.');
+      const completed = checklist.filter(t => t.completed).length;
+      const total = checklist.length;
+      
+      alert(`✅ Checklist Guardado\n\n📊 Progreso: ${completed}/${total} tareas (${Math.round((completed/total)*100)}%)\n📅 Guardado: ${historyEntry.date}\n\nEl timeline del proyecto se ha actualizado.`);
       closeModal('statusModal');
     }
 
