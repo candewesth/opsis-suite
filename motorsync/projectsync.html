@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;500;600;700;900&display=swap">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     :root {
       /* VERDI Color Palette */
@@ -902,6 +903,16 @@
                   <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
                 </svg>
                 Actualizar
+              </button>
+              <button class="btn btn-primary" onclick="exportProjectsToPDF()" style="background: #f59e0b; border-color: #f59e0b;" title="Exportar proyectos a PDF">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                Exportar PDF
               </button>
               <button class="btn btn-primary" onclick="openNewProjectModal()">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2357,6 +2368,213 @@
   
   </div><!-- /app-content -->
   </div><!-- /app-shell -->
+
+  <script>
+    // ============================================================================
+    // EXPORTAR PROYECTOS A PDF
+    // ============================================================================
+    function exportProjectsToPDF() {
+      const projects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+      
+      if (projects.length === 0) {
+        alert('No hay proyectos para exportar');
+        return;
+      }
+      
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      // Configuración del documento
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 15;
+      let y = margin;
+      
+      // Función para agregar nueva página si es necesario
+      function checkPageBreak(incrementY) {
+        if (y + incrementY > pageHeight - margin) {
+          doc.addPage();
+          y = margin;
+          return true;
+        }
+        return false;
+      }
+      
+      // Encabezado del documento
+      doc.setFillColor(2, 115, 94); // Verde Opsis
+      doc.rect(0, 0, pageWidth, 35, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(24);
+      doc.setFont(undefined, 'bold');
+      doc.text('ProjectSync', margin, 20);
+      
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'normal');
+      doc.text('Reporte de Proyectos', margin, 28);
+      
+      doc.setFontSize(10);
+      const dateStr = new Date().toLocaleDateString('es-MX', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      doc.text(dateStr, pageWidth - margin, 28, { align: 'right' });
+      
+      y = 45;
+      
+      // Resumen ejecutivo
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(14);
+      doc.setFont(undefined, 'bold');
+      doc.text('Resumen Ejecutivo', margin, y);
+      y += 10;
+      
+      const estados = {
+        'lead': 0,
+        'scheduled': 0,
+        'confirmed': 0,
+        'in_progress': 0,
+        'completed': 0,
+        'invoiced': 0,
+        'paid': 0,
+        'cancelled': 0
+      };
+      
+      projects.forEach(p => {
+        if (estados.hasOwnProperty(p.estado)) {
+          estados[p.estado]++;
+        }
+      });
+      
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'normal');
+      doc.text(`Total de Proyectos: ${projects.length}`, margin + 5, y);
+      y += 6;
+      doc.text(`Leads: ${estados.lead} | Agendados: ${estados.scheduled} | Confirmados: ${estados.confirmed}`, margin + 5, y);
+      y += 6;
+      doc.text(`En Progreso: ${estados.in_progress} | Completados: ${estados.completed}`, margin + 5, y);
+      y += 6;
+      doc.text(`Facturados: ${estados.invoiced} | Pagados: ${estados.paid} | Cancelados: ${estados.cancelled}`, margin + 5, y);
+      y += 15;
+      
+      // Lista de proyectos
+      checkPageBreak(20);
+      doc.setFontSize(14);
+      doc.setFont(undefined, 'bold');
+      doc.text('Detalle de Proyectos', margin, y);
+      y += 10;
+      
+      projects.forEach((project, index) => {
+        checkPageBreak(45);
+        
+        // Fondo del proyecto
+        doc.setFillColor(250, 250, 250);
+        doc.roundedRect(margin, y - 5, pageWidth - 2 * margin, 40, 2, 2, 'F');
+        
+        // Número y ID
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(2, 115, 94);
+        doc.text(`#${index + 1} - ${project.idSync || project.id}`, margin + 3, y);
+        
+        // Estado
+        const estadoColors = {
+          'lead': [148, 163, 184],
+          'scheduled': [59, 130, 246],
+          'confirmed': [16, 185, 129],
+          'in_progress': [245, 158, 11],
+          'completed': [34, 197, 94],
+          'invoiced': [139, 92, 246],
+          'paid': [16, 185, 129],
+          'cancelled': [239, 68, 68]
+        };
+        
+        const estadoLabels = {
+          'lead': 'Lead',
+          'scheduled': 'Agendado',
+          'confirmed': 'Confirmado',
+          'in_progress': 'En Progreso',
+          'completed': 'Completado',
+          'invoiced': 'Facturado',
+          'paid': 'Pagado',
+          'cancelled': 'Cancelado'
+        };
+        
+        const color = estadoColors[project.estado] || [148, 163, 184];
+        doc.setFillColor(...color);
+        doc.roundedRect(pageWidth - margin - 30, y - 4, 28, 6, 1, 1, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(8);
+        doc.setFont(undefined, 'bold');
+        doc.text(estadoLabels[project.estado] || 'N/A', pageWidth - margin - 15.5, y, { align: 'center' });
+        
+        y += 8;
+        
+        // Información del cliente
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(11);
+        doc.setFont(undefined, 'bold');
+        doc.text(`Cliente: ${project.clientName || 'Sin nombre'}`, margin + 3, y);
+        y += 6;
+        
+        doc.setFontSize(9);
+        doc.setFont(undefined, 'normal');
+        doc.text(`Teléfono: ${project.phone || 'N/A'}`, margin + 3, y);
+        y += 5;
+        doc.text(`Email: ${project.email || 'N/A'}`, margin + 3, y);
+        y += 5;
+        
+        // Dirección
+        if (project.serviceAddress) {
+          const addressText = doc.splitTextToSize(`Dirección: ${project.serviceAddress}`, pageWidth - 2 * margin - 10);
+          doc.text(addressText, margin + 3, y);
+          y += addressText.length * 5;
+        }
+        
+        // Servicio y precio
+        if (project.serviceType || project.estimatedPrice) {
+          y += 2;
+          doc.setFont(undefined, 'bold');
+          if (project.serviceType) {
+            doc.text(`Servicio: ${project.serviceType}`, margin + 3, y);
+            y += 5;
+          }
+          if (project.estimatedPrice) {
+            doc.setTextColor(2, 115, 94);
+            doc.text(`Precio: $${parseFloat(project.estimatedPrice).toLocaleString('es-MX')}`, margin + 3, y);
+            doc.setTextColor(0, 0, 0);
+            y += 5;
+          }
+        }
+        
+        y += 8;
+      });
+      
+      // Pie de página en la última página
+      const totalPages = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text(`Página ${i} de ${totalPages}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+        doc.text('Generado por Opsis Suite - ProjectSync', pageWidth / 2, pageHeight - 6, { align: 'center' });
+      }
+      
+      // Guardar PDF
+      const filename = `ProjectSync_Proyectos_${new Date().toISOString().split('T')[0]}.pdf`;
+      doc.save(filename);
+      
+      // Notificación de éxito
+      if (window.showToast) {
+        window.showToast('success', `PDF exportado exitosamente: ${projects.length} proyectos`);
+      } else {
+        alert(`PDF exportado exitosamente con ${projects.length} proyectos`);
+      }
+    }
+  </script>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
