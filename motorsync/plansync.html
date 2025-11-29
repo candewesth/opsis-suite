@@ -3984,6 +3984,9 @@
         const type = typeConfig[apt.type] || { icon: 'other', name: 'Otro' };
         const aptDate = new Date(apt.date);
         
+        // Check if appointment already has a project
+        const hasProject = apt.projectId && apt.projectId !== '';
+        
         return `
           <tr>
             <td>
@@ -4000,9 +4003,16 @@
             <td>${statusBadges[apt.status] || statusBadges.pending}</td>
             <td>${priorityBadges[apt.priority] || priorityBadges.normal}</td>
             <td>
-              <button onclick="openEditAppointmentModal('${apt.id}')" style="padding: 6px 12px; background: rgba(2, 115, 94, 0.1); color: #02735E; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px;">
-                Editar
-              </button>
+              <div style="display: flex; gap: 8px;">
+                <button onclick="openEditAppointmentModal('${apt.id}')" style="padding: 6px 12px; background: rgba(2, 115, 94, 0.1); color: #02735E; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px;">
+                  Editar
+                </button>
+                ${!hasProject ? `
+                <button onclick="convertAppointmentToProject('${apt.id}')" style="padding: 6px 12px; background: rgba(16, 185, 129, 0.1); color: #10b981; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px;" title="Convertir esta cita en un proyecto">
+                  🏗️ Proyecto
+                </button>
+                ` : ''}
+              </div>
             </td>
           </tr>
         `;
@@ -4525,6 +4535,97 @@
         });
       });
     });
+
+    // ============================================================================
+    // CONVERT APPOINTMENT TO PROJECT
+    // ============================================================================
+
+    /**
+     * Convierte una cita en un proyecto confirmado
+     * @param {string} appointmentId - ID de la cita a convertir
+     */
+    function convertAppointmentToProject(appointmentId) {
+      // Buscar la cita
+      const appointments = JSON.parse(localStorage.getItem('projectsync_appointments') || '[]');
+      const appointment = appointments.find(apt => apt.id === appointmentId);
+      
+      if (!appointment) {
+        alert('❌ Error: No se encontró la cita');
+        return;
+      }
+
+      // Confirmar la conversión
+      const confirmed = confirm(
+        `🏗️ Convertir a Proyecto\n\n` +
+        `¿Deseas convertir la cita "${appointment.title}" en un proyecto confirmado?\n\n` +
+        `Esto creará:\n` +
+        `• Proyecto: ${appointment.title}\n` +
+        `• Cliente: ${appointment.client || 'Sin especificar'}\n` +
+        `• Dirección: ${appointment.address || 'Sin especificar'}\n` +
+        `• Fecha inicio: ${appointment.date}\n\n` +
+        `La cita quedará vinculada al nuevo proyecto.`
+      );
+
+      if (!confirmed) return;
+
+      // Generar IDSync para el nuevo proyecto
+      const projects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+      const lastId = projects.length > 0 
+        ? Math.max(...projects.map(p => {
+            const match = p.idSync?.match(/IDSync(\\d+)/);
+            return match ? parseInt(match[1]) : 250000;
+          }))
+        : 250000;
+      const newIdSync = `IDSync${lastId + 1}`;
+
+      // Crear el nuevo proyecto
+      const newProject = {
+        id: newIdSync,
+        idSync: newIdSync,
+        projectName: appointment.title,
+        clientName: appointment.client || 'Cliente desde cita',
+        contactName: appointment.client || '',
+        phone: appointment.phone || '',
+        email: '',
+        address: appointment.address || '',
+        startDate: appointment.date,
+        endDate: '',
+        budget: '',
+        status: 'En Progreso',
+        description: `Proyecto creado desde cita del ${appointment.date} a las ${appointment.time}`,
+        createdFrom: 'appointment',
+        sourceAppointmentId: appointmentId,
+        createdAt: new Date().toISOString(),
+        lastModified: new Date().toISOString()
+      };
+
+      // Agregar a la lista de proyectos
+      projects.push(newProject);
+      localStorage.setItem('projectsync_projects', JSON.stringify(projects));
+
+      // Actualizar la cita para vincularla al proyecto
+      const aptIndex = appointments.findIndex(apt => apt.id === appointmentId);
+      if (aptIndex !== -1) {
+        appointments[aptIndex].projectId = newIdSync;
+        appointments[aptIndex].projectName = appointment.title;
+        appointments[aptIndex].status = 'confirmed'; // Cambiar a confirmada
+        localStorage.setItem('projectsync_appointments', JSON.stringify(appointments));
+      }
+
+      console.log('✅ Proyecto creado desde cita:', newProject);
+
+      // Mostrar confirmación y navegar
+      alert(
+        `✓ Proyecto Creado Exitosamente\n\n` +
+        `ID: ${newIdSync}\n` +
+        `Nombre: ${newProject.projectName}\n\n` +
+        `Serás redirigido al portal del proyecto...`
+      );
+
+      // Navegar al ViewSync del nuevo proyecto
+      window.location.href = `viewsync.html?id=${newIdSync}`;
+    }
+
   </script>
 </body>
 </html>
