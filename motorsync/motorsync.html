@@ -19511,6 +19511,61 @@
       }
     });
 
+    // ============================================================================
+    // REAL-TIME COUNTERS - Update stats when localStorage changes
+    // ============================================================================
+
+    /**
+     * Actualiza los contadores en tiempo real cuando cambian los datos
+     */
+    function updateRealtimeCounters() {
+      // Actualizar stats de proyectos
+      calculateProjectStats();
+      
+      // Actualizar stats de agenda
+      calculateAgendaStats();
+      
+      console.log('🔄 Contadores actualizados en tiempo real');
+    }
+
+    // Escuchar cambios en localStorage desde otras pestañas/ventanas
+    window.addEventListener('storage', (e) => {
+      // Solo reaccionar a cambios en datos relevantes
+      if (e.key === 'projectsync_projects' || 
+          e.key === 'projectsync_appointments' || 
+          e.key === 'threadsync_threads') {
+        console.log(`📡 Cambio detectado en ${e.key}`);
+        updateRealtimeCounters();
+      }
+    });
+
+    // Custom event para cambios en la misma pestaña
+    // Esto permite que otros módulos disparen actualizaciones
+    window.addEventListener('localStorageUpdate', (e) => {
+      if (e.detail && (
+          e.detail.key === 'projectsync_projects' || 
+          e.detail.key === 'projectsync_appointments' || 
+          e.detail.key === 'threadsync_threads')) {
+        console.log(`🔄 Actualización local detectada en ${e.detail.key}`);
+        updateRealtimeCounters();
+      }
+    });
+
+    // Helper function para otros módulos: dispara evento de actualización
+    window.triggerLocalStorageUpdate = function(key) {
+      const event = new CustomEvent('localStorageUpdate', { 
+        detail: { key: key } 
+      });
+      window.dispatchEvent(event);
+    };
+
+    // Actualizar contadores cada 30 segundos por seguridad
+    setInterval(() => {
+      updateRealtimeCounters();
+    }, 30000);
+
+    console.log('✅ Sistema de contadores en tiempo real activado');
+
   </script>
 
   </div><!-- /app-content -->
