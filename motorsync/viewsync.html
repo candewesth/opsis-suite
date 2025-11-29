@@ -808,6 +808,104 @@
       color: var(--text-secondary);
     }
 
+    /* === Sistema de Asignación de Personal === */
+    .staff-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      background: white;
+      margin-bottom: 8px;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    html[data-theme='dark'] .staff-item {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .staff-item:hover {
+      border-color: rgba(2, 115, 94, 0.3);
+      background: rgba(2, 115, 94, 0.05);
+    }
+
+    .staff-item.selected {
+      border-color: #02735E;
+      background: rgba(2, 115, 94, 0.1);
+    }
+
+    .staff-checkbox {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #d1d5db;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .staff-item.selected .staff-checkbox {
+      background: #02735E;
+      border-color: #02735E;
+    }
+
+    .staff-item.selected .staff-checkbox::after {
+      content: '✓';
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .staff-details {
+      flex: 1;
+    }
+
+    .staff-name {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+
+    .staff-meta {
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .role-badge {
+      background: rgba(59, 130, 246, 0.1);
+      color: #3b82f6;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .role-badge.owner { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+    .role-badge.admin { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+    .role-badge.tech { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+    .role-badge.supervisor { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+
+    .assigned-team-empty {
+      text-align: center;
+      padding: 60px 24px;
+      color: var(--text-secondary);
+    }
+
+    .assigned-team-empty svg {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 16px;
+      opacity: 0.3;
+    }
+
     .comment-feed {
       display: flex;
       flex-direction: column;
@@ -1543,75 +1641,66 @@
     <!-- TAB: EQUIPO -->
     <div id="tab-team" class="tab-content">
       <div class="card">
-        <h3 class="card-title">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>
-          Equipo Asignado
-        </h3>
-        <div style="margin-top: 16px;">
-          <div class="team-member">
-            <div class="avatar">JP</div>
-            <div class="member-info">
-              <div class="member-name">Juan Pérez</div>
-              <div class="member-role">Project Manager</div>
-            </div>
-            <button class="btn btn-white" onclick="contactMember('Juan Pérez', '+52 33 1111 2222')">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-              </svg>
-            </button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h3 class="card-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            Personal Asignado al Proyecto
+          </h3>
+          <button class="btn btn-primary" onclick="openAssignStaffModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="8.5" cy="7" r="4"/>
+              <line x1="20" y1="8" x2="20" y2="14"/>
+              <line x1="23" y1="11" x2="17" y2="11"/>
+            </svg>
+            Asignar Personal
+          </button>
+        </div>
+
+        <div id="assignedTeamList">
+          <!-- El equipo asignado se renderiza dinámicamente aquí -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Asignar Personal -->
+    <div id="assignStaffModal" class="modal" style="display: none;">
+      <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+          <h3>Asignar Personal al Proyecto</h3>
+          <button class="modal-close" onclick="closeAssignStaffModal()">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 24px;">
+          <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px;">
+            Selecciona el personal disponible para asignar a este proyecto. Puedes asignar roles específicos a cada miembro del equipo.
+          </p>
+
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 13px; color: var(--text-secondary);">Buscar Personal</label>
+            <input 
+              type="text" 
+              id="staffSearchInput" 
+              placeholder="Buscar por nombre, email o rol..." 
+              style="width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px;"
+              onkeyup="filterStaffList()"
+            />
           </div>
-          <div class="team-member">
-            <div class="avatar">MG</div>
-            <div class="member-info">
-              <div class="member-name">María García</div>
-              <div class="member-role">Técnico Senior</div>
+
+          <div style="background: var(--bg-body); border-radius: 12px; padding: 12px; max-height: 400px; overflow-y: auto; border: 1px solid var(--border-color);">
+            <div id="availableStaffList">
+              <!-- Lista de staff disponible se renderiza aquí -->
             </div>
-            <button class="btn btn-white" onclick="contactMember('María García', '+52 33 3333 4444')">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-              </svg>
-            </button>
-          </div>
-          <div class="team-member">
-            <div class="avatar">CL</div>
-            <div class="member-info">
-              <div class="member-name">Carlos López</div>
-              <div class="member-role">Técnico</div>
-            </div>
-            <button class="btn btn-white" onclick="contactMember('Carlos López', '+52 33 5555 6666')">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-              </svg>
-            </button>
-          </div>
-          <div class="team-member">
-            <div class="avatar">AR</div>
-            <div class="member-info">
-              <div class="member-name">Ana Rodríguez</div>
-              <div class="member-role">Supervisor</div>
-            </div>
-            <button class="btn btn-white" onclick="contactMember('Ana Rodríguez', '+52 33 7777 8888')">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-              </svg>
-            </button>
           </div>
         </div>
-        
-        <button class="btn btn-primary" style="margin-top: 20px;" onclick="addTeamMember()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="8.5" cy="7" r="4"/>
-            <line x1="20" y1="8" x2="20" y2="14"/>
-            <line x1="23" y1="11" x2="17" y2="11"/>
-          </svg>
-          Agregar Miembro al Equipo
-        </button>
+        <div class="modal-footer">
+          <button class="btn btn-white" onclick="closeAssignStaffModal()">Cancelar</button>
+          <button class="btn btn-primary" onclick="saveStaffAssignments()">Guardar Asignaciones</button>
+        </div>
       </div>
     </div>
 
@@ -5127,6 +5216,210 @@
       
       showToast('success', `PDF exportado exitosamente: ${filename}`);
     }
+
+    // ============================================================================
+    // SISTEMA DE ASIGNACIÓN DE PERSONAL
+    // ============================================================================
+
+    const STAFF_KEY = 'motorsync_staff';
+    let selectedStaffIds = [];
+    let assignedStaff = [];
+
+    // Renderizar equipo asignado
+    function renderAssignedTeam() {
+      const container = document.getElementById('assignedTeamList');
+      
+      if (!currentProject) return;
+      
+      const assignmentsKey = `project_staff_${currentProject.idSync || currentProject.id}`;
+      assignedStaff = JSON.parse(localStorage.getItem(assignmentsKey) || '[]');
+      
+      if (assignedStaff.length === 0) {
+        container.innerHTML = `
+          <div class="assigned-team-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <p style="font-size: 14px; margin-bottom: 8px;">No hay personal asignado a este proyecto</p>
+            <p style="font-size: 12px;">Haz clic en "Asignar Personal" para agregar miembros del equipo</p>
+          </div>
+        `;
+        return;
+      }
+      
+      const allStaff = JSON.parse(localStorage.getItem(STAFF_KEY) || '[]');
+      
+      container.innerHTML = assignedStaff.map(assignment => {
+        const staff = allStaff.find(s => s.id === assignment.staffId);
+        if (!staff) return '';
+        
+        const initials = staff.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        
+        return `
+          <div class="team-member">
+            <div class="avatar">${initials}</div>
+            <div class="member-info">
+              <div class="member-name">${staff.name}</div>
+              <div class="member-role">
+                <span class="role-badge ${staff.role}">${getRoleLabel(staff.role)}</span>
+                ${assignment.projectRole ? ` • ${assignment.projectRole}` : ''}
+              </div>
+            </div>
+            <button class="btn btn-white" onclick="contactStaff('${staff.name}', '${staff.phone}')" title="Contactar">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+            </button>
+            <button class="btn btn-white" onclick="removeStaffFromProject('${staff.id}')" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.3);" title="Remover">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Obtener label del rol
+    function getRoleLabel(role) {
+      const labels = {
+        'owner': 'Owner',
+        'admin': 'Admin',
+        'tech': 'Técnico',
+        'supervisor': 'Supervisor'
+      };
+      return labels[role] || role;
+    }
+
+    // Contactar staff
+    function contactStaff(name, phone) {
+      if (confirm(`¿Contactar a ${name}?\n\nTeléfono: ${phone}\n\n¿Deseas llamar ahora?`)) {
+        window.location.href = `tel:${phone}`;
+      }
+    }
+
+    // Remover staff del proyecto
+    function removeStaffFromProject(staffId) {
+      if (!confirm('¿Estás seguro de remover este miembro del equipo?')) return;
+      
+      const assignmentsKey = `project_staff_${currentProject.idSync || currentProject.id}`;
+      let assignments = JSON.parse(localStorage.getItem(assignmentsKey) || '[]');
+      
+      assignments = assignments.filter(a => a.staffId !== staffId);
+      localStorage.setItem(assignmentsKey, JSON.stringify(assignments));
+      
+      renderAssignedTeam();
+      showToast('success', 'Miembro removido del proyecto');
+    }
+
+    // Abrir modal de asignación
+    function openAssignStaffModal() {
+      selectedStaffIds = [];
+      
+      // Pre-seleccionar staff ya asignado
+      const assignmentsKey = `project_staff_${currentProject.idSync || currentProject.id}`;
+      const currentAssignments = JSON.parse(localStorage.getItem(assignmentsKey) || '[]');
+      selectedStaffIds = currentAssignments.map(a => a.staffId);
+      
+      renderAvailableStaff();
+      
+      const modal = document.getElementById('assignStaffModal');
+      modal.style.display = 'flex';
+      modal.style.animation = 'fadeIn 0.2s ease';
+    }
+
+    // Cerrar modal
+    function closeAssignStaffModal() {
+      const modal = document.getElementById('assignStaffModal');
+      modal.style.display = 'none';
+    }
+
+    // Renderizar staff disponible
+    function renderAvailableStaff(filter = '') {
+      const container = document.getElementById('availableStaffList');
+      const allStaff = JSON.parse(localStorage.getItem(STAFF_KEY) || '[]');
+      
+      let filtered = allStaff;
+      
+      if (filter) {
+        const searchLower = filter.toLowerCase();
+        filtered = allStaff.filter(s => 
+          s.name.toLowerCase().includes(searchLower) ||
+          s.email.toLowerCase().includes(searchLower) ||
+          s.role.toLowerCase().includes(searchLower)
+        );
+      }
+      
+      if (filtered.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">No se encontró personal</p>';
+        return;
+      }
+      
+      container.innerHTML = filtered.map(staff => {
+        const isSelected = selectedStaffIds.includes(staff.id);
+        const initials = staff.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        
+        return `
+          <div class="staff-item ${isSelected ? 'selected' : ''}" onclick="toggleStaffSelection('${staff.id}')">
+            <div class="staff-checkbox"></div>
+            <div class="avatar">${initials}</div>
+            <div class="staff-details">
+              <div class="staff-name">${staff.name}</div>
+              <div class="staff-meta">
+                <span class="role-badge ${staff.role}">${getRoleLabel(staff.role)}</span>
+                <span>${staff.email}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Filtrar lista de staff
+    function filterStaffList() {
+      const input = document.getElementById('staffSearchInput');
+      renderAvailableStaff(input.value);
+    }
+
+    // Toggle selección de staff
+    window.toggleStaffSelection = function(staffId) {
+      if (selectedStaffIds.includes(staffId)) {
+        selectedStaffIds = selectedStaffIds.filter(id => id !== staffId);
+      } else {
+        selectedStaffIds.push(staffId);
+      }
+      renderAvailableStaff(document.getElementById('staffSearchInput').value);
+    };
+
+    // Guardar asignaciones
+    function saveStaffAssignments() {
+      const assignmentsKey = `project_staff_${currentProject.idSync || currentProject.id}`;
+      
+      const assignments = selectedStaffIds.map(staffId => ({
+        staffId: staffId,
+        assignedDate: new Date().toISOString(),
+        projectRole: null // Se puede extender para asignar roles específicos
+      }));
+      
+      localStorage.setItem(assignmentsKey, JSON.stringify(assignments));
+      
+      closeAssignStaffModal();
+      renderAssignedTeam();
+      
+      showToast('success', `${assignments.length} miembro${assignments.length !== 1 ? 's' : ''} asignado${assignments.length !== 1 ? 's' : ''} al proyecto`);
+    }
+
+    // Inicializar al cargar página
+    document.addEventListener('DOMContentLoaded', () => {
+      // Renderizar equipo asignado cuando se cargue el proyecto
+      if (currentProject) {
+        renderAssignedTeam();
+      }
+    });
 
   </script>
 
