@@ -899,6 +899,176 @@
       color: var(--text-secondary);
     }
 
+    /* === Timeline Visual (Gantt-style) === */
+    .timeline-container {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 24px;
+    }
+
+    html[data-theme='dark'] .timeline-container {
+      background: rgba(255, 255, 255, 0.03);
+      border-color: rgba(255, 255, 255, 0.06);
+    }
+
+    .timeline-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .timeline-grid {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 16px;
+      min-height: 300px;
+    }
+
+    .timeline-tasks {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .timeline-task-label {
+      background: var(--bg-body);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      height: 64px;
+      justify-content: center;
+    }
+
+    .timeline-task-date {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .timeline-bars {
+      position: relative;
+      background: linear-gradient(90deg, transparent 0%, transparent calc(100% - 1px), var(--border-color) calc(100% - 1px), var(--border-color) 100%);
+      background-size: calc(100% / 7) 100%;
+      background-repeat: repeat-x;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .timeline-bar-container {
+      position: relative;
+      height: 64px;
+      display: flex;
+      align-items: center;
+    }
+
+    .timeline-bar {
+      position: absolute;
+      height: 36px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .timeline-bar:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .timeline-bar.completed {
+      background: linear-gradient(135deg, #10b981, #059669);
+    }
+
+    .timeline-bar.in-progress {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+
+    .timeline-bar.pending {
+      background: linear-gradient(135deg, #94a3b8, #64748b);
+    }
+
+    .timeline-bar.cancelled {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+
+    .timeline-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-color);
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .timeline-legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .legend-color {
+      width: 20px;
+      height: 12px;
+      border-radius: 3px;
+    }
+
+    .milestone {
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-bottom: 12px solid #8b5cf6;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .milestone-label {
+      position: absolute;
+      top: -24px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      font-weight: 700;
+      color: #8b5cf6;
+      white-space: nowrap;
+      background: rgba(139, 92, 246, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
     .assigned-team-empty svg {
       width: 64px;
       height: 64px;
@@ -1553,6 +1723,60 @@
 
     <!-- TAB: PROGRAMACIÓN -->
     <div id="tab-schedule" class="tab-content">
+      <!-- Timeline Visual tipo Gantt -->
+      <div class="timeline-container">
+        <div class="timeline-header">
+          <div>
+            <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 8px;">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+              Timeline del Proyecto
+            </h3>
+            <p style="font-size: 13px; color: var(--text-secondary);">Visualización de fases, milestones y progreso</p>
+          </div>
+          <button class="btn btn-white" onclick="editTimeline()" style="display: flex; align-items: center; gap: 8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            Editar Timeline
+          </button>
+        </div>
+
+        <div id="timelineChart">
+          <!-- Timeline se renderiza dinámicamente -->
+        </div>
+
+        <div class="timeline-legend">
+          <div class="legend-item">
+            <div class="legend-color" style="background: linear-gradient(135deg, #10b981, #059669);"></div>
+            <span>Completado</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: linear-gradient(135deg, #f59e0b, #d97706);"></div>
+            <span>En Progreso</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: linear-gradient(135deg, #94a3b8, #64748b);"></div>
+            <span>Pendiente</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: linear-gradient(135deg, #ef4444, #dc2626);"></div>
+            <span>Cancelado/Retrasado</span>
+          </div>
+          <div class="legend-item">
+            <div style="width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 10px solid #8b5cf6;"></div>
+            <span>Milestone</span>
+          </div>
+        </div>
+      </div>
+
       <div class="card">
         <h3 class="card-title">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1561,7 +1785,7 @@
             <line x1="8" y1="2" x2="8" y2="6"/>
             <line x1="3" y1="10" x2="21" y2="10"/>
           </svg>
-          Programación del Proyecto
+          Programación Detallada del Proyecto
         </h3>
         
         <div style="margin-top: 24px;">
@@ -5418,8 +5642,162 @@
       // Renderizar equipo asignado cuando se cargue el proyecto
       if (currentProject) {
         renderAssignedTeam();
+        renderProjectTimeline();
       }
     });
+
+    // ============================================================================
+    // TIMELINE VISUAL DEL PROYECTO
+    // ============================================================================
+
+    function renderProjectTimeline() {
+      const container = document.getElementById('timelineChart');
+      if (!container || !currentProject) return;
+
+      const timelineKey = `project_timeline_${currentProject.idSync || currentProject.id}`;
+      let timeline = JSON.parse(localStorage.getItem(timelineKey) || 'null');
+
+      // Si no existe timeline, crear uno de ejemplo
+      if (!timeline) {
+        timeline = {
+          startDate: '2024-11-10',
+          endDate: '2024-11-19',
+          phases: [
+            {
+              id: 1,
+              name: 'Inspección Inicial',
+              start: '2024-11-10',
+              end: '2024-11-11',
+              status: 'completed',
+              progress: 100
+            },
+            {
+              id: 2,
+              name: 'Instalación Sistema',
+              start: '2024-11-12',
+              end: '2024-11-14',
+              status: 'completed',
+              progress: 100
+            },
+            {
+              id: 3,
+              name: 'Pruebas y Ajustes',
+              start: '2024-11-15',
+              end: '2024-11-17',
+              status: 'in-progress',
+              progress: 60
+            },
+            {
+              id: 4,
+              name: 'Verificación Final',
+              start: '2024-11-18',
+              end: '2024-11-19',
+              status: 'pending',
+              progress: 0
+            }
+          ],
+          milestones: [
+            {
+              id: 1,
+              name: 'Inicio',
+              date: '2024-11-10'
+            },
+            {
+              id: 2,
+              name: 'Inspección OK',
+              date: '2024-11-11'
+            },
+            {
+              id: 3,
+              name: 'Sistema Instalado',
+              date: '2024-11-14'
+            },
+            {
+              id: 4,
+              name: 'Entrega',
+              date: '2024-11-19'
+            }
+          ]
+        };
+        localStorage.setItem(timelineKey, JSON.stringify(timeline));
+      }
+
+      // Calcular duración total del proyecto en días
+      const startDate = new Date(timeline.startDate);
+      const endDate = new Date(timeline.endDate);
+      const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+
+      // Función para calcular posición y ancho de barra
+      function calculateBarPosition(phaseStart, phaseEnd) {
+        const phaseStartDate = new Date(phaseStart);
+        const phaseEndDate = new Date(phaseEnd);
+        
+        const daysFromStart = Math.ceil((phaseStartDate - startDate) / (1000 * 60 * 60 * 24));
+        const phaseDuration = Math.ceil((phaseEndDate - phaseStartDate) / (1000 * 60 * 60 * 24)) + 1;
+        
+        const left = (daysFromStart / totalDays) * 100;
+        const width = (phaseDuration / totalDays) * 100;
+        
+        return { left: `${left}%`, width: `${width}%` };
+      }
+
+      // Renderizar grid del timeline
+      const tasksHTML = timeline.phases.map(phase => {
+        const formatDate = (dateStr) => {
+          const date = new Date(dateStr);
+          return date.toLocaleDateString('es-MX', { month: 'short', day: 'numeric' });
+        };
+
+        return `
+          <div class="timeline-task-label">
+            <div>${phase.name}</div>
+            <div class="timeline-task-date">${formatDate(phase.start)} - ${formatDate(phase.end)}</div>
+          </div>
+        `;
+      }).join('');
+
+      const barsHTML = timeline.phases.map(phase => {
+        const position = calculateBarPosition(phase.start, phase.end);
+        const statusClass = phase.status; // 'completed', 'in-progress', 'pending', 'cancelled'
+        
+        return `
+          <div class="timeline-bar-container">
+            <div class="timeline-bar ${statusClass}" style="left: ${position.left}; width: ${position.width};" title="${phase.name}: ${phase.progress}%">
+              ${phase.progress > 0 ? `${phase.progress}%` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Generar labels de fecha para el eje X
+      const dateLabels = [];
+      for (let i = 0; i < totalDays; i += Math.ceil(totalDays / 7)) {
+        const labelDate = new Date(startDate);
+        labelDate.setDate(startDate.getDate() + i);
+        dateLabels.push(labelDate.toLocaleDateString('es-MX', { month: 'short', day: 'numeric' }));
+      }
+
+      const labelsHTML = dateLabels.map(label => `<span>${label}</span>`).join('');
+
+      container.innerHTML = `
+        <div class="timeline-grid">
+          <div class="timeline-tasks">
+            ${tasksHTML}
+          </div>
+          <div class="timeline-bars">
+            ${barsHTML}
+          </div>
+        </div>
+        <div class="timeline-labels">
+          ${labelsHTML}
+        </div>
+      `;
+    }
+
+    // Editar timeline (placeholder)
+    function editTimeline() {
+      showToast('info', '🔧 Editor de Timeline en desarrollo\n\n• Agregar/editar fases\n• Establecer dependencias\n• Asignar recursos\n• Ajustar fechas');
+    }
 
   </script>
 
