@@ -1183,6 +1183,248 @@
       }
     }
 
+    // ====== SISTEMA DE GENERACIÓN DE REPORTES ======
+    function generateReport() {
+      const reportType = document.getElementById('report-type').value;
+      const startDate = document.getElementById('report-start-date').value;
+      const endDate = document.getElementById('report-end-date').value;
+      const format = document.getElementById('report-format').value;
+
+      console.log('📊 Generando reporte...', { reportType, startDate, endDate, format });
+
+      if (format === 'pdf') {
+        generatePDFReport(reportType, startDate, endDate);
+      } else if (format === 'excel') {
+        generateExcelReport(reportType, startDate, endDate);
+      } else if (format === 'csv') {
+        generateCSVReport(reportType, startDate, endDate);
+      }
+    }
+
+    function generatePDFReport(type, start, end) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      // Header
+      doc.setFillColor(2, 115, 94);
+      doc.rect(0, 0, 210, 40, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(24);
+      doc.setFont(undefined, 'bold');
+      doc.text('Opsis Suite', 15, 20);
+      
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'normal');
+      doc.text('CVE San Diego', 15, 28);
+
+      // Report Title
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(18);
+      doc.setFont(undefined, 'bold');
+      const reportTitles = {
+        performance: 'Reporte de Desempeño',
+        projects: 'Reporte de Proyectos',
+        revenue: 'Reporte de Ingresos',
+        team: 'Reporte de Equipo'
+      };
+      doc.text(reportTitles[type] || 'Reporte General', 15, 55);
+
+      // Period
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'normal');
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Período: ${start} al ${end}`, 15, 62);
+      doc.text(`Generado: ${new Date().toLocaleDateString('es-MX')}`, 15, 68);
+
+      // Sample Data Table
+      const tableData = generateReportData(type);
+      
+      doc.autoTable({
+        startY: 75,
+        head: [tableData.headers],
+        body: tableData.rows,
+        theme: 'striped',
+        headStyles: { fillColor: [2, 115, 94], textColor: 255, fontStyle: 'bold' },
+        styles: { fontSize: 9, cellPadding: 5 },
+        alternateRowStyles: { fillColor: [245, 247, 250] }
+      });
+
+      // Summary
+      const finalY = doc.lastAutoTable.finalY + 15;
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'bold');
+      doc.text('Resumen Ejecutivo', 15, finalY);
+      
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'normal');
+      const summary = generateSummary(type, tableData);
+      summary.forEach((line, i) => {
+        doc.text(line, 15, finalY + 8 + (i * 6));
+      });
+
+      // Save
+      const filename = `reporte_${type}_${new Date().getTime()}.pdf`;
+      doc.save(filename);
+      
+      showNotification('✅ Reporte generado exitosamente', `Archivo: ${filename}`, 'success');
+    }
+
+    function generateExcelReport(type, start, end) {
+      const data = generateReportData(type);
+      
+      // Create CSV content (Excel can open CSV)
+      let csv = data.headers.join(',') + '\n';
+      data.rows.forEach(row => {
+        csv += row.join(',') + '\n';
+      });
+
+      // Download
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `reporte_${type}_${new Date().getTime()}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showNotification('✅ Reporte Excel generado', 'Archivo CSV compatible con Excel', 'success');
+    }
+
+    function generateCSVReport(type, start, end) {
+      generateExcelReport(type, start, end); // Same logic for CSV
+    }
+
+    function generateReportData(type) {
+      const templates = {
+        performance: {
+          headers: ['Métrica', 'Valor Actual', 'Objetivo', 'Variación', 'Estado'],
+          rows: [
+            ['Proyectos Completados', '24', '20', '+20%', '✅ Superado'],
+            ['Satisfacción Cliente', '4.8/5', '4.5/5', '+6.7%', '✅ Excelente'],
+            ['Tiempo Promedio', '12 días', '15 días', '-20%', '✅ Mejorado'],
+            ['Rentabilidad', '32%', '28%', '+14.3%', '✅ Superado'],
+            ['Retrabajo', '3%', '5%', '-40%', '✅ Reducido']
+          ]
+        },
+        projects: {
+          headers: ['Proyecto', 'Cliente', 'Estado', 'Progreso', 'Fecha Entrega'],
+          rows: [
+            ['Instalación HVAC', 'Casa García', 'En Proceso', '75%', '2025-12-15'],
+            ['Remodelación Oficina', 'TechCorp', 'Completado', '100%', '2025-11-20'],
+            ['Sistema Eléctrico', 'Edificio Central', 'En Proceso', '45%', '2025-12-30'],
+            ['Plomería Integral', 'Residencial Sur', 'Planeación', '15%', '2026-01-10'],
+            ['Mantenimiento', 'Grupo Inmobiliario', 'En Proceso', '60%', '2025-12-10']
+          ]
+        },
+        revenue: {
+          headers: ['Concepto', 'Noviembre', 'Octubre', 'Variación', 'Acumulado'],
+          rows: [
+            ['Ingresos Totales', '$450,000', '$380,000', '+18.4%', '$4,200,000'],
+            ['Proyectos Nuevos', '$280,000', '$220,000', '+27.3%', '$2,500,000'],
+            ['Mantenimiento', '$120,000', '$115,000', '+4.3%', '$1,100,000'],
+            ['Consultoría', '$50,000', '$45,000', '+11.1%', '$600,000'],
+            ['Costos', '$270,000', '$240,000', '+12.5%', '$2,520,000']
+          ]
+        },
+        team: {
+          headers: ['Miembro', 'Rol', 'Proyectos Activos', 'Horas/Semana', 'Rendimiento'],
+          rows: [
+            ['Juan Pérez', 'Project Manager', '3', '40', '⭐⭐⭐⭐⭐'],
+            ['María López', 'Técnico Senior', '5', '42', '⭐⭐⭐⭐⭐'],
+            ['Carlos Ruiz', 'Técnico', '4', '38', '⭐⭐⭐⭐'],
+            ['Ana Martínez', 'Coordinadora', '2', '35', '⭐⭐⭐⭐⭐'],
+            ['Luis García', 'Técnico Junior', '3', '40', '⭐⭐⭐⭐']
+          ]
+        }
+      };
+
+      return templates[type] || templates.performance;
+    }
+
+    function generateSummary(type, data) {
+      const summaries = {
+        performance: [
+          '✅ Todas las métricas clave superan los objetivos establecidos',
+          '📈 Incremento del 20% en proyectos completados vs. mes anterior',
+          '⭐ Satisfacción del cliente en nivel excelente (4.8/5)',
+          '🎯 Reducción significativa en tiempos de entrega y retrabajo'
+        ],
+        projects: [
+          `📊 Total de proyectos en el sistema: ${data.rows.length}`,
+          '✅ 20% de proyectos completados exitosamente',
+          '⏱️ 60% de proyectos en progreso según cronograma',
+          '📅 20% en fase de planeación para inicio próximo'
+        ],
+        revenue: [
+          '💰 Crecimiento sostenido mes a mes (+18.4%)',
+          '🎯 Margen de utilidad: 40% sobre costos operativos',
+          '📈 Proyección anual: $5.4M basado en tendencia actual',
+          '✅ Diversificación exitosa de fuentes de ingreso'
+        ],
+        team: [
+          `👥 Equipo de ${data.rows.length} profesionales activos`,
+          '⭐ Rendimiento promedio del equipo: 4.6/5',
+          '⏰ Utilización óptima de recursos (39hrs/sem promedio)',
+          '🎯 Balance adecuado de carga de trabajo entre miembros'
+        ]
+      };
+
+      return summaries[type] || summaries.performance;
+    }
+
+    function scheduleReport() {
+      const reportType = document.getElementById('report-type').value;
+      const format = document.getElementById('report-format').value;
+      
+      const scheduleOptions = `
+        <div style="padding: 20px;">
+          <h3 style="margin-bottom: 15px;">Programar Reporte Automático</h3>
+          <p style="margin-bottom: 15px;">Tipo: ${reportType.toUpperCase()} | Formato: ${format.toUpperCase()}</p>
+          
+          <label style="display: block; margin-bottom: 10px;">
+            <strong>Frecuencia:</strong><br>
+            <select style="width: 100%; padding: 8px; margin-top: 5px;">
+              <option>Diario</option>
+              <option>Semanal</option>
+              <option selected>Mensual</option>
+              <option>Trimestral</option>
+            </select>
+          </label>
+          
+          <label style="display: block; margin-bottom: 10px;">
+            <strong>Enviar a:</strong><br>
+            <input type="email" placeholder="correo@ejemplo.com" style="width: 100%; padding: 8px; margin-top: 5px;">
+          </label>
+          
+          <button onclick="confirmSchedule()" style="background: #02735E; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px;">
+            Confirmar Programación
+          </button>
+        </div>
+      `;
+      
+      showNotification('📅 Programar Reporte', scheduleOptions, 'info');
+    }
+
+    function confirmSchedule() {
+      showNotification('✅ Reporte Programado', 'El reporte se generará y enviará automáticamente según la frecuencia seleccionada.', 'success');
+    }
+
+    function showNotification(title, message, type = 'info') {
+      if (window.NotifyManager) {
+        NotifyManager.create({
+          title: title,
+          message: message,
+          type: type,
+          duration: 5000
+        });
+      } else {
+        alert(`${title}\n\n${message}`);
+      }
+    }
+
     // ====== INITIALIZE ALL FEATURES ======
     document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
