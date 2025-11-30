@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ThreadSync - Seguimiento de Oportunidad | Opsis Suite</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="js/modules.js"></script>
   <style>
     :root {
       --verdi-dark: #022326;
@@ -969,7 +971,7 @@
 
     <div class="app-content">
     <aside id="sidebar">
-      <div class="sidebar-item" data-page="dashboard" onclick="window.location.href='motorsync.html'">
+      <a href="motorsync.html" class="sidebar-item">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="3" width="7" height="9"></rect>
           <rect x="14" y="3" width="7" height="5"></rect>
@@ -977,7 +979,7 @@
           <rect x="3" y="16" width="7" height="5"></rect>
         </svg>
         <span>Dashboard</span>
-      </div>
+      </a>
       
       <a href="plansync.html" class="sidebar-item">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1029,20 +1031,20 @@
         </svg>
         <span>ClientSync</span>
       </a>
-      <div class="sidebar-item" data-page="management" onclick="window.location.href='motorsync.html'">
+      <a href="management.html" class="sidebar-item">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="12" y1="1" x2="12" y2="23"></line>
           <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
         </svg>
         <span>Management</span>
-      </div>
-      <div class="sidebar-item" data-page="settings" onclick="window.location.href='motorsync.html'" style="margin-top: auto;">
+      </a>
+      <a href="settings.html" class="sidebar-item" style="margin-top: auto;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="3"></circle>
           <path d="M12 1v6m0 6v6m9-9h-6m-6 0H3m15.4-6.4l-4.2 4.2m-7.1 0L2.6 5.6m18.8 12.8l-4.2-4.2m-7.1 0l-4.5 4.5"></path>
         </svg>
         <span>Configuración</span>
-      </div>
+      </a>
     </aside>
 
     <main id="main" style="padding: 0; background: #f8fafc;">
@@ -3141,58 +3143,6 @@
       
       // Redirect to PlanSync with new appointment modal
       window.location.href = `plansync.html?action=new&source=thread&id=${threadId}`;
-    }
-  </script>
-
-  <script>
-    // ===================================
-    // MODULE TABS DYNAMIC LOADER
-    // ===================================
-    const MODULE_REGISTRY = {
-      motorsync: {
-        name: 'MotorSync',
-        url: 'motorsync.html',
-        order: 1,
-        enabled: true
-      },
-      timesync: {
-        name: 'TimeSync',
-        url: '../timesync/timesync.html',
-        order: 2,
-        enabled: true
-      }
-    };
-
-    function renderModuleTabs() {
-      const container = document.getElementById('module-tabs-container');
-      if (!container) return;
-
-      container.innerHTML = '';
-      const enabledModules = Object.entries(MODULE_REGISTRY)
-        .filter(([key, module]) => module.enabled)
-        .sort((a, b) => a[1].order - b[1].order);
-
-      const currentPath = window.location.pathname;
-
-      enabledModules.forEach(([key, module]) => {
-        // Si estamos en la carpeta motorsync/, marcar MotorSync como activo
-        const isActive = (key === 'motorsync' && currentPath.includes('/motorsync/')) ||
-                       currentPath.endsWith(module.url);
-        
-        const tab = document.createElement('a');
-        tab.href = module.url;
-        tab.className = `module-tab${isActive ? ' active' : ''}`;
-        tab.textContent = module.name;
-        
-        container.appendChild(tab);
-      });
-    }
-
-    // Ejecutar inmediatamente y también en DOMContentLoaded por si acaso
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', renderModuleTabs);
-    } else {
-        renderModuleTabs();
     }
   </script>
 

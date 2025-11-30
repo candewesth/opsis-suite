@@ -4,11 +4,13 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PlanSync - Gestión de Agenda | Opsis Suite</title>
+  <link rel="stylesheet" href="styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com/">
   <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;500;600;700;900&display=swap">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="js/modules.js"></script>
   <style>
     :root {
       /* VERDI Color Palette */
@@ -1300,40 +1302,9 @@
       <div class="module-tabs" id="module-tabs-container" style="display: flex; gap: 0;"></div>
     </header>
     
-    <script>
-    const MODULE_REGISTRY = {
-        motorsync: { name: 'MotorSync', url: 'motorsync.html', order: 1, enabled: true },
-        timesync: { name: 'TimeSync', url: '../timesync/timesync.html', order: 2, enabled: true }
-    };
-    
-    function renderModuleTabs() {
-        const container = document.getElementById('module-tabs-container');
-        if (!container) return;
-        
-        const currentPath = window.location.pathname;
-        const sortedModules = Object.entries(MODULE_REGISTRY)
-            .filter(([_, module]) => module.enabled)
-            .sort((a, b) => a[1].order - b[1].order);
-        
-        container.innerHTML = sortedModules.map(([key, module]) => {
-            // Si estamos en la carpeta motorsync/, marcar MotorSync como activo
-            const isActive = (key === 'motorsync' && currentPath.includes('/motorsync/')) ||
-                           currentPath.endsWith(module.url);
-            return `<a href="${module.url}" class="module-tab ${isActive ? 'active' : ''}">${module.name}</a>`;
-        }).join('');
-    }
-    
-    // Ejecutar inmediatamente y también en DOMContentLoaded por si acaso
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', renderModuleTabs);
-    } else {
-        renderModuleTabs();
-    }
-    </script>
-
     <div class="app-content">
     <aside id="sidebar">
-      <div class="sidebar-item" onclick="window.location.href='motorsync.html'">
+      <a href="motorsync.html" class="sidebar-item">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="3" width="7" height="9"></rect>
           <rect x="14" y="3" width="7" height="5"></rect>
@@ -1341,7 +1312,7 @@
           <rect x="3" y="16" width="7" height="5"></rect>
         </svg>
         <span>Dashboard</span>
-      </div>
+      </a>
       
       <a href="plansync.html" class="sidebar-item active">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1394,20 +1365,20 @@
         </svg>
         <span>ClientSync</span>
       </a>
-      <div class="sidebar-item" onclick="window.location.href='motorsync.html'">
+      <a href="management.html" class="sidebar-item">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="12" y1="1" x2="12" y2="23"></line>
           <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
         </svg>
         <span>Management</span>
-      </div>
-      <div class="sidebar-item" onclick="window.location.href='motorsync.html'">
+      </a>
+      <a href="settings.html" class="sidebar-item">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="3"></circle>
           <path d="M12 1v6m0 6v6m9-9h-6m-6 0H3m15.4-6.4l-4.2 4.2m-7.1 0L2.6 5.6m18.8 12.8l-4.2-4.2m-7.1 0l-4.5 4.5"></path>
         </svg>
         <span>Configuración</span>
-      </div>
+      </a>
     </aside>
 
     <main id="main">
