@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light" style="--primary-color: #02735E;">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Management - Gestión de Usuarios | Opsis Suite</title>
+  <style>
+    :root {
+      /* VERDI Color Palette */
+      --verdi-dark: #022326;
+      --verdi-mid: #034040;
+      --verdi-accent: #035951;
+      --verdi-light: #02735E;
+      
+      --primary-color: #02735E;
+      --accent-color: #035951;
+      --text-primary: #1e293b;
+      --text-secondary: #475569;
+      --bg-body: #fafafa;
+      --bg-card: #ffffff;
+      --border-color: #ebebeb;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Helvetica Neue', Helvetica, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-body);
+      color: var(--text-primary);
+    }
+
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .app-content {
+      display: grid;
+      grid-template-columns: 70px 1fr;
+      flex: 1;
+    }
+
+    header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 20px;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    .logo-text {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+
+    .logo-suite {
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--text-secondary);
+      margin-left: 6px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: var(--bg-body);
+      border-radius: 20px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    aside.sidebar {
+      background: var(--bg-card);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 0;
+      gap: 8px;
+      position: sticky;
+      top: 57px;
+      height: calc(100vh - 57px);
+      overflow-y: auto;
+    }
+
+    .sidebar-item {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--text-secondary);
+      text-decoration: none;
+      position: relative;
+    }
+
+    .sidebar-item:hover {
+      background: var(--bg-body);
+      color: var(--primary-color);
+    }
+
+    .sidebar-item.active {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .sidebar-item span {
+      position: absolute;
+      left: 60px;
+      background: var(--text-primary);
+      color: white;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .sidebar-item:hover span {
+      opacity: 1;
+    }
+
+    main {
+      padding: 24px;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .page-header {
+      margin-bottom: 24px;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 24px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 24px;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+    }
+
+    .management-grid {
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .management-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .management-table th {
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 12px;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .management-table td {
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 14px;
+    }
+
+    .management-table tr:hover {
+      background: var(--bg-body);
+      cursor: pointer;
+    }
+
+    .management-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .management-badge.active {
+      background: #dcfce7;
+      color: #02735E;
+    }
+
+    .management-badge.away {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .management-badge.disabled {
+      background: #f3f4f6;
+      color: #6b7280;
+    }
+
+    .management-detail-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .management-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--primary-color);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .management-detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .management-detail-grid div span {
+      display: block;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .management-detail-grid div strong {
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      background: var(--bg-card);
+      color: var(--text-primary);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+    }
+
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--verdi-accent);
+    }
+
+    .btn-secondary {
+      background: var(--bg-body);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border-color);
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .management-detail-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .management-invite-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .management-invite-item {
+      padding: 16px;
+      background: var(--bg-body);
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .management-invite-item strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .management-invite-item small {
+      display: block;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 2px;
+    }
+
+    .report-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .btn-small {
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+    }
+
+    .settings-divider {
+      height: 1px;
+      background: var(--border-color);
+      margin: 20px 0;
+    }
+
+    .management-activity-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .management-activity-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px;
+      background: var(--bg-body);
+      border-radius: 8px;
+    }
+
+    .management-activity-item strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .management-activity-item small {
+      display: block;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    @media (max-width: 1024px) {
+      .management-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header>
+      <div class="logo">
+        <span class="logo-text">OPSIS</span>
+        <span class="logo-suite">Suite</span>
+      </div>
+      <div class="header-right">
+        <div class="user-badge">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span>Admin</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="app-content">
+      <aside class="sidebar">
+        <a href="motorsync.html" class="sidebar-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          <span>Dashboard</span>
+        </a>
+
+        <a href="plansync.html" class="sidebar-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span>PlanSync</span>
+        </a>
+
+        <a href="projectsync.html" class="sidebar-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 11l3 3L22 4"></path>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+          </svg>
+          <span>ProjectSync</span>
+        </a>
+
+        <a href="threadsync.html" class="sidebar-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span>ThreadSync</span>
+        </a>
+
+        <a href="motorsync.html#how" class="sidebar-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <span>HowSync</span>
+        </a>
+
+        <a href="analytics.html" class="sidebar-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="20" x2="12" y2="10"></line>
+            <line x1="18" y1="20" x2="18" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="16"></line>
+          </svg>
+          <span>Analytics</span>
+        </a>
+
+        <a href="clientsync.html" class="sidebar-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87m-3-12.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          <span>ClientSync</span>
+        </a>
+
+        <a href="management.html" class="sidebar-item active">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+          <span>Management</span>
+        </a>
+
+        <div class="sidebar-item" onclick="setTimeout(() => { window.location.href='motorsync.html#settings'; }, 100);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M12 1v6m0 6v6m9-9h-6m-6 0H3m15.4-6.4l-4.2 4.2m-7.1 0L2.6 5.6m18.8 12.8l-4.2-4.2m-7.1 0l-4.5 4.5"></path>
+          </svg>
+          <span>Configuración</span>
+        </div>
+      </aside>
+
+      <main>
+        <div class="page-header">
+          <h1 class="page-title">Management</h1>
+          <p class="page-subtitle">Gestión de usuarios, roles y permisos del sistema</p>
+        </div>
+
+        <div class="management-grid">
+          <div class="card">
+            <h3 class="card-title">Usuarios del sistema</h3>
+            <table class="management-table">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Email</th>
+                  <th>Rol</th>
+                  <th>Estado</th>
+                  <th>Último acceso</th>
+                  <th>MFA</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Ana Owner</td>
+                  <td>ana@opsis.com</td>
+                  <td>owner</td>
+                  <td><span class="management-badge active">Activo</span></td>
+                  <td>16 jun, 07:20 a.m.</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>Leo Admin</td>
+                  <td>leo@opsis.com</td>
+                  <td>admin</td>
+                  <td><span class="management-badge active">Activo</span></td>
+                  <td>15 jun, 11:45 a.m.</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>Marco Tech</td>
+                  <td>marco@opsis.com</td>
+                  <td>tech</td>
+                  <td><span class="management-badge active">Activo</span></td>
+                  <td>12 jun, 01:30 a.m.</td>
+                  <td>—</td>
+                </tr>
+                <tr>
+                  <td>María Compliance</td>
+                  <td>compliance@opsis.com</td>
+                  <td>admin</td>
+                  <td><span class="management-badge away">Fuera</span></td>
+                  <td>10 jun, 04:05 a.m.</td>
+                  <td>—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card">
+            <div class="management-detail-header">
+              <div class="management-avatar">AO</div>
+              <div>
+                <h3>Ana Owner</h3>
+                <small>ana@opsis.com</small>
+              </div>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
+              <span class="management-badge active">Activo</span>
+              <span class="management-badge active">MFA activo</span>
+            </div>
+            <div class="management-detail-grid">
+              <div>
+                <span>Rol asignado</span>
+                <strong>owner</strong>
+              </div>
+              <div>
+                <span>Departamento</span>
+                <strong>Dirección</strong>
+              </div>
+              <div>
+                <span>Teléfono</span>
+                <strong>+1 (858) 555-2010</strong>
+              </div>
+              <div>
+                <span>Último acceso</span>
+                <strong>16 jun, 07:20 a.m.</strong>
+              </div>
+            </div>
+            <div class="settings-divider"></div>
+            <div class="form-group">
+              <label>Rol asignado</label>
+              <select>
+                <option value="owner" selected>Owner</option>
+                <option value="admin">Admin</option>
+                <option value="tech">Tech</option>
+                <option value="labor">Labor</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Estado</label>
+              <select>
+                <option value="active" selected>Activo</option>
+                <option value="away">Fuera</option>
+                <option value="disabled">Suspendido</option>
+              </select>
+            </div>
+            <label style="display:flex; align-items:center; gap:8px;">
+              <input type="checkbox" checked>
+              Requerir MFA
+            </label>
+            <div class="management-detail-actions">
+              <button class="btn btn-secondary">Guardar cambios</button>
+              <button class="btn btn-danger">Eliminar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">Invitaciones pendientes</h3>
+          <p class="page-subtitle" style="margin-bottom:16px;">Monitorea accesos aún no confirmados.</p>
+          <form class="form-grid" style="margin-bottom:16px;">
+            <div class="form-group">
+              <label>Nombre</label>
+              <input type="text" required>
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" required>
+            </div>
+            <div class="form-group">
+              <label>Rol</label>
+              <select>
+                <option value="admin">Admin</option>
+                <option value="tech">Tech</option>
+                <option value="labor">Labor</option>
+              </select>
+            </div>
+            <div class="form-group" style="grid-column:1 / -1; text-align:right;">
+              <button type="submit" class="btn btn-primary">Generar invitación</button>
+            </div>
+          </form>
+          <div class="management-invite-list">
+            <div class="management-invite-item">
+              <div>
+                <strong>Marta Ops · admin</strong>
+                <small>marta@opsis.com</small>
+                <small>Expira: 20 jun, 02:00 a.m.</small>
+                <small>Contraseña temporal: <strong>Ops-12345</strong></small>
+              </div>
+              <div class="report-actions">
+                <button class="btn btn-secondary btn-small">Copiar</button>
+                <button class="btn btn-secondary btn-small">Nueva clave</button>
+                <button class="btn btn-secondary btn-small">Reenviar</button>
+                <button class="btn btn-secondary btn-small">Cancelar</button>
+              </div>
+            </div>
+            <div class="management-invite-item">
+              <div>
+                <strong>Jorge Finance · tech</strong>
+                <small>jorge@opsis.com</small>
+                <small>Expira: 19 jun, 09:30 a.m.</small>
+                <small>Contraseña temporal: <strong>Ops-67890</strong></small>
+              </div>
+              <div class="report-actions">
+                <button class="btn btn-secondary btn-small">Copiar</button>
+                <button class="btn btn-secondary btn-small">Nueva clave</button>
+                <button class="btn btn-secondary btn-small">Reenviar</button>
+                <button class="btn btn-secondary btn-small">Cancelar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">Actividad reciente</h3>
+          <p class="page-subtitle" style="margin-bottom:16px;">Auditoría y cambios críticos.</p>
+          <div class="management-activity-list">
+            <div class="management-activity-item">
+              <div>
+                <strong>Cambio de rol</strong>
+                <small>Ana Owner · Leo Admin</small>
+              </div>
+              <div style="text-align:right;">
+                <span>14 jun, 10:20 a.m.</span>
+                <small>Owner → Admin</small>
+              </div>
+            </div>
+            <div class="management-activity-item">
+              <div>
+                <strong>Invitación enviada</strong>
+                <small>Leo Admin · Marta Ops</small>
+              </div>
+              <div style="text-align:right;">
+                <span>13 jun, 02:00 a.m.</span>
+                <small>Invitación enviada</small>
+              </div>
+            </div>
+            <div class="management-activity-item">
+              <div>
+                <strong>Actualización de seguridad</strong>
+                <small>Ana Owner · Portal Opsis</small>
+              </div>
+              <div style="text-align:right;">
+                <span>11 jun, 05:40 a.m.</span>
+                <small>Reforzó MFA obligatorio</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>
