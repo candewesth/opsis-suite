@@ -4449,6 +4449,7 @@
       line-height: 1.4;
       display: -webkit-box;
       -webkit-line-clamp: 2;
+      line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
@@ -4783,8 +4784,6 @@
     .notification-action-btn.secondary:hover {
       border-color: var(--primary-color);
       color: var(--primary-color);
-    }
-      border-radius: 12px 0 0 12px;
     }
 
     .toast-notification.success::before { background: #10b981; }
@@ -19992,7 +19991,7 @@
         `;
         
         results.projects.forEach(p => {
-          const stateData = JSON.parse(localStorage.getItem(\`project_state_\${p.idSync}\`) || 'null');
+          const stateData = JSON.parse(localStorage.getItem(`project_state_${p.idSync}`) || 'null');
           const stateEmoji = stateData ? getWorkflowStateEmoji(stateData.state) : '📋';
           
           html += `
@@ -20115,11 +20114,11 @@
     }
 
     function navigateToProject(projectId) {
-      window.location.href = \`viewsync.html?id=\${projectId}\`;
+      window.location.href = `viewsync.html?id=${projectId}`;
     }
 
     function navigateToCustomer(customerId) {
-      alert(\`Navegar a cliente \${customerId} (CustomerSync en desarrollo)\`);
+      alert(`Navegar a cliente ${customerId} (CustomerSync en desarrollo)`);
       document.getElementById('searchResults').style.display = 'none';
       document.getElementById('globalSearch').value = '';
     }
@@ -20235,31 +20234,9 @@
     // SISTEMA DE NOTIFICACIONES PUSH
     // ============================================================================
 
-    const NOTIFICATIONS_KEY = 'motorsync_notifications';
-    let notificationCount = 0;
-
-    // Tipos de notificaciones con iconos
-    const notificationTypes = {
-      success: {
-        icon: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>',
-        title: 'Éxito'
-      },
-      warning: {
-        icon: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>',
-        title: 'Advertencia'
-      },
-      error: {
-        icon: '<circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line>',
-        title: 'Error'
-      },
-      info: {
-        icon: '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>',
-        title: 'Información'
-      }
-    };
-
     // === Sistema de Notificaciones Integrado ===
     const NOTIFICATIONS_KEY = 'motorsync_notifications';
+    let notificationCount = 0;
     let currentFilter = 'all';
 
     const notificationTypes = {
