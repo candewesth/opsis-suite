@@ -59,6 +59,11 @@
       50% { background-position: 100% 50%; }
     }
 
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
     .app-shell {
       display: flex;
       flex-direction: column;
@@ -674,37 +679,49 @@
 
         <div class="grid-4" style="margin-bottom: 20px;">
           <div>
-            <label style="display: block; font-size: 12px; font-weight: 700; color: #1e40af; margin-bottom: 6px; text-transform: uppercase;">Tipo de Reporte</label>
-            <select id="report-type" style="width: 100%;">
-              <option value="performance">Desempeño</option>
-              <option value="projects">Proyectos</option>
-              <option value="revenue">Ingresos</option>
-              <option value="team">Equipo</option>
+            <label style="display: block; font-size: 12px; font-weight: 700; color: #1e40af; margin-bottom: 6px; text-transform: uppercase;">
+              Tipo de Reporte
+              <span title="Selecciona el tipo de análisis que deseas generar" style="cursor: help; opacity: 0.7; font-size: 14px; margin-left: 4px;">ℹ️</span>
+            </label>
+            <select id="report-type" style="width: 100%;" title="Desempeño: Métricas generales | Proyectos: Análisis de proyectos | Ingresos: Análisis financiero | Equipo: Rendimiento del personal">
+              <option value="performance">Desempeño - Métricas generales</option>
+              <option value="projects">Proyectos - Pipeline y status</option>
+              <option value="revenue">Ingresos - Análisis financiero</option>
+              <option value="team">Equipo - Rendimiento del personal</option>
             </select>
           </div>
 
           <div>
-            <label style="display: block; font-size: 12px; font-weight: 700; color: #1e40af; margin-bottom: 6px; text-transform: uppercase;">Fecha Inicio</label>
-            <input type="date" id="report-start-date" value="2025-11-01" style="width: 100%;">
+            <label style="display: block; font-size: 12px; font-weight: 700; color: #1e40af; margin-bottom: 6px; text-transform: uppercase;">
+              Fecha Inicio
+              <span title="Fecha de inicio del período a analizar" style="cursor: help; opacity: 0.7; font-size: 14px; margin-left: 4px;">ℹ️</span>
+            </label>
+            <input type="date" id="report-start-date" value="2025-11-01" style="width: 100%;" title="Selecciona la fecha de inicio del reporte">
           </div>
 
           <div>
-            <label style="display: block; font-size: 12px; font-weight: 700; color: #1e40af; margin-bottom: 6px; text-transform: uppercase;">Fecha Fin</label>
-            <input type="date" id="report-end-date" value="2025-11-29" style="width: 100%;">
+            <label style="display: block; font-size: 12px; font-weight: 700; color: #1e40af; margin-bottom: 6px; text-transform: uppercase;">
+              Fecha Fin
+              <span title="Fecha de fin del período a analizar" style="cursor: help; opacity: 0.7; font-size: 14px; margin-left: 4px;">ℹ️</span>
+            </label>
+            <input type="date" id="report-end-date" value="2025-11-29" style="width: 100%;" title="Selecciona la fecha de fin del reporte">
           </div>
 
           <div>
-            <label style="display: block; font-size: 12px; font-weight: 700; color: #1e40af; margin-bottom: 6px; text-transform: uppercase;">Formato</label>
-            <select id="report-format" style="width: 100%;">
-              <option value="pdf">PDF</option>
-              <option value="excel">Excel</option>
-              <option value="csv">CSV</option>
+            <label style="display: block; font-size: 12px; font-weight: 700; color: #1e40af; margin-bottom: 6px; text-transform: uppercase;">
+              Formato
+              <span title="Formato de exportación del reporte" style="cursor: help; opacity: 0.7; font-size: 14px; margin-left: 4px;">ℹ️</span>
+            </label>
+            <select id="report-format" style="width: 100%;" title="PDF: Reporte profesional con gráficas | Excel/CSV: Datos para análisis">
+              <option value="pdf">PDF - Reporte profesional</option>
+              <option value="excel">Excel - Para análisis</option>
+              <option value="csv">CSV - Datos sin formato</option>
             </select>
           </div>
         </div>
 
         <div style="display: flex; gap: 12px;">
-          <button class="btn btn-primary" onclick="generateReport()">
+          <button class="btn btn-primary" onclick="generateReport()" title="Genera y descarga el reporte con las opciones seleccionadas">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
               <polyline points="7 10 12 15 17 10"></polyline>
@@ -712,13 +729,18 @@
             </svg>
             Generar Reporte
           </button>
-          <button class="btn btn-secondary" onclick="scheduleReport()">
+          <button class="btn btn-secondary" onclick="scheduleReport()" title="Programa reportes automáticos diarios, semanales o mensuales">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="10"></circle>
               <polyline points="12 6 12 12 16 14"></polyline>
             </svg>
             Programar Reporte
           </button>
+        </div>
+        
+        <!-- Texto de ayuda -->
+        <div style="margin-top: 16px; padding: 12px; background: #eff6ff; border-left: 3px solid #3b82f6; border-radius: 4px; font-size: 13px; color: #1e40af;">
+          <strong>💡 Tip:</strong> Los reportes PDF incluyen gráficas y resumen ejecutivo. Para análisis detallado usa Excel/CSV.
         </div>
       </div>
 
@@ -1192,12 +1214,44 @@
 
       console.log('📊 Generando reporte...', { reportType, startDate, endDate, format });
 
-      if (format === 'pdf') {
-        generatePDFReport(reportType, startDate, endDate);
-      } else if (format === 'excel') {
-        generateExcelReport(reportType, startDate, endDate);
-      } else if (format === 'csv') {
-        generateCSVReport(reportType, startDate, endDate);
+      // Validación de fechas
+      if (!startDate || !endDate) {
+        showNotification('Error', 'Por favor selecciona las fechas del reporte', 'error');
+        return;
+      }
+
+      // Validar que fecha fin no sea antes de fecha inicio
+      if (new Date(endDate) < new Date(startDate)) {
+        showNotification('Error', 'La fecha de fin no puede ser anterior a la fecha de inicio', 'error');
+        return;
+      }
+
+      // Mostrar loading state
+      const generateBtn = document.querySelector('button[onclick*="generateReport"]');
+      if (generateBtn) {
+        const originalText = generateBtn.innerHTML;
+        generateBtn.innerHTML = '<span style="display: inline-flex; align-items: center;"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="animation: spin 1s linear infinite; margin-right: 8px;"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2" stroke-dasharray="9 3" opacity="0.5"/></svg> Generando...</span>';
+        generateBtn.disabled = true;
+
+        setTimeout(() => {
+          try {
+            if (format === 'pdf') {
+              generatePDFReport(reportType, startDate, endDate);
+            } else if (format === 'excel') {
+              generateExcelReport(reportType, startDate, endDate);
+            } else if (format === 'csv') {
+              generateCSVReport(reportType, startDate, endDate);
+            }
+            showNotification('Éxito', `Reporte ${reportType} generado correctamente en formato ${format.toUpperCase()}`, 'success');
+          } catch (error) {
+            console.error('Error al generar reporte:', error);
+            showNotification('Error', 'Hubo un problema al generar el reporte', 'error');
+          } finally {
+            // Restaurar botón
+            generateBtn.innerHTML = originalText;
+            generateBtn.disabled = false;
+          }
+        }, 300);
       }
     }
 
