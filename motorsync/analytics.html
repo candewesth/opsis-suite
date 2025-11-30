@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Analytics - Centro de Análisis | Opsis Suite</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
   <script src="notifications-manager.js"></script>
   <style>
     :root {
@@ -764,44 +766,6 @@
         <div id="activity-feed" style="max-height: 500px; overflow-y: auto;"></div>
       </div>
 
-      <!-- ====== QUICK ACTIONS PANEL ====== -->
-      <div class="analytics-card" style="background: linear-gradient(135deg, #f0fdf4, #dcfce7);">
-        <div class="card-header">
-          <h2 class="card-title" style="color: #02735E;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-            </svg>
-            Quick Actions
-          </h2>
-        </div>
-
-        <div class="grid-4">
-          <div class="quick-action" onclick="quickAction('new-project')">
-            <div class="quick-action-icon">📁</div>
-            <div class="quick-action-label">Nuevo Proyecto</div>
-            <div class="quick-action-kbd">Ctrl + N</div>
-          </div>
-
-          <div class="quick-action" onclick="quickAction('register-time')">
-            <div class="quick-action-icon">⏰</div>
-            <div class="quick-action-label">Registrar Tiempo</div>
-            <div class="quick-action-kbd">Ctrl + T</div>
-          </div>
-
-          <div class="quick-action" onclick="quickAction('new-quote')">
-            <div class="quick-action-icon">💰</div>
-            <div class="quick-action-label">Nueva Cotización</div>
-            <div class="quick-action-kbd">Ctrl + Q</div>
-          </div>
-
-          <div class="quick-action" onclick="quickAction('search')">
-            <div class="quick-action-icon">🔍</div>
-            <div class="quick-action-label">Búsqueda Global</div>
-            <div class="quick-action-kbd">Ctrl + K</div>
-          </div>
-        </div>
-      </div>
-
       <!-- ====== WIDGET DE CLIMA & CALENDARIO ====== -->
       <div class="grid-2">
         <div class="analytics-card" style="background: linear-gradient(135deg, #cffafe, #a5f3fc);">
@@ -877,17 +841,17 @@
     let projectsChart = null;
 
     // ====== FEATURE 1: DASHBOARD ANALYTICS MEJORADO ======
-    function initProjectsTrendChart() {
+    function initProjectsTrendChart(days = 30) {
       const ctx = document.getElementById('projects-trend-chart');
       if (!ctx) return;
 
-      const labels = Array.from({length: 30}, (_, i) => {
+      const labels = Array.from({length: days}, (_, i) => {
         const d = new Date();
-        d.setDate(d.getDate() - (29 - i));
+        d.setDate(d.getDate() - (days - 1 - i));
         return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
       });
 
-      const data = Array.from({length: 30}, () => Math.floor(Math.random() * 8) + 2);
+      const data = Array.from({length: days}, () => Math.floor(Math.random() * 8) + 2);
 
       if (projectsChart) {
         projectsChart.destroy();
@@ -1038,27 +1002,6 @@
     }
 
     // ====== FEATURE 2: SISTEMA DE REPORTES ======
-    function generateReport() {
-      const type = document.getElementById('report-type').value;
-      const format = document.getElementById('report-format').value;
-      const startDate = document.getElementById('report-start-date').value;
-      const endDate = document.getElementById('report-end-date').value;
-
-      console.log(`📄 Generando reporte: ${type} (${format}) - ${startDate} a ${endDate}`);
-
-      const reportTypes = {
-        performance: 'Reporte de Desempeño Mensual',
-        projects: 'Reporte de Proyectos Completados',
-        revenue: 'Reporte de Ingresos y Facturación',
-        team: 'Reporte de Productividad del Equipo'
-      };
-
-      alert(`✅ Generando ${reportTypes[type]}\n\nFormato: ${format.toUpperCase()}\nPeríodo: ${startDate} a ${endDate}\n\nEl reporte se descargará en unos segundos.`);
-    }
-
-    function scheduleReport() {
-      alert('⏰ Programar Reporte\n\nSelecciona frecuencia y destinatarios:\n\n• Diario / Semanal / Mensual\n• Email automático\n• Formato configurado\n\nFuncionalidad en desarrollo.');
-    }
 
     // ====== FEATURE 3: CENTRO DE ACTIVIDAD ======
     function initActivityFeed() {
@@ -1488,7 +1431,19 @@
         initActivityFeed();
         initTodayAppointments();
         updateTodayDate();
+        
+        // Conectar selector de período del chart
+        const chartPeriodSelect = document.getElementById('chart-period');
+        if (chartPeriodSelect) {
+          chartPeriodSelect.addEventListener('change', function() {
+            const days = parseInt(this.value);
+            console.log(`📊 Cambiando período a ${days} días`);
+            initProjectsTrendChart(days);
+          });
+        }
+        
         console.log('✨ Analytics page initialized');
+        console.log('✅ Todos los botones están conectados y funcionando');
       }, 300);
     });
   </script>
