@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test NotifyManager - Demo Interactivo</title>
+  <script src="notifications-manager.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 40px;
+    }
+
+    .header h1 {
+      font-size: 48px;
+      margin-bottom: 12px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .header p {
+      font-size: 18px;
+      opacity: 0.9;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .card h2 {
+      font-size: 20px;
+      margin-bottom: 16px;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-success {
+      background: #10b981;
+      color: white;
+    }
+
+    .btn-info {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .btn-warning {
+      background: #f59e0b;
+      color: white;
+    }
+
+    .btn-error {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #64748b;
+      color: white;
+    }
+
+    .btn-primary {
+      background: #02735E;
+      color: white;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-box {
+      background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+      padding: 16px;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .module-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      background: #f1f5f9;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .toggle {
+      position: relative;
+      width: 50px;
+      height: 26px;
+      background: #cbd5e1;
+      border-radius: 13px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .toggle.active {
+      background: #10b981;
+    }
+
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      top: 3px;
+      left: 3px;
+      transition: transform 0.3s;
+    }
+
+    .toggle.active::after {
+      transform: translateX(24px);
+    }
+
+    .log {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 16px;
+      border-radius: 12px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      max-height: 300px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+
+    .log-entry {
+      margin-bottom: 8px;
+      padding-left: 12px;
+      border-left: 3px solid #3b82f6;
+    }
+
+    .notification-preview {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      border-left: 4px solid;
+      background: #f8fafc;
+    }
+
+    .notification-preview.success { border-color: #10b981; }
+    .notification-preview.info { border-color: #3b82f6; }
+    .notification-preview.warning { border-color: #f59e0b; }
+    .notification-preview.error { border-color: #ef4444; }
+
+    .notification-preview h4 {
+      font-size: 14px;
+      margin-bottom: 4px;
+      color: #1e293b;
+    }
+
+    .notification-preview p {
+      font-size: 12px;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+  
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>🔔 NotifyManager Demo</h1>
+      <p>Sistema Central de Notificaciones - Prueba Interactiva</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="card">
+      <h2>📊 Estadísticas en Tiempo Real</h2>
+      <div class="stats" id="stats-grid">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- Test Actions -->
+    <div class="grid">
+      <!-- ProjectSync -->
+      <div class="card">
+        <h2>📁 ProjectSync</h2>
+        <button class="btn btn-success" onclick="testProjectSync('success')">
+          ✅ Proyecto Completado
+        </button>
+        <button class="btn btn-info" onclick="testProjectSync('info')">
+          📋 Nuevo Proyecto
+        </button>
+        <button class="btn btn-warning" onclick="testProjectSync('warning')">
+          ⚠️ Cambio de Estado
+        </button>
+      </div>
+
+      <!-- TimeSync -->
+      <div class="card">
+        <h2>⏰ TimeSync</h2>
+        <button class="btn btn-success" onclick="testTimeSync('approved')">
+          ✅ Timesheet Aprobado
+        </button>
+        <button class="btn btn-error" onclick="testTimeSync('rejected')">
+          ❌ Timesheet Rechazado
+        </button>
+        <button class="btn btn-info" onclick="testTimeSync('submitted')">
+          📤 Timesheet Enviado
+        </button>
+      </div>
+
+      <!-- ThreadSync -->
+      <div class="card">
+        <h2>💬 ThreadSync</h2>
+        <button class="btn btn-info" onclick="testThreadSync('message')">
+          💬 Nuevo Mensaje
+        </button>
+        <button class="btn btn-warning" onclick="testThreadSync('mention')">
+          👤 Te Mencionaron
+        </button>
+      </div>
+
+      <!-- Warehouse -->
+      <div class="card">
+        <h2>📦 Warehouse</h2>
+        <button class="btn btn-warning" onclick="testWarehouse('lowstock')">
+          ⚠️ Stock Bajo
+        </button>
+        <button class="btn btn-info" onclick="testWarehouse('maintenance')">
+          🔧 Mantenimiento
+        </button>
+      </div>
+
+      <!-- Estimator -->
+      <div class="card">
+        <h2>💰 Estimator</h2>
+        <button class="btn btn-success" onclick="testEstimator('created')">
+          📝 Nueva Cotización
+        </button>
+        <button class="btn btn-warning" onclick="testEstimator('approval')">
+          ⚠️ Requiere Aprobación
+        </button>
+      </div>
+
+      <!-- System Actions -->
+      <div class="card">
+        <h2>⚙️ Acciones del Sistema</h2>
+        <button class="btn btn-primary" onclick="viewNotifications()">
+          👁️ Ver NotifySync
+        </button>
+        <button class="btn btn-secondary" onclick="clearAll()">
+          🗑️ Limpiar Todas
+        </button>
+      </div>
+    </div>
+
+    <!-- Module Toggles -->
+    <div class="card">
+      <h2>🔌 Módulos Activos</h2>
+      <div id="module-toggles">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- Recent Notifications -->
+    <div class="card">
+      <h2>📬 Últimas Notificaciones (5 más recientes)</h2>
+      <div id="recent-notifications">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- Console Log -->
+    <div class="card">
+      <h2>📝 Console Log</h2>
+      <div class="log" id="console-log">
+        <div class="log-entry">Sistema iniciado. Listo para crear notificaciones.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================================
+    // TEST FUNCTIONS
+    // ============================================================================
+
+    // ProjectSync Tests
+    function testProjectSync(type) {
+      const scenarios = {
+        success: {
+          type: 'success',
+          title: 'Proyecto Completado',
+          message: 'El proyecto "Instalación Casa Moderna" ha sido marcado como completado exitosamente.',
+          link: 'motorsync.html'
+        },
+        info: {
+          type: 'info',
+          title: 'Nuevo Proyecto Creado',
+          message: 'Se ha creado el proyecto "Remodelación Oficina XYZ" en el sistema.',
+          link: 'motorsync.html'
+        },
+        warning: {
+          type: 'warning',
+          title: 'Proyecto en Pausa',
+          message: 'El proyecto "Construcción Edificio A" ha sido puesto en pausa. Revisa el estado.',
+          link: 'motorsync.html'
+        }
+      };
+
+      const scenario = scenarios[type];
+      const notification = NotifyManager.create({
+        ...scenario,
+        module: 'projectsync',
+        metadata: { projectId: Math.floor(Math.random() * 1000) }
+      });
+
+      log(`ProjectSync: ${scenario.title}`, 'success');
+      updateUI();
+    }
+
+    // TimeSync Tests
+    function testTimeSync(action) {
+      const scenarios = {
+        approved: {
+          type: 'success',
+          title: 'Timesheet Aprobado',
+          message: 'Tu timesheet de la semana del 25-29 Nov ha sido aprobado por el supervisor.'
+        },
+        rejected: {
+          type: 'error',
+          title: 'Timesheet Rechazado',
+          message: 'Tu timesheet requiere correcciones. Revisa los comentarios del supervisor.'
+        },
+        submitted: {
+          type: 'info',
+          title: 'Timesheet Enviado',
+          message: 'Timesheet enviado exitosamente. Esperando aprobación.'
+        }
+      };
+
+      const scenario = scenarios[action];
+      NotifyManager.create({
+        ...scenario,
+        module: 'timesync',
+        link: 'motorsync.html',
+        metadata: { timesheetId: Math.floor(Math.random() * 1000) }
+      });
+
+      log(`TimeSync: ${scenario.title}`, 'info');
+      updateUI();
+    }
+
+    // ThreadSync Tests
+    function testThreadSync(action) {
+      const scenarios = {
+        message: {
+          type: 'info',
+          title: 'Nuevo Mensaje',
+          message: 'Juan Pérez: "¿Ya revisaste la cotización del cliente ABC?"'
+        },
+        mention: {
+          type: 'warning',
+          title: 'Te Mencionaron',
+          message: 'María López te mencionó en el thread "Proyecto Urgente"'
+        }
+      };
+
+      const scenario = scenarios[action];
+      NotifyManager.create({
+        ...scenario,
+        module: 'threadsync',
+        link: 'motorsync.html',
+        metadata: { threadId: Math.floor(Math.random() * 1000) }
+      });
+
+      log(`ThreadSync: ${scenario.title}`, 'warning');
+      updateUI();
+    }
+
+    // Warehouse Tests
+    function testWarehouse(action) {
+      const scenarios = {
+        lowstock: {
+          type: 'warning',
+          title: 'Stock Bajo',
+          message: 'Tornillos M8x20: Solo quedan 15 unidades (mínimo: 50)'
+        },
+        maintenance: {
+          type: 'info',
+          title: 'Mantenimiento Programado',
+          message: 'Equipo #EQ-2024-087 requiere mantenimiento el 5 de diciembre'
+        }
+      };
+
+      const scenario = scenarios[action];
+      NotifyManager.create({
+        ...scenario,
+        module: 'warehouse',
+        link: 'motorsync.html',
+        metadata: { itemId: Math.floor(Math.random() * 1000) }
+      });
+
+      log(`Warehouse: ${scenario.title}`, 'warning');
+      updateUI();
+    }
+
+    // Estimator Tests
+    function testEstimator(action) {
+      const scenarios = {
+        created: {
+          type: 'success',
+          title: 'Nueva Cotización',
+          message: 'Cotización #COT-2024-156 creada para Cliente ABC - Total: $25,000'
+        },
+        approval: {
+          type: 'warning',
+          title: 'Requiere Aprobación',
+          message: 'Cotización #COT-2024-157 supera el límite autorizado ($50,000). Aprobación requerida.'
+        }
+      };
+
+      const scenario = scenarios[action];
+      NotifyManager.create({
+        ...scenario,
+        module: 'estimator',
+        link: 'motorsync.html',
+        metadata: { quoteId: Math.floor(Math.random() * 1000) }
+      });
+
+      log(`Estimator: ${scenario.title}`, 'success');
+      updateUI();
+    }
+
+    // System Actions
+    function viewNotifications() {
+      window.location.href = 'NotifySync.html';
+    }
+
+    function clearAll() {
+      if (confirm('¿Eliminar todas las notificaciones?')) {
+        NotifyManager.deleteAll();
+        log('Sistema: Todas las notificaciones eliminadas', 'error');
+        updateUI();
+      }
+    }
+
+    // ============================================================================
+    // UI UPDATES
+    // ============================================================================
+
+    function updateUI() {
+      updateStats();
+      updateRecentNotifications();
+      updateModuleToggles();
+    }
+
+    function updateStats() {
+      const stats = NotifyManager.getStats();
+      const statsGrid = document.getElementById('stats-grid');
+
+      statsGrid.innerHTML = `
+        <div class="stat-box">
+          <div class="stat-value">${stats.total}</div>
+          <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">${stats.unread}</div>
+          <div class="stat-label">No Leídas</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">${stats.byType.success}</div>
+          <div class="stat-label">Éxito</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">${stats.byType.info}</div>
+          <div class="stat-label">Info</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">${stats.byType.warning}</div>
+          <div class="stat-label">Alertas</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">${stats.byType.error}</div>
+          <div class="stat-label">Errores</div>
+        </div>
+      `;
+    }
+
+    function updateRecentNotifications() {
+      const recent = NotifyManager.getAll().slice(0, 5);
+      const container = document.getElementById('recent-notifications');
+
+      if (recent.length === 0) {
+        container.innerHTML = '<p style="color: #64748b; text-align: center; padding: 20px;">No hay notificaciones aún. Crea una usando los botones arriba.</p>';
+        return;
+      }
+
+      container.innerHTML = recent.map(n => `
+        <div class="notification-preview ${n.type}">
+          <h4>${n.title}</h4>
+          <p>${n.message}</p>
+          <small style="color: #94a3b8; font-size: 11px;">
+            ${n.moduleName} • ${new Date(n.timestamp).toLocaleString('es-MX')}
+          </small>
+        </div>
+      `).join('');
+    }
+
+    function updateModuleToggles() {
+      const container = document.getElementById('module-toggles');
+      const modules = Object.values(NotifyManager.MODULES);
+
+      container.innerHTML = modules.map(module => {
+        const isActive = NotifyManager.isModuleActive(module.id);
+        return `
+          <div class="module-toggle">
+            <span>${module.name}</span>
+            <div class="toggle ${isActive ? 'active' : ''}" 
+                 onclick="toggleModule('${module.id}', this)">
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleModule(moduleId, element) {
+      const isActive = NotifyManager.isModuleActive(moduleId);
+      NotifyManager.setModuleActive(moduleId, !isActive);
+      element.classList.toggle('active');
+      log(`Módulo ${moduleId}: ${!isActive ? 'activado' : 'desactivado'}`, 'info');
+    }
+
+    function log(message, type = 'info') {
+      const logContainer = document.getElementById('console-log');
+      const timestamp = new Date().toLocaleTimeString('es-MX');
+      const logEntry = document.createElement('div');
+      logEntry.className = 'log-entry';
+      logEntry.textContent = `[${timestamp}] ${message}`;
+      logContainer.insertBefore(logEntry, logContainer.firstChild);
+
+      // Limit to 20 entries
+      while (logContainer.children.length > 20) {
+        logContainer.removeChild(logContainer.lastChild);
+      }
+    }
+
+    // Listen for notification updates
+    window.addEventListener('notificationsUpdated', (event) => {
+      log(`Actualización: ${event.detail.count} notificaciones (${event.detail.unreadCount} sin leer)`, 'info');
+      updateUI();
+    });
+
+    // Initialize
+    updateUI();
+  </script>
+
+</body>
+</html>

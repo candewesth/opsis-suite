@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics - MotorSync | Opsis Suite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;500;600;700;900&display=swap">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="notifications-manager.js"></script>
+  <script>
+    (function () {
+      try {
+        var settings = JSON.parse(localStorage.getItem('opsis_settings') || '{}');
+        var theme = settings.theme || 'light';
+        document.documentElement.dataset.theme = theme;
+        if (settings.accent) {
+          document.documentElement.style.setProperty('--primary-color', settings.accent);
+        }
+      } catch (err) {
+        document.documentElement.dataset.theme = 'light';
+      }
+    })();
+  </script>
+  <style>
+    :root {
+      /* VERDI Color Palette */
+      --verdi-dark: #022326;
+      --verdi-mid: #034040;
+      --verdi-accent: #035951;
+      --verdi-light: #02735E;
+      
+      --primary-color: #02735E;
+      --accent-color: #035951;
+      --text-primary: #1e293b;
+      --text-secondary: #475569;
+      --bg-body: #fafafa;
+      --bg-card: #ffffff;
+      --border-color: #ebebeb;
+      --surface-page-a: #fafafa;
+      --surface-page-b: #f7f7f7;
+    }
+
+    [data-theme='dark'] {
+      --text-primary: #f8fafc;
+      --text-secondary: #b8c4dd;
+      --bg-body: #0f172a;
+      --bg-card: #1e293b;
+      --border-color: rgba(255,255,255,0.1);
+      --surface-page-a: #2b2f33;
+      --surface-page-b: #0f1214;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Helvetica Neue', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-body);
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    @keyframes aire {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #02735E 0%, #035951 50%, #034040 100%);
+      background-size: 200% 200%;
+      animation: aire 8s ease infinite;
+      display: flex;
+      align-items: flex-end;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .logo {
+      padding: 18px 32px;
+    }
+
+    .logo-text {
+      color: white;
+    }
+
+    .logo-title {
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+    }
+
+    .module-tabs {
+      display: flex;
+      gap: 0;
+      flex: 1;
+    }
+
+    .module-tab {
+      padding: 16px 24px;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .module-tab:hover {
+      color: white;
+      background: rgba(255,255,255,0.1);
+    }
+
+    .module-tab.active {
+      color: white;
+      background: rgba(255,255,255,0.15);
+      border-bottom-color: white;
+    }
+
+    .app-content-wrapper {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      flex: 1;
+    }
+
+    aside {
+      width: 260px;
+      background: linear-gradient(180deg, var(--verdi-light), var(--verdi-accent), var(--verdi-mid));
+      color: white;
+      padding: 20px 0;
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 72px;
+      height: calc(100vh - 72px);
+      overflow-y: auto;
+      transition: width 0.3s ease;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 20px;
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .sidebar-item:hover {
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+
+    .sidebar-item.active {
+      background: rgba(255,255,255,0.15);
+      color: white;
+      border-left: 4px solid white;
+      font-weight: 700;
+    }
+
+    .sidebar-item svg {
+      min-width: 20px;
+      stroke-width: 2;
+    }
+
+    main {
+      padding: 40px;
+      max-width: 1600px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .page-header {
+      margin-bottom: 32px;
+    }
+
+    .page-title {
+      font-size: 32px;
+      font-weight: 900;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .page-subtitle {
+      font-size: 16px;
+      color: var(--text-secondary);
+    }
+
+    .analytics-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      border: 1px solid var(--border-color);
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      border: 1px solid var(--border-color);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: none;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--verdi-accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(2, 115, 94, 0.3);
+    }
+
+    .btn-secondary,
+    .btn-white {
+      background: var(--bg-body);
+      color: var(--text-primary);
+      border: 2px solid var(--border-color);
+    }
+
+    .btn-secondary:hover,
+    .btn-white:hover {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+    }
+
+    select, input[type="date"] {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 2px solid var(--border-color);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    select:hover, input[type="date"]:hover {
+      border-color: var(--primary-color);
+    }
+
+    select:focus, input[type="date"]:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(2, 115, 94, 0.1);
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+      border-radius: 12px;
+      padding: 20px;
+      border-left: 4px solid #10b981;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 900;
+      color: #065f46;
+      margin-bottom: 8px;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: #047857;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-change {
+      font-size: 13px;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .stat-change.positive {
+      color: #059669;
+    }
+
+    .stat-change.negative {
+      color: #dc2626;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 320px;
+      margin-top: 16px;
+    }
+
+    .top-project {
+      padding: 16px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      border-left: 4px solid #cbd5e1;
+      transition: all 0.2s;
+    }
+
+    .top-project:first-child {
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      border-left-color: #f59e0b;
+    }
+
+    .top-project:hover {
+      transform: translateX(8px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .activity-filter-btn {
+      padding: 8px 16px;
+      border: 2px solid var(--border-color);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .activity-filter-btn:hover {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+    }
+
+    .activity-filter-btn.active {
+      background: var(--primary-color);
+      border-color: var(--primary-color);
+      color: white;
+    }
+
+    .quick-action {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .quick-action:hover {
+      border-color: var(--primary-color);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(2, 115, 94, 0.15);
+    }
+
+    .quick-action-icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+
+    .quick-action-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .quick-action-kbd {
+      font-size: 11px;
+      padding: 4px 8px;
+      background: var(--bg-body);
+      border-radius: 6px;
+      color: var(--text-secondary);
+      font-family: monospace;
+    }
+
+    @media (max-width: 1024px) {
+      .grid-2, .grid-3, .grid-4 {
+        grid-template-columns: 1fr;
+      }
+      
+      aside {
+        width: 80px;
+      }
+      
+      aside .sidebar-item span {
+        display: none;
+      }
+      
+      main {
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- HEADER con Tabs -->
+    <header>
+      <div class="logo">
+        <div class="logo-text">
+          <div class="logo-title">Opsis Suite</div>
+          <div id="company-name-header" style="font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.85); margin-top: 2px;">CVE San Diego</div>
+        </div>
+      </div>
+      
+      <!-- Module Tabs -->
+      <div class="module-tabs">
+        <a href="motorsync.html" class="module-tab">Dashboard</a>
+        <a href="ProjectSync.html" class="module-tab">ProjectSync</a>
+        <a href="TimeSync.html" class="module-tab">TimeSync</a>
+        <a href="ThreadSync.html" class="module-tab">ThreadSync</a>
+        <a href="NotifySync.html" class="module-tab">NotifySync</a>
+        <a href="analytics.html" class="module-tab active">Analytics</a>
+        <a href="howsync.html" class="module-tab">HowSync</a>
+      </div>
+    </header>
+
+    <div class="app-content-wrapper">
+      <!-- SIDEBAR -->
+      <aside>
+        <a href="motorsync.html" class="sidebar-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          <span>Dashboard</span>
+        </a>
+
+        <a href="analytics.html" class="sidebar-item active">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="20" x2="12" y2="10"></line>
+            <line x1="18" y1="20" x2="18" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="16"></line>
+          </svg>
+          <span>Analytics</span>
+        </a>
+
+        <a href="NotifySync.html" class="sidebar-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <span>Notificaciones</span>
+        </a>
+
+        <a href="ProjectSync.html" class="sidebar-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4"></path>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+          </svg>
+          <span>ProjectSync</span>
+        </a>
+
+        <a href="TimeSync.html" class="sidebar-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span>TimeSync</span>
+        </a>
+
+        <a href="ThreadSync.html" class="sidebar-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span>ThreadSync</span>
+        </a>
+
+        <a href="howsync.html" class="sidebar-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="2"></circle>
+            <path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path>
+          </svg>
+          <span>HowSync</span>
+        </a>
+      </aside>
+
+      <!-- MAIN CONTENT -->
+      <main>
+      <div class="page-header">
+        <h1 class="page-title">📊 Analytics Dashboard</h1>
+        <p class="page-subtitle">Análisis completo de desempeño, proyectos, actividad y métricas operacionales</p>
+      </div>
+
+      <!-- ====== DASHBOARD ANALYTICS MEJORADO ====== -->
+      <div class="analytics-card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="20" x2="12" y2="10"></line>
+              <line x1="18" y1="20" x2="18" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="16"></line>
+            </svg>
+            Tendencias de Proyectos
+          </h2>
+          <select id="chart-period">
+            <option value="7">Últimos 7 días</option>
+            <option value="30" selected>Últimos 30 días</option>
+            <option value="90">Últimos 90 días</option>
+          </select>
+        </div>
+
+        <div class="grid-2">
+          <div>
+            <div class="chart-container">
+              <canvas id="projects-trend-chart"></canvas>
+            </div>
+          </div>
+
+          <div>
+            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--text-primary);">Comparativa Mensual</h3>
+            <div class="grid-2" style="margin-bottom: 24px;">
+              <div class="stat-card">
+                <div class="stat-value" id="current-month-value">24</div>
+                <div class="stat-label">Mes Actual</div>
+              </div>
+              <div class="stat-card" style="background: linear-gradient(135deg, #f3f4f6, #e5e7eb); border-left-color: #6b7280;">
+                <div class="stat-value" style="color: #374151;" id="previous-month-value">18</div>
+                <div class="stat-label" style="color: #4b5563;">Mes Anterior</div>
+              </div>
+            </div>
+            <div style="text-align: center; padding: 16px; background: linear-gradient(135deg, #eff6ff, #dbeafe); border-radius: 12px;">
+              <div style="font-size: 14px; color: #1e40af; font-weight: 600; margin-bottom: 4px;">Crecimiento</div>
+              <div style="font-size: 36px; font-weight: 900; color: #1e3a8a;" id="growth-percentage">+33%</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-top: 32px;">
+          <div>
+            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--text-primary);">Top 5 Proyectos Rentables</h3>
+            <div id="top-projects-list"></div>
+          </div>
+
+          <div>
+            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--text-primary);">Mapa de Calor Semanal</h3>
+            <div id="heatmap-container"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== SISTEMA DE REPORTES ====== -->
+      <div class="analytics-card" style="background: linear-gradient(135deg, #eff6ff, #dbeafe);">
+        <div class="card-header">
+          <h2 class="card-title" style="color: #1e40af;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            Sistema de Reportes
+          </h2>
+        </div>
+
+        <div class="grid-4" style="margin-bottom: 20px;">
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 700; color: #1e40af; margin-bottom: 6px; text-transform: uppercase;">Tipo de Reporte</label>
+            <select id="report-type" style="width: 100%;">
+              <option value="performance">Desempeño</option>
+              <option value="projects">Proyectos</option>
+              <option value="revenue">Ingresos</option>
+              <option value="team">Equipo</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 700; color: #1e40af; margin-bottom: 6px; text-transform: uppercase;">Fecha Inicio</label>
+            <input type="date" id="report-start-date" value="2025-11-01" style="width: 100%;">
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 700; color: #1e40af; margin-bottom: 6px; text-transform: uppercase;">Fecha Fin</label>
+            <input type="date" id="report-end-date" value="2025-11-29" style="width: 100%;">
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 700; color: #1e40af; margin-bottom: 6px; text-transform: uppercase;">Formato</label>
+            <select id="report-format" style="width: 100%;">
+              <option value="pdf">PDF</option>
+              <option value="excel">Excel</option>
+              <option value="csv">CSV</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 12px;">
+          <button class="btn btn-primary" onclick="generateReport()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Generar Reporte
+          </button>
+          <button class="btn btn-secondary" onclick="scheduleReport()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            Programar Reporte
+          </button>
+        </div>
+      </div>
+
+      <!-- ====== CENTRO DE ACTIVIDAD ====== -->
+      <div class="analytics-card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+            Centro de Actividad
+          </h2>
+          <div style="display: flex; gap: 8px;">
+            <button class="activity-filter-btn active" data-filter="all" onclick="filterActivity('all')">Todas</button>
+            <button class="activity-filter-btn" data-filter="projects" onclick="filterActivity('projects')">Proyectos</button>
+            <button class="activity-filter-btn" data-filter="quotes" onclick="filterActivity('quotes')">Cotizaciones</button>
+            <button class="activity-filter-btn" data-filter="team" onclick="filterActivity('team')">Equipo</button>
+          </div>
+        </div>
+
+        <div id="activity-feed" style="max-height: 500px; overflow-y: auto;"></div>
+      </div>
+
+      <!-- ====== QUICK ACTIONS PANEL ====== -->
+      <div class="analytics-card" style="background: linear-gradient(135deg, #fef3c7, #fde68a);">
+        <div class="card-header">
+          <h2 class="card-title" style="color: #92400e;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+            Quick Actions
+          </h2>
+        </div>
+
+        <div class="grid-4">
+          <div class="quick-action" onclick="quickAction('new-project')">
+            <div class="quick-action-icon">📁</div>
+            <div class="quick-action-label">Nuevo Proyecto</div>
+            <div class="quick-action-kbd">Ctrl + N</div>
+          </div>
+
+          <div class="quick-action" onclick="quickAction('register-time')">
+            <div class="quick-action-icon">⏰</div>
+            <div class="quick-action-label">Registrar Tiempo</div>
+            <div class="quick-action-kbd">Ctrl + T</div>
+          </div>
+
+          <div class="quick-action" onclick="quickAction('new-quote')">
+            <div class="quick-action-icon">💰</div>
+            <div class="quick-action-label">Nueva Cotización</div>
+            <div class="quick-action-kbd">Ctrl + Q</div>
+          </div>
+
+          <div class="quick-action" onclick="quickAction('search')">
+            <div class="quick-action-icon">🔍</div>
+            <div class="quick-action-label">Búsqueda Global</div>
+            <div class="quick-action-kbd">Ctrl + K</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== WIDGET DE CLIMA & CALENDARIO ====== -->
+      <div class="grid-2">
+        <div class="analytics-card" style="background: linear-gradient(135deg, #dbeafe, #bfdbfe);">
+          <div class="card-header">
+            <h2 class="card-title" style="color: #1e40af;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+              </svg>
+              Clima
+            </h2>
+          </div>
+
+          <div style="text-align: center; margin-bottom: 20px;">
+            <div style="font-size: 16px; color: #1e40af; font-weight: 600; margin-bottom: 8px;">📍 México, CDMX</div>
+            <div style="font-size: 72px; margin: 20px 0;">☀️</div>
+            <div style="font-size: 48px; font-weight: 900; color: #1e3a8a; margin-bottom: 12px;" id="current-temp">24°C</div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px;">
+              <div style="background: rgba(255,255,255,0.5); padding: 12px; border-radius: 10px;">
+                <div style="font-size: 11px; color: #1e40af; font-weight: 600;">SENSACIÓN</div>
+                <div style="font-size: 18px; font-weight: 800; color: #1e3a8a;">26°C</div>
+              </div>
+              <div style="background: rgba(255,255,255,0.5); padding: 12px; border-radius: 10px;">
+                <div style="font-size: 11px; color: #1e40af; font-weight: 600;">HUMEDAD</div>
+                <div style="font-size: 18px; font-weight: 800; color: #1e3a8a;">45%</div>
+              </div>
+              <div style="background: rgba(255,255,255,0.5); padding: 12px; border-radius: 10px;">
+                <div style="font-size: 11px; color: #1e40af; font-weight: 600;">VIENTO</div>
+                <div style="font-size: 18px; font-weight: 800; color: #1e3a8a;">12 km/h</div>
+              </div>
+            </div>
+            <div style="margin-top: 16px; font-size: 14px; color: #1e40af; font-weight: 600;">✨ Condiciones ideales para trabajo en campo</div>
+          </div>
+        </div>
+
+        <div class="analytics-card">
+          <div class="card-header">
+            <h2 class="card-title">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              Agenda de Hoy
+            </h2>
+            <button class="btn btn-secondary" onclick="viewFullCalendar()">Ver Calendario</button>
+          </div>
+
+          <div style="text-align: center; margin-bottom: 20px; padding: 16px; background: linear-gradient(135deg, #f0fdf4, #dcfce7); border-radius: 12px;">
+            <div style="font-size: 14px; color: #065f46; font-weight: 600; margin-bottom: 4px;">HOY</div>
+            <div style="font-size: 24px; font-weight: 900; color: #064e3b;" id="today-date">29 de noviembre de 2025</div>
+          </div>
+
+          <div id="today-appointments" style="display: flex; flex-direction: column; gap: 12px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================================
+    // ANALYTICS PAGE - COMPLETE FUNCTIONALITY
+    // ============================================================================
+
+    let projectsChart = null;
+
+    // ====== FEATURE 1: DASHBOARD ANALYTICS MEJORADO ======
+    function initProjectsTrendChart() {
+      const ctx = document.getElementById('projects-trend-chart');
+      if (!ctx) return;
+
+      const labels = Array.from({length: 30}, (_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (29 - i));
+        return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+      });
+
+      const data = Array.from({length: 30}, () => Math.floor(Math.random() * 8) + 2);
+
+      if (projectsChart) {
+        projectsChart.destroy();
+      }
+
+      projectsChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Proyectos Completados',
+            data: data,
+            borderColor: '#02735E',
+            backgroundColor: 'rgba(2, 115, 94, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            pointBackgroundColor: '#02735E',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: 12,
+              titleFont: { size: 14, weight: 'bold' },
+              bodyFont: { size: 13 },
+              borderColor: '#02735E',
+              borderWidth: 2
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 2,
+                font: { size: 11 }
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              }
+            },
+            x: {
+              ticks: {
+                maxRotation: 45,
+                minRotation: 45,
+                font: { size: 10 }
+              },
+              grid: {
+                display: false
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function initTopProjects() {
+      const container = document.getElementById('top-projects-list');
+      if (!container) return;
+
+      const topProjects = [
+        { name: 'Instalación Residencial Premium', client: 'Casa García', revenue: 125000, status: 'completed' },
+        { name: 'Proyecto Comercial Plaza Norte', client: 'Grupo Inmobiliario', revenue: 98500, status: 'completed' },
+        { name: 'Mantenimiento Edificio Corporativo', client: 'TechCorp', revenue: 87200, status: 'completed' },
+        { name: 'Remodelación Oficinas Centro', client: 'Bufete Legal', revenue: 76300, status: 'completed' },
+        { name: 'Sistema Integral Condominio', client: 'Vista Hermosa', revenue: 68900, status: 'completed' }
+      ];
+
+      container.innerHTML = topProjects.map((project, index) => `
+        <div class="top-project" style="background: ${index === 0 ? 'linear-gradient(135deg, #fef3c7, #fde68a)' : 'var(--bg-body)'};">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+            <div style="flex: 1;">
+              <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+                ${index === 0 ? '🏆' : `#${index + 1}`} ${project.name}
+              </div>
+              <div style="font-size: 12px; color: var(--text-secondary);">Cliente: ${project.client}</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 20px; font-weight: 800; color: #10b981;">$${project.revenue.toLocaleString('es-MX')}</div>
+              <div style="font-size: 11px; color: #047857; text-transform: uppercase; font-weight: 600;">MXN</div>
+            </div>
+          </div>
+          <div style="height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden;">
+            <div style="height: 100%; background: linear-gradient(90deg, #10b981, #059669); width: ${Math.max(50, (project.revenue / 125000) * 100)}%; transition: width 0.3s;"></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function initHeatmap() {
+      const container = document.getElementById('heatmap-container');
+      if (!container) return;
+
+      const days = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+      const hours = ['9AM', '12PM', '3PM', '6PM'];
+      
+      const activityData = days.map(() => 
+        hours.map(() => Math.floor(Math.random() * 100))
+      );
+
+      let html = '<div style="display: grid; grid-template-columns: 60px repeat(4, 1fr); gap: 8px;">';
+      
+      html += '<div></div>';
+      hours.forEach(hour => {
+        html += `<div style="text-align: center; font-size: 11px; color: var(--text-secondary); font-weight: 600;">${hour}</div>`;
+      });
+      
+      days.forEach((day, dayIndex) => {
+        html += `<div style="display: flex; align-items: center; font-size: 12px; color: var(--text-secondary); font-weight: 600;">${day}</div>`;
+        activityData[dayIndex].forEach(activity => {
+          const intensity = activity / 100;
+          const color = intensity > 0.7 ? '#10b981' : 
+                       intensity > 0.4 ? '#34d399' : 
+                       intensity > 0.2 ? '#6ee7b7' : '#d1fae5';
+          html += `
+            <div style="background: ${color}; height: 40px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: ${intensity > 0.4 ? 'white' : '#065f46'}; cursor: pointer; transition: transform 0.2s;" 
+                 onmouseover="this.style.transform='scale(1.05)'" 
+                 onmouseout="this.style.transform='scale(1)'"
+                 title="${activity}% actividad">
+              ${activity > 50 ? activity : ''}
+            </div>
+          `;
+        });
+      });
+      
+      html += '</div>';
+      html += '<div style="display: flex; align-items: center; gap: 12px; margin-top: 16px; justify-content: center; font-size: 11px; color: var(--text-secondary);">';
+      html += '<span>Menos</span>';
+      html += '<div style="display: flex; gap: 4px;">';
+      ['#d1fae5', '#6ee7b7', '#34d399', '#10b981'].forEach(color => {
+        html += `<div style="width: 16px; height: 16px; background: ${color}; border-radius: 3px;"></div>`;
+      });
+      html += '</div>';
+      html += '<span>Más</span>';
+      html += '</div>';
+      
+      container.innerHTML = html;
+    }
+
+    // ====== FEATURE 2: SISTEMA DE REPORTES ======
+    function generateReport() {
+      const type = document.getElementById('report-type').value;
+      const format = document.getElementById('report-format').value;
+      const startDate = document.getElementById('report-start-date').value;
+      const endDate = document.getElementById('report-end-date').value;
+
+      console.log(`📄 Generando reporte: ${type} (${format}) - ${startDate} a ${endDate}`);
+
+      const reportTypes = {
+        performance: 'Reporte de Desempeño Mensual',
+        projects: 'Reporte de Proyectos Completados',
+        revenue: 'Reporte de Ingresos y Facturación',
+        team: 'Reporte de Productividad del Equipo'
+      };
+
+      alert(`✅ Generando ${reportTypes[type]}\n\nFormato: ${format.toUpperCase()}\nPeríodo: ${startDate} a ${endDate}\n\nEl reporte se descargará en unos segundos.`);
+    }
+
+    function scheduleReport() {
+      alert('⏰ Programar Reporte\n\nSelecciona frecuencia y destinatarios:\n\n• Diario / Semanal / Mensual\n• Email automático\n• Formato configurado\n\nFuncionalidad en desarrollo.');
+    }
+
+    // ====== FEATURE 3: CENTRO DE ACTIVIDAD ======
+    function initActivityFeed() {
+      const container = document.getElementById('activity-feed');
+      if (!container) return;
+
+      const activities = [
+        { type: 'projects', icon: '✅', user: 'Juan Pérez', action: 'completó', target: 'Proyecto #PRJ-2024-042', time: '15 min', color: '#10b981' },
+        { type: 'quotes', icon: '💰', user: 'María López', action: 'creó', target: 'Cotización #COT-2024-156', time: '45 min', color: '#3b82f6' },
+        { type: 'team', icon: '👤', user: 'Carlos Ruiz', action: 'se unió al equipo', target: 'Operaciones', time: '1 hora', color: '#8b5cf6' },
+        { type: 'projects', icon: '📋', user: 'Ana Martínez', action: 'actualizó', target: 'Proyecto #PRJ-2024-038', time: '2 horas', color: '#10b981' },
+        { type: 'quotes', icon: '✍️', user: 'Luis González', action: 'envió', target: 'Cotización #COT-2024-157', time: '3 horas', color: '#3b82f6' },
+        { type: 'team', icon: '⏰', user: 'Rosa Hernández', action: 'registró', target: '8 horas de trabajo', time: '4 horas', color: '#8b5cf6' },
+        { type: 'projects', icon: '🚀', user: 'Pedro Sánchez', action: 'inició', target: 'Proyecto #PRJ-2024-043', time: '5 horas', color: '#10b981' }
+      ];
+
+      renderActivityFeed(activities);
+      window.allActivities = activities;
+    }
+
+    function renderActivityFeed(activities) {
+      const container = document.getElementById('activity-feed');
+      if (!container) return;
+
+      if (activities.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-secondary);">No hay actividades que coincidan con el filtro</div>';
+        return;
+      }
+
+      container.innerHTML = activities.map(activity => `
+        <div style="display: flex; gap: 16px; padding: 16px; border-left: 3px solid ${activity.color}; background: var(--bg-body); border-radius: 8px; margin-bottom: 12px; transition: all 0.2s;" 
+             onmouseover="this.style.transform='translateX(8px)'; this.style.background='var(--bg-card)'" 
+             onmouseout="this.style.transform='translateX(0)'; this.style.background='var(--bg-body)'">
+          <div style="font-size: 28px;">${activity.icon}</div>
+          <div style="flex: 1;">
+            <div style="font-size: 14px; color: var(--text-primary); margin-bottom: 4px;">
+              <strong>${activity.user}</strong> ${activity.action} <strong>${activity.target}</strong>
+            </div>
+            <div style="font-size: 12px; color: var(--text-secondary);">Hace ${activity.time}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterActivity(filter) {
+      document.querySelectorAll('.activity-filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === filter);
+      });
+
+      const allActivities = window.allActivities || [];
+      const filtered = filter === 'all' ? allActivities : allActivities.filter(a => a.type === filter);
+      renderActivityFeed(filtered);
+    }
+
+    // ====== FEATURE 4: QUICK ACTIONS PANEL ======
+    function quickAction(action) {
+      const actions = {
+        'new-project': '📁 Crear Nuevo Proyecto\n\nRedirigiendo a formulario...',
+        'register-time': '⏰ Registrar Tiempo\n\nAbriendo TimeSync...',
+        'new-quote': '💰 Nueva Cotización\n\nAbriendo formulario de cotización...',
+        'search': '🔍 Búsqueda Global\n\nUsa Ctrl/Cmd + K para buscar en todo el sistema'
+      };
+
+      alert(actions[action] || 'Acción no disponible');
+      console.log(`⚡ Quick Action: ${action}`);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey)) {
+        switch(e.key.toLowerCase()) {
+          case 'n':
+            e.preventDefault();
+            quickAction('new-project');
+            break;
+          case 't':
+            e.preventDefault();
+            quickAction('register-time');
+            break;
+          case 'q':
+            e.preventDefault();
+            quickAction('new-quote');
+            break;
+          case 'k':
+            e.preventDefault();
+            quickAction('search');
+            break;
+        }
+      }
+    });
+
+    // ====== FEATURE 5: WIDGET DE CLIMA & CALENDARIO ======
+    function initTodayAppointments() {
+      const container = document.getElementById('today-appointments');
+      if (!container) return;
+
+      const appointments = [
+        { time: '09:00 AM', title: 'Inspección Sitio', client: 'Casa García', location: 'Polanco, CDMX', type: 'visit' },
+        { time: '11:30 AM', title: 'Reunión con Cliente', client: 'Grupo Inmobiliario', location: 'Oficina', type: 'meeting' },
+        { time: '02:00 PM', title: 'Instalación Programada', client: 'TechCorp', location: 'Santa Fe', type: 'work' },
+        { time: '04:30 PM', title: 'Seguimiento Proyecto', client: 'Bufete Legal', location: 'Llamada', type: 'call' }
+      ];
+
+      const typeIcons = {
+        visit: '🏠',
+        meeting: '👥',
+        work: '🔧',
+        call: '📞'
+      };
+
+      const typeColors = {
+        visit: '#3b82f6',
+        meeting: '#8b5cf6',
+        work: '#10b981',
+        call: '#f59e0b'
+      };
+
+      container.innerHTML = appointments.map(apt => `
+        <div style="padding: 12px; background: var(--bg-body); border-left: 4px solid ${typeColors[apt.type]}; border-radius: 8px; transition: all 0.2s; cursor: pointer;" 
+             onmouseover="this.style.transform='translateX(4px)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'" 
+             onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none'">
+          <div style="display: flex; align-items: start; gap: 12px;">
+            <div style="font-size: 24px;">${typeIcons[apt.type]}</div>
+            <div style="flex: 1;">
+              <div style="font-size: 13px; color: ${typeColors[apt.type]}; font-weight: 700; margin-bottom: 4px;">${apt.time}</div>
+              <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 2px;">${apt.title}</div>
+              <div style="font-size: 12px; color: var(--text-secondary);">${apt.client}</div>
+              <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">📍 ${apt.location}</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function viewFullCalendar() {
+      alert('📅 Calendario Completo\n\nAbriendo vista de calendario mensual con todas las citas y eventos programados.\n\nFuncionalidad en desarrollo.');
+    }
+
+    function updateTodayDate() {
+      const dateEl = document.getElementById('today-date');
+      if (dateEl) {
+        const today = new Date();
+        const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+        dateEl.textContent = today.toLocaleDateString('es-MX', options);
+      }
+    }
+
+    // ====== INITIALIZE ALL FEATURES ======
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        initProjectsTrendChart();
+        initTopProjects();
+        initHeatmap();
+        initActivityFeed();
+        initTodayAppointments();
+        updateTodayDate();
+        console.log('✨ Analytics page initialized');
+      }, 300);
+    });
+  </script>
+  </main>
+  </div>
+</div>
+</body>
+</html>
