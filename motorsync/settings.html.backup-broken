@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light" style="--primary-color: #02735E;">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Configuración - Settings | Opsis Suite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;500;600;700;900&display=swap">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <script src="notifications-manager.js"></script>
+  <script>
+    (function () {
+      try {
+        var settings = JSON.parse(localStorage.getItem('opsis_settings') || '{}');
+        var theme = settings.theme || 'light';
+        document.documentElement.dataset.theme = theme;
+        if (settings.accent) {
+          document.documentElement.style.setProperty('--primary-color', settings.accent);
+        }
+      } catch (err) {
+        document.documentElement.dataset.theme = 'light';
+      }
+    })();
+  </script>
+  <style>
+    :root {
+      /* VERDI Color Palette */
+      --verdi-dark: #022326;
+      --verdi-mid: #034040;
+      --verdi-accent: #035951;
+      --verdi-light: #02735E;
+      
+      --primary-color: #02735E;
+      --accent-color: #035951;
+      --text-primary: #1e293b;
+      --text-secondary: #475569;
+      --bg-body: #fafafa;
+      --bg-card: #ffffff;
+      --border-color: #ebebeb;
+      --surface-page-a: #fafafa;
+      --surface-page-b: #f7f7f7;
+      --surface-page-dark-a: #1b2538;
+      --surface-page-dark-b: #151d2c;
+      --table-header-bg: #fafafa;
+    }
+
+    [data-theme='dark'] {
+      --text-primary: #f8fafc;
+      --text-secondary: #b8c4dd;
+      --bg-body: #0f172a;
+      --bg-card: #0f1316;
+      --border-color: rgba(255,255,255,0.04);
+      --surface-page-dark-a: #2b2f33;
+      --surface-page-dark-b: #0f1214;
+      --surface-page-a: var(--surface-page-dark-a);
+      --surface-page-b: var(--surface-page-dark-b);
+      --table-header-bg: #0b1220;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Helvetica Neue', Helvetica, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-body);
+      color: var(--text-primary);
+      font-weight: 400;
+    }
+
+    @keyframes aire {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .app-content {
+      display: grid;
+      grid-template-columns: 70px 1fr;
+      flex: 1;
+      transition: grid-template-columns 0.3s ease;
+    }
+
+    header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 20px;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    .logo-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+    }
+
+    .logo-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: #ffffff;
+      text-transform: none;
+      letter-spacing: -0.3px;
+    }
+
+    .module-tab {
+      padding: 10px 28px;
+      border-radius: 10px 10px 0 0;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      background: rgba(2, 115, 94, 0.15);
+      color: #64748b;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .module-tab:hover {
+      background: rgba(2, 115, 94, 0.25) !important;
+      color: #475569 !important;
+    }
+
+    .module-tab.active {
+      background: white !important;
+      color: #02735E !important;
+    }
+
+    aside {
+      background: var(--bg-card);
+      border-right: 1px solid var(--border-color);
+      padding: 24px 0;
+      position: sticky;
+      top: 64px;
+      height: calc(100vh - 64px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      transition: all 0.3s ease;
+      width: 70px;
+      z-index: 100;
+    }
+
+    aside:hover {
+      width: 250px;
+    }
+
+    aside.collapsed {
+      width: 70px;
+    }
+
+    .sidebar-item {
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      border-left: 3px solid transparent;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    aside:not(:hover) .sidebar-item {
+      padding: 14px 22px;
+      justify-content: center;
+    }
+
+    aside:not(:hover) .sidebar-item svg {
+      margin: 0;
+    }
+
+    aside:not(:hover) .sidebar-item span {
+      display: none;
+    }
+
+    aside:hover .sidebar-item span {
+      display: inline;
+    }
+
+    .sidebar-item.active {
+      color: var(--primary-color);
+      border-left-color: var(--primary-color);
+      background: rgba(2, 115, 94, 0.05);
+    }
+
+    .sidebar-item:hover {
+      color: var(--primary-color);
+      background: rgba(2, 115, 94, 0.05);
+    }
+
+    .sidebar-item svg {
+      min-width: 20px;
+      stroke-width: 2;
+    }
+
+    main {
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    .page-header {
+      margin-bottom: 32px;
+    }
+
+    .page-title {
+      font-size: 32px;
+      font-weight: 900;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .page-subtitle {
+      font-size: 16px;
+      color: var(--text-secondary);
+    }
+
+    .analytics-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      border: 1px solid var(--border-color);
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      border: 1px solid var(--border-color);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: none;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--verdi-accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(2, 115, 94, 0.3);
+    }
+
+    .btn-secondary,
+    .btn-white {
+      background: var(--bg-body);
+      color: var(--text-primary);
+      border: 2px solid var(--border-color);
+    }
+
+    .btn-secondary:hover,
+    .btn-white:hover {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+    }
+
+    select, input[type="date"] {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 2px solid var(--border-color);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    select:hover, input[type="date"]:hover {
+      border-color: var(--primary-color);
+    }
+
+    select:focus, input[type="date"]:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(2, 115, 94, 0.1);
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+      border-radius: 12px;
+      padding: 20px;
+      border-left: 4px solid #10b981;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 900;
+      color: #065f46;
+      margin-bottom: 8px;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: #047857;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-change {
+      font-size: 13px;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .stat-change.positive {
+      color: #059669;
+    }
+
+    .stat-change.negative {
+      color: #dc2626;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 320px;
+      margin-top: 16px;
+    }
+
+    .top-project {
+      padding: 16px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      border-left: 4px solid #cbd5e1;
+      transition: all 0.2s;
+    }
+
+    .top-project:first-child {
+      background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+      border-left-color: #02735E;
+    }
+
+    .top-project:hover {
+      transform: translateX(8px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .activity-filter-btn {
+      padding: 8px 16px;
+      border: 2px solid var(--border-color);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .activity-filter-btn:hover {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+    }
+
+    .activity-filter-btn.active {
+      background: var(--primary-color);
+      border-color: var(--primary-color);
+      color: white;
+    }
+
+    .quick-action {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .quick-action:hover {
+      border-color: var(--primary-color);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(2, 115, 94, 0.15);
+    }
+
+    .quick-action-icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+
+    .quick-action-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .quick-action-kbd {
+      font-size: 11px;
+      padding: 4px 8px;
+      background: var(--bg-body);
+      border-radius: 6px;
+      color: var(--text-secondary);
+      font-family: monospace;
+    }
+
+    @media (max-width: 1024px) {
+      .grid-2, .grid-3, .grid-4 {
+        grid-template-columns: 1fr;
+      }
+      
+      aside {
+        width: 80px;
+      }
+      
+      aside .sidebar-item span {
+        display: none;
+      }
+      
+      main {
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell" data-theme="light" data-accent="#02735E">
+    <header style="background: linear-gradient(135deg, #02735E 0%, #035951 50%, #034040 100%); background-size: 200% 200%; animation: aire 8s ease infinite; padding: 0; display: flex; align-items: flex-end;">
+      <div class="logo" aria-label="Opsis Suite" style="padding: 18px 32px;">
+        <div class="logo-text">
+          <div class="logo-title">Opsis Suite</div>
+          <div id="company-name-header" style="font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.85); margin-top: 2px;">CVE San Diego</div>
+        </div>
+      </div>
+      
+      <!-- Module Tabs -->
+      <div class="module-tabs" id="module-tabs-container" style="display: flex; gap: 0;"></div>
+    </header>
+    
+    <script>
+    const MODULE_REGISTRY = {
+        motorsync: { name: 'MotorSync', url: 'motorsync.html', order: 1, enabled: true },
+        timesync: { name: 'TimeSync', url: '../timesync/timesync.html', order: 2, enabled: true }
+    };
+    
+    function renderModuleTabs() {
+        const container = document.getElementById('module-tabs-container');
+        if (!container) return;
+        
+        const currentPath = window.location.pathname;
+        const sortedModules = Object.entries(MODULE_REGISTRY)
+            .filter(([_, module]) => module.enabled)
+            .sort((a, b) => a[1].order - b[1].order);
+        
+        container.innerHTML = sortedModules.map(([key, module]) => {
+            const isActive = (key === 'motorsync' && currentPath.includes('/motorsync/')) ||
+                           currentPath.endsWith(module.url);
+            return `<a href="${module.url}" class="module-tab ${isActive ? 'active' : ''}">${module.name}</a>`;
+        }).join('');
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', renderModuleTabs);
+    } else {
+        renderModuleTabs();
+    }
+    </script>
+
+    <div class="app-content">
+    <aside id="sidebar">
+      <a href="motorsync.html" class="sidebar-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="9"></rect>
+          <rect x="14" y="3" width="7" height="5"></rect>
+          <rect x="14" y="12" width="7" height="9"></rect>
+          <rect x="3" y="16" width="7" height="5"></rect>
+        </svg>
+        <span>Dashboard</span>
+      </a>
+      
+      <a href="plansync.html" class="sidebar-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        <span>PlanSync</span>
+      </a>
+      
+      <a href="projectsync.html" class="sidebar-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="9" y1="3" x2="9" y2="21"></line>
+        </svg>
+        <span>ProjectSync</span>
+      </a>
+
+      <a href="threadsync-list.html" class="sidebar-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span>ThreadSync</span>
+      </a>
+
+      <a href="howsync.html" class="sidebar-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="2"></circle>
+          <path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path>
+        </svg>
+        <span>HowSync</span>
+      </a>
+
+      <a href="analytics.html" class="sidebar-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="20" x2="12" y2="10"></line>
+          <line x1="18" y1="20" x2="18" y2="4"></line>
+          <line x1="6" y1="20" x2="6" y2="16"></line>
+        </svg>
+        <span>Analytics</span>
+      </a>
+
+      <a href="clientsync.html" class="sidebar-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87m-3-12.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <span>ClientSync</span>
+      </a>
+
+      <a href="management.html" class="sidebar-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="1" x2="12" y2="23"></line>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+        </svg>
+        <span>Management</span>
+      </a>
+
+      <a href="settings.html" class="sidebar-item active">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M12 1v6m0 6v6m9-9h-6m-6 0H3m15.4-6.4l-4.2 4.2m-7.1 0L2.6 5.6m18.8 12.8l-4.2-4.2m-7.1 0l-4.5 4.5"></path>
+        </svg>
+        <span>Configuración</span>
+      </a>
+    </aside>
+
+    <main id="main">
+      <section class="page">
+        <div class="page-header">
+          <h2 class="page-title" id="settings-title" data-i18n="settings">Configuración</h2>
+        </div>
+        <div class="grid grid-3 kpi-grid" id="settings-kpis">
+          <div class="stat-card">
+            <div class="stat-label" data-i18n="settingsKpiCompany">Compañía</div>
+            <div class="stat-value" id="settings-kpi-company">CVE San Diego</div>
+            <div class="stat-change" id="settings-kpi-company-hint">Nombre mostrado en Opsis</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label" data-i18n="settingsKpiTheme">Modo</div>
+            <div class="stat-value" id="settings-kpi-theme">Claro</div>
+            <div class="stat-change" id="settings-kpi-theme-hint">Modo actual</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label" data-i18n="settingsKpiLanguage">Idioma</div>
+            <div class="stat-value" id="settings-kpi-language">Español</div>
+            <div class="stat-change" id="settings-kpi-language-hint">UI predeterminado</div>
+          </div>
+        </div>
+        <div class="settings-layout">
+          <div class="card settings-card">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+              <div>
+                <h3 class="card-title" data-i18n="settingsCompanyCard">Identidad y contacto</h3>
+                <p class="settings-note" data-i18n="settingsCompanySubtitle">Nombre visible en app y datos básicos de contacto.</p>
+              </div>
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label data-i18n="companyName">Nombre de la empresa</label>
+                <input type="text" id="settings-company">
+              </div>
+              <div class="form-group">
+                <label data-i18n="phone">Teléfono</label>
+                <input type="tel" id="settings-phone">
+              </div>
+              <div class="form-group">
+                <label data-i18n="email">Email</label>
+                <input type="email" id="settings-email">
+              </div>
+            </div>
+            <div class="settings-actions">
+              <button class="btn btn-secondary" id="btn-settings-save" data-capability="settings.write" data-i18n="settingsSaveButton" data-capability-display="">Guardar cambios</button>
+            </div>
+          </div>
+          <div class="card settings-card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Módulos Premium Activos</h3>
+                <p class="settings-note">Módulos habilitados por tu plan. Contacta soporte para activar más.</p>
+              </div>
+            </div>
+            <div class="grid grid-2" style="gap: 16px; margin-top: 16px;">
+              <div class="module-card active">
+                <div class="module-icon" style="background: #02735E;">MS</div>
+                <div class="module-info">
+                  <h4>MotorSync Base</h4>
+                  <p>Sistema operacional completo</p>
+                  <span class="module-status active">✓ Activo</span>
+                </div>
+              </div>
+              <div class="module-card active">
+                <div class="module-icon" style="background: #035951;">TS</div>
+                <div class="module-info">
+                  <h4>TimeSync</h4>
+                  <p>Gestión de tiempo y asistencias</p>
+                  <span class="module-status active">✓ Activo</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Total Proyectos</div>
+                <div class="stat-value">24</div>
+                <div class="stat-change">8 activos</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">En Curso</div>
+                <div class="stat-value">8</div>
+                <div class="stat-change positive">↑ 2 esta semana</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Completados</div>
+                <div class="stat-value">12</div>
+                <div class="stat-change">Este mes</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Programados</div>
+                <div class="stat-value">4</div>
+                <div class="stat-change">Siguiente semana</div>
+              </div>
+                  <p>Contabilidad y finanzas</p>
+                  <span class="module-status">Disponible - Contacta soporte</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card settings-card settings-brand-card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title" data-i18n="settingsBrandingCard">Branding y apariencia</h3>
+                <p class="settings-note" data-i18n="settingsBrandingSubtitle">Define tu logo, color corporativo y preferencias visuales.</p>
+              </div>
+            </div>
+            <div class="form-grid">
+              <div class="form-group" style="grid-column: 1 / -1;">
+                <label>Logo de tu empresa</label>
+                <div style="display: flex; align-items: center; gap: 16px; margin-top: 8px;">
+                  <div id="logo-preview" style="width: 120px; height: 120px; border: 2px dashed rgba(2, 115, 94, 0.3); border-radius: 12px; display: flex; align-items: center; justify-content: center; background: rgba(2, 115, 94, 0.05); color: #02735E; font-size: 14px; font-weight: 600;">
+                    Sin logo
+                  </div>
+                  <div style="flex: 1;">
+                    <input type="file" id="logo-upload" accept="image/*" style="display: none;">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('logo-upload').click();">Subir logo</button>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">Recomendado: PNG o SVG, máximo 2MB</p>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label data-i18n="accentColor">Color de acento corporativo</label>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                  <input type="color" id="accent-picker" value="#02735E" style="width: 60px; height: 40px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer;">
+                  <input type="text" id="accent-hex" value="#02735E" readonly style="flex: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-card); font-family: monospace;">
+                </div>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">Se aplicará sobre la base VERDI</p>
+              </div>
+              <div class="form-group">
+                <label data-i18n="uiTheme">Modo de interfaz</label>
+                <select id="theme-select">
+                  <option value="light" data-i18n="settingsThemeLight">Claro</option>
+                  <option value="dark" data-i18n="settingsThemeDark">Oscuro</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card settings-card settings-locale-card">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title" data-i18n="settingsLocalizationCard">Localización y datos</h3>
+              <p class="settings-note" data-i18n="settingsLocalizationSubtitle">Controla el idioma y reinicia la data demo.</p>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label data-i18n="uiLanguage">Idioma del sistema</label>
+              <select id="language-select">
+                <option value="es">Español</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+          </div>
+          <div class="settings-divider"></div>
+          <div>
+            <label data-i18n="resetDemoTitle">Datos de demostración</label>
+            <p class="settings-note" data-i18n="resetDemoHint">Borra y vuelve a cargar la información de ejemplo.</p>
+            <button type="button" class="btn btn-secondary" id="btn-reset-demo" data-i18n="resetDemoButton">Reiniciar</button>
+          </div>
+        </div>
+        <div class="card settings-card settings-notifications-card">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title" data-i18n="settingsNotificationsCard">Preferencias de notificaciones</h3>
+              <p class="settings-note" data-i18n="settingsNotificationsSubtitle">Activa los canales (Email, SMS, In-App) para cada perfil del sistema.</p>
+            </div>
+            <button class="btn btn-secondary" id="btn-save-notifications" data-i18n="settingsNotificationsSave">Guardar preferencias</button>
+          </div>
+          <div class="table-wrapper" style="margin-top: 16px;">
+            <table class="notification-preferences">
+              <thead>
+                <tr>
+                  <th data-i18n="settingsNotificationsColumnRole">Perfil</th>
+                  <th data-i18n="settingsNotificationsColumnEmail">Email</th>
+                  <th data-i18n="settingsNotificationsColumnSms">SMS</th>
+                  <th data-i18n="settingsNotificationsColumnInApp">In-App</th>
+                </tr>
+              </thead>
+              <tbody id="notification-settings-table">
+              </tbody>
+            </table>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 12px;" data-i18n="settingsNotificationsFooter">
+            Los cambios aplican para alertas operativas (MotorSync), asignaciones (TimeSync), logística (ToolSync) y facturación (FinanSync).
+          </p>
+        </div>
+        <div class="card settings-card settings-role-access-card">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title" data-i18n="settingsRoleAccessCard">Accesos por rol</h3>
+              <p class="settings-note" data-i18n="settingsRoleAccessSubtitle">Consulta qué áreas puede ver cada rol y quién puede enviar invitaciones.</p>
+            </div>
+          </div>
+          <div class="table-wrapper" style="margin-top: 16px;">
+            <table class="role-access-table">
+              <thead>
+                <tr>
+                  <th data-i18n="settingsRoleAccessColumnRole">Rol</th>
+                  <th data-i18n="settingsRoleAccessColumnPages">Áreas disponibles</th>
+                  <th data-i18n="settingsRoleAccessColumnInvites">Puede invitar</th>
+                </tr>
+              </thead>
+              <tbody id="role-access-table"></tbody>
+            </table>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 12px;" data-i18n="settingsRoleAccessInviteHint">
+            Owner y Admin pueden invitar técnicos, labor, clientes y contratistas para operar MotorSync.
+          </p>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
+        <div class="page-header">
+          <h2 class="page-title" id="analytics-title">Analytics & KPIs</h2>
+          <div style="display: flex; gap: 8px;">
+            <select class="btn btn-secondary" style="padding: 10px 16px;">
+              <option>Últimos 7 días</option>
+              <option>Últimos 30 días</option>
+              <option>Últimos 90 días</option>
+              <option>Este año</option>
+            </select>
+            <button class="btn btn-primary">Exportar Reporte</button>
+          </div>
+        </div>
+
+        <!-- Main KPIs -->
+        <div class="grid grid-4 kpi-grid">
+          <div class="stat-card">
+            <div class="stat-label">Ingresos del Mes</div>
+            <div class="stat-value">$48,250</div>
+            <div class="stat-change positive">↑ 18% vs mes anterior</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Trabajos Completados</div>
+            <div class="stat-value">86</div>
+            <div class="stat-change positive">↑ 12 vs semana pasada</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Clientes Nuevos</div>
+            <div class="stat-value">14</div>
+            <div class="stat-change positive">↑ 4 esta semana</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Satisfacción</div>
+            <div class="stat-value">4.8/5</div>
+            <div class="stat-change positive">↑ 0.2 puntos</div>
+          </div>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div class="grid grid-2" style="margin-top: 24px; gap: 20px;">
+          <div class="card">
+            <h3 class="card-title" style="margin-bottom: 16px;">Ingresos por Semana</h3>
+            <div style="background: linear-gradient(135deg, rgba(2, 115, 94, 0.05), rgba(3, 89, 81, 0.05)); border: 2px dashed rgba(2, 115, 94, 0.2); border-radius: 12px; padding: 80px; text-align: center;">
+              <p style="color: var(--text-secondary); font-size: 16px; margin-bottom: 8px;">GRÁFICO DE INGRESOS</p>
+              <p style="color: var(--text-secondary); font-size: 14px;">Integración con Chart.js próximamente</p>
+            </div>
+          </div>
+          <div class="card">
+            <h3 class="card-title" style="margin-bottom: 16px;">Distribución de Servicios</h3>
+            <div style="background: linear-gradient(135deg, rgba(2, 115, 94, 0.05), rgba(3, 89, 81, 0.05)); border: 2px dashed rgba(2, 115, 94, 0.2); border-radius: 12px; padding: 80px; text-align: center;">
+              <p style="color: var(--text-secondary); font-size: 16px; margin-bottom: 8px;">DISTRIBUCIÓN DE SERVICIOS</p>
+              <p style="color: var(--text-secondary); font-size: 14px;">Integración con Chart.js próximamente</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Performance Metrics -->
+        <div class="card" style="margin-top: 24px;">
+          <h3 class="card-title" style="margin-bottom: 16px;">Métricas de Rendimiento</h3>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Métrica</th>
+                  <th>Valor Actual</th>
+                  <th>Objetivo</th>
+                  <th>Progreso</th>
+                  <th>Tendencia</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Tiempo Promedio de Respuesta</strong></td>
+                  <td>42 minutos</td>
+                  <td>45 minutos</td>
+                  <td>
+                    <div style="background: #e0e0e0; height: 8px; border-radius: 4px; overflow: hidden;">
+                      <div style="background: linear-gradient(135deg, #02735E, #035951); width: 93%; height: 100%;"></div>
+                    </div>
+                  </td>
+                  <td><span class="stat-change positive">↑ 3 min mejor</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Tasa de Completado en Primera Visita</strong></td>
+                  <td>87%</td>
+                  <td>90%</td>
+                  <td>
+                    <div style="background: #e0e0e0; height: 8px; border-radius: 4px; overflow: hidden;">
+                      <div style="background: linear-gradient(135deg, #02735E, #035951); width: 87%; height: 100%;"></div>
+                    </div>
+                  </td>
+                  <td><span class="stat-change positive">↑ 5%</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Utilización de Personal</strong></td>
+                  <td>78%</td>
+                  <td>85%</td>
+                  <td>
+                    <div style="background: #e0e0e0; height: 8px; border-radius: 4px; overflow: hidden;">
+                      <div style="background: linear-gradient(135deg, #02735E, #035951); width: 78%; height: 100%;"></div>
+                    </div>
+                  </td>
+                  <td><span class="stat-change">→ Sin cambio</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Tickets Promedio por Día</strong></td>
+                  <td>12.4</td>
+                  <td>15.0</td>
+                  <td>
+                    <div style="background: #e0e0e0; height: 8px; border-radius: 4px; overflow: hidden;">
+                      <div style="background: linear-gradient(135deg, #02735E, #035951); width: 83%; height: 100%;"></div>
+                    </div>
+                  </td>
+                  <td><span class="stat-change positive">↑ 1.2</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Top Performers -->
+        <div class="grid grid-2" style="margin-top: 24px; gap: 20px;">
+          <div class="card">
+            <h3 class="card-title" style="margin-bottom: 16px;">Top 5 Técnicos - Este Mes</h3>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: linear-gradient(135deg, rgba(2, 115, 94, 0.08), rgba(3, 89, 81, 0.04)); border-radius: 8px;">
+                <div>
+                  <strong>Juan Martínez</strong>
+                  <p style="font-size: 13px; color: var(--text-secondary); margin: 4px 0 0 0;">24 trabajos completados</p>
+                </div>
+                <div class="badge" style="background: #02735E; color: white;">#1 #1</div>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(0,0,0,0.02); border-radius: 8px;">
+                <div>
+                  <strong>Carlos Rodriguez</strong>
+                  <p style="font-size: 13px; color: var(--text-secondary); margin: 4px 0 0 0;">21 trabajos completados</p>
+                </div>
+                <div class="badge" style="background: #035951; color: white;">#2 #2</div>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(0,0,0,0.02); border-radius: 8px;">
+                <div>
+                  <strong>Luis Hernández</strong>
+                  <p style="font-size: 13px; color: var(--text-secondary); margin: 4px 0 0 0;">19 trabajos completados</p>
+                </div>
+                <div class="badge" style="background: #034040; color: white;">#3 #3</div>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(0,0,0,0.02); border-radius: 8px;">
+                <div>
+                  <strong>Miguel Sánchez</strong>
+                  <p style="font-size: 13px; color: var(--text-secondary); margin: 4px 0 0 0;">17 trabajos completados</p>
+                </div>
+                <div class="badge">#4</div>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(0,0,0,0.02); border-radius: 8px;">
+                <div>
+                  <strong>Pedro García</strong>
+                  <p style="font-size: 13px; color: var(--text-secondary); margin: 4px 0 0 0;">16 trabajos completados</p>
+                </div>
+                <div class="badge">#5</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title" style="margin-bottom: 16px;">Clientes Más Frecuentes</h3>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: linear-gradient(135deg, rgba(2, 115, 94, 0.08), rgba(3, 89, 81, 0.04)); border-radius: 8px;">
+                <div>
+                  <strong>Residencial Torres</strong>
+                  <p style="font-size: 13px; color: var(--text-secondary); margin: 4px 0 0 0;">8 servicios - $6,200 total</p>
+                </div>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(0,0,0,0.02); border-radius: 8px;">
+                <div>
+                  <strong>Comercial Plaza</strong>
+                  <p style="font-size: 13px; color: var(--text-secondary); margin: 4px 0 0 0;">6 servicios - $8,450 total</p>
+                </div>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(0,0,0,0.02); border-radius: 8px;">
+                <div>
+                  <strong>Hotel Pacífico</strong>
+                  <p style="font-size: 13px; color: var(--text-secondary); margin: 4px 0 0 0;">5 servicios - $12,100 total</p>
+                </div>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(0,0,0,0.02); border-radius: 8px;">
+                <div>
+                  <strong>Oficinas del Centro</strong>
+                  <p style="font-size: 13px; color: var(--text-secondary); margin: 4px 0 0 0;">5 servicios - $5,800 total</p>
+                </div>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(0,0,0,0.02); border-radius: 8px;">
+                <div>
+                  <strong>Condominio Vista</strong>
+                  <p style="font-size: 13px; color: var(--text-secondary); margin: 4px 0 0 0;">4 servicios - $4,350 total</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TOOLSYNC - INVENTORY MANAGEMENT PAGE -->
+      <section id="page-toolsync" class="page" aria-labelledby="toolsync-title" hidden>
+        <div class="page-header">
+          <div>
+            <p class="dashboard-kicker" style="color: var(--text-secondary); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Sistema de Inventarios</p>
+            <h2 class="page-title" id="toolsync-title">ToolSync - Gestión de Inventarios</h2>
+          </div>
+          <div style="display: flex; gap: 12px;">
+            <button class="btn btn-secondary" onclick="alert('Exportar inventario')">Exportar</button>
+            <button class="btn btn-secondary" onclick="alert('Escanear código de barras')">📷 Escanear</button>
+            <button class="btn btn-primary" onclick="alert('Nuevo item')">+ Nuevo Item</button>
+          </div>
+        </div>
+
+        <!-- Inventory Stats -->
+        <div class="grid grid-4 kpi-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Items</div>
+            <div class="stat-value">1,247</div>
+            <div class="stat-change positive">↑ 28 este mes</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Valor Total</div>
+            <div class="stat-value">$284,500</div>
+            <div class="stat-change positive">↑ $12,400</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Stock Bajo</div>
+            <div class="stat-value">23</div>
+            <div class="stat-change negative">Requiere atención</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">En Tránsito</div>
+            <div class="stat-value">45</div>
+            <div class="stat-change">Llegada esta semana</div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card" style="margin-top: 24px;">
+          <h3 class="card-title" style="margin-bottom: 16px;">Acciones Rápidas</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+            <button class="btn btn-secondary" style="padding: 16px; display: flex; align-items: center; gap: 8px; justify-content: center;">
+              <span style="font-size: 1.5rem;">📦</span>
+              <span>Recibir Orden</span>
+            </button>
+            <button class="btn btn-secondary" style="padding: 16px; display: flex; align-items: center; gap: 8px; justify-content: center;">
+              <span style="font-size: 1.5rem;">🚚</span>
+              <span>Transferir Stock</span>
+            </button>
+            <button class="btn btn-secondary" style="padding: 16px; display: flex; align-items: center; gap: 8px; justify-content: center;">
+              <span style="font-size: 1.5rem;">📋</span>
+              <span>Inventario Físico</span>
+            </button>
+            <button class="btn btn-secondary" style="padding: 16px; display: flex; align-items: center; gap: 8px; justify-content: center;">
+              <span style="font-size: 1.5rem;">🔄</span>
+              <span>Solicitar Reposición</span>
+            </button>
+            <button class="btn btn-secondary" style="padding: 16px; display: flex; align-items: center; gap: 8px; justify-content: center;">
+              <span style="font-size: 1.5rem;">⚠️</span>
+              <span>Ver Alertas</span>
+            </button>
+            <button class="btn btn-secondary" style="padding: 16px; display: flex; align-items: center; gap: 8px; justify-content: center;">
+              <span style="font-size: 1.5rem;">📊</span>
+              <span>Reporte de Uso</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Category Filters -->
+        <div class="card" style="margin-top: 24px;">
+          <h3 class="card-title" style="margin-bottom: 16px;">Categorías por Industria</h3>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="chip-filter active">Todas</button>
+            <button class="chip-filter">Herramientas</button>
+            <button class="chip-filter">Materiales</button>
+            <button class="chip-filter">Equipos</button>
+            <button class="chip-filter">Consumibles</button>
+            <button class="chip-filter">Repuestos</button>
+            <button class="chip-filter">EPP (Seguridad)</button>
+            <button class="chip-filter">Vehículos</button>
+            <button class="chip-filter">Tecnología</button>
+          </div>
+        </div>
+
+        <!-- Filters & Search -->
+        <div class="card" style="margin-top: 24px;">
+          <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+            <input type="search" placeholder="🔍 Buscar por nombre, SKU, código de barras..." style="flex: 1; min-width: 300px; padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 10px;">
+            <select style="padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 10px; background: white;">
+              <option>Todas las ubicaciones</option>
+              <option>Almacén Principal</option>
+              <option>Almacén Norte</option>
+              <option>Almacén Sur</option>
+              <option>En Vehículos</option>
+              <option>En Campo</option>
+            </select>
+            <select style="padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 10px; background: white;">
+              <option>Estado del stock</option>
+              <option>✅ En Stock</option>
+              <option>⚠️ Stock Bajo</option>
+              <option>❌ Sin Stock</option>
+              <option>🚚 En Tránsito</option>
+            </select>
+            <select style="padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 10px; background: white;">
+              <option>Ordenar por</option>
+              <option>Nombre A-Z</option>
+              <option>Stock (Mayor a Menor)</option>
+              <option>Stock (Menor a Mayor)</option>
+              <option>Valor (Mayor a Menor)</option>
+              <option>Más Usados</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Inventory Table -->
+        <div class="card" style="margin-top: 24px;">
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>SKU</th>
+                  <th>Item</th>
+                  <th>Categoría</th>
+                  <th>Ubicación</th>
+                  <th>Stock</th>
+                  <th>Min/Max</th>
+                  <th>Valor Unit.</th>
+                  <th>Valor Total</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>TL-001</strong></td>
+                  <td>
+                    <strong>Taladro Inalámbrico DeWalt 20V</strong>
+                    <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">Modelo: DCD771C2</p>
+                  </td>
+                  <td>Herramientas</td>
+                  <td>Almacén Principal</td>
+                  <td><strong style="font-size: 1.1rem;">24</strong></td>
+                  <td>
+                    <div style="font-size: 12px; color: #64748b;">
+                      <span>Min: 10</span> | <span>Max: 30</span>
+                    </div>
+                  </td>
+                  <td>$189.99</td>
+                  <td><strong>$4,559.76</strong></td>
+                  <td><span class="badge" style="background: rgba(2, 115, 94, 0.1); color: #02735E; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">✅ EN STOCK</span></td>
+                  <td>
+                    <div style="display: flex; gap: 4px;">
+                      <button class="btn btn-small btn-secondary" title="Ver detalles">👁️</button>
+                      <button class="btn btn-small btn-secondary" title="Editar">✏️</button>
+                      <button class="btn btn-small btn-secondary" title="Mover">📦</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>MT-045</strong></td>
+                  <td>
+                    <strong>Tubería PVC 2" x 10ft</strong>
+                    <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">Schedule 40</p>
+                  </td>
+                  <td>Materiales</td>
+                  <td>Almacén Norte</td>
+                  <td><strong style="font-size: 1.1rem; color: #ef4444;">8</strong></td>
+                  <td>
+                    <div style="font-size: 12px; color: #64748b;">
+                      <span>Min: 20</span> | <span>Max: 100</span>
+                    </div>
+                  </td>
+                  <td>$12.50</td>
+                  <td><strong>$100.00</strong></td>
+                  <td><span class="badge" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">⚠️ STOCK BAJO</span></td>
+                  <td>
+                    <div style="display: flex; gap: 4px;">
+                      <button class="btn btn-small" style="background: #ef4444; color: white;" title="Solicitar reposición">🔄</button>
+                      <button class="btn btn-small btn-secondary" title="Ver detalles">👁️</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>EQ-012</strong></td>
+                  <td>
+                    <strong>Compresor de Aire Industrial</strong>
+                    <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">Marca: Ingersoll Rand 60 Gal</p>
+                  </td>
+                  <td>Equipos</td>
+                  <td>En Campo - Obra #1024</td>
+                  <td><strong style="font-size: 1.1rem;">3</strong></td>
+                  <td>
+                    <div style="font-size: 12px; color: #64748b;">
+                      <span>Min: 2</span> | <span>Max: 5</span>
+                    </div>
+                  </td>
+                  <td>$1,899.00</td>
+                  <td><strong>$5,697.00</strong></td>
+                  <td><span class="badge" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">🔧 EN USO</span></td>
+                  <td>
+                    <div style="display: flex; gap: 4px;">
+                      <button class="btn btn-small btn-secondary" title="Ver ubicación">📍</button>
+                      <button class="btn btn-small btn-secondary" title="Ver detalles">👁️</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>CN-089</strong></td>
+                  <td>
+                    <strong>Guantes de Seguridad (Par)</strong>
+                    <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">Talla: M, L, XL - Mixto</p>
+                  </td>
+                  <td>Consumibles</td>
+                  <td>Almacén Principal</td>
+                  <td><strong style="font-size: 1.1rem;">450</strong></td>
+                  <td>
+                    <div style="font-size: 12px; color: #64748b;">
+                      <span>Min: 200</span> | <span>Max: 500</span>
+                    </div>
+                  </td>
+                  <td>$4.25</td>
+                  <td><strong>$1,912.50</strong></td>
+                  <td><span class="badge" style="background: rgba(2, 115, 94, 0.1); color: #02735E; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">✅ EN STOCK</span></td>
+                  <td>
+                    <div style="display: flex; gap: 4px;">
+                      <button class="btn btn-small btn-secondary" title="Ver detalles">👁️</button>
+                      <button class="btn btn-small btn-secondary" title="Asignar">👤</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>RP-234</strong></td>
+                  <td>
+                    <strong>Filtros HVAC 16x25x1</strong>
+                    <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">MERV 11 - Pack de 12</p>
+                  </td>
+                  <td>Repuestos</td>
+                  <td>En Tránsito</td>
+                  <td><strong style="font-size: 1.1rem; color: #f59e0b;">0</strong></td>
+                  <td>
+                    <div style="font-size: 12px; color: #64748b;">
+                      <span>Min: 24</span> | <span>Max: 100</span>
+                    </div>
+                  </td>
+                  <td>$89.99</td>
+                  <td><strong>$0.00</strong></td>
+                  <td><span class="badge" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">🚚 EN TRÁNSITO</span></td>
+                  <td>
+                    <div style="display: flex; gap: 4px;">
+                      <button class="btn btn-small btn-secondary" title="Ver orden">📋</button>
+                      <button class="btn btn-small btn-secondary" title="Rastrear envío">📦</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>VH-003</strong></td>
+                  <td>
+                    <strong>Van Ford Transit 2023</strong>
+                    <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">Placa: ABC-1234 | VIN: 1FTBW...</p>
+                  </td>
+                  <td>Vehículos</td>
+                  <td>Flota - Activo</td>
+                  <td><strong style="font-size: 1.1rem;">1</strong></td>
+                  <td>
+                    <div style="font-size: 12px; color: #64748b;">
+                      <span>Asignado: Juan Pérez</span>
+                    </div>
+                  </td>
+                  <td>$45,000.00</td>
+                  <td><strong>$45,000.00</strong></td>
+                  <td><span class="badge" style="background: rgba(2, 115, 94, 0.1); color: #02735E; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">🚗 OPERATIVO</span></td>
+                  <td>
+                    <div style="display: flex; gap: 4px;">
+                      <button class="btn btn-small btn-secondary" title="Ver GPS">📍</button>
+                      <button class="btn btn-small btn-secondary" title="Mantenimiento">🔧</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Warehouse Map & Stock Levels -->
+        <div class="grid grid-2" style="margin-top: 24px; gap: 20px;">
+          <div class="card">
+            <h3 class="card-title" style="margin-bottom: 16px;">Mapa de Almacenes</h3>
+            <div style="background: linear-gradient(135deg, rgba(2, 115, 94, 0.05), rgba(3, 89, 81, 0.05)); border: 2px dashed rgba(2, 115, 94, 0.2); border-radius: 12px; padding: 60px; text-align: center;">
+              <p style="color: var(--text-secondary); font-size: 16px; margin-bottom: 8px;">MAPA DE UBICACIONES</p>
+              <p style="color: var(--text-secondary); font-size: 14px;">Visualización de almacenes y stock por ubicación</p>
+            </div>
+            <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 8px;">
+              <div style="display: flex; justify-content: space-between; padding: 8px; background: #f8fafc; border-radius: 6px;">
+                <span style="font-weight: 600;">Almacén Principal</span>
+                <span style="color: #02735E;">847 items</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 8px; background: #f8fafc; border-radius: 6px;">
+                <span style="font-weight: 600;">Almacén Norte</span>
+                <span style="color: #02735E;">234 items</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 8px; background: #f8fafc; border-radius: 6px;">
+                <span style="font-weight: 600;">Almacén Sur</span>
+                <span style="color: #02735E;">121 items</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 8px; background: #f8fafc; border-radius: 6px;">
+                <span style="font-weight: 600;">En Vehículos</span>
+                <span style="color: #3b82f6;">45 items</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title" style="margin-bottom: 16px;">Alertas de Stock</h3>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="padding: 12px; background: rgba(239, 68, 68, 0.05); border-left: 4px solid #ef4444; border-radius: 6px;">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                  <div>
+                    <p style="font-weight: 600; color: #ef4444;">⚠️ Stock Crítico</p>
+                    <p style="font-size: 14px; color: #64748b; margin-top: 4px;">Tubería PVC 2" - Solo quedan 8 unidades</p>
+                  </div>
+                  <button class="btn btn-small" style="background: #ef4444; color: white;">Reponer</button>
+                </div>
+              </div>
+              <div style="padding: 12px; background: rgba(245, 158, 11, 0.05); border-left: 4px solid #f59e0b; border-radius: 6px;">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                  <div>
+                    <p style="font-weight: 600; color: #f59e0b;">📦 Orden en Tránsito</p>
+                    <p style="font-size: 14px; color: #64748b; margin-top: 4px;">Filtros HVAC - Llegada estimada: 19 Nov</p>
+                  </div>
+                  <button class="btn btn-small btn-secondary">Rastrear</button>
+                </div>
+              </div>
+              <div style="padding: 12px; background: rgba(59, 130, 246, 0.05); border-left: 4px solid #3b82f6; border-radius: 6px;">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                  <div>
+                    <p style="font-weight: 600; color: #3b82f6;">ℹ️ Próximo a Vencer</p>
+                    <p style="font-size: 14px; color: #64748b; margin-top: 4px;">Certificación de extintores - Vence: 25 Nov</p>
+                  </div>
+                  <button class="btn btn-small btn-secondary">Ver</button>
+                </div>
+              </div>
+              <div style="padding: 12px; background: rgba(2, 115, 94, 0.05); border-left: 4px solid #02735E; border-radius: 6px;">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                  <div>
+                    <p style="font-weight: 600; color: #02735E;">✅ Inventario Completado</p>
+                    <p style="font-size: 14px; color: #64748b; margin-top: 4px;">Almacén Principal - 100% auditado</p>
+                  </div>
+                  <button class="btn btn-small btn-secondary">Reporte</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card" style="margin-top: 24px;">
+          <h3 class="card-title" style="margin-bottom: 16px;">Actividad Reciente</h3>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha/Hora</th>
+                  <th>Usuario</th>
+                  <th>Acción</th>
+                  <th>Item</th>
+                  <th>Cantidad</th>
+                  <th>Ubicación</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>16 Ene 2025 14:23</td>
+                  <td><strong>Juan Pérez</strong></td>
+                  <td><span class="badge" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">Retirado</span></td>
+                  <td>Taladro Inalámbrico DeWalt</td>
+                  <td>2</td>
+                  <td>Almacén Principal → Obra #1024</td>
+                </tr>
+                <tr>
+                  <td>16 Ene 2025 11:45</td>
+                  <td><strong>María González</strong></td>
+                  <td><span class="badge" style="background: rgba(2, 115, 94, 0.1); color: #02735E;">Recibido</span>
+                  <td>Guantes de Seguridad</td>
+                  <td>100</td>
+                  <td>Almacén Principal</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
