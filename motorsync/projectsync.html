@@ -12,10 +12,9 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="js/data-projects.js"></script>
   <script src="js/modules.js"></script>
   <style>
-    }
-
     .btn {
       border: none;
       border-radius: 10px;
@@ -1149,16 +1148,21 @@
     let map = null;
     let allMarkers = [];
     
+    const ProjectStore = window.ProjectData || {};
+    if (ProjectStore.seedDefaults) ProjectStore.seedDefaults();
+    if (ProjectStore.seedAppointments) ProjectStore.seedAppointments();
+
+    const PROJECTS_KEY = ProjectStore.PROJECTS_KEY || 'projectsync_projects';
+
     // Status mapping for display
-    window.ProjectData = window.ProjectData || {};
-    window.ProjectData.statusConfig = {
+    const statusConfig = ProjectStore.statusConfig || {
       active: { color: '#02735E', badge: 'EN CURSO' },
       scheduled: { color: '#eab308', badge: 'PROGRAMADO' },
       completed: { color: '#059669', badge: 'COMPLETADO' }
     };
 
     // Configuración de estados del workflow
-    window.ProjectData.workflowStates = {
+    const workflowStates = ProjectStore.workflowStates || {
       quoted: { color: '#3b82f6', emoji: '📋', name: 'Cotizado' },
       approved: { color: '#10b981', emoji: '✅', name: 'Aprobado' },
       scheduled: { color: '#8b5cf6', emoji: '📅', name: 'Programado' },
@@ -1174,225 +1178,29 @@
       return localStorage.getItem(key) || 'quoted';
     }
     
-    // Generar nuevo IDSync (formato: IDSyncYYNNNN donde YY=año, NNNN=consecutivo)
-    function generateIDSync() {
-      const projects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
-      const year = new Date().getFullYear().toString().slice(-2); // "25" para 2025
-      
-      // Buscar el número más alto existente para este año
-      let maxNum = 0;
-      projects.forEach(p => {
-        if (p.idSync && p.idSync.startsWith(`IDSync${year}`)) {
-          const num = parseInt(p.idSync.replace(`IDSync${year}`, ''), 10);
-          if (num > maxNum) maxNum = num;
-        }
-      });
-      
-      // Generar siguiente número con padding de 4 dígitos
-      const nextNum = (maxNum + 1).toString().padStart(4, '0');
-      return `IDSync${year}${nextNum}`;
-    }
-    
-    // Migrar proyectos antiguos (ORD-XXX) a IDSync
-    function migrateOldProjects() {
-      const stored = localStorage.getItem('projectsync_projects');
-      if (!stored) return;
-      
+    function loadProjectsFromStorage() {
+      if (ProjectStore.loadProjects) {
+        return ProjectStore.loadProjects();
+      }
       try {
-        const projects = JSON.parse(stored);
-        let needsSave = false;
-        
-        projects.forEach(project => {
-          // Si no tiene idSync o tiene formato antiguo ORD-XXX
-          if (!project.idSync || project.idSync.startsWith('ORD-')) {
-            project.idSync = generateIDSync();
-            needsSave = true;
-            console.log(`[Package] Migrated ${project.id} → ${project.idSync}`);
-          }
-        });
-        
-        if (needsSave) {
-          localStorage.setItem('projectsync_projects', JSON.stringify(projects));
-          console.log(' Migration complete');
-        }
+        return JSON.parse(localStorage.getItem(PROJECTS_KEY) || '[]');
       } catch (e) {
-        console.error('Migration error:', e);
+        console.error('Error parsing projects:', e);
+        return [];
       }
     }
-    
-    // Ejecutar migración al cargar
-    migrateOldProjects();
-    
-    // Crear proyectos de ejemplo en San Diego si no hay datos
-    function initializeSampleProjects() {
-      const stored = localStorage.getItem('projectsync_projects');
-      if (stored && JSON.parse(stored).length > 0) return; // Ya hay proyectos
-      
-      // Proyectos de ejemplo en San Diego County - SIN coordenadas para geocodificar automáticamente
-      const sampleProjects = [
-        {
-          id: 'PRJ-001',
-          idSync: 'IDSync250001',
-          name: 'HVAC Installation - Downtown Office',
-          client: 'Gaslamp Quarter Properties',
-          contact: 'Michael Chen',
-          phone: '(619) 555-0101',
-          email: 'mchen@gaslampprops.com',
-          address: '701 Fifth Ave, San Diego, CA 92101',
-          description: 'Complete HVAC system installation for 3-story office building',
-          startDate: '2025-11-15',
-          endDate: '2025-12-15',
-          amount: 45000,
-          status: 'active'
-        },
-        {
-          id: 'PRJ-002',
-          idSync: 'IDSync250002',
-          name: 'Commercial Plumbing Repair',
-          client: 'La Jolla Shores Hotel',
-          contact: 'Sarah Martinez',
-          phone: '(858) 555-0202',
-          email: 'smartinez@ljshores.com',
-          address: '8110 Camino Del Oro, La Jolla, CA 92037',
-          description: 'Emergency plumbing repair and water heater replacement',
-          startDate: '2025-11-20',
-          endDate: '2025-11-25',
-          amount: 12500,
-          status: 'active'
-        },
-        {
-          id: 'PRJ-003',
-          idSync: 'IDSync250003',
-          name: 'Solar Panel Installation',
-          client: 'Rancho Bernardo Estates',
-          contact: 'David Thompson',
-          phone: '(858) 555-0303',
-          email: 'dthompson@rbhoa.com',
-          address: '16925 Hierba Dr, San Diego, CA 92128',
-          description: 'Residential solar panel system - 12kW capacity',
-          startDate: '2025-12-01',
-          endDate: '2025-12-20',
-          amount: 35000,
-          status: 'scheduled'
-        },
-        {
-          id: 'PRJ-004',
-          idSync: 'IDSync250004',
-          name: 'Electrical System Upgrade',
-          client: 'Coronado Island Resort',
-          contact: 'Jennifer Walsh',
-          phone: '(619) 555-0404',
-          email: 'jwalsh@coronadoresort.com',
-          address: '1500 Orange Ave, Coronado, CA 92118',
-          description: 'Main electrical panel upgrade and EV charger installation',
-          startDate: '2025-11-01',
-          endDate: '2025-11-10',
-          amount: 28000,
-          status: 'completed'
-        },
-        {
-          id: 'PRJ-005',
-          idSync: 'IDSync250005',
-          name: 'Fire Suppression System',
-          client: 'Mission Valley Mall',
-          contact: 'Robert Garcia',
-          phone: '(619) 555-0505',
-          email: 'rgarcia@mvmall.com',
-          address: '1640 Camino Del Rio N, San Diego, CA 92108',
-          description: 'Fire sprinkler system inspection and upgrade',
-          startDate: '2025-11-18',
-          endDate: '2025-11-30',
-          amount: 52000,
-          status: 'active'
-        },
-        {
-          id: 'PRJ-006',
-          idSync: 'IDSync250006',
-          name: 'Restaurant Kitchen Ventilation',
-          client: 'Pacific Beach Seafood',
-          contact: 'Tony Nguyen',
-          phone: '(858) 555-0606',
-          email: 'tnguyen@pbseafood.com',
-          address: '4150 Mission Blvd, San Diego, CA 92109',
-          description: 'Commercial kitchen hood and ventilation system installation',
-          startDate: '2025-10-15',
-          endDate: '2025-10-28',
-          amount: 18500,
-          status: 'completed'
-        },
-        {
-          id: 'PRJ-007',
-          idSync: 'IDSync250007',
-          name: 'Office Building Renovation',
-          client: 'Sorrento Valley Tech Park',
-          contact: 'Lisa Kim',
-          phone: '(858) 555-0707',
-          email: 'lkim@svtechpark.com',
-          address: '10770 Wateridge Cir, San Diego, CA 92121',
-          description: 'Complete MEP renovation for tech office space',
-          startDate: '2025-12-05',
-          endDate: '2026-01-15',
-          amount: 125000,
-          status: 'scheduled'
-        },
-        {
-          id: 'PRJ-008',
-          idSync: 'IDSync250008',
-          name: 'Pool Equipment Replacement',
-          client: 'Del Mar Heights Community',
-          contact: 'Amanda Foster',
-          phone: '(858) 555-0808',
-          email: 'afoster@dmhoa.com',
-          address: '3850 Valley Centre Dr, San Diego, CA 92130',
-          description: 'Community pool pump and filtration system replacement',
-          startDate: '2025-11-22',
-          endDate: '2025-11-28',
-          amount: 15000,
-          status: 'active'
-        },
-        {
-          id: 'PRJ-009',
-          idSync: 'IDSync250009',
-          name: 'Medical Office HVAC',
-          client: 'Scripps Clinic Carmel Valley',
-          contact: 'Dr. James Miller',
-          phone: '(858) 555-0909',
-          email: 'jmiller@scripps.org',
-          address: '3811 Valley Centre Dr, San Diego, CA 92130',
-          description: 'Specialized HVAC for medical facility with clean room requirements',
-          startDate: '2025-10-01',
-          endDate: '2025-10-20',
-          amount: 68000,
-          status: 'completed'
-        },
-        {
-          id: 'PRJ-010',
-          idSync: 'IDSync250010',
-          name: 'Warehouse Lighting Retrofit',
-          client: 'Otay Mesa Distribution',
-          contact: 'Carlos Mendez',
-          phone: '(619) 555-1010',
-          email: 'cmendez@otaydist.com',
-          address: '9855 Businesspark Ave, San Diego, CA 92154',
-          description: 'LED lighting upgrade for 50,000 sq ft warehouse',
-          startDate: '2025-12-10',
-          endDate: '2025-12-18',
-          amount: 42000,
-          status: 'scheduled'
-        }
-      ];
-      
-      localStorage.setItem('projectsync_projects', JSON.stringify(sampleProjects));
-      console.log(' Initialized 10 sample projects in San Diego area');
+
+    function saveProjectsToStorage(projects) {
+      if (ProjectStore.saveProjects) {
+        ProjectStore.saveProjects(projects);
+      } else {
+        localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
+      }
     }
-    
-    // Inicializar proyectos de ejemplo
-    initializeSampleProjects();
-    
-    // Load projects from localStorage
-    // Render projects table
-    function renderProjectsTable() {
-      const projects = loadProjectsFromStorage();
+
+// Render projects table
+    function renderProjectsTable(projectsOverride) {
+      const projects = Array.isArray(projectsOverride) ? projectsOverride : loadProjectsFromStorage();
       const tbody = document.querySelector('tbody');
       
       if (!tbody) return;
@@ -1401,9 +1209,6 @@
         tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px; color: #94a3b8;">No hay proyectos. <a href="project-form.html" style="color: #02735E; text-decoration: underline;">Crear nuevo proyecto</a></td></tr>';
         return;
       }
-      
-      // Cargar citas de la agenda para sincronizar estado
-      const appointments = JSON.parse(localStorage.getItem('projectsync_appointments') || '[]');
       
       tbody.innerHTML = projects.map(project => {
         // Obtener estado del workflow
@@ -1804,7 +1609,7 @@
       if (project) {
         project.lat = lat;
         project.lng = lng;
-        localStorage.setItem('projectsync_projects', JSON.stringify(projects));
+        saveProjectsToStorage(projects);
       }
     }
 
@@ -2383,7 +2188,7 @@
     // EXPORTAR PROYECTOS A PDF
     // ============================================================================
     function exportProjectsToPDF() {
-      const projects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+      const projects = loadProjectsFromStorage();
       
       if (projects.length === 0) {
         alert('No hay proyectos para exportar');
@@ -2675,7 +2480,7 @@
 
     // Filtrar proyectos en la tabla
     function filterProjectsTable() {
-      const projects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+      const projects = loadProjectsFromStorage();
       let filtered = [...projects];
       
       // Aplicar filtro de estado
@@ -2760,24 +2565,6 @@
         `;
       } else {
         searchStats.style.display = 'none';
-      }
-    }
-
-    // Función auxiliar para renderizar tabla (ya existe pero la extendemos)
-    function renderProjectsTable(projects) {
-      const tbody = document.querySelector('table tbody');
-      
-      if (!tbody) return;
-      
-      if (projects.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px; color: #94a3b8;">No se encontraron proyectos con los filtros seleccionados.</td></tr>';
-        return;
-      }
-      
-      // Esta función ya existe en el código original, solo la llamamos
-      // para re-renderizar con los proyectos filtrados
-      if (typeof renderProjects === 'function') {
-        renderProjects();
       }
     }
 

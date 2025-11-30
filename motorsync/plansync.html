@@ -5,1288 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PlanSync - Gestión de Agenda | Opsis Suite</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="css/plansync.css">
   <link rel="preconnect" href="https://fonts.googleapis.com/">
   <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;500;600;700;900&display=swap">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script src="js/modules.js"></script>
-  <style>
-    :root {
-      /* VERDI Color Palette */
-      --verdi-dark: #022326;
-      --verdi-mid: #034040;
-      --verdi-accent: #035951;
-      --verdi-light: #02735E;
-      
-      --primary-color: #02735E;
-      --accent-color: #035951;
-      --text-primary: #1e293b;
-      --text-secondary: #475569;
-      --bg-body: #fafafa;
-      --bg-card: #ffffff;
-      --border-color: #ebebeb;
-      --surface-page-a: #fafafa;
-      --surface-page-b: #f7f7f7;
-      --surface-page-dark-a: #1b2538;
-      --surface-page-dark-b: #151d2c;
-      --table-header-bg: #fafafa;
-    }
-
-    [data-theme='dark'] {
-      --text-primary: #f8fafc;
-      --text-secondary: #b8c4dd;
-      --bg-body: #0f172a;
-      --bg-card: #0f1316;
-      --border-color: rgba(255,255,255,0.04);
-      --surface-page-dark-a: #2b2f33;
-      --surface-page-dark-b: #0f1214;
-      --surface-page-a: var(--surface-page-dark-a);
-      --surface-page-b: var(--surface-page-dark-b);
-      --table-header-bg: #0b1220;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: 'Helvetica Neue', Helvetica, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg-body);
-      color: var(--text-primary);
-      font-weight: 400;
-    }
-
-    @keyframes aire {
-      0%, 100% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-    }
-
-    .app-shell {
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-
-    .app-content {
-      display: grid;
-      grid-template-columns: 70px 1fr;
-      flex: 1;
-      transition: grid-template-columns 0.3s ease;
-    }
-
-    header {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 20px;
-      background: var(--bg-card);
-      border-bottom: 1px solid var(--border-color);
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 0;
-    }
-
-    .logo-text {
-      display: flex;
-      flex-direction: column;
-      line-height: 1.2;
-    }
-
-    .logo-title {
-      font-size: 26px;
-      font-weight: 700;
-      color: #ffffff;
-      text-transform: none;
-      letter-spacing: -0.3px;
-    }
-
-    .module-tab {
-      padding: 10px 28px;
-      border-radius: 10px 10px 0 0;
-      font-size: 14px;
-      font-weight: 600;
-      transition: all 0.2s ease;
-      background: rgba(2, 115, 94, 0.15);
-      color: #64748b;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .module-tab:hover {
-      background: rgba(2, 115, 94, 0.25) !important;
-      color: #475569 !important;
-    }
-
-    .module-tab.active {
-      background: white !important;
-      color: #02735E !important;
-    }
-
-    aside {
-      background: var(--bg-card);
-      border-right: 1px solid var(--border-color);
-      padding: 24px 0;
-      position: sticky;
-      top: 64px;
-      height: calc(100vh - 64px);
-      overflow-y: auto;
-      overflow-x: hidden;
-      transition: all 0.3s ease;
-      width: 70px;
-      z-index: 100;
-    }
-
-    aside:hover {
-      width: 250px;
-    }
-
-    aside.collapsed {
-      width: 70px;
-    }
-
-    .sidebar-item {
-      padding: 14px 24px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: var(--text-secondary);
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 14px;
-      transition: all 0.3s ease;
-      border-left: 3px solid transparent;
-      text-decoration: none;
-      white-space: nowrap;
-    }
-
-    aside:not(:hover) .sidebar-item {
-      justify-content: center;
-      padding: 14px;
-    }
-
-    aside:not(:hover) .sidebar-item svg {
-      width: 20px;
-      height: 20px;
-    }
-
-    aside:not(:hover) .sidebar-item span {
-      opacity: 0;
-      width: 0;
-      overflow: hidden;
-    }
-
-    aside:hover .sidebar-item span {
-      opacity: 1;
-      width: auto;
-    }
-
-    .sidebar-item.active {
-      background: white;
-      color: #02735E;
-      border-left-color: #02735E;
-    }
-
-    .sidebar-item:hover {
-      background: rgba(2, 115, 94, 0.06);
-      color: #02735E;
-      border-left-color: #02735E;
-    }
-
-    main {
-      padding: 16px 24px;
-    }
-
-    .page {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      background: var(--surface-page-a);
-      border-radius: 20px;
-      padding: 20px;
-      border: 1px solid rgba(28, 37, 54, 0.08);
-      box-shadow: 0 30px 50px rgba(15, 23, 42, 0.08);
-    }
-
-    .btn {
-      border: none;
-      border-radius: 10px;
-      padding: 10px 18px;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .btn-small {
-      padding: 6px 12px;
-      font-size: 12px;
-      border-radius: 8px;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #02735E 0%, #035951 100%);
-      color: #fff;
-      font-weight: 600;
-      box-shadow: 0 4px 14px rgba(2, 115, 94, 0.25);
-      transition: all 0.3s ease;
-    }
-
-    .btn-primary:hover {
-      background: #035951;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
-      transform: translateY(-1px);
-    }
-
-    .btn-secondary {
-      background: rgba(15, 23, 42, 0.05);
-      color: var(--text-secondary);
-    }
-
-    .segmented-control {
-      display: inline-flex;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.05);
-      padding: 4px;
-      border: 1px solid rgba(15, 23, 42, 0.08);
-      flex-wrap: wrap;
-      gap: 4px;
-      width: 100%;
-    }
-
-    .segmented-control button {
-      border: none;
-      background: transparent;
-      padding: 6px 18px;
-      border-radius: 999px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      cursor: pointer;
-      transition: all 150ms ease;
-      flex: 1 1 140px;
-      text-align: center;
-    }
-
-    .segmented-control button.active {
-      background: linear-gradient(135deg, #02735E 0%, #035951 50%, #034040 100%) !important;
-      background-size: 200% 200%;
-      animation: aire 8s ease infinite;
-      color: #fff !important;
-      font-weight: 700;
-      box-shadow: 0 8px 24px rgba(2, 115, 94, 0.3);
-    }
-
-    .projectsync-panel {
-      display: none;
-    }
-
-    .projectsync-panel.active {
-      display: block;
-      animation: fadeInUp 0.35s ease;
-    }
-
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(8px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .card {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(250, 250, 250, 0.95));
-      border: 1px solid rgba(2, 115, 94, 0.08);
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 8px 24px rgba(2, 115, 94, 0.08);
-      transition: all 0.3s ease;
-    }
-
-    .card:hover {
-      border-color: rgba(2, 115, 94, 0.15);
-      box-shadow: 0 12px 32px rgba(2, 115, 94, 0.12);
-      transform: translateY(-2px);
-    }
-
-    .card-header {
-      padding: 0 0 16px 0;
-      border: none;
-    }
-
-    .card-title {
-      font-size: 18px;
-      font-weight: 700;
-      margin: 0;
-    }
-
-    .grid {
-      display: grid;
-      gap: 14px;
-    }
-
-    .grid-4 {
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    }
-
-    .stat-card {
-      background: linear-gradient(135deg, #02735E, #035951);
-      border: none;
-      border-radius: 16px;
-      padding: 16px;
-      box-shadow: 0 14px 32px rgba(2, 115, 94, 0.22);
-      transition: all 0.3s ease;
-      color: #ffffff;
-    }
-
-    .stat-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 22px 48px rgba(2, 115, 94, 0.3);
-    }
-
-    .stat-card .stat-label {
-      text-transform: uppercase;
-      font-size: 12px;
-      letter-spacing: 0.4px;
-      color: rgba(255, 255, 255, 0.78);
-    }
-
-    .stat-card .stat-value {
-      font-size: 34px;
-      font-weight: 700;
-      color: #ffffff;
-      margin: 8px 0;
-    }
-
-    .stat-card .stat-change {
-      color: rgba(255, 255, 255, 0.72);
-      font-size: 13px;
-    }
-
-    .stat-change.positive {
-      color: rgba(255, 255, 255, 0.9);
-    }
-
-    .chip-filter {
-      background: transparent;
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 8px 16px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .chip-filter:hover {
-      border-color: rgba(2, 115, 94, 0.4);
-      background: rgba(2, 115, 94, 0.05);
-    }
-
-    .chip-filter.active {
-      background: linear-gradient(135deg, #02735E, #035951);
-      color: white;
-      border-color: transparent;
-    }
-
-    .map-filter-group {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    #projects-map,
-    #projects-map-projects {
-      width: 100% !important;
-      height: 500px !important;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      background: #f0f0f0;
-      position: relative;
-      z-index: 1;
-    }
-
-    .table-wrapper {
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: var(--bg-card);
-    }
-
-    table th {
-      text-align: left;
-      font-weight: 700;
-      font-size: 13px;
-      color: var(--text-secondary);
-      padding: 14px 16px;
-      border-bottom: 2px solid var(--border-color);
-      background: var(--table-header-bg);
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-    }
-
-    table td {
-      padding: 16px;
-      border-bottom: 1px solid var(--border-color);
-      font-size: 14px;
-      color: var(--text-primary);
-    }
-
-    table tbody tr:hover {
-      background: rgba(2, 115, 94, 0.02);
-    }
-
-    .badge {
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-    }
-
-    .leaflet-container {
-      background: #e5e3df;
-      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      font-size: 12px;
-      line-height: 1.5;
-    }
-
-    .leaflet-popup-content-wrapper {
-      border-radius: 6px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-
-    .leaflet-control-attribution {
-      background: rgba(255,255,255,0.8);
-      font-size: 11px;
-    }
-
-    /* Connect Thread Modal Styles */
-    .threads-list {
-      max-height: 400px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .thread-item {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 16px;
-      border: 2px solid #e2e8f0;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .thread-item:hover {
-      border-color: #02735E;
-      background: #f0fdf4;
-      transform: translateX(4px);
-      box-shadow: 0 4px 12px rgba(2, 115, 94, 0.1);
-    }
-
-    .thread-icon {
-      width: 40px;
-      height: 40px;
-      background: #dcfce7;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .thread-info {
-      flex: 1;
-    }
-
-    .thread-info h4 {
-      font-size: 15px;
-      font-weight: 600;
-      color: #1e293b;
-      margin-bottom: 6px;
-    }
-
-    .thread-meta {
-      display: flex;
-      gap: 12px;
-      font-size: 13px;
-      color: #64748b;
-    }
-
-    .thread-client {
-      font-weight: 500;
-    }
-
-    .thread-date::before {
-      content: "•";
-      margin-right: 8px;
-      color: #cbd5e1;
-    }
-
-    .thread-messages::before {
-      content: "•";
-      margin-right: 8px;
-      color: #cbd5e1;
-    }
-
-    .thread-status {
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 600;
-      flex-shrink: 0;
-    }
-
-    .thread-status.active {
-      background: #dcfce7;
-      color: #059669;
-    }
-
-    .thread-status.pending {
-      background: #fef3c7;
-      color: #d97706;
-    }
-
-    .search-box {
-      position: relative;
-    }
-
-    .search-box input:focus {
-      outline: none;
-      border-color: #02735E;
-      box-shadow: 0 0 0 3px rgba(2, 115, 94, 0.1);
-    }
-
-    /* ==============================================
-       AGENDA STYLES - VERDI + AIRE Theme
-       ============================================== */
-    
-    .agenda-container {
-      display: grid;
-      grid-template-columns: 340px 1fr;
-      gap: 24px;
-      margin-top: 24px;
-    }
-
-    @media (max-width: 1024px) {
-      .agenda-container {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    /* Calendar Mini */
-    .calendar-mini {
-      background: var(--bg-card);
-      border-radius: 16px;
-      padding: 20px;
-      border: 1px solid var(--border-color);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-    }
-
-    .calendar-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .calendar-header h4 {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--text-primary);
-    }
-
-    .calendar-nav {
-      display: flex;
-      gap: 8px;
-    }
-
-    .calendar-nav button {
-      width: 32px;
-      height: 32px;
-      border: none;
-      background: rgba(2, 115, 94, 0.1);
-      border-radius: 8px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s ease;
-      color: var(--verdi-light);
-    }
-
-    .calendar-nav button:hover {
-      background: var(--verdi-light);
-      color: white;
-    }
-
-    .calendar-weekdays {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 4px;
-      margin-bottom: 8px;
-    }
-
-    .calendar-weekdays span {
-      text-align: center;
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      padding: 8px 0;
-      text-transform: uppercase;
-    }
-
-    .calendar-days {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 4px;
-    }
-
-    .calendar-day {
-      aspect-ratio: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
-      font-weight: 500;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      position: relative;
-      color: var(--text-primary);
-    }
-
-    .calendar-day:hover {
-      background: rgba(2, 115, 94, 0.1);
-    }
-
-    .calendar-day.other-month {
-      color: #cbd5e1;
-    }
-
-    .calendar-day.today {
-      background: linear-gradient(135deg, #02735E 0%, #035951 100%);
-      color: white;
-      font-weight: 700;
-      box-shadow: 0 4px 12px rgba(2, 115, 94, 0.3);
-    }
-
-    .calendar-day.selected {
-      background: rgba(2, 115, 94, 0.15);
-      color: var(--verdi-light);
-      font-weight: 700;
-    }
-
-    .calendar-day.has-events::after {
-      content: '';
-      position: absolute;
-      bottom: 4px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 4px;
-      height: 4px;
-      border-radius: 50%;
-      background: #f59e0b;
-    }
-
-    .calendar-day.today.has-events::after {
-      background: white;
-    }
-
-    /* Quick Actions */
-    .agenda-quick-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px solid var(--border-color);
-    }
-
-    .quick-action-btn {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      border-radius: 10px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .quick-action-btn.primary {
-      background: linear-gradient(135deg, #02735E 0%, #035951 50%, #034040 100%);
-      background-size: 200% 200%;
-      animation: aire 8s ease infinite;
-      color: white;
-    }
-
-    .quick-action-btn.secondary {
-      background: rgba(2, 115, 94, 0.1);
-      color: var(--verdi-light);
-    }
-
-    .quick-action-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(2, 115, 94, 0.2);
-    }
-
-    /* Day Schedule */
-    .day-schedule {
-      background: var(--bg-card);
-      border-radius: 16px;
-      padding: 24px;
-      border: 1px solid var(--border-color);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-    }
-
-    .day-schedule-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .day-schedule-header h3 {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text-primary);
-    }
-
-    .day-schedule-header .date-badge {
-      background: linear-gradient(135deg, #02735E 0%, #035951 100%);
-      color: white;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 600;
-    }
-
-    /* Timeline */
-    .schedule-timeline {
-      position: relative;
-    }
-
-    .timeline-hour {
-      display: grid;
-      grid-template-columns: 60px 1fr;
-      min-height: 60px;
-      border-bottom: 1px dashed rgba(0,0,0,0.06);
-    }
-
-    .timeline-hour:last-child {
-      border-bottom: none;
-    }
-
-    .hour-label {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      padding-top: 4px;
-    }
-
-    .hour-content {
-      padding: 4px 0 4px 16px;
-      border-left: 2px solid #e5e7eb;
-      min-height: 56px;
-    }
-
-    /* Event Card */
-    .event-card {
-      background: white;
-      border-radius: 12px;
-      padding: 12px 16px;
-      margin-bottom: 8px;
-      border-left: 4px solid var(--verdi-light);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .event-card:hover {
-      transform: translateX(4px);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-    }
-
-    .event-card.status-confirmed {
-      border-left-color: #10b981;
-    }
-
-    .event-card.status-pending {
-      border-left-color: #f59e0b;
-    }
-
-    .event-card.status-completed {
-      border-left-color: #6366f1;
-    }
-
-    .event-card.status-cancelled {
-      border-left-color: #ef4444;
-      opacity: 0.6;
-    }
-
-    .event-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-primary);
-      margin-bottom: 4px;
-    }
-
-    .event-meta {
-      display: flex;
-      gap: 12px;
-      font-size: 12px;
-      color: var(--text-secondary);
-    }
-
-    .event-meta span {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .event-status-badge {
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      padding: 3px 8px;
-      border-radius: 6px;
-      margin-left: auto;
-    }
-
-    .event-status-badge.confirmed {
-      background: #dcfce7;
-      color: #059669;
-    }
-
-    .event-status-badge.pending {
-      background: #fef3c7;
-      color: #d97706;
-    }
-
-    .event-status-badge.completed {
-      background: #e0e7ff;
-      color: #4f46e5;
-    }
-
-    /* Week View */
-    .week-view {
-      background: var(--bg-card);
-      border-radius: 16px;
-      padding: 24px;
-      border: 1px solid var(--border-color);
-      margin-top: 24px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-    }
-
-    .week-header {
-      display: grid;
-      grid-template-columns: 80px repeat(7, 1fr);
-      gap: 8px;
-      margin-bottom: 16px;
-      padding-bottom: 16px;
-      border-bottom: 2px solid var(--border-color);
-    }
-
-    .week-day-header {
-      text-align: center;
-      padding: 12px 8px;
-      border-radius: 12px;
-    }
-
-    .week-day-header.today {
-      background: linear-gradient(135deg, #02735E 0%, #035951 100%);
-      color: white;
-    }
-
-    .week-day-header .day-name {
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      opacity: 0.7;
-    }
-
-    .week-day-header .day-number {
-      font-size: 20px;
-      font-weight: 700;
-      margin-top: 4px;
-    }
-
-    .week-grid {
-      display: grid;
-      grid-template-columns: 80px repeat(7, 1fr);
-      gap: 8px;
-    }
-
-    .week-time-slot {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      padding: 8px 0;
-      text-align: right;
-      padding-right: 12px;
-    }
-
-    .week-cell {
-      min-height: 50px;
-      padding: 4px;
-      border-radius: 8px;
-      background: rgba(0,0,0,0.02);
-      border: 1px dashed transparent;
-      transition: all 0.2s ease;
-    }
-
-    .week-cell:hover {
-      background: rgba(2, 115, 94, 0.05);
-      border-color: rgba(2, 115, 94, 0.2);
-    }
-
-    .week-event {
-      background: linear-gradient(135deg, rgba(2, 115, 94, 0.15) 0%, rgba(3, 89, 81, 0.1) 100%);
-      border-left: 3px solid var(--verdi-light);
-      border-radius: 6px;
-      padding: 6px 8px;
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--verdi-mid);
-      margin-bottom: 4px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .week-event:hover {
-      background: linear-gradient(135deg, rgba(2, 115, 94, 0.25) 0%, rgba(3, 89, 81, 0.2) 100%);
-      transform: scale(1.02);
-    }
-
-    /* Empty State */
-    .agenda-empty {
-      text-align: center;
-      padding: 48px 24px;
-      color: var(--text-secondary);
-    }
-
-    .agenda-empty svg {
-      width: 64px;
-      height: 64px;
-      margin-bottom: 16px;
-      opacity: 0.4;
-    }
-
-    .agenda-empty h4 {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 8px;
-      color: var(--text-primary);
-    }
-
-    /* Settings Tabs */
-    .settings-tab {
-      padding: 10px 20px;
-      border: none;
-      background: transparent;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .settings-tab:hover {
-      background: rgba(2, 115, 94, 0.1);
-    }
-
-    .settings-tab.active {
-      background: linear-gradient(135deg, #02735E 0%, #035951 100%);
-      color: white;
-    }
-
-    /* Settings Item */
-    .settings-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 16px;
-      background: #f8fafc;
-      border-radius: 10px;
-      margin-bottom: 8px;
-      border: 1px solid #e5e7eb;
-    }
-
-    .settings-item:hover {
-      background: #f1f5f9;
-    }
-
-    .settings-item-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .settings-item-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      background: white;
-      border: 1px solid #e5e7eb;
-    }
-
-    .settings-item-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .settings-item-actions button {
-      padding: 6px 12px;
-      border: none;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .settings-item-actions .btn-edit {
-      background: rgba(2, 115, 94, 0.1);
-      color: #02735E;
-    }
-
-    .settings-item-actions .btn-delete {
-      background: rgba(239, 68, 68, 0.1);
-      color: #ef4444;
-    }
-
-    .settings-item-actions button:hover {
-      transform: scale(1.05);
-    }
-
-    /* Priority badges */
-    .priority-badge {
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 700;
-    }
-
-    .priority-badge.low { background: #dcfce7; color: #16a34a; }
-    .priority-badge.normal { background: #fef3c7; color: #d97706; }
-    .priority-badge.high { background: #fed7aa; color: #ea580c; }
-    .priority-badge.urgent { background: #fee2e2; color: #dc2626; }
-
-    /* New Appointment Modal */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(4px);
-      z-index: 9999;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    .modal-overlay.active {
-      display: flex;
-      opacity: 1;
-    }
-
-    .modal-content {
-      background: var(--bg-card);
-      border-radius: 20px;
-      width: 90%;
-      max-width: 520px;
-      max-height: 90vh;
-      overflow-y: auto;
-      box-shadow: 0 25px 50px rgba(0,0,0,0.25);
-      transform: translateY(20px);
-      transition: transform 0.3s ease;
-    }
-
-    .modal-overlay.active .modal-content {
-      transform: translateY(0);
-    }
-
-    .modal-header {
-      padding: 24px;
-      border-bottom: 1px solid var(--border-color);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .modal-header h3 {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text-primary);
-    }
-
-    .modal-close {
-      width: 36px;
-      height: 36px;
-      border: none;
-      background: rgba(0,0,0,0.05);
-      border-radius: 10px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s ease;
-    }
-
-    .modal-close:hover {
-      background: #fee2e2;
-      color: #ef4444;
-    }
-
-    .modal-body {
-      padding: 24px;
-    }
-
-    .form-group {
-      margin-bottom: 20px;
-    }
-
-    .form-group label {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      margin-bottom: 8px;
-    }
-
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-      width: 100%;
-      padding: 12px 16px;
-      border: 2px solid #e5e7eb;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 500;
-      transition: all 0.2s ease;
-      background: var(--bg-card);
-      color: var(--text-primary);
-    }
-
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-      outline: none;
-      border-color: var(--verdi-light);
-      box-shadow: 0 0 0 3px rgba(2, 115, 94, 0.1);
-    }
-
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-
-    .modal-footer {
-      padding: 20px 24px;
-      border-top: 1px solid var(--border-color);
-      display: flex;
-      gap: 12px;
-      justify-content: flex-end;
-    }
-
-    .btn-cancel {
-      padding: 12px 24px;
-      border: 2px solid #e5e7eb;
-      background: transparent;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      color: var(--text-secondary);
-    }
-
-    .btn-cancel:hover {
-      background: #f3f4f6;
-    }
-
-    .btn-save {
-      padding: 12px 24px;
-      border: none;
-      background: linear-gradient(135deg, #02735E 0%, #035951 50%, #034040 100%);
-      background-size: 200% 200%;
-      animation: aire 8s ease infinite;
-      color: white;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .btn-save:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(2, 115, 94, 0.3);
-    }
-
-    /* View Toggle */
-    .view-toggle {
-      display: flex;
-      gap: 8px;
-      background: rgba(0,0,0,0.04);
-      padding: 4px;
-      border-radius: 10px;
-    }
-
-    .view-toggle button {
-      padding: 8px 16px;
-      border: none;
-      background: transparent;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .view-toggle button.active {
-      background: white;
-      color: var(--verdi-light);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-  </style>
+  <script src="js/data-projects.js"></script>
+  <script src="js/data-threads.js"></script>
+  
 </head>
 <body>
   <div class="app-shell" data-theme="light" data-accent="#02735E">
@@ -1382,7 +110,7 @@
     </aside>
 
     <main id="main">
-      <section class="page">
+      <section class="page active">
         <!-- Header -->
         <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-left: 4px solid var(--primary-color); border-radius: 16px; padding: 20px 24px; margin-bottom: 24px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
@@ -2208,242 +936,84 @@
     let map = null;
     let allMarkers = [];
     
+    const ProjectStore = window.ProjectData || {};
+    if (ProjectStore.seedDefaults) ProjectStore.seedDefaults();
+    if (ProjectStore.seedAppointments) ProjectStore.seedAppointments();
+
+    const PROJECTS_KEY = ProjectStore.PROJECTS_KEY || 'projectsync_projects';
+    const APPOINTMENTS_KEY = ProjectStore.APPOINTMENTS_KEY || 'projectsync_appointments';
+
     // Status mapping for display
-    const statusConfig = {
+    const statusConfig = ProjectStore.statusConfig || {
       active: { color: '#02735E', badge: 'EN CURSO' },
       scheduled: { color: '#eab308', badge: 'PROGRAMADO' },
       completed: { color: '#059669', badge: 'COMPLETADO' }
     };
-    
-    // Generar nuevo IDSync (formato: IDSyncYYNNNN donde YY=año, NNNN=consecutivo)
-    function generateIDSync() {
-      const projects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
-      const year = new Date().getFullYear().toString().slice(-2); // "25" para 2025
-      
-      // Buscar el número más alto existente para este año
-      let maxNum = 0;
-      projects.forEach(p => {
-        if (p.idSync && p.idSync.startsWith(`IDSync${year}`)) {
-          const num = parseInt(p.idSync.replace(`IDSync${year}`, ''), 10);
-          if (num > maxNum) maxNum = num;
-        }
-      });
-      
-      // Generar siguiente número con padding de 4 dígitos
-      const nextNum = (maxNum + 1).toString().padStart(4, '0');
-      return `IDSync${year}${nextNum}`;
+
+    // Configuración de estados del workflow
+    const workflowStates = ProjectStore.workflowStates || {
+      quoted: { color: '#3b82f6', emoji: '📋', name: 'Cotizado' },
+      approved: { color: '#10b981', emoji: '✅', name: 'Aprobado' },
+      scheduled: { color: '#8b5cf6', emoji: '📅', name: 'Programado' },
+      'in-progress': { color: '#f59e0b', emoji: '🔧', name: 'En Proceso' },
+      paused: { color: '#fbbf24', emoji: '⏸️', name: 'Pausado' },
+      completed: { color: '#059669', emoji: '🎉', name: 'Completado' },
+      cancelled: { color: '#ef4444', emoji: '❌', name: 'Cancelado' }
+    };
+
+    // Obtener estado del proyecto (workflow)
+    function getProjectWorkflowState(projectId) {
+      const key = `project_state_${projectId}`;
+      return localStorage.getItem(key) || 'quoted';
     }
     
-    // Migrar proyectos antiguos (ORD-XXX) a IDSync
-    function migrateOldProjects() {
-      const stored = localStorage.getItem('projectsync_projects');
-      if (!stored) return;
-      
-      try {
-        const projects = JSON.parse(stored);
-        let needsSave = false;
-        
-        projects.forEach(project => {
-          // Si no tiene idSync o tiene formato antiguo ORD-XXX
-          if (!project.idSync || project.idSync.startsWith('ORD-')) {
-            project.idSync = generateIDSync();
-            needsSave = true;
-            console.log(`[Package] Migrated ${project.id} → ${project.idSync}`);
-          }
-        });
-        
-        if (needsSave) {
-          localStorage.setItem('projectsync_projects', JSON.stringify(projects));
-          console.log(' Migration complete');
-        }
-      } catch (e) {
-        console.error('Migration error:', e);
-      }
-    }
-    
-    // Ejecutar migración al cargar
-    migrateOldProjects();
-    
-    // Crear proyectos de ejemplo en San Diego si no hay datos
-    function initializeSampleProjects() {
-      const stored = localStorage.getItem('projectsync_projects');
-      if (stored && JSON.parse(stored).length > 0) return; // Ya hay proyectos
-      
-      // Proyectos de ejemplo en San Diego County - SIN coordenadas para geocodificar automáticamente
-      const sampleProjects = [
-        {
-          id: 'PRJ-001',
-          idSync: 'IDSync250001',
-          name: 'HVAC Installation - Downtown Office',
-          client: 'Gaslamp Quarter Properties',
-          contact: 'Michael Chen',
-          phone: '(619) 555-0101',
-          email: 'mchen@gaslampprops.com',
-          address: '701 Fifth Ave, San Diego, CA 92101',
-          description: 'Complete HVAC system installation for 3-story office building',
-          startDate: '2025-11-15',
-          endDate: '2025-12-15',
-          amount: 45000,
-          status: 'active'
-        },
-        {
-          id: 'PRJ-002',
-          idSync: 'IDSync250002',
-          name: 'Commercial Plumbing Repair',
-          client: 'La Jolla Shores Hotel',
-          contact: 'Sarah Martinez',
-          phone: '(858) 555-0202',
-          email: 'smartinez@ljshores.com',
-          address: '8110 Camino Del Oro, La Jolla, CA 92037',
-          description: 'Emergency plumbing repair and water heater replacement',
-          startDate: '2025-11-20',
-          endDate: '2025-11-25',
-          amount: 12500,
-          status: 'active'
-        },
-        {
-          id: 'PRJ-003',
-          idSync: 'IDSync250003',
-          name: 'Solar Panel Installation',
-          client: 'Rancho Bernardo Estates',
-          contact: 'David Thompson',
-          phone: '(858) 555-0303',
-          email: 'dthompson@rbhoa.com',
-          address: '16925 Hierba Dr, San Diego, CA 92128',
-          description: 'Residential solar panel system - 12kW capacity',
-          startDate: '2025-12-01',
-          endDate: '2025-12-20',
-          amount: 35000,
-          status: 'scheduled'
-        },
-        {
-          id: 'PRJ-004',
-          idSync: 'IDSync250004',
-          name: 'Electrical System Upgrade',
-          client: 'Coronado Island Resort',
-          contact: 'Jennifer Walsh',
-          phone: '(619) 555-0404',
-          email: 'jwalsh@coronadoresort.com',
-          address: '1500 Orange Ave, Coronado, CA 92118',
-          description: 'Main electrical panel upgrade and EV charger installation',
-          startDate: '2025-11-01',
-          endDate: '2025-11-10',
-          amount: 28000,
-          status: 'completed'
-        },
-        {
-          id: 'PRJ-005',
-          idSync: 'IDSync250005',
-          name: 'Fire Suppression System',
-          client: 'Mission Valley Mall',
-          contact: 'Robert Garcia',
-          phone: '(619) 555-0505',
-          email: 'rgarcia@mvmall.com',
-          address: '1640 Camino Del Rio N, San Diego, CA 92108',
-          description: 'Fire sprinkler system inspection and upgrade',
-          startDate: '2025-11-18',
-          endDate: '2025-11-30',
-          amount: 52000,
-          status: 'active'
-        },
-        {
-          id: 'PRJ-006',
-          idSync: 'IDSync250006',
-          name: 'Restaurant Kitchen Ventilation',
-          client: 'Pacific Beach Seafood',
-          contact: 'Tony Nguyen',
-          phone: '(858) 555-0606',
-          email: 'tnguyen@pbseafood.com',
-          address: '4150 Mission Blvd, San Diego, CA 92109',
-          description: 'Commercial kitchen hood and ventilation system installation',
-          startDate: '2025-10-15',
-          endDate: '2025-10-28',
-          amount: 18500,
-          status: 'completed'
-        },
-        {
-          id: 'PRJ-007',
-          idSync: 'IDSync250007',
-          name: 'Office Building Renovation',
-          client: 'Sorrento Valley Tech Park',
-          contact: 'Lisa Kim',
-          phone: '(858) 555-0707',
-          email: 'lkim@svtechpark.com',
-          address: '10770 Wateridge Cir, San Diego, CA 92121',
-          description: 'Complete MEP renovation for tech office space',
-          startDate: '2025-12-05',
-          endDate: '2026-01-15',
-          amount: 125000,
-          status: 'scheduled'
-        },
-        {
-          id: 'PRJ-008',
-          idSync: 'IDSync250008',
-          name: 'Pool Equipment Replacement',
-          client: 'Del Mar Heights Community',
-          contact: 'Amanda Foster',
-          phone: '(858) 555-0808',
-          email: 'afoster@dmhoa.com',
-          address: '3850 Valley Centre Dr, San Diego, CA 92130',
-          description: 'Community pool pump and filtration system replacement',
-          startDate: '2025-11-22',
-          endDate: '2025-11-28',
-          amount: 15000,
-          status: 'active'
-        },
-        {
-          id: 'PRJ-009',
-          idSync: 'IDSync250009',
-          name: 'Medical Office HVAC',
-          client: 'Scripps Clinic Carmel Valley',
-          contact: 'Dr. James Miller',
-          phone: '(858) 555-0909',
-          email: 'jmiller@scripps.org',
-          address: '3811 Valley Centre Dr, San Diego, CA 92130',
-          description: 'Specialized HVAC for medical facility with clean room requirements',
-          startDate: '2025-10-01',
-          endDate: '2025-10-20',
-          amount: 68000,
-          status: 'completed'
-        },
-        {
-          id: 'PRJ-010',
-          idSync: 'IDSync250010',
-          name: 'Warehouse Lighting Retrofit',
-          client: 'Otay Mesa Distribution',
-          contact: 'Carlos Mendez',
-          phone: '(619) 555-1010',
-          email: 'cmendez@otaydist.com',
-          address: '9855 Businesspark Ave, San Diego, CA 92154',
-          description: 'LED lighting upgrade for 50,000 sq ft warehouse',
-          startDate: '2025-12-10',
-          endDate: '2025-12-18',
-          amount: 42000,
-          status: 'scheduled'
-        }
-      ];
-      
-      localStorage.setItem('projectsync_projects', JSON.stringify(sampleProjects));
-      console.log(' Initialized 10 sample projects in San Diego area');
-    }
-    
-    // Inicializar proyectos de ejemplo
-    initializeSampleProjects();
-    
-    // Load projects from localStorage
     function loadProjectsFromStorage() {
-      const stored = localStorage.getItem('projectsync_projects');
-      if (stored) {
-        try {
-          return JSON.parse(stored);
-        } catch (e) {
-          console.error('Error parsing projects:', e);
-        }
+      if (ProjectStore.loadProjects) {
+        return ProjectStore.loadProjects();
       }
-      return [];
+      try {
+        return JSON.parse(localStorage.getItem(PROJECTS_KEY) || '[]');
+      } catch (e) {
+        console.error('Error parsing projects:', e);
+        return [];
+      }
     }
-    
-    // Render projects table
+
+    function saveProjectsToStorage(projects) {
+      if (ProjectStore.saveProjects) {
+        ProjectStore.saveProjects(projects);
+      } else {
+        localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
+      }
+    }
+
+    function loadAppointments() {
+      if (ProjectStore.loadAppointments) {
+        return ProjectStore.loadAppointments();
+      }
+      try {
+        return JSON.parse(localStorage.getItem(APPOINTMENTS_KEY) || '[]');
+      } catch (e) {
+        console.error('Error parsing appointments:', e);
+        return [];
+      }
+    }
+
+    function saveAppointments(list) {
+      if (ProjectStore.saveAppointments) {
+        ProjectStore.saveAppointments(list);
+      } else {
+        localStorage.setItem(APPOINTMENTS_KEY, JSON.stringify(list));
+      }
+    }
+
+    function saveAppointmentToStorage(appointment) {
+      const appointments = loadAppointments();
+      appointments.push(appointment);
+      saveAppointments(appointments);
+    }
+
+// Render projects table
     function renderProjectsTable() {
       const projects = loadProjectsFromStorage();
       const tbody = document.querySelector('tbody');
@@ -2769,7 +1339,7 @@
       if (project) {
         project.lat = lat;
         project.lng = lng;
-        localStorage.setItem('projectsync_projects', JSON.stringify(projects));
+        saveProjectsToStorage(projects);
       }
     }
 
@@ -3199,70 +1769,9 @@
 
     // Initialize appointments from localStorage
     function initializeAppointments() {
-      const existing = localStorage.getItem('projectsync_appointments');
-      if (!existing) {
-        // Create sample appointments based on existing projects
-        const projects = loadProjectsFromStorage();
-        const sampleAppointments = [];
-        
-        projects.forEach((project, index) => {
-          if (project.status === 'active' || project.status === 'scheduled') {
-            // Create inspection/work appointments
-            const startDate = new Date(project.startDate);
-            const types = ['inspection', 'installation', 'review', 'meeting'];
-            const technicians = ['Juan García', 'María López', 'Carlos Rodríguez', 'Ana Martínez'];
-            
-            // Add 1-2 appointments per active project
-            for (let i = 0; i < (project.status === 'active' ? 2 : 1); i++) {
-              const aptDate = new Date(startDate);
-              aptDate.setDate(aptDate.getDate() + (i * 3) + index);
-              
-              // Make some appointments for today
-              if (index < 3 && i === 0) {
-                aptDate.setFullYear(new Date().getFullYear());
-                aptDate.setMonth(new Date().getMonth());
-                aptDate.setDate(new Date().getDate() + index);
-              }
-              
-              sampleAppointments.push({
-                id: `APT-${Date.now()}-${index}-${i}`,
-                projectId: project.id,
-                projectName: project.name,
-                client: project.client,
-                title: i === 0 ? 'Inspección inicial' : 'Seguimiento de trabajo',
-                date: aptDate.toISOString().split('T')[0],
-                time: `${8 + (index % 4) + (i * 2)}:00`,
-                duration: 60 + (i * 30),
-                type: types[index % types.length],
-                technician: technicians[index % technicians.length],
-                status: index < 2 ? 'confirmed' : 'pending',
-                notes: project.description,
-                address: project.address
-              });
-            }
-          }
-        });
-        
-        localStorage.setItem('projectsync_appointments', JSON.stringify(sampleAppointments));
-        console.log(' Initialized sample appointments');
+      if (ProjectStore.seedAppointments) {
+        ProjectStore.seedAppointments();
       }
-    }
-
-    // Load appointments
-    function loadAppointments() {
-      const stored = localStorage.getItem('projectsync_appointments');
-      try {
-        return stored ? JSON.parse(stored) : [];
-      } catch (e) {
-        return [];
-      }
-    }
-
-    // Save appointment
-    function saveAppointmentToStorage(appointment) {
-      const appointments = loadAppointments();
-      appointments.push(appointment);
-      localStorage.setItem('projectsync_appointments', JSON.stringify(appointments));
     }
 
     // Render Calendar
@@ -3791,7 +2300,7 @@
         updatedAt: new Date().toISOString()
       };
       
-      localStorage.setItem('projectsync_appointments', JSON.stringify(appointments));
+      saveAppointments(appointments);
       closeEditAppointmentModal();
       refreshAgendaViews();
       showSuccessMessage('Cita actualizada');
@@ -3803,7 +2312,7 @@
       
       const appointments = loadAppointments();
       const filtered = appointments.filter(a => a.id !== currentEditingAppointmentId);
-      localStorage.setItem('projectsync_appointments', JSON.stringify(filtered));
+      saveAppointments(filtered);
       
       closeEditAppointmentModal();
       refreshAgendaViews();
@@ -4526,7 +3035,7 @@
      */
     function convertAppointmentToProject(appointmentId) {
       // Buscar la cita
-      const appointments = JSON.parse(localStorage.getItem('projectsync_appointments') || '[]');
+      const appointments = loadAppointments();
       const appointment = appointments.find(apt => apt.id === appointmentId);
       
       if (!appointment) {
@@ -4549,7 +3058,7 @@
       if (!confirmed) return;
 
       // Generar IDSync para el nuevo proyecto
-      const projects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+      const projects = loadProjectsFromStorage();
       const lastId = projects.length > 0 
         ? Math.max(...projects.map(p => {
             const match = p.idSync?.match(/IDSync(\\d+)/);
@@ -4581,7 +3090,7 @@
 
       // Agregar a la lista de proyectos
       projects.push(newProject);
-      localStorage.setItem('projectsync_projects', JSON.stringify(projects));
+      saveProjectsToStorage(projects);
 
       // Actualizar la cita para vincularla al proyecto
       const aptIndex = appointments.findIndex(apt => apt.id === appointmentId);
@@ -4589,7 +3098,7 @@
         appointments[aptIndex].projectId = newIdSync;
         appointments[aptIndex].projectName = appointment.title;
         appointments[aptIndex].status = 'confirmed'; // Cambiar a confirmada
-        localStorage.setItem('projectsync_appointments', JSON.stringify(appointments));
+        saveAppointments(appointments);
       }
 
       console.log('✅ Proyecto creado desde cita:', newProject);

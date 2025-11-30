@@ -17944,8 +17944,15 @@
     // DASHBOARD DATA & COUNTERS
     // ========================================
 
+    function loadProjectsFromStorage() {
+      if (window.ProjectData && typeof window.ProjectData.loadProjects === 'function') {
+        return window.ProjectData.loadProjects();
+      }
+      return [];
+    }
+
     function updateDashboardCounters() {
-      const projects = window.ProjectData.loadProjects();
+      const projects = loadProjectsFromStorage();
       
       // Calculate counts
       const completed = projects.filter(p => p.status === 'completed').length;
