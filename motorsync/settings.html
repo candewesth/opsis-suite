@@ -10,12 +10,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;500;600;700;900&display=swap">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=verdi2">
+  <link rel="stylesheet" href="css/management.css?v=verdi2">
+  <link rel="stylesheet" href="css/verdi-overrides.css?v=verdi2">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-  <script src="js/modules.js"></script>
-  <script src="js/sidebar.js"></script>
+  <script src="js/modules.js?v=verdi2"></script>
+  <script src="js/sidebar.js?v=verdi2"></script>
   <script src="notifications-manager.js"></script>
   <script>
     (function () {
@@ -55,245 +57,253 @@
 
       <main id="main">
         <section class="page active">
+          <style>
+            .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px; }
+            .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 12px; }
+            .module-badges { display: flex; flex-wrap: wrap; gap: 10px; }
+            .module-pill { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 12px; background: rgba(2,115,94,0.08); border: 1px solid rgba(2,115,94,0.2); font-weight: 700; }
+            .divider { border-top: 1px dashed var(--border-color); margin: 12px 0; }
+            .logo-box { width: 110px; height: 110px; border: 2px dashed rgba(2,115,94,0.28); border-radius: 14px; display: grid; place-items: center; color: #02735E; background: rgba(2,115,94,0.05); font-weight: 700; }
+            .table-compact th, .table-compact td { padding: 10px 12px; }
+            .sub { color: var(--text-secondary); font-size: 13px; margin: 0 0 12px 0; }
+          </style>
+
           <div class="page-header">
-            <h2 class="page-title" id="settings-title" data-i18n="settings">Configuración</h2>
+            <div>
+              <h2 class="page-title">Configuración</h2>
+              <p class="page-subtitle">Identidad, experiencia y módulos activos del núcleo MotorSync.</p>
+            </div>
           </div>
 
-          <!-- KPIs Summary -->
-          <div class="grid grid-3 kpi-grid" id="settings-kpis">
+          <div class="kpi-grid">
             <div class="stat-card">
-              <div class="stat-label" data-i18n="settingsKpiCompany">Compañía</div>
+              <div class="stat-label">Compañía</div>
               <div class="stat-value" id="settings-kpi-company">CVE San Diego</div>
               <div class="stat-change" id="settings-kpi-company-hint">Nombre mostrado en Opsis</div>
             </div>
             <div class="stat-card">
-              <div class="stat-label" data-i18n="settingsKpiTheme">Modo</div>
+              <div class="stat-label">Modo</div>
               <div class="stat-value" id="settings-kpi-theme">Claro</div>
-              <div class="stat-change" id="settings-kpi-theme-hint">Modo actual</div>
+              <div class="stat-change">Preferencia actual</div>
             </div>
             <div class="stat-card">
-              <div class="stat-label" data-i18n="settingsKpiLanguage">Idioma</div>
+              <div class="stat-label">Idioma</div>
               <div class="stat-value" id="settings-kpi-language">Español</div>
-              <div class="stat-change" id="settings-kpi-language-hint">UI predeterminado</div>
+              <div class="stat-change">UI predeterminado</div>
             </div>
           </div>
 
-          <!-- Company Identity -->
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <h3 class="card-title" data-i18n="settingsCompanyCard">Identidad y contacto</h3>
-                <p class="settings-note" data-i18n="settingsCompanySubtitle">Nombre visible en app y datos básicos de contacto.</p>
-              </div>
-            </div>
-            <div class="form-grid">
-              <div class="form-group">
-                <label data-i18n="companyName">Nombre de la empresa</label>
-                <input type="text" id="settings-company" value="CVE San Diego">
-              </div>
-              <div class="form-group">
-                <label data-i18n="phone">Teléfono</label>
-                <input type="tel" id="settings-phone" value="+1 (619) 555-0100">
-              </div>
-              <div class="form-group">
-                <label data-i18n="email">Email</label>
-                <input type="email" id="settings-email" value="contacto@cvesandiego.com">
-              </div>
-            </div>
-            <div class="settings-actions">
-              <button class="btn btn-primary" id="btn-settings-save" data-i18n="settingsSaveButton">Guardar cambios</button>
-            </div>
-          </div>
-
-          <!-- Premium Modules -->
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <h3 class="card-title">Módulos Premium Activos</h3>
-                <p class="settings-note">Módulos habilitados por tu plan. Contacta soporte para activar más.</p>
-              </div>
-            </div>
-            <div class="grid grid-2" style="gap: 16px; margin-top: 16px;">
-              <div class="module-card active">
-                <div class="module-icon" style="background: #02735E;">MS</div>
-                <div class="module-info">
-                  <h4>MotorSync Base</h4>
-                  <p>Sistema operacional completo</p>
-                  <span class="module-status active">✓ Activo</span>
+          <div class="settings-grid">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title" data-i18n="settingsCompanyCard">Identidad y contacto</h3>
+                  <p class="card-subtitle" data-i18n="settingsCompanySubtitle">Nombre visible en app y datos básicos.</p>
                 </div>
               </div>
-              <div class="module-card active">
-                <div class="module-icon" style="background: #035951;">TS</div>
-                <div class="module-info">
-                  <h4>TimeSync</h4>
-                  <p>Gestión de tiempo y asistencias</p>
-                  <span class="module-status active">✓ Activo</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Branding -->
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <h3 class="card-title" data-i18n="settingsBrandingCard">Branding y apariencia</h3>
-                <p class="settings-note" data-i18n="settingsBrandingSubtitle">Define tu logo, color corporativo y preferencias visuales.</p>
-              </div>
-            </div>
-            <div class="form-grid">
-              <div class="form-group" style="grid-column: 1 / -1;">
-                <label>Logo de tu empresa</label>
-                <div style="display: flex; align-items: center; gap: 16px; margin-top: 8px;">
-                  <div id="logo-preview" style="width: 120px; height: 120px; border: 2px dashed rgba(2, 115, 94, 0.3); border-radius: 12px; display: flex; align-items: center; justify-content: center; background: rgba(2, 115, 94, 0.05); color: #02735E; font-size: 14px; font-weight: 600;">
-                    Sin logo
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label data-i18n="companyName">Nombre de la empresa</label>
+                    <input type="text" id="settings-company" value="CVE San Diego">
                   </div>
-                  <div style="flex: 1;">
+                  <div class="form-group">
+                    <label data-i18n="phone">Teléfono</label>
+                    <input type="tel" id="settings-phone" value="+1 (619) 555-0100">
+                  </div>
+                  <div class="form-group">
+                    <label data-i18n="email">Email</label>
+                    <input type="email" id="settings-email" value="contacto@cvesandiego.com">
+                  </div>
+                </div>
+                <div>
+                  <button class="btn btn-primary" id="btn-settings-save" data-i18n="settingsSaveButton">Guardar cambios</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Branding y apariencia</h3>
+                  <p class="card-subtitle">Logo, acento y modo visual.</p>
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 14px;">
+                <div style="display: grid; grid-template-columns: 120px 1fr; gap: 14px; align-items: center;">
+                  <div class="logo-box" id="logo-preview">Sin logo</div>
+                  <div>
                     <input type="file" id="logo-upload" accept="image/*" style="display: none;">
                     <button type="button" class="btn btn-secondary" onclick="document.getElementById('logo-upload').click();">Subir logo</button>
-                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">Recomendado: PNG o SVG, máximo 2MB</p>
+                    <p class="sub" style="margin-top: 6px;">PNG o SVG, máx 2MB</p>
+                  </div>
+                </div>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label data-i18n="accentColor">Color de acento</label>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                      <input type="color" id="accent-picker" value="#02735E" style="width: 60px; height: 40px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer;">
+                      <input type="text" id="accent-hex" value="#02735E" readonly style="flex: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-card); font-family: monospace;">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label data-i18n="uiTheme">Modo</label>
+                    <select id="theme-select">
+                      <option value="light" data-i18n="settingsThemeLight">Claro</option>
+                      <option value="dark" data-i18n="settingsThemeDark">Oscuro</option>
+                    </select>
                   </div>
                 </div>
               </div>
-              <div class="form-group">
-                <label data-i18n="accentColor">Color de acento corporativo</label>
-                <div style="display: flex; gap: 12px; align-items: center;">
-                  <input type="color" id="accent-picker" value="#02735E" style="width: 60px; height: 40px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer;">
-                  <input type="text" id="accent-hex" value="#02735E" readonly style="flex: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-card); font-family: monospace;">
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Módulos</h3>
+                  <p class="card-subtitle">Base incluidos vs. premium opcionales.</p>
                 </div>
-                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">Se aplicará sobre la base VERDI</p>
               </div>
-              <div class="form-group">
-                <label data-i18n="uiTheme">Modo de interfaz</label>
-                <select id="theme-select">
-                  <option value="light" data-i18n="settingsThemeLight">Claro</option>
-                  <option value="dark" data-i18n="settingsThemeDark">Oscuro</option>
-                </select>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <p class="sub" style="margin-top: 4px;">Núcleo operativo disponible para todas las compañías.</p>
+                <div class="module-badges">
+                  <span class="module-pill">PlanSync</span>
+                  <span class="module-pill">ProjectSync</span>
+                  <span class="module-pill">ThreadSync</span>
+                  <span class="module-pill">ViewSync</span>
+                </div>
+                <div class="divider"></div>
+                <p class="sub">Complementos premium (se habilitan solo si el cliente los contrata).</p>
+                <div class="module-badges">
+                  <span class="module-pill" style="background: rgba(148,163,184,0.15); border-color: rgba(148,163,184,0.3); color: #475569;">ToolSync</span>
+                  <span class="module-pill" style="background: rgba(148,163,184,0.15); border-color: rgba(148,163,184,0.3); color: #475569;">TimeSync</span>
+                  <span class="module-pill" style="background: rgba(148,163,184,0.15); border-color: rgba(148,163,184,0.3); color: #475569;">HumanSync</span>
+                  <span class="module-pill" style="background: rgba(148,163,184,0.15); border-color: rgba(148,163,184,0.3); color: #475569;">FinanSync</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Localization -->
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <h3 class="card-title" data-i18n="settingsLocalizationCard">Localización y datos</h3>
-                <p class="settings-note" data-i18n="settingsLocalizationSubtitle">Controla el idioma y reinicia la data demo.</p>
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title" data-i18n="settingsLocalizationCard">Localización y datos</h3>
+                  <p class="card-subtitle" data-i18n="settingsLocalizationSubtitle">Idioma y data demo.</p>
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 14px;">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label data-i18n="uiLanguage">Idioma</label>
+                    <select id="language-select">
+                      <option value="es">Español</option>
+                      <option value="en">English</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="divider"></div>
+                <div>
+                  <label data-i18n="resetDemoTitle">Datos de demostración</label>
+                  <p class="sub" data-i18n="resetDemoHint">Borra y vuelve a cargar la información de ejemplo.</p>
+                  <button type="button" class="btn btn-secondary" id="btn-reset-demo" data-i18n="resetDemoButton" style="margin-top: 6px;">Reiniciar</button>
+                </div>
               </div>
             </div>
-            <div class="form-grid">
-              <div class="form-group">
-                <label data-i18n="uiLanguage">Idioma del sistema</label>
-                <select id="language-select">
-                  <option value="es">Español</option>
-                  <option value="en">English</option>
-                </select>
-              </div>
-            </div>
-            <div class="settings-divider"></div>
-            <div>
-              <label data-i18n="resetDemoTitle">Datos de demostración</label>
-              <p class="settings-note" data-i18n="resetDemoHint">Borra y vuelve a cargar la información de ejemplo.</p>
-              <button type="button" class="btn btn-secondary" id="btn-reset-demo" data-i18n="resetDemoButton" style="margin-top: 12px;">Reiniciar</button>
-            </div>
-          </div>
 
-          <!-- Notification Preferences -->
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <h3 class="card-title" data-i18n="settingsNotificationsCard">Preferencias de notificaciones</h3>
-                <p class="settings-note" data-i18n="settingsNotificationsSubtitle">Activa los canales (Email, SMS, In-App) para cada perfil del sistema.</p>
+            <div class="card">
+              <div class="card-header" style="justify-content: space-between; align-items: center;">
+                <div>
+                  <h3 class="card-title" data-i18n="settingsNotificationsCard">Notificaciones</h3>
+                  <p class="card-subtitle" data-i18n="settingsNotificationsSubtitle">Email, SMS, In-App por perfil.</p>
+                </div>
+                <button class="btn btn-secondary" id="btn-save-notifications" data-i18n="settingsNotificationsSave">Guardar</button>
               </div>
-              <button class="btn btn-secondary" id="btn-save-notifications" data-i18n="settingsNotificationsSave">Guardar preferencias</button>
+              <div class="table-wrapper">
+                <table class="notification-preferences table-compact">
+                  <thead>
+                    <tr>
+                      <th data-i18n="settingsNotificationsColumnRole">Perfil</th>
+                      <th data-i18n="settingsNotificationsColumnEmail">Email</th>
+                      <th data-i18n="settingsNotificationsColumnSms">SMS</th>
+                      <th data-i18n="settingsNotificationsColumnInApp">In-App</th>
+                    </tr>
+                  </thead>
+                  <tbody id="notification-settings-table">
+                    <tr>
+                      <td><strong>Owner</strong></td>
+                      <td><input type="checkbox" checked></td>
+                      <td><input type="checkbox" checked></td>
+                      <td><input type="checkbox" checked></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Admin</strong></td>
+                      <td><input type="checkbox" checked></td>
+                      <td><input type="checkbox"></td>
+                      <td><input type="checkbox" checked></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Técnico</strong></td>
+                      <td><input type="checkbox"></td>
+                      <td><input type="checkbox" checked></td>
+                      <td><input type="checkbox" checked></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Cliente</strong></td>
+                      <td><input type="checkbox" checked></td>
+                      <td><input type="checkbox" checked></td>
+                      <td><input type="checkbox"></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="sub" style="margin-top: 10px;" data-i18n="settingsNotificationsFooter">
+                Aplica para alertas operativas (MotorSync), asignaciones (TimeSync), logística (ToolSync) y facturación (FinanSync).
+              </p>
             </div>
-            <div class="table-wrapper">
-              <table class="notification-preferences">
-                <thead>
-                  <tr>
-                    <th data-i18n="settingsNotificationsColumnRole">Perfil</th>
-                    <th data-i18n="settingsNotificationsColumnEmail">Email</th>
-                    <th data-i18n="settingsNotificationsColumnSms">SMS</th>
-                    <th data-i18n="settingsNotificationsColumnInApp">In-App</th>
-                  </tr>
-                </thead>
-                <tbody id="notification-settings-table">
-                  <tr>
-                    <td><strong>Owner</strong></td>
-                    <td><input type="checkbox" checked></td>
-                    <td><input type="checkbox" checked></td>
-                    <td><input type="checkbox" checked></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Admin</strong></td>
-                    <td><input type="checkbox" checked></td>
-                    <td><input type="checkbox"></td>
-                    <td><input type="checkbox" checked></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Técnico</strong></td>
-                    <td><input type="checkbox"></td>
-                    <td><input type="checkbox" checked></td>
-                    <td><input type="checkbox" checked></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Cliente</strong></td>
-                    <td><input type="checkbox" checked></td>
-                    <td><input type="checkbox" checked></td>
-                    <td><input type="checkbox"></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 12px;" data-i18n="settingsNotificationsFooter">
-              Los cambios aplican para alertas operativas (MotorSync), asignaciones (TimeSync), logística (ToolSync) y facturación (FinanSync).
-            </p>
-          </div>
 
-          <!-- Role Access -->
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <h3 class="card-title" data-i18n="settingsRoleAccessCard">Accesos por rol</h3>
-                <p class="settings-note" data-i18n="settingsRoleAccessSubtitle">Consulta qué áreas puede ver cada rol y quién puede enviar invitaciones.</p>
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title" data-i18n="settingsRoleAccessCard">Accesos por rol</h3>
+                  <p class="card-subtitle" data-i18n="settingsRoleAccessSubtitle">Áreas visibles y permisos de invitación.</p>
+                </div>
               </div>
+              <div class="table-wrapper">
+                <table class="role-access-table table-compact">
+                  <thead>
+                    <tr>
+                      <th data-i18n="settingsRoleAccessColumnRole">Rol</th>
+                      <th data-i18n="settingsRoleAccessColumnPages">Áreas</th>
+                      <th data-i18n="settingsRoleAccessColumnInvites">Invitar</th>
+                    </tr>
+                  </thead>
+                  <tbody id="role-access-table">
+                    <tr>
+                      <td><strong>Owner</strong></td>
+                      <td>Todas las áreas</td>
+                      <td><span class="badge">✓ Sí</span></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Admin</strong></td>
+                      <td>Dashboard, Analytics, ClientSync, Management</td>
+                      <td><span class="badge">✓ Sí</span></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Técnico</strong></td>
+                      <td>Dashboard, PlanSync, ProjectSync</td>
+                      <td><span style="color: var(--text-secondary);">No</span></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Cliente</strong></td>
+                      <td>Portal de cliente</td>
+                      <td><span style="color: var(--text-secondary);">No</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="sub" style="margin-top: 10px;" data-i18n="settingsRoleAccessInviteHint">
+                Owner y Admin pueden invitar técnicos, labor, clientes y contratistas para operar MotorSync.
+              </p>
             </div>
-            <div class="table-wrapper">
-              <table class="role-access-table">
-                <thead>
-                  <tr>
-                    <th data-i18n="settingsRoleAccessColumnRole">Rol</th>
-                    <th data-i18n="settingsRoleAccessColumnPages">Áreas disponibles</th>
-                    <th data-i18n="settingsRoleAccessColumnInvites">Puede invitar</th>
-                  </tr>
-                </thead>
-                <tbody id="role-access-table">
-                  <tr>
-                    <td><strong>Owner</strong></td>
-                    <td>Todas las áreas</td>
-                    <td><span class="badge">✓ Sí</span></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Admin</strong></td>
-                    <td>Dashboard, Analytics, ClientSync, Management</td>
-                    <td><span class="badge">✓ Sí</span></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Técnico</strong></td>
-                    <td>Dashboard, PlanSync, ProjectSync</td>
-                    <td><span style="color: var(--text-secondary);">No</span></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Cliente</strong></td>
-                    <td>Portal de cliente</td>
-                    <td><span style="color: var(--text-secondary);">No</span></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 12px;" data-i18n="settingsRoleAccessInviteHint">
-              Owner y Admin pueden invitar técnicos, labor, clientes y contratistas para operar MotorSync.
-            </p>
           </div>
         </section>
       </main>

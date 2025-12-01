@@ -4,38 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NotifySync - Centro de Notificaciones | Opsis Suite</title>
-  <link rel="stylesheet" href="../assets/css/main.css">
-  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;500;600;700;900&display=swap">
+  <link rel="stylesheet" href="styles.css?v=verdi2">
+  <link rel="stylesheet" href="css/verdi-overrides.css?v=verdi2">
   <script src="notifications-manager.js"></script>
+  <script src="js/modules.js?v=verdi2"></script>
+  <script src="js/sidebar.js?v=verdi2"></script>
   <style>
-    /* === NotifySync Styles === */
+    /* Estilos específicos de NotifySync */
     :root {
-      --primary-color: #02735E;
-      --primary-dark: #035951;
-      --primary-darker: #034040;
       --success-color: #10b981;
-      --info-color: #3b82f6;
-      --warning-color: #f59e0b;
-      --error-color: #ef4444;
-      --bg-body: #f8fafc;
-      --bg-card: #ffffff;
-      --text-primary: #1e293b;
-      --text-secondary: #64748b;
-      --border-color: #e2e8f0;
-    }
-
-    html[data-theme='dark'] {
-      --bg-body: #0f172a;
-      --bg-card: #1e293b;
-      --text-primary: #f1f5f9;
-      --text-secondary: #94a3b8;
-      --border-color: #334155;
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+      --info-color: #0f766e;
+      --warning-color: #d97706;
+      --error-color: #dc2626;
     }
 
     body {
@@ -180,7 +163,7 @@
 
     .stat-card.info {
       border-left: 4px solid var(--info-color);
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, transparent 100%);
+      background: linear-gradient(135deg, rgba(15, 118, 110, 0.05) 0%, transparent 100%);
     }
 
     .stat-card.warning {
@@ -289,7 +272,7 @@
       top: 0;
       bottom: 0;
       width: 6px;
-      background: var(--notification-color, #3b82f6);
+      background: var(--notification-color, #0f766e);
       transition: width 0.3s ease;
     }
 
@@ -314,8 +297,8 @@
     }
 
     .notification-card.info {
-      --notification-color: #3b82f6;
-      --notification-rgb: 59, 130, 246;
+      --notification-color: #0f766e;
+      --notification-rgb: 15, 118, 110;
     }
 
     .notification-card.warning {
@@ -351,8 +334,8 @@
     }
 
     .notification-card.info .notification-icon {
-      background: rgba(59, 130, 246, 0.15);
-      color: #3b82f6;
+      background: rgba(15, 118, 110, 0.15);
+      color: #0f766e;
     }
 
     .notification-card.warning .notification-icon {
@@ -597,43 +580,42 @@
     }
   </style>
 </head>
-<body>
-
-  <!-- Header -->
-  <header>
-    <div class="header-content">
-      <div class="logo-section">
-        <a href="motorsync.html" class="back-btn">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="19" y1="12" x2="5" y2="12"></line>
-            <polyline points="12 19 5 12 12 5"></polyline>
-          </svg>
-          Volver
-        </a>
-        <h1 class="page-title">
-          NotifySync
-        </h1>
+<body data-sidebar-active="notifications">
+  <div class="app-shell" data-theme="light" data-accent="#02735E">
+    <header style="background: linear-gradient(135deg, #02735E 0%, #035951 50%, #034040 100%); background-size: 200% 200%; animation: aire 8s ease infinite; padding: 0; display: flex; align-items: flex-end;">
+      <div class="logo" aria-label="Opsis Suite" style="padding: 18px 32px;">
+        <div class="logo-text">
+          <div class="logo-title">Opsis Suite</div>
+          <div id="company-name-header" style="font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.85); margin-top: 2px;">CVE San Diego</div>
+        </div>
       </div>
-      <div class="header-actions">
-        <button class="btn btn-white" onclick="markAllAsRead()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
-          Marcar todo como leído
-        </button>
-        <button class="btn btn-ghost" onclick="clearAllNotifications()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="3 6 5 6 21 6"></polyline>
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-          </svg>
-          Limpiar
-        </button>
-      </div>
-    </div>
-  </header>
+      <div class="module-tabs" id="module-tabs-container" style="display: flex; gap: 0;"></div>
+    </header>
+    
+    <div class="app-content">
+      <aside id="sidebar"></aside>
+      <main id="main">
+        <section class="page active">
+          <div class="page-header">
+            <h2 class="page-title">NotifySync</h2>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn btn-secondary" onclick="markAllAsRead()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                Marcar todo como leído
+              </button>
+              <button class="btn btn-secondary" onclick="clearAllNotifications()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                Limpiar
+              </button>
+            </div>
+          </div>
 
   <!-- Main Content -->
-  <main>
     <!-- Stats -->
     <div class="stats-grid">
       <div class="stat-card">
@@ -642,17 +624,17 @@
         <div class="stat-trend">En el sistema</div>
       </div>
       <div class="stat-card success">
-        <div class="stat-label">✅ Éxito</div>
+        <div class="stat-label">Éxito</div>
         <div class="stat-value" id="stat-success">0</div>
         <div class="stat-trend">Operaciones exitosas</div>
       </div>
       <div class="stat-card info">
-        <div class="stat-label">ℹ️ Información</div>
+        <div class="stat-label">Información</div>
         <div class="stat-value" id="stat-info">0</div>
         <div class="stat-trend">Actualizaciones del sistema</div>
       </div>
       <div class="stat-card warning">
-        <div class="stat-label">⚠️ Advertencias</div>
+        <div class="stat-label">Advertencias</div>
         <div class="stat-value" id="stat-warning">0</div>
         <div class="stat-trend">Requieren atención</div>
       </div>
@@ -661,29 +643,35 @@
     <!-- Filters -->
     <div class="filters-section">
       <div class="filters-header">
-        <div class="filters-title">🔍 Filtrar notificaciones</div>
+        <div class="filters-title" style="display: flex; align-items: center; gap: 8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          Filtrar notificaciones
+        </div>
         <div style="font-size: 13px; color: var(--text-secondary);">
           <span id="filtered-count">0</span> resultados
         </div>
       </div>
       <div class="filter-buttons">
         <button class="filter-btn active" data-filter="all" onclick="filterNotifications('all')">
-          📋 Todas (<span id="filter-count-all">0</span>)
+          Todas (<span id="filter-count-all">0</span>)
         </button>
         <button class="filter-btn" data-filter="unread" onclick="filterNotifications('unread')">
-          🔴 No leídas (<span id="filter-count-unread">0</span>)
+          No leídas (<span id="filter-count-unread">0</span>)
         </button>
         <button class="filter-btn" data-filter="success" onclick="filterNotifications('success')">
-          ✅ Éxito (<span id="filter-count-success">0</span>)
+          Éxito (<span id="filter-count-success">0</span>)
         </button>
         <button class="filter-btn" data-filter="info" onclick="filterNotifications('info')">
-          ℹ️ Info (<span id="filter-count-info">0</span>)
+          Info (<span id="filter-count-info">0</span>)
         </button>
         <button class="filter-btn" data-filter="warning" onclick="filterNotifications('warning')">
-          ⚠️ Advertencia (<span id="filter-count-warning">0</span>)
+          Advertencia (<span id="filter-count-warning">0</span>)
         </button>
         <button class="filter-btn" data-filter="error" onclick="filterNotifications('error')">
-          ❌ Error (<span id="filter-count-error">0</span>)
+          Error (<span id="filter-count-error">0</span>)
         </button>
       </div>
     </div>
@@ -699,10 +687,13 @@
         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
         <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
       </svg>
-      <h3>🎉 ¡Todo limpio!</h3>
+      <h3>Todo limpio</h3>
       <p>No hay notificaciones que coincidan con tu filtro</p>
     </div>
-  </main>
+        </section>
+      </main>
+    </div>
+  </div>
 
   <!-- Modal -->
   <div class="modal" id="notification-modal" onclick="closeModal(event)">
@@ -729,23 +720,19 @@
     const notificationTypes = {
       success: {
         icon: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>',
-        title: 'Éxito',
-        emoji: '✅'
+        title: 'Éxito'
       },
       error: {
         icon: '<circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line>',
-        title: 'Error',
-        emoji: '❌'
+        title: 'Error'
       },
       warning: {
         icon: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>',
-        title: 'Advertencia',
-        emoji: '⚠️'
+        title: 'Advertencia'
       },
       info: {
         icon: '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>',
-        title: 'Información',
-        emoji: 'ℹ️'
+        title: 'Información'
       }
     };
 
@@ -793,6 +780,42 @@
       renderNotifications();
     }
 
+    function buildLink(notification) {
+      if (notification.link) return notification.link;
+      const meta = notification.metadata || {};
+
+      if (meta.viewUrl) return meta.viewUrl;
+      if (meta.projectUrl) return meta.projectUrl;
+
+      const projectId = meta.projectId || meta.project_id || meta.project || meta.idSync || meta.id;
+      const threadId = meta.threadId || meta.thread_id;
+
+      if (notification.module === 'projectsync' || projectId) {
+        return projectId ? `viewsync.html?projectId=${encodeURIComponent(projectId)}` : 'viewsync.html';
+      }
+
+      if (notification.module === 'threadsync' || threadId) {
+        return threadId ? `threadsync-list.html?threadId=${encodeURIComponent(threadId)}` : 'threadsync-list.html';
+      }
+
+      if (notification.module === 'plansync') return 'plansync.html';
+      if (notification.module === 'howsync') return 'howsync.html';
+      if (notification.module === 'clientsync') return 'clientsync.html';
+      if (notification.module === 'analytics') return 'analytics.html';
+
+      return null;
+    }
+
+    function getLinkText(notification) {
+      if (notification.linkText) return notification.linkText;
+      if (notification.module === 'projectsync') return 'Ver proyecto';
+      if (notification.module === 'threadsync') return 'Abrir thread';
+      if (notification.module === 'plansync') return 'Ver agenda';
+      if (notification.module === 'howsync') return 'Abrir tareas';
+      if (notification.module === 'clientsync') return 'Ver cliente';
+      return 'Ver detalle';
+    }
+
     // Render Notifications
     function renderNotifications() {
       let filtered = [...allNotifications];
@@ -823,9 +846,11 @@
       grid.innerHTML = filtered.map(notification => {
         const type = notificationTypes[notification.type] || notificationTypes.info;
         const timeAgo = formatTimeAgo(notification.timestamp);
+        const resolvedLink = buildLink(notification);
+        const linkText = getLinkText(notification);
 
         return `
-          <div class="notification-card ${notification.type} ${!notification.read ? 'unread' : ''}" onclick="openModal(${notification.id})">
+          <div class="notification-card ${notification.type} ${!notification.read ? 'unread' : ''}" onclick="openModal('${notification.id}')">
             <div class="notification-header">
               <div class="notification-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
@@ -834,7 +859,7 @@
               </div>
               <div class="notification-content">
                 <h3 class="notification-title">
-                  ${type.emoji} ${notification.title}
+                  ${notification.title}
                   ${!notification.read ? '<span class="unread-badge">Nueva</span>' : ''}
                 </h3>
                 <p class="notification-message">${notification.message}</p>
@@ -846,13 +871,13 @@
                     </svg>
                     ${timeAgo}
                   </div>
-                  ${notification.link ? `
+                  ${resolvedLink ? `
                     <div class="notification-action">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                         <polyline points="12 5 19 12 12 19"></polyline>
                       </svg>
-                      ${notification.linkText || 'Ver más'}
+                      ${linkText}
                     </div>
                   ` : ''}
                 </div>
@@ -879,6 +904,8 @@
       const type = notificationTypes[notification.type] || notificationTypes.info;
       const modal = document.getElementById('notification-modal');
       const modalBody = document.getElementById('modal-body');
+      const resolvedLink = buildLink(notification);
+      const linkText = getLinkText(notification);
 
       modalBody.innerHTML = `
         <div class="modal-notification ${notification.type}">
@@ -889,20 +916,20 @@
               </svg>
             </div>
             <div>
-              <h3 style="font-size: 20px; font-weight: 700; margin: 0 0 4px 0;">${type.emoji} ${notification.title}</h3>
+              <h3 style="font-size: 20px; font-weight: 700; margin: 0 0 4px 0;">${notification.title}</h3>
               <div style="font-size: 13px; color: var(--text-secondary);">${formatTimeAgo(notification.timestamp)}</div>
             </div>
           </div>
           <p style="font-size: 15px; color: var(--text-primary); line-height: 1.7; margin: 0 0 24px 0;">${notification.message}</p>
-          ${notification.link ? `
+          ${resolvedLink ? `
             <div class="modal-footer">
               <div style="font-size: 13px; color: var(--text-secondary);">
                 ID: ${notification.id}
               </div>
               <div class="modal-actions">
                 <button class="btn btn-secondary" onclick="closeModal()">Cerrar</button>
-                <button class="btn btn-primary" onclick="window.location.href='${notification.link}'">
-                  ${notification.linkText || 'Ver más'}
+                <button class="btn btn-primary" onclick="window.location.href='${resolvedLink}'">
+                  ${linkText}
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                     <polyline points="12 5 19 12 12 19"></polyline>
@@ -966,13 +993,30 @@
 
     // Show Toast
     function showToast(type, message) {
+      const accentMap = {
+        success: '#10b981',
+        info: '#0f766e',
+        warning: '#d97706',
+        error: '#dc2626'
+      };
+
+      const accentBgMap = {
+        success: 'rgba(16, 185, 129, 0.15)',
+        info: 'rgba(15, 118, 110, 0.15)',
+        warning: 'rgba(217, 119, 6, 0.15)',
+        error: 'rgba(220, 38, 38, 0.15)'
+      };
+
+      const accent = accentMap[type] || accentMap.info;
+      const accentBg = accentBgMap[type] || accentBgMap.info;
+
       const toast = document.createElement('div');
       toast.style.cssText = `
         position: fixed;
         top: 24px;
         right: 24px;
         background: var(--bg-card);
-        border: 2px solid ${type === 'success' ? '#10b981' : '#3b82f6'};
+        border: 2px solid ${accent};
         border-radius: 12px;
         padding: 16px 20px;
         box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
@@ -985,16 +1029,16 @@
       `;
 
       const icon = notificationTypes[type]?.icon || notificationTypes.info.icon;
-      const emoji = notificationTypes[type]?.emoji || 'ℹ️';
+      const title = notificationTypes[type]?.title || 'Notificación';
 
       toast.innerHTML = `
-        <div style="width: 40px; height: 40px; border-radius: 10px; background: ${type === 'success' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(59, 130, 246, 0.15)'}; display: flex; align-items: center; justify-content: center; color: ${type === 'success' ? '#10b981' : '#3b82f6'};">
+        <div style="width: 40px; height: 40px; border-radius: 10px; background: ${accentBg}; display: flex; align-items: center; justify-content: center; color: ${accent};">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
             ${icon}
           </svg>
         </div>
         <div style="flex: 1;">
-          <div style="font-weight: 700; font-size: 14px; color: var(--text-primary); margin-bottom: 2px;">${emoji} ${notificationTypes[type]?.title || 'Notificación'}</div>
+          <div style="font-weight: 700; font-size: 14px; color: var(--text-primary); margin-bottom: 2px;">${title}</div>
           <div style="font-size: 13px; color: var(--text-secondary);">${message}</div>
         </div>
       `;
