@@ -554,6 +554,33 @@
       color: var(--primary-color);
     }
 
+    .confirm-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9000;
+    }
+
+    .confirm-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 22px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 25px 60px rgba(15, 23, 42, 0.35);
+      max-width: 420px;
+      width: 100%;
+    }
+
+    .confirm-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 18px;
+    }
+
     /* Responsive */
     @media (max-width: 1024px) {
       .stats-grid {
@@ -676,6 +703,28 @@
       </div>
     </div>
 
+    <div class="card" style="margin-bottom: 24px;">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">Flujos documentados</h3>
+          <p class="card-subtitle">Eventos que generan notificaciones y quién los recibe.</p>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="notification-preferences table-compact">
+          <thead>
+            <tr>
+              <th>Módulo</th>
+              <th>Evento</th>
+              <th>Roles notificados</th>
+              <th>Enlace / metadata</th>
+            </tr>
+          </thead>
+          <tbody id="notification-rules-table"></tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- Notifications Grid -->
     <div class="notifications-grid" id="notifications-grid">
       <!-- Notifications will be rendered here -->
@@ -716,6 +765,13 @@
   <script>
     let currentFilter = 'all';
     let allNotifications = [];
+    const notificationRules = [
+      { module: 'PlanSync', event: 'Cita confirmada', roles: 'Owner, Admin, Técnico asignado', metadata: 'metadata.projectId / metadata.threadId' },
+      { module: 'ProjectSync', event: 'Etapa finalizada', roles: 'Owner, Admin, Cliente', metadata: 'metadata.projectId → ViewSync' },
+      { module: 'ThreadSync', event: 'Nueva respuesta del cliente', roles: 'Owner, Admin, Técnico del thread', metadata: 'metadata.threadId → ThreadSync' },
+      { module: 'ClientSync', event: 'Seguimiento pendiente', roles: 'Owner, Admin', metadata: 'metadata.projectId cuando aplica' },
+      { module: 'TimeSync', event: 'Cuadrilla sin check-in', roles: 'Supervisores TimeSync', metadata: 'metadata.crewId' }
+    ];
 
     const notificationTypes = {
       success: {
@@ -968,13 +1024,14 @@
 
     // Clear All
     function clearAllNotifications() {
-      if (confirm('¿Estás seguro de que deseas eliminar todas las notificaciones?')) {
+      systemConfirm('¿Eliminar todas las notificaciones del historial?', { confirmText: 'Eliminar' }).then((confirmed) => {
+        if (!confirmed) return;
         NotifyManager.deleteAll();
         allNotifications = [];
         updateStats();
         renderNotifications();
         showToast('info', 'Todas las notificaciones han sido eliminadas');
-      }
+      });
     }
 
     // Format Time Ago
@@ -1051,15 +1108,62 @@
       }, 4000);
     }
 
-    // Keyboard shortcuts
+    function systemConfirm(message, { confirmText = 'Confirmar', cancelText = 'Cancelar' } = {}) {
+      return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'confirm-overlay';
+        overlay.innerHTML = `
+          <div class="confirm-card">
+            <p>${message}</p>
+            <div class="confirm-actions">
+              <button class="btn btn-secondary">${cancelText}</button>
+              <button class="btn btn-primary">${confirmText}</button>
+            </div>
+          </div>
+        `;
+        const [cancelBtn, confirmBtn] = overlay.querySelectorAll('button');
+        cancelBtn.addEventListener('click', () => {
+          overlay.remove();
+          resolve(false);
+        });
+        confirmBtn.addEventListener('click', () => {
+          overlay.remove();
+          resolve(true);
+        });
+        overlay.addEventListener('click', (event) => {
+          if (event.target === overlay) {
+            overlay.remove();
+            resolve(false);
+          }
+        });
+        document.body.appendChild(overlay);
+      });
+    }
+
+    function renderNotificationRules() {
+      const tbody = document.getElementById('notification-rules-table');
+      if (!tbody) return;
+      tbody.innerHTML = notificationRules.map(rule => `
+        <tr>
+          <td>${rule.module}</td>
+          <td>${rule.event}</td>
+          <td>${rule.roles}</td>
+          <td>${rule.metadata}</td>
+        </tr>
+      `).join('');
+    }
+
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         closeModal();
       }
     });
 
-    // Initialize on load
-    init();
+    document.addEventListener('DOMContentLoaded', () => {
+      NotifyManager.init();
+      init();
+      renderNotificationRules();
+    });
   </script>
 
   <style>

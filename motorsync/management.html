@@ -231,37 +231,19 @@
                 <p class="card-subtitle">Usuarios invitados que aún no han aceptado</p>
               </div>
             </div>
-            <div id="pending-invitations">
-              <div class="invite-item">
-                <div class="invite-info">
-                  <strong>pedro.garcia@email.com</strong>
-                  <small>Rol: Técnico • Invitado hace 2 días por Candelario Delgado</small>
-                </div>
-                <div class="action-buttons">
-                  <button class="btn btn-small btn-secondary" onclick="resendInvite('pedro.garcia@email.com')">↻ Reenviar</button>
-                  <button class="btn btn-small btn-danger" onclick="cancelInvite('pedro.garcia@email.com')">✕ Cancelar</button>
-                </div>
-              </div>
-              <div class="invite-item">
-                <div class="invite-info">
-                  <strong>sofia.ramirez@email.com</strong>
-                  <small>Rol: Admin • Invitado hace 5 días por Candelario Delgado</small>
-                </div>
-                <div class="action-buttons">
-                  <button class="btn btn-small btn-secondary" onclick="resendInvite('sofia.ramirez@email.com')">↻ Reenviar</button>
-                  <button class="btn btn-small btn-danger" onclick="cancelInvite('sofia.ramirez@email.com')">✕ Cancelar</button>
-                </div>
-              </div>
-              <div class="invite-item">
-                <div class="invite-info">
-                  <strong>miguel.torres@email.com</strong>
-                  <small>Rol: Técnico • Invitado hace 1 semana por María González</small>
-                </div>
-                <div class="action-buttons">
-                  <button class="btn btn-small btn-secondary" onclick="resendInvite('miguel.torres@email.com')">↻ Reenviar</button>
-                  <button class="btn btn-small btn-danger" onclick="cancelInvite('miguel.torres@email.com')">✕ Cancelar</button>
-                </div>
-              </div>
+            <div class="table-wrapper">
+              <table class="notification-preferences table-compact">
+                <thead>
+                  <tr>
+                    <th>Contacto</th>
+                    <th>Rol</th>
+                    <th>Invitado por</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="pending-invitations"></tbody>
+              </table>
             </div>
           </div>
 
@@ -344,18 +326,28 @@
 
   <!-- Invite User Modal -->
   <div id="invite-modal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title">Invitar Usuario</h3>
-        <button class="modal-close" onclick="closeInviteModal()">✕</button>
-      </div>
+    <div class="modal-card invite-modal-card">
       <form id="invite-form" onsubmit="sendInvite(event)">
+        <div class="modal-card-header">
+          <div>
+            <p class="modal-eyebrow">Gestión de acceso</p>
+            <h3>Nuevo usuario</h3>
+            <p class="modal-subtitle">Comparte acceso asignando rol y canal interno.</p>
+          </div>
+          <button class="modal-close" type="button" onclick="closeInviteModal()">×</button>
+        </div>
         <div class="modal-body">
-          <p class="modal-subtitle">Inicia invitación asignando rol y contacto.</p>
+          <div class="modal-hero">
+            <div class="modal-hero-icon">MS</div>
+            <div class="modal-hero-text">
+              <h4>MotorSync Core</h4>
+              <p>Las invitaciones activan acceso a Dashboard, PlanSync, ProjectSync y ThreadSync.</p>
+            </div>
+          </div>
           <div class="form-grid">
             <div class="form-group field">
               <label><span class="icon">✉️</span>Email del usuario</label>
-              <input type="email" id="invite-email" placeholder="usuario@ejemplo.com" required>
+              <input type="email" id="invite-email" placeholder="usuario@empresa.com" required>
             </div>
             <div class="form-group field">
               <label><span class="icon">👤</span>Nombre completo</label>
@@ -365,6 +357,7 @@
               <label><span class="icon">🛡️</span>Rol</label>
               <select id="invite-role" required>
                 <option value="">Selecciona un rol...</option>
+                <option value="owner">Owner</option>
                 <option value="admin">Admin</option>
                 <option value="tecnico-senior">Técnico Senior</option>
                 <option value="tecnico">Técnico</option>
@@ -386,13 +379,48 @@
         </div>
         <div class="modal-actions">
           <button type="button" class="btn btn-secondary" onclick="closeInviteModal()">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Enviar Invitación</button>
+          <button type="submit" class="btn btn-primary">Enviar invitación</button>
         </div>
       </form>
     </div>
   </div>
 
   <script>
+    const inviteRequests = [
+      { email: 'pedro.garcia@email.com', name: 'Pedro García', role: 'Técnico', invitedBy: 'Candelario Delgado', daysAgo: 2, status: 'Pendiente' },
+      { email: 'sofia.ramirez@email.com', name: 'Sofía Ramírez', role: 'Admin', invitedBy: 'Candelario Delgado', daysAgo: 5, status: 'Pendiente' },
+      { email: 'miguel.torres@email.com', name: 'Miguel Torres', role: 'Técnico', invitedBy: 'María González', daysAgo: 7, status: 'Venciendo' }
+    ];
+
+    function renderInvites() {
+      const tbody = document.getElementById('pending-invitations');
+      if (!tbody) return;
+      if (!inviteRequests.length) {
+        tbody.innerHTML = `<tr><td colspan="5" class="empty-row">Sin invitaciones activas.</td></tr>`;
+      } else {
+        tbody.innerHTML = inviteRequests.map((invite) => `
+          <tr>
+            <td>
+              <div style="display:flex;flex-direction:column;">
+                <strong>${invite.name}</strong>
+                <span style="font-size:12px;color:var(--text-secondary);">${invite.email}</span>
+              </div>
+            </td>
+            <td>${invite.role}</td>
+            <td>${invite.invitedBy}</td>
+            <td><span class="badge ${invite.status === 'Pendiente' ? 'badge-warning' : 'badge-info'}">${invite.status} · ${invite.daysAgo}d</span></td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-small btn-secondary" onclick="resendInvite('${invite.email}')">↻ Reenviar</button>
+                <button class="btn btn-small btn-danger" onclick="cancelInvite('${invite.email}')">✕ Cancelar</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+      document.getElementById('pending-invites').textContent = inviteRequests.length;
+    }
+
     // Modal functions
     function openInviteModal() {
       document.getElementById('invite-modal').classList.add('active');
@@ -408,39 +436,107 @@
       const email = document.getElementById('invite-email').value;
       const name = document.getElementById('invite-name').value;
       const role = document.getElementById('invite-role').value;
+      const invitedBy = 'CVE Admin';
       
-      // Simulate sending invitation
-      alert(`Invitación enviada a ${name} (${email}) con rol: ${role}`);
+      inviteRequests.unshift({
+        email,
+        name,
+        role,
+        invitedBy,
+        daysAgo: 0,
+        status: 'Pendiente'
+      });
+      
+      renderInvites();
       closeInviteModal();
-      
-      // Update pending invites count
-      const currentCount = parseInt(document.getElementById('pending-invites').textContent);
-      document.getElementById('pending-invites').textContent = currentCount + 1;
+      showToast('success', `Invitación enviada a ${name}.`);
     }
 
     function resendInvite(email) {
-      if (confirm(`¿Reenviar invitación a ${email}?`)) {
-        alert(`Invitación reenviada a ${email}`);
-      }
+      systemConfirm(`Reenviar invitación a ${email}?`).then((confirmed) => {
+        if (!confirmed) return;
+        showToast('info', `Invitación reenviada a ${email}.`);
+      });
     }
 
     function cancelInvite(email) {
-      if (confirm(`¿Cancelar invitación para ${email}?`)) {
-        alert(`Invitación cancelada para ${email}`);
-        // Update UI and count
-        const currentCount = parseInt(document.getElementById('pending-invites').textContent);
-        document.getElementById('pending-invites').textContent = Math.max(0, currentCount - 1);
-      }
+      systemConfirm(`¿Cancelar invitación para ${email}?`, { confirmText: 'Cancelar invitación' }).then((confirmed) => {
+        if (!confirmed) return;
+        const index = inviteRequests.findIndex(invite => invite.email === email);
+        if (index !== -1) {
+          inviteRequests.splice(index, 1);
+          renderInvites();
+          showToast('warning', `Se canceló la invitación de ${email}.`);
+        }
+      });
     }
 
-    // Close modal when clicking outside
+    // Toasts & confirm helpers
+    function showToast(type, message) {
+      const palette = {
+        success: '#10b981',
+        info: '#0f766e',
+        warning: '#d97706',
+        error: '#dc2626'
+      };
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        top: 24px;
+        right: 24px;
+        background: var(--bg-card);
+        border: 2px solid ${palette[type] || palette.info};
+        padding: 14px 18px;
+        border-radius: 12px;
+        font-weight: 600;
+        box-shadow: 0 18px 40px rgba(15,23,42,0.18);
+        z-index: 6000;
+      `;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-6px)';
+        setTimeout(() => toast.remove(), 200);
+      }, 2500);
+    }
+
+    function systemConfirm(message, { confirmText = 'Confirmar', cancelText = 'Cerrar' } = {}) {
+      return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'confirm-overlay';
+        overlay.innerHTML = `
+          <div class="confirm-card">
+            <p>${message}</p>
+            <div class="confirm-actions">
+              <button class="btn btn-secondary">${cancelText}</button>
+              <button class="btn btn-primary">${confirmText}</button>
+            </div>
+          </div>
+        `;
+        const [cancelBtn, confirmBtn] = overlay.querySelectorAll('button');
+        cancelBtn.addEventListener('click', () => {
+          overlay.remove();
+          resolve(false);
+        });
+        confirmBtn.addEventListener('click', () => {
+          overlay.remove();
+          resolve(true);
+        });
+        overlay.addEventListener('click', (ev) => {
+          if (ev.target === overlay) {
+            overlay.remove();
+            resolve(false);
+          }
+        });
+        document.body.appendChild(overlay);
+      });
+    }
+
     document.getElementById('invite-modal').addEventListener('click', function(e) {
-      if (e.target === this) {
-        closeInviteModal();
-      }
+      if (e.target === this) closeInviteModal();
     });
 
-    // Keyboard shortcut to open invite modal (Ctrl/Cmd + I)
     document.addEventListener('keydown', function(e) {
       if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
         e.preventDefault();
@@ -450,6 +546,8 @@
         closeInviteModal();
       }
     });
+
+    renderInvites();
   </script>
 </body>
 </html>

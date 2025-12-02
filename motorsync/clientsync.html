@@ -13,6 +13,7 @@
   <script src="js/data-clients.js?v=verdi2"></script>
   <script src="notifications-manager.js"></script>
   <link rel="stylesheet" href="css/metrics-cards.css?v=verdi2">
+  <link rel="stylesheet" href="css/clientsync.css?v=verdi2">
   <link rel="stylesheet" href="css/verdi-overrides.css?v=verdi2">
 </head>
 <body data-sidebar-active="clientsync">
@@ -87,203 +88,649 @@
         </div>
 
         <!-- Tabla de Clientes + Insights -->
-        <div class="grid grid-2" style="align-items: flex-start;">
-        <div class="analytics-card">
-          <div class="card-header">
-            <h2 class="card-title">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87m-3-12.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-              Lista de Clientes
-            </h2>
-            <div style="display: flex; gap: 12px;">
-              <button class="btn btn-secondary" onclick="alert('Exportar clientes')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
+        <div class="clientsync-panels">
+          <div class="card clients-table-card">
+            <div class="card-header">
+              <h2 class="card-title">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87m-3-12.13a4 4 0 0 1 0 7.75"></path>
                 </svg>
-                Exportar
-              </button>
-              <button class="btn btn-primary" onclick="alert('Agregar nuevo cliente')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                Nuevo Cliente
-              </button>
+                Lista de Clientes
+              </h2>
+              <div class="table-actions">
+                <button class="btn btn-secondary" onclick="exportClients()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  Exportar
+                </button>
+                <button class="btn btn-primary" onclick="openClientModal()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  Nuevo Cliente
+                </button>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table class="clients-table">
+                <thead>
+                  <tr>
+                    <th>Cliente</th>
+                    <th>Contacto</th>
+                    <th>Estado</th>
+                    <th>Proyectos</th>
+                    <th>Valor total</th>
+                    <th>Última actividad</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="clients-table-body">
+                  <tr>
+                    <td colspan="7" class="empty-row">Cargando clientes...</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
-
-          <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse;">
-              <thead>
-                <tr style="border-bottom: 2px solid var(--border-color); text-align: left;">
-                  <th style="padding: 12px; font-size: 13px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">Cliente</th>
-                  <th style="padding: 12px; font-size: 13px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">Contacto</th>
-                  <th style="padding: 12px; font-size: 13px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">Estado</th>
-                  <th style="padding: 12px; font-size: 13px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">Proyectos</th>
-                  <th style="padding: 12px; font-size: 13px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">Valor Total</th>
-                  <th style="padding: 12px; font-size: 13px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">Última Actividad</th>
-                  <th style="padding: 12px; font-size: 13px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr style="border-bottom: 1px solid var(--border-color);">
-                  <td style="padding: 16px;">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                      <div style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #02735E, #035951); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 16px;">J</div>
-                      <div>
-                        <div style="font-weight: 700; color: var(--text-primary);">Juan Pérez</div>
-                        <div style="font-size: 13px; color: var(--text-secondary);">Constructora Pérez S.A.</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td style="padding: 16px; font-size: 14px; color: var(--text-secondary);">
-                    <div>juan.perez@email.com</div>
-                    <div style="margin-top: 4px;">(555) 123-4567</div>
-                  </td>
-                  <td style="padding: 16px;">
-                    <span style="padding: 6px 12px; background: #d1fae5; color: #065f46; border-radius: 20px; font-size: 12px; font-weight: 600;">Activo</span>
-                  </td>
-                  <td style="padding: 16px; font-weight: 700; color: var(--text-primary);">5</td>
-                  <td style="padding: 16px; font-weight: 700; color: #02735E;">$125,000</td>
-                  <td style="padding: 16px; font-size: 14px; color: var(--text-secondary);">Hace 2 días</td>
-                  <td style="padding: 16px;">
-                    <div style="display: flex; gap: 8px;">
-                      <button class="btn" style="padding: 8px 12px; background: var(--bg-body);" onclick="alert('Ver cliente')">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                          <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                      </button>
-                      <button class="btn" style="padding: 8px 12px; background: var(--bg-body);" onclick="alert('Editar')">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                <tr style="border-bottom: 1px solid var(--border-color);">
-                  <td style="padding: 16px;">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                      <div style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #0f766e, #15a06a); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 16px;">M</div>
-                      <div>
-                        <div style="font-weight: 700; color: var(--text-primary);">María González</div>
-                        <div style="font-size: 13px; color: var(--text-secondary);">Edificios González</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td style="padding: 16px; font-size: 14px; color: var(--text-secondary);">
-                    <div>maria.g@empresa.com</div>
-                    <div style="margin-top: 4px;">(555) 234-5678</div>
-                  </td>
-                  <td style="padding: 16px;">
-                    <span style="padding: 6px 12px; background: #d1fae5; color: #065f46; border-radius: 20px; font-size: 12px; font-weight: 600;">Activo</span>
-                  </td>
-                  <td style="padding: 16px; font-weight: 700; color: var(--text-primary);">3</td>
-                  <td style="padding: 16px; font-weight: 700; color: #02735E;">$78,000</td>
-                  <td style="padding: 16px; font-size: 14px; color: var(--text-secondary);">Hace 3 días</td>
-                  <td style="padding: 16px;">
-                    <div style="display: flex; gap: 8px;">
-                      <button class="btn" style="padding: 8px 12px; background: var(--bg-body);" onclick="alert('Ver cliente')">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                          <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                      </button>
-                      <button class="btn" style="padding: 8px 12px; background: var(--bg-body);" onclick="alert('Editar')">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                <tr style="border-bottom: 1px solid var(--border-color);">
-                  <td style="padding: 16px;">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                      <div style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #10b981, #20c997); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 16px;">C</div>
-                      <div>
-                        <div style="font-weight: 700; color: var(--text-primary);">Carlos Ramírez</div>
-                        <div style="font-size: 13px; color: var(--text-secondary);">Inversiones CR</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td style="padding: 16px; font-size: 14px; color: var(--text-secondary);">
-                    <div>carlos.r@mail.com</div>
-                    <div style="margin-top: 4px;">(555) 345-6789</div>
-                  </td>
-                  <td style="padding: 16px;">
-                    <span style="padding: 6px 12px; background: #fef3c7; color: #92400e; border-radius: 20px; font-size: 12px; font-weight: 600;">Pendiente</span>
-                  </td>
-                  <td style="padding: 16px; font-weight: 700; color: var(--text-primary);">1</td>
-                  <td style="padding: 16px; font-weight: 700; color: #02735E;">$95,000</td>
-                  <td style="padding: 16px; font-size: 14px; color: var(--text-secondary);">Hace 1 semana</td>
-                  <td style="padding: 16px;">
-                    <div style="display: flex; gap: 8px;">
-                      <button class="btn" style="padding: 8px 12px; background: var(--bg-body);" onclick="alert('Ver cliente')">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                          <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                      </button>
-                      <button class="btn" style="padding: 8px 12px; background: var(--bg-body);" onclick="alert('Editar')">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="card clientsync-insights">
+            <div class="card-header">
+              <h2 class="card-title">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="M12 6v6l4 2"></path>
+                </svg>
+                Insights de Relación
+              </h2>
+            </div>
+            <div class="insight-list">
+              <article class="insight-card">
+                <h3>Clientes en riesgo</h3>
+                <p id="risk-insight-text">Calculando clientes en riesgo...</p>
+                <button class="btn btn-secondary" style="width: 100%;" onclick="openInsightsModal('risk')">Ver detalle</button>
+              </article>
+              <article class="insight-card">
+                <h3>Segmentos clave</h3>
+                <ul id="segment-distribution"></ul>
+              </article>
+              <article class="insight-card">
+                <h3>Siguiente acción recomendada</h3>
+                <p id="followup-summary">Preparando recomendaciones...</p>
+                <button class="btn btn-primary" style="width: 100%;" onclick="openInsightsModal('followup')">Planear seguimiento</button>
+              </article>
+            </div>
           </div>
-        </div>
-
-        <div class="analytics-card">
-          <div class="card-header">
-            <h2 class="card-title">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <path d="M12 6v6l4 2"></path>
-              </svg>
-              Insights de Relación
-            </h2>
-          </div>
-          <div style="display: flex; flex-direction: column; gap: 16px;">
-            <article style="padding: 16px; border: 1px solid var(--border-color); border-radius: 12px;">
-              <h3 style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">Clientes en Riesgo</h3>
-              <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">4 cuentas llevan más de 30 días sin actividad.</p>
-              <button class="btn btn-secondary" style="width: 100%;" onclick="alert('Abrir lista de clientes en riesgo')">Ver detalle</button>
-            </article>
-            <article style="padding: 16px; border: 1px solid var(--border-color); border-radius: 12px;">
-              <h3 style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">Segmentos Clave</h3>
-              <ul style="list-style: none; padding: 0; margin: 0; font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
-                <li><strong style="color: var(--text-primary);">Construcción Comercial</strong> · 38% de ingresos</li>
-                <li><strong style="color: var(--text-primary);">Property Management</strong> · 27% de ingresos</li>
-                <li><strong style="color: var(--text-primary);">Servicios Residenciales</strong> · 19% de ingresos</li>
-              </ul>
-            </article>
-            <article style="padding: 16px; border: 1px solid var(--border-color); border-radius: 12px;">
-              <h3 style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">Siguiente Acción Recomendada</h3>
-              <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">Programar llamadas de seguimiento con los 5 clientes de mayor pipeline esta semana.</p>
-              <button class="btn btn-primary" style="width: 100%;" onclick="alert('Abrir agenda de seguimiento')">Planear seguimiento</button>
-            </article>
-          </div>
-        </div>
         </div>
       </section>
     </main>
   </div>
 </div>
+
+<!-- Client Modal -->
+<div class="modal-overlay" id="client-modal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div>
+        <h3 id="client-modal-title">Nuevo Cliente</h3>
+        <p>Captura la información principal para registrar el contacto.</p>
+      </div>
+      <button class="modal-close" onclick="closeClientModal()" aria-label="Cerrar">×</button>
+    </div>
+    <form id="client-form">
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Nombre del cliente</label>
+            <input type="text" id="client-name" required>
+          </div>
+          <div class="form-group">
+            <label>Compañía / Proyecto</label>
+            <input type="text" id="client-company" placeholder="Nombre comercial">
+          </div>
+          <div class="form-group">
+            <label>Contacto principal</label>
+            <input type="text" id="client-contact" placeholder="Persona de contacto">
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="client-email" placeholder="correo@empresa.com">
+          </div>
+          <div class="form-group">
+            <label>Teléfono</label>
+            <input type="tel" id="client-phone" placeholder="+1 (555) 000-0000">
+          </div>
+          <div class="form-group">
+            <label>Segmento</label>
+            <select id="client-segment">
+              <option value="Residencial">Residencial</option>
+              <option value="Comercial">Comercial</option>
+              <option value="Industrial">Industrial</option>
+              <option value="Hospitality">Hospitality</option>
+              <option value="Servicios">Servicios</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Estatus</label>
+            <select id="client-status">
+              <option value="active">Activo</option>
+              <option value="pending">Pendiente</option>
+              <option value="inactive">Inactivo</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Valor estimado (USD)</label>
+            <input type="number" id="client-value" min="0" step="100" placeholder="0">
+          </div>
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label>Notas internas</label>
+            <textarea id="client-notes" rows="3" placeholder="Información relevante para el equipo"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeClientModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar cliente</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Client Details -->
+<div class="modal-overlay" id="client-details-modal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div>
+        <h3 id="client-details-name">Cliente</h3>
+        <p id="client-details-company"></p>
+      </div>
+      <button class="modal-close" onclick="closeClientDetails()" aria-label="Cerrar">×</button>
+    </div>
+    <div class="modal-body" id="client-details-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeClientDetails()">Cerrar</button>
+      <button class="btn btn-primary" onclick="editClientFromDetails()">Editar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Insights Modal -->
+<div class="modal-overlay" id="followup-modal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div>
+        <h3 id="followup-modal-title">Seguimiento de clientes</h3>
+        <p id="followup-modal-subtitle"></p>
+      </div>
+      <button class="modal-close" onclick="closeInsightsModal()" aria-label="Cerrar">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="followup-list" class="followup-list"></div>
+    </div>
+    <div class="modal-footer" id="followup-actions">
+      <button class="btn btn-secondary" onclick="closeInsightsModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const CLIENTS_KEY = 'clientsync_clients';
+  const statusLabels = { active: 'Activo', pending: 'Pendiente', inactive: 'Inactivo' };
+  let clients = [];
+  let editingClientId = null;
+  let currentInsightsMode = 'followup';
+  let insightsTargets = [];
+
+  document.addEventListener('DOMContentLoaded', () => {
+    clients = loadClients();
+    renderClients();
+    renderInsights();
+    const form = document.getElementById('client-form');
+    form.addEventListener('submit', handleClientForm);
+    document.getElementById('client-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'client-modal') closeClientModal();
+    });
+    document.getElementById('client-details-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'client-details-modal') closeClientDetails();
+    });
+    document.getElementById('followup-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'followup-modal') closeInsightsModal();
+    });
+  });
+
+  function loadClients() {
+    try {
+      const stored = JSON.parse(localStorage.getItem(CLIENTS_KEY) || 'null');
+      if (stored && Array.isArray(stored) && stored.length) {
+        return stored.map(ensureClientShape);
+      }
+    } catch (err) {
+      console.warn('No se pudieron cargar clientes', err);
+    }
+    const defaults = (window.ClientData && window.ClientData.load()) || [];
+    saveClients(defaults);
+    return defaults.map(ensureClientShape);
+  }
+
+  function saveClients(payload) {
+    const normalized = payload.map(ensureClientShape);
+    localStorage.setItem(CLIENTS_KEY, JSON.stringify(normalized));
+    clients = normalized;
+  }
+
+  function ensureClientShape(client) {
+    return {
+      id: client.id || generateClientId(),
+      name: client.name || 'Cliente sin nombre',
+      company: client.company || client.segment || '',
+      segment: client.segment || 'General',
+      status: client.status || 'pending',
+      value: Number(client.value) || 0,
+      email: client.email || '',
+      phone: client.phone || '',
+      contact: client.contact || '',
+      projects: client.projects || 0,
+      lastActivity: client.lastActivity || new Date().toISOString(),
+      notes: client.notes || ''
+    };
+  }
+
+  function renderClients() {
+    const tbody = document.getElementById('clients-table-body');
+    if (!tbody) return;
+    if (!clients.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-row">No hay clientes registrados.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = clients.map((client) => {
+      const initials = client.name.split(' ').slice(0, 2).map((p) => p[0] || '').join('').toUpperCase();
+      const color = client.color || pickColor(client.segment);
+      return `
+        <tr>
+          <td>
+            <div class="client-meta">
+              <div class="client-avatar" style="background: ${color};">${initials || 'CL'}</div>
+              <div>
+                <div style="font-weight: 700; color: var(--text-primary);">${client.name}</div>
+                <div style="color: var(--text-secondary); font-size: 12px;">${client.company || client.segment || ''}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div>${client.email || 'Sin email'}</div>
+            <div>${client.phone || 'Sin teléfono'}</div>
+          </td>
+          <td><span class="status-pill ${client.status}">${statusLabels[client.status] || client.status}</span></td>
+          <td style="font-weight: 700; color: var(--text-primary);">${client.projects || 0}</td>
+          <td style="font-weight: 700; color: var(--primary-color);">${formatCurrency(client.value)}</td>
+          <td>${formatRelativeDate(client.lastActivity)}</td>
+          <td>
+            <div class="client-actions">
+              <button class="client-action" title="Ver cliente" onclick="openClientDetails('${client.id}')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+              <button class="client-action" title="Editar" onclick="openClientModal('${client.id}')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function renderInsights() {
+    const riskClients = clients.filter((c) => c.status !== 'active');
+    const riskText = riskClients.length
+      ? `${riskClients.length} cliente(s) requieren seguimiento inmediato.`
+      : 'Todos los clientes están en seguimiento activo.';
+    const riskEl = document.getElementById('risk-insight-text');
+    if (riskEl) riskEl.textContent = riskText;
+
+    const segments = clients.reduce((acc, client) => {
+      const key = client.segment || 'General';
+      acc[key] = (acc[key] || 0) + (Number(client.value) || 0);
+      return acc;
+    }, {});
+    const segmentEl = document.getElementById('segment-distribution');
+    if (segmentEl) {
+      const top = Object.entries(segments)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3);
+      segmentEl.innerHTML = top.length
+        ? top.map(([segment, total]) => `<li><strong style="color: var(--text-primary);">${segment}</strong> · ${formatCurrency(total)}</li>`).join('')
+        : '<li>Sin datos suficientes.</li>';
+    }
+    const followup = getFollowupTargets();
+    const followupEl = document.getElementById('followup-summary');
+    if (followupEl) {
+      followupEl.textContent = followup.length
+        ? `${followup.length} clientes recomendados para llamadas esta semana.`
+        : 'Sin clientes pendientes prioritarios.';
+    }
+  }
+
+  function handleClientForm(event) {
+    event.preventDefault();
+    const formData = {
+      name: document.getElementById('client-name').value.trim(),
+      company: document.getElementById('client-company').value.trim(),
+      contact: document.getElementById('client-contact').value.trim(),
+      email: document.getElementById('client-email').value.trim(),
+      phone: document.getElementById('client-phone').value.trim(),
+      segment: document.getElementById('client-segment').value,
+      status: document.getElementById('client-status').value,
+      value: Number(document.getElementById('client-value').value) || 0,
+      notes: document.getElementById('client-notes').value.trim(),
+      lastActivity: new Date().toISOString()
+    };
+    if (!formData.name) {
+      showClientToast('warning', 'Por favor ingresa el nombre del cliente.');
+      return;
+    }
+    if (editingClientId) {
+      const index = clients.findIndex((c) => c.id === editingClientId);
+      if (index >= 0) {
+        clients[index] = ensureClientShape({ ...clients[index], ...formData });
+      }
+      showClientToast('success', 'Cliente actualizado correctamente.');
+    } else {
+      clients.push(ensureClientShape({ id: generateClientId(), ...formData }));
+      showClientToast('success', 'Cliente agregado correctamente.');
+    }
+    saveClients(clients);
+    renderClients();
+    renderInsights();
+    closeClientModal();
+  }
+
+  function openClientModal(id) {
+    editingClientId = id || null;
+    const modal = document.getElementById('client-modal');
+    if (!modal) return;
+    const title = document.getElementById('client-modal-title');
+    title.textContent = editingClientId ? 'Editar cliente' : 'Nuevo cliente';
+    const form = document.getElementById('client-form');
+    if (!editingClientId && form) {
+      form.reset();
+      document.getElementById('client-status').value = 'active';
+      document.getElementById('client-segment').value = 'Residencial';
+    }
+    const client = clients.find((c) => c.id === editingClientId) || {};
+    document.getElementById('client-name').value = client.name || '';
+    document.getElementById('client-company').value = client.company || '';
+    document.getElementById('client-contact').value = client.contact || '';
+    document.getElementById('client-email').value = client.email || '';
+    document.getElementById('client-phone').value = client.phone || '';
+    document.getElementById('client-segment').value = client.segment || 'Residencial';
+    document.getElementById('client-status').value = client.status || 'active';
+    document.getElementById('client-value').value = client.value || '';
+    document.getElementById('client-notes').value = client.notes || '';
+    modal.classList.add('open');
+  }
+
+  function closeClientModal() {
+    const modal = document.getElementById('client-modal');
+    if (!modal) return;
+    modal.classList.remove('open');
+    editingClientId = null;
+    document.getElementById('client-form').reset();
+  }
+
+  function openClientDetails(id) {
+    const client = clients.find((c) => c.id === id);
+    if (!client) {
+      showClientToast('warning', 'No se encontró el cliente.');
+      return;
+    }
+    const modal = document.getElementById('client-details-modal');
+    document.getElementById('client-details-name').textContent = client.name;
+    document.getElementById('client-details-company').textContent = client.company || client.segment || 'Sin compañía asignada';
+    const body = document.getElementById('client-details-body');
+    body.innerHTML = `
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+        <div><strong>Segmento</strong><p>${client.segment}</p></div>
+        <div><strong>Estatus</strong><p>${statusLabels[client.status] || client.status}</p></div>
+        <div><strong>Valor estimado</strong><p>${formatCurrency(client.value)}</p></div>
+        <div><strong>Contacto</strong><p>${client.contact || 'No especificado'}</p></div>
+        <div><strong>Email</strong><p>${client.email || 'Sin email'}</p></div>
+        <div><strong>Teléfono</strong><p>${client.phone || 'Sin teléfono'}</p></div>
+      </div>
+      <div style="margin-top: 12px;">
+        <strong>Notas</strong>
+        <p>${client.notes || 'Sin notas registradas.'}</p>
+      </div>
+    `;
+    modal.dataset.activeClient = client.id;
+    modal.classList.add('open');
+  }
+
+  function closeClientDetails() {
+    const modal = document.getElementById('client-details-modal');
+    if (!modal) return;
+    modal.classList.remove('open');
+    modal.dataset.activeClient = '';
+  }
+
+  function editClientFromDetails() {
+    const modal = document.getElementById('client-details-modal');
+    const clientId = modal.dataset.activeClient;
+    closeClientDetails();
+    openClientModal(clientId);
+  }
+
+  function getFollowupTargets(limit = 5) {
+    return clients
+      .filter((client) => client.status !== 'active')
+      .sort((a, b) => (b.value || 0) - (a.value || 0))
+      .slice(0, limit);
+  }
+
+  function pickColor(segment) {
+    const palette = ['#02735E', '#0f766e', '#10b981', '#14b8a6', '#8b5cf6'];
+    const index = Math.abs(segment?.charCodeAt(0) || 0) % palette.length;
+    return palette[index];
+  }
+
+  function formatCurrency(value) {
+    return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'USD' }).format(value || 0);
+  }
+
+  function formatRelativeDate(date) {
+    if (!date) return 'Sin actividad';
+    const target = new Date(date);
+    const diff = Date.now() - target.getTime();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    if (days < 1) return 'Hoy';
+    if (days === 1) return 'Hace 1 día';
+    if (days < 7) return `Hace ${days} días`;
+    return target.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  function openInsightsModal(mode) {
+    currentInsightsMode = mode;
+    insightsTargets = mode === 'risk'
+      ? clients.filter((client) => client.status !== 'active')
+      : getFollowupTargets(6);
+    const modal = document.getElementById('followup-modal');
+    document.getElementById('followup-modal-title').textContent = mode === 'risk' ? 'Clientes en riesgo' : 'Plan de seguimiento';
+    document.getElementById('followup-modal-subtitle').textContent = mode === 'risk'
+      ? 'Clientes con poca actividad reciente'
+      : 'Prioriza las cuentas con mayor valor pendiente';
+    const list = document.getElementById('followup-list');
+    if (!insightsTargets.length) {
+      list.innerHTML = '<div class="empty-row">No hay clientes en esta categoría.</div>';
+    } else {
+      list.innerHTML = insightsTargets.map((client) => `
+        <div class="followup-item">
+          <div>
+            <strong>${client.name}</strong>
+            <p>${client.company || client.segment}</p>
+          </div>
+          <div class="followup-actions">
+            <span class="status-pill ${client.status}">${statusLabels[client.status] || client.status}</span>
+            <button class="btn btn-secondary" onclick="openClientDetails('${client.id}')">Ver</button>
+          </div>
+        </div>
+      `).join('');
+    }
+    const actions = document.getElementById('followup-actions');
+    actions.innerHTML = `<button class="btn btn-secondary" onclick="closeInsightsModal()">Cerrar</button>`;
+    if (mode !== 'risk' && insightsTargets.length) {
+      actions.innerHTML += `
+        <button class="btn btn-primary" onclick="bulkFollowup('thread')">Crear thread</button>
+        <button class="btn btn-outline" onclick="bulkFollowup('plan')">Agendar en PlanSync</button>
+      `;
+    }
+    modal.classList.add('open');
+  }
+
+  function closeInsightsModal() {
+    const modal = document.getElementById('followup-modal');
+    if (!modal) return;
+    modal.classList.remove('open');
+    insightsTargets = [];
+  }
+
+  function bulkFollowup(target) {
+    if (!insightsTargets.length) {
+      showClientToast('info', 'Selecciona clientes en Insights antes de continuar.');
+      return;
+    }
+    const payload = {
+      source: 'clientsync',
+      mode: currentInsightsMode,
+      target,
+      createdAt: Date.now(),
+      clients: insightsTargets.map(serializeClientForTransfer)
+    };
+    localStorage.setItem('clientsync_followup', JSON.stringify(payload));
+    showClientToast('info', target === 'thread' ? 'Abriendo ThreadSync...' : 'Abriendo PlanSync...');
+    setTimeout(() => {
+      window.location.href = target === 'thread'
+        ? 'threadsync-list.html?action=new&source=clientsync'
+        : 'plansync.html?action=new&source=clientsync';
+    }, 300);
+  }
+
+  function goToThreadSync(clientId) {
+    const client = clients.find((c) => c.id === clientId);
+    if (!client) return;
+    const payload = {
+      source: 'clientsync',
+      target: 'thread',
+      createdAt: Date.now(),
+      clients: [serializeClientForTransfer(client)]
+    };
+    localStorage.setItem('clientsync_followup', JSON.stringify(payload));
+    showClientToast('info', 'Abriendo ThreadSync...');
+    setTimeout(() => {
+      window.location.href = 'threadsync-list.html?action=new&source=clientsync';
+    }, 300);
+  }
+
+  function exportClients() {
+    if (!clients.length) {
+      showClientToast('info', 'No hay clientes para exportar.');
+      return;
+    }
+    const headers = ['ID', 'Nombre', 'Compañía', 'Contacto', 'Email', 'Teléfono', 'Segmento', 'Estado', 'Valor', 'Última actividad'];
+    const rows = clients.map((c) => [
+      c.id,
+      c.name,
+      c.company || '',
+      c.contact || '',
+      c.email || '',
+      c.phone || '',
+      c.segment,
+      statusLabels[c.status] || c.status,
+      c.value,
+      new Date(c.lastActivity).toLocaleDateString()
+    ]);
+    const csv = [headers.join(','), ...rows.map((r) => r.map((v) => `"${String(v || '').replace(/"/g, '""')}"`).join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `clientsync_${Date.now()}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    showClientToast('success', 'Exportación generada correctamente.');
+  }
+
+  function showClientToast(type, message) {
+    const palette = {
+      success: '#10b981',
+      info: '#0f766e',
+      warning: '#d97706',
+      error: '#dc2626'
+    };
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      min-width: 260px;
+      background: var(--bg-card);
+      border-radius: 14px;
+      border: 2px solid ${palette[type] || palette.info};
+      padding: 14px 18px;
+      box-shadow: 0 18px 40px rgba(15,23,42,0.2);
+      z-index: 7000;
+      font-weight: 600;
+      color: var(--text-primary);
+    `;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(-10px)';
+      setTimeout(() => toast.remove(), 200);
+    }, 3000);
+  }
+
+  function serializeClientForTransfer(client) {
+    return {
+      id: client.id,
+      name: client.name,
+      company: client.company || '',
+      contact: client.contact || '',
+      email: client.email || '',
+      phone: client.phone || '',
+      segment: client.segment || '',
+      status: client.status || 'pending',
+      value: client.value || 0,
+      notes: client.notes || '',
+      lastActivity: client.lastActivity || ''
+    };
+  }
+
+  function generateClientId() {
+    return `CLI-${Date.now()}`;
+  }
+
+  window.openClientModal = openClientModal;
+  window.openClientDetails = openClientDetails;
+  window.closeClientModal = closeClientModal;
+  window.closeClientDetails = closeClientDetails;
+  window.openInsightsModal = openInsightsModal;
+  window.closeInsightsModal = closeInsightsModal;
+  window.bulkFollowup = bulkFollowup;
+  window.goToThreadSync = goToThreadSync;
+  window.exportClients = exportClients;
+  window.editClientFromDetails = editClientFromDetails;
+})();
+</script>
 </body>
 </html>

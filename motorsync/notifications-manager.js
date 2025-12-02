@@ -77,7 +77,7 @@ const NotifyManager = {
    * @param {Object} [config.metadata] - Datos adicionales (proyecto_id, user_id, etc.)
    * @returns {Object} Notificación creada
    */
-  create({ type, title, message, module, link = null, metadata = {} }) {
+  create({ type, title, message, module, link = null, metadata = {}, projectId, threadId, clientId }) {
     // Validar tipo
     if (!Object.values(this.TYPES).includes(type)) {
       console.error(`Tipo de notificación inválido: ${type}`);
@@ -105,6 +105,19 @@ const NotifyManager = {
     }
 
     // Crear notificación
+    const normalizedMetadata = { ...metadata };
+    if (projectId && !normalizedMetadata.projectId) normalizedMetadata.projectId = projectId;
+    if (threadId && !normalizedMetadata.threadId) normalizedMetadata.threadId = threadId;
+    if (clientId && !normalizedMetadata.clientId) normalizedMetadata.clientId = clientId;
+
+    if (!link && module === 'projectsync' && !normalizedMetadata.projectId) {
+      console.warn('⚠️ Notificación de proyectos sin projectId. Provide metadata.projectId para enlazar con ViewSync.');
+    }
+
+    if (!link && module === 'threadsync' && !normalizedMetadata.threadId) {
+      console.warn('⚠️ Notificación de threads sin threadId. Provide metadata.threadId para enlazar con ThreadSync.');
+    }
+
     const notification = {
       id: this.generateId(),
       type,
@@ -114,7 +127,7 @@ const NotifyManager = {
       moduleName: moduleData.name,
       moduleColor: moduleData.color,
       link,
-      metadata,
+      metadata: normalizedMetadata,
       timestamp: new Date().toISOString(),
       read: false,
       createdAt: Date.now()

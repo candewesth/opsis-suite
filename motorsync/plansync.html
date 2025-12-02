@@ -38,54 +38,55 @@
     <main id="main">
       <section class="page active">
         <!-- Header -->
-        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-left: 4px solid var(--primary-color); border-radius: 16px; padding: 20px 24px; margin-bottom: 24px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <div>
-              <p style="font-size: 11px; color: #047857; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 6px;">Gestión de Agenda</p>
-              <h2 style="font-size: 28px; font-weight: 800; color: #065f46; margin: 0;">PlanSync</h2>
-            </div>
-            <div style="display: flex; gap: 12px;">
-              <button class="btn btn-secondary" onclick="refreshAgendaViews(this)" style="border: 1px solid #10b981; color: #10b981;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="23 4 23 10 17 10"></polyline>
-                  <polyline points="1 20 1 14 7 14"></polyline>
-                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                </svg>
-                Actualizar
-              </button>
-              <button class="btn btn-primary" onclick="openNewAppointmentModal()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                Nueva Cita
-              </button>
-            </div>
+        <div class="plansync-hero">
+          <div>
+            <p class="hero-eyebrow">Gestión de Agenda</p>
+            <h2>PlanSync</h2>
+            <p>Coordina citas, rutas y disponibilidad operativa en un solo panel.</p>
+        </div>
+        <div style="display: flex; gap: 12px;">
+          <button class="btn btn-outline" onclick="refreshAgendaViews(this)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <polyline points="1 20 1 14 7 14"></polyline>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+              </svg>
+              Actualizar
+            </button>
+            <button class="btn btn-primary" onclick="openNewAppointmentModal()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Nueva Cita
+            </button>
           </div>
         </div>
+
+        <div id="clientsync-followup-panel" class="followup-panel hidden"></div>
 
         <!-- Agenda Panel -->
         <div class="projectsync-panel active" data-projectsync-panel="agenda" style="display: block;">
           <!-- Header con búsqueda y filtros -->
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 16px;">
-            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-              <div style="position: relative;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%);">
+          <div class="plansync-toolbar">
+            <div class="controls">
+              <div class="plansync-search">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
                   <circle cx="11" cy="11" r="8"></circle>
                   <path d="m21 21-4.35-4.35"></path>
                 </svg>
                 <input 
                   type="text" 
                   id="agendaSearchInput" 
+                  class="plansync-input"
                   placeholder="Buscar citas..." 
-                  style="padding: 10px 12px 10px 40px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 13px; width: 220px;"
                   onkeyup="filterAgendaAppointments()"
                 />
               </div>
-              <select id="agendaFilterTechnician" onchange="filterAgendaAppointments()" style="padding: 10px 14px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 13px;">
+              <select id="agendaFilterTechnician" class="plansync-select" onchange="filterAgendaAppointments()">
                 <option value="">Todos los técnicos</option>
               </select>
-              <select id="agendaFilterStatus" onchange="filterAgendaAppointments()" style="padding: 10px 14px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 13px;">
+              <select id="agendaFilterStatus" class="plansync-select" onchange="filterAgendaAppointments()">
                 <option value="">Todos los estados</option>
                 <option value="pending">● Pendientes</option>
                 <option value="confirmed">● Confirmadas</option>
@@ -93,7 +94,7 @@
                 <option value="cancelled">● Canceladas</option>
               </select>
             </div>
-            <div style="display: flex; gap: 8px;">
+            <div class="actions">
               <button class="btn btn-secondary" onclick="openAgendaSettingsModal()" title="Configurar Agenda">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <circle cx="12" cy="12" r="3"></circle>
@@ -113,7 +114,7 @@
           </div>
 
           <!-- KPIs dinámicos -->
-          <div class="grid grid-4 kpi-grid">
+          <div class="grid grid-4 kpi-grid plansync-kpis">
             <div class="stat-card" style="cursor: pointer;" onclick="filterByKPI('today')">
               <div class="stat-label">Hoy</div>
               <div class="stat-value" id="agenda-today-count">0</div>
@@ -589,15 +590,17 @@
               <!-- Types Panel -->
               <div class="settings-panel active" data-settings-panel="types">
                 <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">
-                  Define los tipos de cita disponibles para tu empresa. Estos aparecerán en el selector al crear una cita.
+                  Define los tipos de cita disponibles para tu empresa. Arrastra para reordenarlos, edita cualquier dato y usa la librería de iconos SVG para mantener la identidad Verdi + Aire.
                 </p>
                 <div id="appointment-types-list" style="max-height: 300px; overflow-y: auto;">
                   <!-- Types list renders here -->
                 </div>
                 <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
-                  <div style="display: flex; gap: 12px;">
-                    <input type="text" id="new-type-icon" placeholder="Emoji" style="width: 60px; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; text-align: center; font-size: 18px;">
-                    <input type="text" id="new-type-name" placeholder="Nombre del tipo de cita" style="flex: 1; padding: 10px 14px; border: 2px solid #e5e7eb; border-radius: 8px;">
+                  <input type="hidden" id="new-type-icon" value="consultation">
+                  <div id="new-type-icon-picker"></div>
+                  <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px;">
+                    <input type="text" id="new-type-name" placeholder="Nombre del tipo de cita" style="flex: 1; min-width: 200px; padding: 10px 14px; border: 2px solid #e5e7eb; border-radius: 8px;">
+                    <input type="color" id="new-type-color" value="#02735E" style="width: 60px; height: 44px; border: none; border-radius: 8px; cursor: pointer;">
                     <button class="btn-save" style="padding: 10px 20px;" onclick="addAppointmentType()">+ Agregar</button>
                   </div>
                 </div>
@@ -655,30 +658,74 @@
       window.location.href = `viewsync.html?id=${projectId}`;
     }
     
-    // Show success message
-    function showSuccessMessage(message) {
-      const alert = document.createElement('div');
-      alert.style.cssText = `
+    function showToast(type, message) {
+      const palette = {
+        success: '#10b981',
+        info: '#0f766e',
+        warning: '#d97706',
+        error: '#dc2626'
+      };
+      const toast = document.createElement('div');
+      toast.style.cssText = `
         position: fixed;
         top: 80px;
         right: 24px;
-        background: linear-gradient(135deg, #d1fae5, #a7f3d0);
-        border: 2px solid #10b981;
-        color: #065f46;
-        padding: 16px 24px;
-        border-radius: 12px;
+        background: var(--bg-card);
+        border: 2px solid ${palette[type] || palette.info};
+        color: var(--text-primary);
+        padding: 16px 22px;
+        border-radius: 14px;
         font-weight: 600;
-        box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.25);
         z-index: 10000;
         animation: slideIn 0.3s ease;
       `;
-      alert.textContent = message;
-      document.body.appendChild(alert);
-      
+      toast.textContent = message;
+      document.body.appendChild(toast);
       setTimeout(() => {
-        alert.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => alert.remove(), 300);
-      }, 4000);
+        toast.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    function showSuccessMessage(message) {
+      showToast('success', message);
+    }
+
+    function systemAlert(message, type = 'info') {
+      showToast(type, message);
+    }
+
+    function systemConfirm(message, { confirmText = 'Confirmar', cancelText = 'Cancelar', type = 'warning' } = {}) {
+      return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'confirm-overlay';
+        overlay.innerHTML = `
+          <div class="confirm-card">
+            <p>${message}</p>
+            <div class="confirm-actions">
+              <button class="btn btn-secondary">${cancelText}</button>
+              <button class="btn btn-primary">${confirmText}</button>
+            </div>
+          </div>
+        `;
+        const [cancelBtn, confirmBtn] = overlay.querySelectorAll('button');
+        cancelBtn.addEventListener('click', () => {
+          overlay.remove();
+          resolve(false);
+        });
+        confirmBtn.addEventListener('click', () => {
+          overlay.remove();
+          resolve(true);
+        });
+        overlay.addEventListener('click', (event) => {
+          if (event.target === overlay) {
+            overlay.remove();
+            resolve(false);
+          }
+        });
+        document.body.appendChild(overlay);
+      });
     }
 
     // Refresh Projects Function
@@ -718,6 +765,7 @@
       
       // Render projects on load first
       renderProjectsTable();
+      renderNewTypeIconPicker();
       
       if (action === 'new' && (source === 'thread' || source === 'project')) {
         console.log('✅ Detected appointment creation from:', source);
@@ -741,7 +789,7 @@
               
               if (!modal) {
                 console.error('❌ CRITICAL: Modal element not found in DOM!');
-                alert('Error: Modal no encontrado. Por favor reporta este error.');
+                systemAlert('Error: Modal no encontrado. Por favor reporta este error.', 'error');
                 return;
               }
               
@@ -856,6 +904,7 @@
       
       // Initialize counters
       updateFilterCounters();
+      handleClientSyncFollowup();
     });
 
     // Map initialization
@@ -1389,21 +1438,41 @@
       other: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>'
     };
 
+    const ICON_LIBRARY = [
+      { key: 'consultation', label: 'Consulta', emoji: '📋', svg: AGENDA_SVG_ICONS.consultation, color: '#6366f1' },
+      { key: 'inspection', label: 'Inspección', emoji: '🔍', svg: AGENDA_SVG_ICONS.inspection, color: '#02735E' },
+      { key: 'installation', label: 'Instalación', emoji: '🛠️', svg: AGENDA_SVG_ICONS.installation, color: '#f59e0b' },
+      { key: 'maintenance', label: 'Mantenimiento', emoji: '⚙️', svg: AGENDA_SVG_ICONS.maintenance, color: '#10b981' },
+      { key: 'repair', label: 'Reparación', emoji: '🔧', svg: AGENDA_SVG_ICONS.repair, color: '#ef4444' },
+      { key: 'delivery', label: 'Entrega', emoji: '🚚', svg: AGENDA_SVG_ICONS.delivery, color: '#8b5cf6' },
+      { key: 'review', label: 'Revisión', emoji: '📝', svg: AGENDA_SVG_ICONS.review, color: '#06b6d4' },
+      { key: 'meeting', label: 'Reunión', emoji: '👥', svg: AGENDA_SVG_ICONS.meeting, color: '#ec4899' },
+      { key: 'training', label: 'Capacitación', emoji: '🎓', svg: AGENDA_SVG_ICONS.training, color: '#84cc16' },
+      { key: 'quote', label: 'Cotización', emoji: '💵', svg: AGENDA_SVG_ICONS.quote, color: '#14b8a6' },
+      { key: 'followup', label: 'Seguimiento', emoji: '📞', svg: AGENDA_SVG_ICONS.followup, color: '#f97316' },
+      { key: 'other', label: 'Otro', emoji: '🔹', svg: AGENDA_SVG_ICONS.other, color: '#64748b' }
+    ];
+
+    const ICON_LIBRARY_MAP = ICON_LIBRARY.reduce((acc, icon) => {
+      acc[icon.key] = icon;
+      return acc;
+    }, {});
+
     // Default configuration (can be customized per company)
     const DEFAULT_AGENDA_CONFIG = {
       appointmentTypes: [
-        { id: 'consultation', icon: 'consultation', name: 'Consulta', color: '#6366f1' },
-        { id: 'inspection', icon: 'inspection', name: 'Inspección', color: '#02735E' },
-        { id: 'installation', icon: 'installation', name: 'Instalación', color: '#f59e0b' },
-        { id: 'maintenance', icon: 'maintenance', name: 'Mantenimiento', color: '#10b981' },
-        { id: 'repair', icon: 'repair', name: 'Reparación', color: '#ef4444' },
-        { id: 'delivery', icon: 'delivery', name: 'Entrega', color: '#8b5cf6' },
-        { id: 'review', icon: 'review', name: 'Revisión', color: '#06b6d4' },
-        { id: 'meeting', icon: 'meeting', name: 'Reunión', color: '#ec4899' },
-        { id: 'training', icon: 'training', name: 'Capacitación', color: '#84cc16' },
-        { id: 'quote', icon: 'quote', name: 'Cotización', color: '#14b8a6' },
-        { id: 'followup', icon: 'followup', name: 'Seguimiento', color: '#f97316' },
-        { id: 'other', icon: 'other', name: 'Otro', color: '#64748b' }
+        { id: 'consultation', iconKey: 'consultation', icon: '📋', name: 'Consulta', color: '#6366f1' },
+        { id: 'inspection', iconKey: 'inspection', icon: '🔍', name: 'Inspección', color: '#02735E' },
+        { id: 'installation', iconKey: 'installation', icon: '🛠️', name: 'Instalación', color: '#f59e0b' },
+        { id: 'maintenance', iconKey: 'maintenance', icon: '⚙️', name: 'Mantenimiento', color: '#10b981' },
+        { id: 'repair', iconKey: 'repair', icon: '🔧', name: 'Reparación', color: '#ef4444' },
+        { id: 'delivery', iconKey: 'delivery', icon: '🚚', name: 'Entrega', color: '#8b5cf6' },
+        { id: 'review', iconKey: 'review', icon: '📝', name: 'Revisión', color: '#06b6d4' },
+        { id: 'meeting', iconKey: 'meeting', icon: '👥', name: 'Reunión', color: '#ec4899' },
+        { id: 'training', iconKey: 'training', icon: '🎓', name: 'Capacitación', color: '#84cc16' },
+        { id: 'quote', iconKey: 'quote', icon: '💵', name: 'Cotización', color: '#14b8a6' },
+        { id: 'followup', iconKey: 'followup', icon: '📞', name: 'Seguimiento', color: '#f97316' },
+        { id: 'other', iconKey: 'other', icon: '🔹', name: 'Otro', color: '#64748b' }
       ],
       teamMembers: [
         { id: 'member-1', name: 'Sin asignar', role: '', color: '#94a3b8' }
@@ -1421,19 +1490,72 @@
       ]
     };
 
+    function getIconData(iconKey) {
+      return ICON_LIBRARY_MAP[iconKey] || ICON_LIBRARY_MAP.other;
+    }
+
+    function buildIconPickerHTML(inputId, selectedKey) {
+      return `
+        <div class="icon-picker" data-input="${inputId}">
+          ${ICON_LIBRARY.map(icon => `
+            <button type="button" class="icon-option ${selectedKey === icon.key ? 'active' : ''}" data-icon="${icon.key}" onclick="selectTypeIcon('${inputId}', '${icon.key}')">
+              ${icon.svg}
+              <span>${icon.label}</span>
+            </button>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderNewTypeIconPicker() {
+      const picker = document.getElementById('new-type-icon-picker');
+      const input = document.getElementById('new-type-icon');
+      if (picker && input) {
+        picker.innerHTML = buildIconPickerHTML('new-type-icon', input.value || 'consultation');
+      }
+    }
+
+    function selectTypeIcon(inputId, iconKey) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      input.value = iconKey;
+      const picker = document.querySelector(`.icon-picker[data-input="${inputId}"]`);
+      if (picker) {
+        picker.querySelectorAll('.icon-option').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.icon === iconKey);
+        });
+      }
+    }
+
+    function normalizeAgendaConfig(config) {
+      const normalized = { ...config };
+      normalized.appointmentTypes = (normalized.appointmentTypes || []).map((type) => {
+        const next = { ...type };
+        if (!next.iconKey) {
+          const guess = ICON_LIBRARY_MAP[next.id] || ICON_LIBRARY.find(icon => (next.name || '').toLowerCase().includes(icon.key));
+          next.iconKey = guess ? guess.key : 'other';
+        }
+        const iconData = getIconData(next.iconKey);
+        next.icon = next.icon || iconData.emoji;
+        next.color = next.color || iconData.color;
+        return next;
+      });
+      return normalized;
+    }
+
     // Load agenda configuration
     function loadAgendaConfig() {
       const stored = localStorage.getItem('agenda_config');
       if (stored) {
         try {
-          return JSON.parse(stored);
+            return normalizeAgendaConfig(JSON.parse(stored));
         } catch (e) {
-          return DEFAULT_AGENDA_CONFIG;
+          return { ...DEFAULT_AGENDA_CONFIG };
         }
       }
       // Initialize with defaults if not exists
       localStorage.setItem('agenda_config', JSON.stringify(DEFAULT_AGENDA_CONFIG));
-      return DEFAULT_AGENDA_CONFIG;
+      return { ...DEFAULT_AGENDA_CONFIG };
     }
 
     // Save agenda configuration
@@ -1449,9 +1571,11 @@
       const typeSelects = document.querySelectorAll('#apt-type, #edit-apt-type');
       typeSelects.forEach(select => {
         if (select) {
-          select.innerHTML = config.appointmentTypes.map(type => 
-            `<option value="${type.id}">${type.icon} ${type.name}</option>`
-          ).join('');
+          select.innerHTML = config.appointmentTypes.map(type => {
+            const iconData = getIconData(type.iconKey || type.id);
+            const iconLabel = type.icon || iconData.emoji;
+            return `<option value="${type.id}">${iconLabel} ${type.name}</option>`;
+          }).join('');
         }
       });
       
@@ -1498,27 +1622,69 @@
       document.querySelector(`[data-settings-panel="${tab}"]`).style.display = 'block';
     }
 
+    let editingAppointmentTypeId = null;
+    let draggingTypeId = null;
+
     function renderSettingsLists() {
       const config = loadAgendaConfig();
       
       // Render Types
       const typesContainer = document.getElementById('appointment-types-list');
       if (typesContainer) {
-        typesContainer.innerHTML = config.appointmentTypes.map(type => `
-          <div class="settings-item" data-id="${type.id}">
-            <div class="settings-item-info">
-              <div class="settings-item-icon">${type.icon}</div>
-              <div>
-                <strong style="color: var(--text-primary);">${type.name}</strong>
-                <p style="font-size: 11px; color: var(--text-secondary);">ID: ${type.id}</p>
+        typesContainer.innerHTML = config.appointmentTypes.map((type, index) => {
+          if (editingAppointmentTypeId === type.id) {
+            const iconInputId = `edit-type-icon-${type.id}`;
+            return `
+              <div class="settings-item" data-id="${type.id}">
+                <div style="flex: 1;">
+                  <label style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">Nombre</label>
+                  <input type="text" id="edit-type-name-${type.id}" value="${type.name}" style="width: 100%; padding: 10px 14px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 10px;">
+                  <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                    <span style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">Color:</span>
+                    <input type="color" id="edit-type-color-${type.id}" value="${type.color || '#02735E'}" style="width: 60px; height: 40px; border: none; border-radius: 8px; cursor: pointer;">
+                  </div>
+                  <input type="hidden" id="${iconInputId}" value="${type.iconKey || 'other'}">
+                  ${buildIconPickerHTML(iconInputId, type.iconKey || 'other')}
+                </div>
+                <div class="settings-item-actions">
+                  <button class="btn-save" onclick="saveAppointmentType('${type.id}')">Guardar</button>
+                  <button class="btn-cancel" onclick="cancelEditAppointmentType()">Cancelar</button>
+                </div>
+              </div>
+            `;
+          }
+          
+          const iconData = getIconData(type.iconKey || type.id);
+          return `
+            <div class="settings-item" data-id="${type.id}">
+              <div class="settings-item-left">
+                <button class="drag-handle" type="button" title="Arrastra para reordenar" aria-label="Mover ${type.name}">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10 4h4M10 8h4M10 12h4M10 16h4M10 20h4" stroke-linecap="round"></path>
+                  </svg>
+                </button>
+                <div class="settings-item-info">
+                  <div class="settings-item-icon" style="color: ${type.color || iconData.color};">
+                    ${iconData.svg}
+                  </div>
+                  <div>
+                    <strong style="color: var(--text-primary);">${type.name}</strong>
+                    <p style="font-size: 11px; color: var(--text-secondary);">${iconData.label}</p>
+                  </div>
+                </div>
+              </div>
+              <div class="settings-item-actions">
+                <button class="btn-secondary" ${index === 0 ? 'disabled' : ''} onclick="moveAppointmentType('${type.id}', 'up')">↑</button>
+                <button class="btn-secondary" ${index === config.appointmentTypes.length - 1 ? 'disabled' : ''} onclick="moveAppointmentType('${type.id}', 'down')">↓</button>
+                <button class="btn-secondary" onclick="startEditAppointmentType('${type.id}')">Editar</button>
+                <button class="btn-delete" onclick="deleteAppointmentType('${type.id}')">Eliminar</button>
               </div>
             </div>
-            <div class="settings-item-actions">
-              <button class="btn-delete" onclick="deleteAppointmentType('${type.id}')">Eliminar</button>
-            </div>
-          </div>
-        `).join('');
+          `;
+        }).join('');
       }
+      renderNewTypeIconPicker();
+      setupTypeDragAndDrop();
       
       // Render Team
       const teamContainer = document.getElementById('team-members-list');
@@ -1562,12 +1728,104 @@
       }
     }
 
+    function setupTypeDragAndDrop() {
+      const container = document.getElementById('appointment-types-list');
+      if (!container) return;
+      const items = container.querySelectorAll('.settings-item');
+      items.forEach(item => {
+        item.addEventListener('dragover', handleTypeDragOver);
+        item.addEventListener('dragleave', handleTypeDragLeave);
+        item.addEventListener('drop', handleTypeDrop);
+        const handle = item.querySelector('.drag-handle');
+        if (handle) {
+          handle.setAttribute('draggable', 'true');
+          handle.addEventListener('dragstart', handleTypeDragStart);
+          handle.addEventListener('dragend', handleTypeDragEnd);
+        }
+      });
+    }
+
+    function handleTypeDragStart(event) {
+      const item = event.target.closest('.settings-item');
+      draggingTypeId = item?.dataset.id || null;
+      if (!draggingTypeId) return;
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', draggingTypeId);
+      item.classList.add('dragging');
+    }
+
+    function handleTypeDragEnd(event) {
+      const item = event.target.closest('.settings-item');
+      if (item) item.classList.remove('dragging');
+      document.querySelectorAll('#appointment-types-list .settings-item').forEach(el => el.classList.remove('drag-over'));
+      draggingTypeId = null;
+    }
+
+    function handleTypeDragOver(event) {
+      if (!draggingTypeId) return;
+      const target = event.currentTarget;
+      if (target.dataset.id === draggingTypeId) return;
+      event.preventDefault();
+      target.classList.add('drag-over');
+    }
+
+    function handleTypeDragLeave(event) {
+      event.currentTarget.classList.remove('drag-over');
+    }
+
+    function handleTypeDrop(event) {
+      event.preventDefault();
+      const target = event.currentTarget;
+      target.classList.remove('drag-over');
+      const targetId = target.dataset.id;
+      if (!draggingTypeId || !targetId || draggingTypeId === targetId) return;
+      reorderAppointmentTypes(draggingTypeId, targetId);
+    }
+
+    function reorderAppointmentTypes(sourceId, targetId) {
+      const config = loadAgendaConfig();
+      const sourceIndex = config.appointmentTypes.findIndex(t => t.id === sourceId);
+      const targetIndex = config.appointmentTypes.findIndex(t => t.id === targetId);
+      if (sourceIndex === -1 || targetIndex === -1) return;
+      const [moved] = config.appointmentTypes.splice(sourceIndex, 1);
+      config.appointmentTypes.splice(targetIndex, 0, moved);
+      saveAgendaConfig(config);
+      renderSettingsLists();
+      populateAgendaDropdowns();
+      showSuccessMessage('Orden actualizado');
+    }
+
+    function startEditAppointmentType(id) {
+      editingAppointmentTypeId = id;
+      renderSettingsLists();
+    }
+
+    function cancelEditAppointmentType() {
+      editingAppointmentTypeId = null;
+      renderSettingsLists();
+    }
+
+    function moveAppointmentType(id, direction) {
+      const config = loadAgendaConfig();
+      const index = config.appointmentTypes.findIndex(t => t.id === id);
+      if (index === -1) return;
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= config.appointmentTypes.length) return;
+      const temp = config.appointmentTypes[targetIndex];
+      config.appointmentTypes[targetIndex] = config.appointmentTypes[index];
+      config.appointmentTypes[index] = temp;
+      saveAgendaConfig(config);
+      renderSettingsLists();
+      populateAgendaDropdowns();
+    }
+
     function addAppointmentType() {
-      const icon = document.getElementById('new-type-icon').value.trim() || 'other';
+      const iconKey = document.getElementById('new-type-icon').value || 'other';
       const name = document.getElementById('new-type-name').value.trim();
+      const colorInput = document.getElementById('new-type-color').value || '';
       
       if (!name) {
-        alert('Por favor ingresa un nombre para el tipo de cita');
+        systemAlert('Por favor ingresa un nombre para el tipo de cita', 'warning');
         return;
       }
       
@@ -1575,35 +1833,68 @@
       const id = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
       
       if (config.appointmentTypes.find(t => t.id === id)) {
-        alert('Ya existe un tipo de cita con ese nombre');
+        systemAlert('Ya existe un tipo de cita con ese nombre', 'warning');
         return;
       }
       
+      const iconData = getIconData(iconKey);
       config.appointmentTypes.push({
         id,
-        icon,
+        iconKey,
+        icon: iconData.emoji,
         name,
-        color: '#' + Math.floor(Math.random()*16777215).toString(16)
+        color: colorInput || iconData.color
       });
       
       saveAgendaConfig(config);
       renderSettingsLists();
       populateAgendaDropdowns();
       
-      document.getElementById('new-type-icon').value = '';
+      document.getElementById('new-type-icon').value = 'consultation';
       document.getElementById('new-type-name').value = '';
+      document.getElementById('new-type-color').value = '#02735E';
+      renderNewTypeIconPicker();
       
       showSuccessMessage('Tipo de cita agregado');
     }
 
     function deleteAppointmentType(id) {
-      if (!confirm('¿Eliminar este tipo de cita?')) return;
-      
+      systemConfirm('¿Eliminar este tipo de cita?', { confirmText: 'Eliminar', cancelText: 'Cancelar', type: 'warning' })
+        .then((confirmed) => {
+          if (!confirmed) return;
+          const config = loadAgendaConfig();
+          config.appointmentTypes = config.appointmentTypes.filter(t => t.id !== id);
+          saveAgendaConfig(config);
+          if (editingAppointmentTypeId === id) {
+            editingAppointmentTypeId = null;
+          }
+          renderSettingsLists();
+          populateAgendaDropdowns();
+        });
+    }
+
+    function saveAppointmentType(id) {
       const config = loadAgendaConfig();
-      config.appointmentTypes = config.appointmentTypes.filter(t => t.id !== id);
+      const target = config.appointmentTypes.find(t => t.id === id);
+      if (!target) return;
+      const nameInput = document.getElementById(`edit-type-name-${id}`);
+      const colorInput = document.getElementById(`edit-type-color-${id}`);
+      const iconInput = document.getElementById(`edit-type-icon-${id}`);
+      const newName = nameInput?.value.trim();
+      if (!newName) {
+        systemAlert('El nombre es obligatorio', 'warning');
+        return;
+      }
+      target.name = newName;
+      target.color = colorInput?.value || target.color;
+      target.iconKey = iconInput?.value || target.iconKey;
+      const iconData = getIconData(target.iconKey);
+      target.icon = iconData.emoji;
       saveAgendaConfig(config);
+      editingAppointmentTypeId = null;
       renderSettingsLists();
       populateAgendaDropdowns();
+      showSuccessMessage('Tipo actualizado');
     }
 
     function addTeamMember() {
@@ -1612,7 +1903,7 @@
       const color = document.getElementById('new-member-color').value;
       
       if (!name) {
-        alert('Por favor ingresa un nombre');
+        systemAlert('Por favor ingresa un nombre', 'warning');
         return;
       }
       
@@ -1632,13 +1923,15 @@
     }
 
     function deleteTeamMember(id) {
-      if (!confirm('¿Eliminar este miembro del equipo?')) return;
-      
-      const config = loadAgendaConfig();
-      config.teamMembers = config.teamMembers.filter(m => m.id !== id);
-      saveAgendaConfig(config);
-      renderSettingsLists();
-      populateAgendaDropdowns();
+      systemConfirm('¿Eliminar este miembro del equipo?', { confirmText: 'Eliminar', type: 'warning' })
+        .then((confirmed) => {
+          if (!confirmed) return;
+          const config = loadAgendaConfig();
+          config.teamMembers = config.teamMembers.filter(m => m.id !== id);
+          saveAgendaConfig(config);
+          renderSettingsLists();
+          populateAgendaDropdowns();
+        });
     }
 
     function addDuration() {
@@ -1646,14 +1939,14 @@
       const label = document.getElementById('new-duration-label').value.trim();
       
       if (!value || value < 5) {
-        alert('Por favor ingresa una duración válida (mínimo 5 minutos)');
+        systemAlert('Por favor ingresa una duración válida (mínimo 5 minutos)', 'warning');
         return;
       }
       
       const config = loadAgendaConfig();
       
       if (config.durations.find(d => d.value === value)) {
-        alert('Ya existe esa duración');
+        systemAlert('Ya existe esa duración', 'warning');
         return;
       }
       
@@ -1671,22 +1964,26 @@
     }
 
     function deleteDuration(value) {
-      if (!confirm('¿Eliminar esta duración?')) return;
-      
-      const config = loadAgendaConfig();
-      config.durations = config.durations.filter(d => d.value !== value);
-      saveAgendaConfig(config);
-      renderSettingsLists();
-      populateAgendaDropdowns();
+      systemConfirm('¿Eliminar esta duración?', { confirmText: 'Eliminar', type: 'warning' })
+        .then((confirmed) => {
+          if (!confirmed) return;
+          const config = loadAgendaConfig();
+          config.durations = config.durations.filter(d => d.value !== value);
+          saveAgendaConfig(config);
+          renderSettingsLists();
+          populateAgendaDropdowns();
+        });
     }
 
     function resetAgendaSettings() {
-      if (!confirm('¿Restaurar toda la configuración a los valores por defecto? Esto eliminará tus personalizaciones.')) return;
-      
-      localStorage.setItem('agenda_config', JSON.stringify(DEFAULT_AGENDA_CONFIG));
-      renderSettingsLists();
-      populateAgendaDropdowns();
-      showSuccessMessage('Configuración restaurada');
+      systemConfirm('¿Restaurar toda la configuración a los valores por defecto? Esto eliminará tus personalizaciones.', { confirmText: 'Restaurar', type: 'warning' })
+        .then((confirmed) => {
+          if (!confirmed) return;
+          localStorage.setItem('agenda_config', JSON.stringify(DEFAULT_AGENDA_CONFIG));
+          renderSettingsLists();
+          populateAgendaDropdowns();
+          showSuccessMessage('Configuración restaurada');
+        });
     }
 
     function saveAgendaSettings() {
@@ -1989,6 +2286,143 @@
       if (pendingCountEl) pendingCountEl.textContent = pendingApts.length;
     }
 
+    // ClientSync follow-up bridge
+    let pendingFollowupClients = [];
+    let pendingFollowupMode = 'followup';
+
+    function handleClientSyncFollowup() {
+      const stored = localStorage.getItem('clientsync_followup');
+      if (!stored) return;
+      let payload = null;
+      try {
+        payload = JSON.parse(stored);
+      } catch (error) {
+        console.warn('No se pudo leer clientsync_followup', error);
+      }
+      localStorage.removeItem('clientsync_followup');
+      if (!payload || payload.target !== 'plan' || !Array.isArray(payload.clients) || !payload.clients.length) {
+        return;
+      }
+      pendingFollowupClients = payload.clients;
+      pendingFollowupMode = payload.mode || 'followup';
+      renderFollowupBanner();
+      showToast('info', `Se importaron ${pendingFollowupClients.length} cliente(s) desde ClientSync`);
+    }
+
+    function renderFollowupBanner() {
+      const panel = document.getElementById('clientsync-followup-panel');
+      if (!panel) return;
+      if (!pendingFollowupClients.length) {
+        panel.classList.add('hidden');
+        panel.innerHTML = '';
+        return;
+      }
+      const subtitle = pendingFollowupMode === 'risk'
+        ? 'Clientes con poca actividad reciente'
+        : 'Recomendados para seguimiento inmediato';
+      panel.classList.remove('hidden');
+      panel.innerHTML = `
+        <div class="followup-header">
+          <div>
+            <p class="followup-eyebrow">${pendingFollowupMode === 'risk' ? 'Alertas de ClientSync' : 'Seguimiento sugerido'}</p>
+            <h3>${pendingFollowupClients.length} cliente${pendingFollowupClients.length === 1 ? '' : 's'} listos para agendar</h3>
+            <p>${subtitle}</p>
+          </div>
+          <button class="btn btn-secondary" data-followup-dismiss>Ocultar</button>
+        </div>
+        <div class="followup-client-list">
+          ${pendingFollowupClients.map((client, index) => `
+            <article class="followup-client">
+              <div>
+                <div class="followup-client-name">${client.name || client.company || 'Cliente'}</div>
+                <p class="followup-client-meta">
+                  ${(client.company || client.segment || 'Sin segmento')}
+                  ${client.value ? ` · ${formatAgendaCurrency(client.value)}` : ''}
+                </p>
+                <p class="followup-client-contact">
+                  ${[client.contact, client.phone, client.email].filter(Boolean).join(' · ') || 'Sin información de contacto'}
+                </p>
+              </div>
+              <div class="followup-client-actions">
+                <button class="btn btn-primary" data-followup-action="schedule" data-followup-index="${index}">Programar cita</button>
+              </div>
+            </article>
+          `).join('')}
+        </div>
+      `;
+      panel.querySelector('[data-followup-dismiss]')?.addEventListener('click', dismissFollowupBanner);
+      panel.querySelectorAll('[data-followup-action]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const action = btn.dataset.followupAction;
+          const index = Number(btn.dataset.followupIndex);
+          if (action === 'schedule') scheduleFollowupFromBanner(index);
+        });
+      });
+    }
+
+    function formatAgendaCurrency(value) {
+      return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'USD' }).format(Number(value) || 0);
+    }
+
+    function scheduleFollowupFromBanner(index) {
+      const client = pendingFollowupClients[index];
+      if (!client) {
+        systemAlert('No se encontró el cliente seleccionado', 'warning');
+        return;
+      }
+      openNewAppointmentModal();
+      setTimeout(() => {
+        const clientInput = document.getElementById('apt-client');
+        if (clientInput) clientInput.value = client.name || client.company || '';
+        const titleInput = document.getElementById('apt-title');
+        if (titleInput) {
+          const base = client.company || client.segment || client.name || 'Cliente';
+          titleInput.value = `Seguimiento ${base}`.trim();
+        }
+        const typeSelect = document.getElementById('apt-type');
+        if (typeSelect && [...typeSelect.options].some((opt) => opt.value === 'followup')) {
+          typeSelect.value = 'followup';
+        }
+        const prioritySelect = document.getElementById('apt-priority');
+        if (prioritySelect) {
+          if (client.status === 'inactive') prioritySelect.value = 'urgent';
+          else if (client.status === 'pending') prioritySelect.value = 'high';
+          else prioritySelect.value = 'normal';
+        }
+        const dateInput = document.getElementById('apt-date');
+        if (dateInput) {
+          const baseDate = new Date();
+          baseDate.setDate(baseDate.getDate() + 1);
+          dateInput.value = baseDate.toISOString().split('T')[0];
+        }
+        const notesField = document.getElementById('apt-notes');
+        if (notesField) {
+          const notes = [];
+          if (client.contact) notes.push(`Contacto: ${client.contact}`);
+          if (client.phone) notes.push(`Tel: ${client.phone}`);
+          if (client.email) notes.push(`Email: ${client.email}`);
+          if (client.notes) notes.push(client.notes);
+          notesField.value = notes.join(' • ');
+        }
+      }, 250);
+      pendingFollowupClients.splice(index, 1);
+      if (pendingFollowupClients.length) {
+        renderFollowupBanner();
+      } else {
+        dismissFollowupBanner();
+      }
+      showSuccessMessage('Cita preconfigurada con datos de ClientSync');
+    }
+
+    function dismissFollowupBanner() {
+      const panel = document.getElementById('clientsync-followup-panel');
+      if (panel) {
+        panel.classList.add('hidden');
+        panel.innerHTML = '';
+      }
+      pendingFollowupClients = [];
+    }
+
     // Modal functions
     function openNewAppointmentModal() {
       const modal = document.getElementById('appointment-modal');
@@ -2046,7 +2480,7 @@
       const notes = document.getElementById('apt-notes').value;
       
       if (!title || !date || !time || !clientInput) {
-        alert('Por favor completa todos los campos requeridos');
+        systemAlert('Por favor completa todos los campos requeridos', 'warning');
         return;
       }
       
@@ -2234,15 +2668,17 @@
 
     function deleteAppointment() {
       if (!currentEditingAppointmentId) return;
-      if (!confirm('¿Estás seguro de eliminar esta cita?')) return;
-      
-      const appointments = loadAppointments();
-      const filtered = appointments.filter(a => a.id !== currentEditingAppointmentId);
-      saveAppointments(filtered);
-      
-      closeEditAppointmentModal();
-      refreshAgendaViews();
-      showSuccessMessage('Cita eliminada');
+      systemConfirm('¿Estás seguro de eliminar esta cita?', { confirmText: 'Eliminar', type: 'warning' })
+        .then((confirmed) => {
+          if (!confirmed) return;
+          const appointments = loadAppointments();
+          const filtered = appointments.filter(a => a.id !== currentEditingAppointmentId);
+          saveAppointments(filtered);
+          
+          closeEditAppointmentModal();
+          refreshAgendaViews();
+          showSuccessMessage('Cita eliminada');
+        });
     }
 
     // Refresh all agenda views
@@ -2590,12 +3026,13 @@
 
     function selectThread(threadId) {
       const thread = availableThreads.find(t => t.id === threadId);
-      if (confirm(`¿Conectar este proyecto con "${thread.title}"?`)) {
-        // Aquí se haría la conexión real con el backend
-        console.log('Conectando proyecto con thread:', threadId);
-        closeConnectThreadModal();
-        alert(`Proyecto conectado exitosamente con "${thread.title}"`);
-      }
+      systemConfirm(`¿Conectar este proyecto con "${thread.title}"?`, { confirmText: 'Conectar', cancelText: 'Cancelar' })
+        .then((confirmed) => {
+          if (!confirmed) return;
+          console.log('Conectando proyecto con thread:', threadId);
+          closeConnectThreadModal();
+          showToast('success', `Proyecto conectado exitosamente con "${thread.title}"`);
+        });
     }
 
     // Search functionality for threads
@@ -2965,23 +3402,30 @@
       const appointment = appointments.find(apt => apt.id === appointmentId);
       
       if (!appointment) {
-        alert('❌ Error: No se encontró la cita');
+        systemAlert('❌ Error: No se encontró la cita', 'error');
         return;
       }
 
       // Confirmar la conversión
-      const confirmed = confirm(
-        `🏗️ Convertir a Proyecto\n\n` +
-        `¿Deseas convertir la cita "${appointment.title}" en un proyecto confirmado?\n\n` +
-        `Esto creará:\n` +
-        `• Proyecto: ${appointment.title}\n` +
-        `• Cliente: ${appointment.client || 'Sin especificar'}\n` +
-        `• Dirección: ${appointment.address || 'Sin especificar'}\n` +
-        `• Fecha inicio: ${appointment.date}\n\n` +
-        `La cita quedará vinculada al nuevo proyecto.`
-      );
+      systemConfirm(
+        `¿Deseas convertir la cita "${appointment.title}" en un proyecto confirmado?\nLa cita quedará vinculada al nuevo proyecto.`,
+        { confirmText: 'Convertir', cancelText: 'Cancelar' }
+      ).then((confirmed) => {
+        if (!confirmed) return;
+        finalizeAppointmentConversion(appointment, appointments);
+      });
+    }
 
-      if (!confirmed) return;
+    function finalizeAppointmentConversion(appointment, appointments) {
+      // Generar IDSync para el nuevo proyecto
+      const projects = loadProjectsFromStorage();
+      const lastId = projects.length > 0 
+        ? Math.max(...projects.map(p => {
+            const match = p.idSync?.match(/\d+/);
+            return match ? parseInt(match[0], 10) : 0;
+          }))
+        : 0;
+      const newIdSync = `PRJ-${String(lastId + 1).padStart(4, '0')}`;
 
       // Generar IDSync para el nuevo proyecto
       const projects = loadProjectsFromStorage();
@@ -3030,11 +3474,9 @@
       console.log('✅ Proyecto creado desde cita:', newProject);
 
       // Mostrar confirmación y navegar
-      alert(
-        `✓ Proyecto Creado Exitosamente\n\n` +
-        `ID: ${newIdSync}\n` +
-        `Nombre: ${newProject.projectName}\n\n` +
-        `Serás redirigido al portal del proyecto...`
+      systemAlert(
+        `✓ Proyecto creado exitosamente. ID: ${newIdSync}. Serás redirigido al portal del proyecto.`,
+        'success'
       );
 
       // Navegar al ViewSync del nuevo proyecto

@@ -19,6 +19,7 @@
   <script src="js/modules.js?v=verdi2"></script>
   <script src="js/sidebar.js?v=verdi2"></script>
   <script src="notifications-manager.js"></script>
+  <script src="js/demo-data-manager.js"></script>
   <script>
     (function () {
       try {
@@ -62,10 +63,14 @@
             .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 12px; }
             .module-badges { display: flex; flex-wrap: wrap; gap: 10px; }
             .module-pill { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 12px; background: rgba(2,115,94,0.08); border: 1px solid rgba(2,115,94,0.2); font-weight: 700; }
+            .module-roadmap-item { border-left: 3px solid rgba(2,115,94,0.35); padding-left: 14px; }
             .divider { border-top: 1px dashed var(--border-color); margin: 12px 0; }
             .logo-box { width: 110px; height: 110px; border: 2px dashed rgba(2,115,94,0.28); border-radius: 14px; display: grid; place-items: center; color: #02735E; background: rgba(2,115,94,0.05); font-weight: 700; }
             .table-compact th, .table-compact td { padding: 10px 12px; }
             .sub { color: var(--text-secondary); font-size: 13px; margin: 0 0 12px 0; }
+            .confirm-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.55); display: flex; align-items: center; justify-content: center; z-index: 6000; }
+            .confirm-card { background: var(--bg-card); padding: 22px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 25px 50px rgba(15,23,42,0.25); max-width: 420px; width: 100%; }
+            .confirm-actions { display: flex; justify-content: flex-end; gap: 12px; }
           </style>
 
           <div class="page-header">
@@ -186,6 +191,34 @@
             <div class="card">
               <div class="card-header">
                 <div>
+                  <h3 class="card-title">Roadmap de complementos</h3>
+                  <p class="card-subtitle">Cómo se conectarán los módulos premium al núcleo MotorSync.</p>
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div class="module-roadmap-item">
+                  <strong>ToolSync</strong>
+                  <p class="sub">Inventario y herramientas. Compartirá permisos desde Management y generará alertas en NotifySync cuando un recurso requiera mantenimiento.</p>
+                </div>
+                <div class="module-roadmap-item">
+                  <strong>TimeSync</strong>
+                  <p class="sub">Asistencia y tiempos. Sincroniza cuadrillas de PlanSync con el reloj de campo y alimenta reportes en Analytics.</p>
+                </div>
+                <div class="module-roadmap-item">
+                  <strong>HumanSync</strong>
+                  <p class="sub">Talento y certificaciones. Usará el mismo diccionario de roles para autorizar cursos y credenciales.</p>
+                </div>
+                <div class="module-roadmap-item">
+                  <strong>FinanSync</strong>
+                  <p class="sub">Facturación y cobranza. Recibirá eventos desde ProjectSync y notificará cobros desde NotifySync con enlaces directos a ViewSync.</p>
+                </div>
+                <p class="sub">Estos módulos se activan desde el panel de Super Admin y no aparecen en MotorSync Base hasta que el contrato lo requiera.</p>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div>
                   <h3 class="card-title" data-i18n="settingsLocalizationCard">Localización y datos</h3>
                   <p class="card-subtitle" data-i18n="settingsLocalizationSubtitle">Idioma y data demo.</p>
                 </div>
@@ -228,29 +261,29 @@
                     </tr>
                   </thead>
                   <tbody id="notification-settings-table">
-                    <tr>
+                    <tr data-role="owner">
                       <td><strong>Owner</strong></td>
-                      <td><input type="checkbox" checked></td>
-                      <td><input type="checkbox" checked></td>
-                      <td><input type="checkbox" checked></td>
+                      <td><input type="checkbox" data-channel="email" checked></td>
+                      <td><input type="checkbox" data-channel="sms" checked></td>
+                      <td><input type="checkbox" data-channel="inApp" checked></td>
                     </tr>
-                    <tr>
+                    <tr data-role="admin">
                       <td><strong>Admin</strong></td>
-                      <td><input type="checkbox" checked></td>
-                      <td><input type="checkbox"></td>
-                      <td><input type="checkbox" checked></td>
+                      <td><input type="checkbox" data-channel="email" checked></td>
+                      <td><input type="checkbox" data-channel="sms"></td>
+                      <td><input type="checkbox" data-channel="inApp" checked></td>
                     </tr>
-                    <tr>
+                    <tr data-role="tecnico">
                       <td><strong>Técnico</strong></td>
-                      <td><input type="checkbox"></td>
-                      <td><input type="checkbox" checked></td>
-                      <td><input type="checkbox" checked></td>
+                      <td><input type="checkbox" data-channel="email"></td>
+                      <td><input type="checkbox" data-channel="sms" checked></td>
+                      <td><input type="checkbox" data-channel="inApp" checked></td>
                     </tr>
-                    <tr>
+                    <tr data-role="cliente">
                       <td><strong>Cliente</strong></td>
-                      <td><input type="checkbox" checked></td>
-                      <td><input type="checkbox" checked></td>
-                      <td><input type="checkbox"></td>
+                      <td><input type="checkbox" data-channel="email" checked></td>
+                      <td><input type="checkbox" data-channel="sms" checked></td>
+                      <td><input type="checkbox" data-channel="inApp"></td>
                     </tr>
                   </tbody>
                 </table>
@@ -311,41 +344,54 @@
   </div>
 
   <script>
-    // Settings functionality
     document.addEventListener('DOMContentLoaded', function() {
-      // Load settings from localStorage
-      const settings = JSON.parse(localStorage.getItem('opsis_settings') || '{}');
-      
-      // Populate company info
-      if (settings.company) {
-        document.getElementById('settings-company').value = settings.company;
-        document.getElementById('settings-kpi-company').textContent = settings.company;
+      const storedSettings = JSON.parse(localStorage.getItem('opsis_settings') || '{}');
+      let currentLogo = storedSettings.logo || '';
+
+      function updateLogoPreview(logo) {
+        const box = document.getElementById('logo-preview');
+        if (!box) return;
+        if (logo) {
+          box.innerHTML = `<img src="${logo}" alt="Logo" style="max-width:90px; max-height:90px;">`;
+          box.dataset.logo = logo;
+        } else {
+          box.textContent = 'Sin logo';
+          box.removeAttribute('data-logo');
+        }
       }
-      
-      if (settings.phone) {
-        document.getElementById('settings-phone').value = settings.phone;
+
+      if (storedSettings.company) {
+        document.getElementById('settings-company').value = storedSettings.company;
+        document.getElementById('settings-kpi-company').textContent = storedSettings.company;
       }
-      
-      if (settings.email) {
-        document.getElementById('settings-email').value = settings.email;
-      }
-      
-      // Theme
-      const theme = settings.theme || 'light';
+      if (storedSettings.phone) document.getElementById('settings-phone').value = storedSettings.phone;
+      if (storedSettings.email) document.getElementById('settings-email').value = storedSettings.email;
+
+      const theme = storedSettings.theme || 'light';
       document.getElementById('theme-select').value = theme;
       document.getElementById('settings-kpi-theme').textContent = theme === 'light' ? 'Claro' : 'Oscuro';
-      
-      // Language
-      const lang = settings.language || 'es';
+
+      const lang = storedSettings.language || 'es';
       document.getElementById('language-select').value = lang;
       document.getElementById('settings-kpi-language').textContent = lang === 'es' ? 'Español' : 'English';
-      
-      // Accent color
-      const accent = settings.accent || '#02735E';
+
+      const accent = storedSettings.accent || '#02735E';
       document.getElementById('accent-picker').value = accent;
       document.getElementById('accent-hex').value = accent;
-      
-      // Save settings
+
+      if (currentLogo) updateLogoPreview(currentLogo);
+
+      document.getElementById('logo-upload').addEventListener('change', function (event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          currentLogo = reader.result;
+          updateLogoPreview(currentLogo);
+        };
+        reader.readAsDataURL(file);
+      });
+
       document.getElementById('btn-settings-save').addEventListener('click', function() {
         const newSettings = {
           company: document.getElementById('settings-company').value,
@@ -353,56 +399,128 @@
           email: document.getElementById('settings-email').value,
           theme: document.getElementById('theme-select').value,
           language: document.getElementById('language-select').value,
-          accent: document.getElementById('accent-picker').value
+          accent: document.getElementById('accent-picker').value,
+          logo: currentLogo
         };
-        
+
         localStorage.setItem('opsis_settings', JSON.stringify(newSettings));
-        
-        // Update KPIs
         document.getElementById('settings-kpi-company').textContent = newSettings.company;
         document.getElementById('settings-kpi-theme').textContent = newSettings.theme === 'light' ? 'Claro' : 'Oscuro';
         document.getElementById('settings-kpi-language').textContent = newSettings.language === 'es' ? 'Español' : 'English';
-        
-        // Apply theme
         document.documentElement.dataset.theme = newSettings.theme;
-        
-        // Apply accent
         document.documentElement.style.setProperty('--primary-color', newSettings.accent);
-        
-        alert('Configuración guardada exitosamente');
+        showToast('success', 'Configuración guardada.');
       });
-      
-      // Accent color picker sync
+
       document.getElementById('accent-picker').addEventListener('input', function(e) {
         document.getElementById('accent-hex').value = e.target.value;
       });
-      
-      // Theme change
+
       document.getElementById('theme-select').addEventListener('change', function(e) {
         document.documentElement.dataset.theme = e.target.value;
       });
-      
-      // Reset demo data
+
       document.getElementById('btn-reset-demo').addEventListener('click', function() {
-        if (confirm('¿Estás seguro de que quieres reiniciar los datos de demostración? Esta acción no se puede deshacer.')) {
-          // Clear all demo data from localStorage
-          const keysToKeep = ['opsis_settings'];
-          const allKeys = Object.keys(localStorage);
-          allKeys.forEach(key => {
-            if (!keysToKeep.includes(key)) {
-              localStorage.removeItem(key);
+        systemConfirm('¿Restablecer los datos de demostración?', { confirmText: 'Reiniciar' }).then((confirmed) => {
+          if (!confirmed) return;
+          DemoDataManager.reset();
+          showToast('info', 'Datos demo reiniciados. Recarga para empezar limpio.');
+          setTimeout(() => location.reload(), 600);
+        });
+      });
+
+      const notificationRows = document.querySelectorAll('#notification-settings-table tr[data-role]');
+      const notifySettings = NotifyManager.getSettings();
+      if (notifySettings.channelsByRole) {
+        notificationRows.forEach(row => {
+          const role = row.dataset.role;
+          const channels = notifySettings.channelsByRole[role];
+          if (!channels) return;
+          row.querySelectorAll('input[type="checkbox"]').forEach(input => {
+            const channel = input.dataset.channel;
+            if (channel && typeof channels[channel] !== 'undefined') {
+              input.checked = Boolean(channels[channel]);
             }
           });
-          alert('Datos de demostración reiniciados. Recarga la página para ver los cambios.');
-          location.reload();
-        }
-      });
-      
-      // Save notification preferences
+        });
+      }
+
       document.getElementById('btn-save-notifications').addEventListener('click', function() {
-        alert('Preferencias de notificaciones guardadas');
+        const channelsByRole = {};
+        notificationRows.forEach(row => {
+          const role = row.dataset.role;
+          channelsByRole[role] = {};
+          row.querySelectorAll('input[type="checkbox"]').forEach(input => {
+            channelsByRole[role][input.dataset.channel] = input.checked;
+          });
+        });
+        NotifyManager.updateSettings({ channelsByRole });
+        showToast('success', 'Preferencias de notificaciones guardadas.');
       });
     });
+
+    function showToast(type, message) {
+      const palette = {
+        success: '#10b981',
+        info: '#0f766e',
+        warning: '#d97706',
+        error: '#dc2626'
+      };
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        top: 24px;
+        right: 24px;
+        min-width: 260px;
+        background: var(--bg-card);
+        border-radius: 14px;
+        border: 2px solid ${palette[type] || palette.info};
+        padding: 14px 18px;
+        box-shadow: 0 18px 40px rgba(15,23,42,0.2);
+        z-index: 7000;
+        font-weight: 600;
+        color: var(--text-primary);
+      `;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px)';
+        setTimeout(() => toast.remove(), 200);
+      }, 2800);
+    }
+
+    function systemConfirm(message, { confirmText = 'Confirmar', cancelText = 'Cancelar' } = {}) {
+      return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'confirm-overlay';
+        overlay.innerHTML = `
+          <div class="confirm-card">
+            <p>${message}</p>
+            <div class="confirm-actions">
+              <button class="btn btn-secondary">${cancelText}</button>
+              <button class="btn btn-primary">${confirmText}</button>
+            </div>
+          </div>
+        `;
+        const [cancelBtn, confirmBtn] = overlay.querySelectorAll('button');
+        cancelBtn.addEventListener('click', () => {
+          overlay.remove();
+          resolve(false);
+        });
+        confirmBtn.addEventListener('click', () => {
+          overlay.remove();
+          resolve(true);
+        });
+        overlay.addEventListener('click', (event) => {
+          if (event.target === overlay) {
+            overlay.remove();
+            resolve(false);
+          }
+        });
+        document.body.appendChild(overlay);
+      });
+    }
   </script>
 </body>
 </html>
