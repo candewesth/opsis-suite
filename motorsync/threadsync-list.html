@@ -68,6 +68,17 @@
       to { transform: rotate(360deg); }
     }
 
+    @keyframes slideIn {
+      from {
+        transform: translateX(16px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
     .app-shell {
       display: flex;
       flex-direction: column;
@@ -194,6 +205,173 @@
     .btn-white:hover {
       background: #f8fafc;
       border-color: #cbd5e1;
+    }
+
+    .thread-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: 32px 16px;
+    }
+
+    .thread-modal-overlay[hidden] {
+      display: none;
+    }
+
+    .thread-modal-card {
+      background: var(--bg-card);
+      border-radius: 24px;
+      width: min(720px, 95vw);
+      box-shadow: 0 30px 80px rgba(15, 23, 42, 0.25);
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      max-height: 92vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .thread-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 24px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .thread-modal-header h3 {
+      margin: 4px 0 6px 0;
+      font-size: 26px;
+      color: var(--text-primary);
+    }
+
+    .thread-modal-body {
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    .thread-modal-hero {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      padding: 18px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(2,115,94,0.12), rgba(3,64,64,0.08));
+      border: 1px solid rgba(2,115,94,0.25);
+      margin-bottom: 20px;
+    }
+
+    .thread-hero-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #02735E, #035951);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 18px;
+      box-shadow: 0 12px 30px rgba(2,115,94,0.25);
+    }
+
+    .thread-form-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .thread-field label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .thread-input {
+      width: 100%;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 15px;
+      background: var(--bg-card);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .thread-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(2, 115, 94, 0.12);
+    }
+
+    .thread-textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .thread-modal-footer {
+      padding: 18px 24px 24px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .thread-toast {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      background: var(--bg-card);
+      border: 2px solid var(--primary-color);
+      border-radius: 14px;
+      padding: 14px 18px;
+      box-shadow: 0 18px 40px rgba(15,23,42,0.2);
+      font-weight: 600;
+      color: var(--text-primary);
+      z-index: 2500;
+      min-width: 260px;
+      animation: slideIn 0.3s ease;
+    }
+
+    .confirm-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2500;
+      padding: 20px;
+    }
+
+    .confirm-card {
+      background: var(--bg-card);
+      padding: 22px;
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 25px 50px rgba(15,23,42,0.3);
+      max-width: 420px;
+      width: 100%;
+    }
+
+    .confirm-card p {
+      margin: 0 0 18px 0;
+      font-size: 15px;
+      color: var(--text-primary);
+    }
+
+    .confirm-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
     }
 
     .btn-icon {
@@ -888,128 +1066,94 @@
   </div>
 
   <!-- MODAL: Seleccionar Proyecto para Nuevo Thread -->
-  <!-- Modal de Crear Thread -->
-  <div id="newThreadModal" class="modal" style="display: none;">
-    <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
-      <button onclick="closeNewThreadModal()" style="position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 28px; cursor: pointer; color: #64748b; z-index: 10;">&times;</button>
-      
-      <div style="padding: 40px;">
-        <div style="text-align: center; margin-bottom: 32px;">
-          <h2 style="font-size: 28px; font-weight: 700; color: #0f172a; margin-bottom: 8px;">Crear Nuevo Thread</h2>
-          <p style="color: #64748b; font-size: 14px;">Inicia una conversación con el equipo sobre una oportunidad o consulta de cliente</p>
+  <div id="newThreadModal" class="thread-modal-overlay" hidden>
+    <div class="thread-modal-card" role="dialog" aria-modal="true" aria-labelledby="new-thread-title">
+      <div class="thread-modal-header">
+        <div>
+          <p class="modal-eyebrow" style="text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px; font-weight: 700; color: #047857; margin: 0;">Seguimiento de oportunidades</p>
+          <h3 id="new-thread-title">Crear nuevo Thread</h3>
+          <p style="color: var(--text-secondary); margin: 0;">Inicia una conversación con el equipo sobre una oportunidad o consulta de cliente.</p>
         </div>
-        
+        <button class="modal-close" type="button" onclick="closeNewThreadModal()" aria-label="Cerrar">×</button>
+      </div>
+      <div class="thread-modal-body">
+        <div class="thread-modal-hero">
+          <div class="thread-hero-icon">TS</div>
+          <div>
+            <strong style="color: var(--verdi-dark); font-size: 15px;">ThreadSync Core</strong>
+            <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-secondary);">Conecta PlanSync, ProjectSync y ClientSync desde un solo hilo colaborativo.</p>
+          </div>
+        </div>
         <form id="threadForm" onsubmit="handleThreadSubmit(event)">
-          <!-- Asunto/Cliente -->
-          <div style="margin-bottom: 24px;">
-            <label style="display: block; font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 8px;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
-              Asunto o Cliente <span style="color: #ef4444;">*</span>
-            </label>
-            <input type="text" id="threadClientName" required 
-              placeholder="Ej: Cotización HVAC - Edificio Central"
-              style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; transition: all 0.3s;"
-              onfocus="this.style.borderColor='#02735E'; this.style.boxShadow='0 0 0 3px rgba(2,115,94,0.1)'"
-              onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+          <div class="thread-form-grid">
+            <div class="thread-field">
+              <label for="threadClientName">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                Asunto o Cliente <span style="color: #ef4444;">*</span>
+              </label>
+              <input type="text" id="threadClientName" class="thread-input" placeholder="Ej: Cotización HVAC - Edificio Central" required>
+            </div>
+            <div class="thread-field">
+              <label for="threadSubject">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                Descripción <span style="color: #ef4444;">*</span>
+              </label>
+              <input type="text" id="threadSubject" class="thread-input" placeholder="Ej: Cliente pregunta por mantenimiento preventivo" required>
+            </div>
+            <div class="thread-field">
+              <label for="threadContactInfo">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                </svg>
+                Contacto del Cliente (opcional)
+              </label>
+              <input type="text" id="threadContactInfo" class="thread-input" placeholder="Teléfono, email o nombre">
+            </div>
+            <div class="thread-field">
+              <label for="threadProject">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                  <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                ¿Asociar a un proyecto?
+              </label>
+              <select id="threadProject" class="thread-input">
+                <option value="">Sin proyecto (thread independiente)</option>
+              </select>
+              <p style="font-size: 12px; color: var(--text-secondary); margin-top: 6px; display: flex; align-items: center; gap: 6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                Solo se muestran proyectos sin thread conectado
+              </p>
+            </div>
+            <div class="thread-field">
+              <label for="threadInitialMessage">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                  <line x1="9" y1="10" x2="15" y2="10"></line>
+                  <line x1="9" y1="14" x2="15" y2="14"></line>
+                </svg>
+                Mensaje inicial (opcional)
+              </label>
+              <textarea id="threadInitialMessage" class="thread-input thread-textarea" placeholder="Escribe el primer mensaje de la conversación..."></textarea>
+            </div>
           </div>
-
-          <!-- Descripción -->
-          <div style="margin-bottom: 24px;">
-            <label style="display: block; font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 8px;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-              </svg>
-              Descripción <span style="color: #ef4444;">*</span>
-            </label>
-            <input type="text" id="threadSubject" required 
-              placeholder="Ej: Cliente pregunta por mantenimiento preventivo"
-              style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; transition: all 0.3s;"
-              onfocus="this.style.borderColor='#02735E'; this.style.boxShadow='0 0 0 3px rgba(2,115,94,0.1)'"
-              onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
-          </div>
-
-          <!-- Contacto -->
-          <div style="margin-bottom: 24px;">
-            <label style="display: block; font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 8px;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-              </svg>
-              Contacto del Cliente (opcional)
-            </label>
-            <input type="text" id="threadContactInfo" 
-              placeholder="Teléfono, email o nombre"
-              style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; transition: all 0.3s;"
-              onfocus="this.style.borderColor='#02735E'; this.style.boxShadow='0 0 0 3px rgba(2,115,94,0.1)'"
-              onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
-          </div>
-
-          <!-- Proyecto -->
-          <div style="margin-bottom: 24px;">
-            <label style="display: block; font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 8px;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                <polyline points="9 22 9 12 15 12 15 22"></polyline>
-              </svg>
-              ¿Asociar a un proyecto?
-            </label>
-            <select id="threadProject" 
-              style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; background: white; cursor: pointer; transition: all 0.3s;"
-              onfocus="this.style.borderColor='#02735E'; this.style.boxShadow='0 0 0 3px rgba(2,115,94,0.1)'"
-              onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
-              <!-- Proyectos se cargarán dinámicamente -->
-            </select>
-            <p style="font-size: 12px; color: #64748b; margin-top: 8px; display: flex; align-items: center; gap: 6px;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="16" x2="12" y2="12"/>
-                <line x1="12" y1="8" x2="12.01" y2="8"/>
-              </svg>
-              Solo se muestran proyectos sin thread conectado
-            </p>
-          </div>
-
-          <!-- Mensaje Inicial -->
-          <div style="margin-bottom: 32px;">
-            <label style="display: block; font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 8px;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                <line x1="9" y1="10" x2="15" y2="10"></line>
-                <line x1="9" y1="14" x2="15" y2="14"></line>
-              </svg>
-              Mensaje Inicial (opcional)
-            </label>
-            <textarea id="threadInitialMessage" 
-              placeholder="Escribe el primer mensaje de la conversación..."
-              rows="4"
-              style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; resize: vertical; font-family: inherit; transition: all 0.3s;"
-              onfocus="this.style.borderColor='#02735E'; this.style.boxShadow='0 0 0 3px rgba(2,115,94,0.1)'"
-              onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'"></textarea>
-          </div>
-
-          <!-- Botones -->
-          <div style="display: flex; gap: 12px; justify-content: flex-end; padding-top: 24px; border-top: 2px solid #f1f5f9;">
-            <button type="button" onclick="closeNewThreadModal()" 
-              style="padding: 12px 32px; background: white; border: 2px solid #e2e8f0; border-radius: 12px; color: #64748b; font-weight: 600; cursor: pointer; transition: all 0.3s;"
-              onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#94a3b8'"
-              onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'">
-              Cancelar
-            </button>
-            <button type="submit" id="createThreadBtn"
-              style="padding: 12px 32px; background: linear-gradient(135deg, #02735E 0%, #035951 100%); border: none; border-radius: 12px; color: white; font-weight: 700; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(2,115,94,0.3);"
-              onmouseover="this.style.boxShadow='0 6px 20px rgba(2,115,94,0.4)'; this.style.transform='translateY(-2px)'"
-              onmouseout="this.style.boxShadow='0 4px 12px rgba(2,115,94,0.3)'; this.style.transform='translateY(0)'">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-              </svg>
-              Crear Thread
-            </button>
+          <div class="thread-modal-footer">
+            <button type="button" onclick="closeNewThreadModal()" class="btn btn-white" style="border: 1px solid #e2e8f0; color: #64748b;">Cancelar</button>
+            <button type="submit" id="createThreadBtn" class="btn btn-primary">Crear Thread</button>
           </div>
         </form>
       </div>
     </div>
+  </div>
   </div>
 
   <script>
@@ -1022,16 +1166,27 @@
 
     // Create new thread
     function createNewThread() {
-      // Abrir el modal con formulario completo
-      document.getElementById('newThreadModal').style.display = 'block';
-      // Cargar proyectos disponibles
+      const modal = document.getElementById('newThreadModal');
+      if (!modal) return;
+      modal.hidden = false;
+      document.body.style.overflow = 'hidden';
       loadAvailableProjects();
+      const firstField = document.getElementById('threadClientName');
+      if (firstField) firstField.focus();
     }
 
     function closeNewThreadModal() {
-      document.getElementById('newThreadModal').style.display = 'none';
-      // Limpiar formulario
-      document.getElementById('threadForm').reset();
+      const modal = document.getElementById('newThreadModal');
+      if (!modal) return;
+      modal.hidden = true;
+      document.body.style.overflow = '';
+      const form = document.getElementById('threadForm');
+      if (form) form.reset();
+      const submitBtn = document.getElementById('createThreadBtn');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Crear Thread';
+      }
     }
 
     // Función para cargar proyectos disponibles (sin threads conectados)
@@ -1096,20 +1251,28 @@
       event.preventDefault();
       
       const submitBtn = document.getElementById('createThreadBtn');
-      const originalText = submitBtn.innerHTML;
+      const originalText = submitBtn ? submitBtn.innerHTML : '';
       
-      // Deshabilitar botón y mostrar loading
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px; animation: spin 1s linear infinite;"><circle cx="12" cy="12" r="10"></circle></svg> Creando...';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px; animation: spin 1s linear infinite;"><circle cx="12" cy="12" r="10"></circle></svg> Creando...';
+      }
       
-      // Obtener datos del formulario
       const clientName = document.getElementById('threadClientName').value;
       const subject = document.getElementById('threadSubject').value;
       const contactInfo = document.getElementById('threadContactInfo').value;
       const projectId = document.getElementById('threadProject').value;
       const initialMessage = document.getElementById('threadInitialMessage').value;
       
-      // Crear nuevo thread con ID único
+      if (!clientName.trim() || !subject.trim()) {
+        showThreadToast('warning', 'Completa asunto y descripción del thread.');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalText || 'Crear Thread';
+        }
+        return;
+      }
+      
       const newThreadId = 'thread-' + Date.now();
       
       // Obtener nombre del proyecto si hay uno seleccionado
@@ -1158,13 +1321,11 @@
       // Simular guardado (en producción sería llamada a API)
       setTimeout(() => {
         closeNewThreadModal();
-        
-        // Mostrar confirmación
-        const confirmMsg = `✓ Thread creado exitosamente\n\nAsunto: ${clientName}\nDescripción: ${subject}${contactInfo ? '\nContacto: ' + contactInfo : ''}${projectName ? '\nProyecto: ' + projectName : ''}`;
-        alert(confirmMsg);
-        
-        // Redirigir a ThreadSync (vista de conversación del thread)
-        window.location.href = `threadsync.html?id=${newThreadId}`;
+        const summaryMessage = `${clientName} · ${subject}${projectName ? ' · ' + projectName : ''}`;
+        showThreadToast('success', `Thread creado exitosamente. ${summaryMessage}`);
+        setTimeout(() => {
+          window.location.href = `threadsync.html?id=${newThreadId}`;
+        }, 700);
       }, 800);
     }
 
@@ -1182,13 +1343,14 @@
     function goToProject(projectId, isActive) {
       if (isActive) {
         window.location.href = `motorsync.html?project=${projectId}&tab=project`;
-      } else {
-        const confirmMessage = '¿Activar este proyecto?\n\nEsto te llevará a la vista del proyecto en ProjectSync.';
-        if (confirm(confirmMessage)) {
-          alert(`✓ Proyecto activado correctamente\n\nRedirigiendo a ProjectSync...`);
-          window.location.href = `motorsync.html?project=${projectId}&tab=project&action=activate`;
-        }
+        return;
       }
+      threadConfirm('¿Activar este proyecto y abrirlo en ProjectSync?', { confirmText: 'Activar proyecto' })
+        .then((confirmed) => {
+          if (!confirmed) return;
+          showThreadToast('success', 'Proyecto activado. Redirigiendo a ProjectSync...');
+          window.location.href = `motorsync.html?project=${projectId}&tab=project&action=activate`;
+        });
     }
 
     // Base de datos de threads con información real
@@ -1979,40 +2141,78 @@
 
     // 🔄 RESET LOCALSTORAGE - Útil para pruebas
     function resetLocalStorage() {
-      if (confirm('⚠️ ¿Resetear todos los threads?\n\nEsto eliminará todos los threads creados en tus pruebas y volverá a los datos por defecto.\n\n¿Continuar?')) {
-        // Limpiar localStorage
-        localStorage.removeItem('threadsync_threads');
-        
-        // Recargar datos por defecto
-        threadsData = getDefaultThreadsData();
-        saveThreadsToStorage(threadsData);
-        
-        console.log('🔄 LocalStorage reseteado, datos por defecto cargados');
-        
-        alert('✓ Threads reseteados correctamente\n\nRecargando página...');
-        
-        // Recargar página para mostrar cambios
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
-      }
+      threadConfirm('¿Resetear todos los threads de prueba y restaurar los datos por defecto?', { confirmText: 'Resetear threads' })
+        .then((confirmed) => {
+          if (!confirmed) return;
+          localStorage.removeItem('threadsync_threads');
+          threadsData = getDefaultThreadsData();
+          saveThreadsToStorage(threadsData);
+          console.log('🔄 LocalStorage reseteado, datos por defecto cargados');
+          showThreadToast('info', 'Threads reseteados. Recargando...');
+          setTimeout(() => {
+            window.location.reload();
+          }, 700);
+        });
     }
 
-    // Close modal when clicking outside (but not when selecting text)
-    window.onclick = function(event) {
+    function showThreadToast(type, message) {
+      const palette = {
+        success: '#10b981',
+        info: '#0f766e',
+        warning: '#d97706',
+        error: '#dc2626'
+      };
+      const toast = document.createElement('div');
+      toast.className = 'thread-toast';
+      toast.style.borderColor = palette[type] || palette.info;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-6px)';
+        setTimeout(() => toast.remove(), 200);
+      }, 2800);
+    }
+
+    function threadConfirm(message, { confirmText = 'Confirmar', cancelText = 'Cancelar' } = {}) {
+      return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'confirm-overlay';
+        overlay.innerHTML = `
+          <div class=\"confirm-card\">
+            <p>${message}</p>
+            <div class=\"confirm-actions\">
+              <button class=\"btn btn-secondary\">${cancelText}</button>
+              <button class=\"btn btn-primary\">${confirmText}</button>
+            </div>
+          </div>
+        `;
+        const [cancelBtn, confirmBtn] = overlay.querySelectorAll('button');
+        cancelBtn.addEventListener('click', () => {
+          overlay.remove();
+          resolve(false);
+        });
+        confirmBtn.addEventListener('click', () => {
+          overlay.remove();
+          resolve(true);
+        });
+        overlay.addEventListener('click', (event) => {
+          if (event.target === overlay) {
+            overlay.remove();
+            resolve(false);
+          }
+        });
+        document.body.appendChild(overlay);
+      });
+    }
+
+    document.addEventListener('click', (event) => {
       const modal = document.getElementById('newThreadModal');
+      if (!modal || modal.hidden) return;
       if (event.target === modal) {
-        // Verificar si hay texto seleccionado
-        const selection = window.getSelection();
-        if (selection && selection.toString().length > 0) {
-          // Hay texto seleccionado, no cerrar el modal
-          console.log('Texto seleccionado, modal no se cerrará');
-          return;
-        }
-        // No hay selección, cerrar el modal
         closeNewThreadModal();
       }
-    }
+    });
   </script>
   
   </div><!-- /app-content -->
