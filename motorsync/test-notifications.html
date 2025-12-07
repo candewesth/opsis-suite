@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Test NotifyManager - Demo Interactivo</title>
   <script src="notifications-manager.js"></script>
+  <script src="./js/ui-feedback.js"></script>
   <style>
     * {
       margin: 0;
@@ -500,12 +501,13 @@
       window.location.href = 'NotifySync.html';
     }
 
-    function clearAll() {
-      if (confirm('¿Eliminar todas las notificaciones?')) {
-        NotifyManager.deleteAll();
-        log('Sistema: Todas las notificaciones eliminadas', 'error');
-        updateUI();
-      }
+    async function clearAll() {
+      const ok = await uiConfirm('¿Eliminar todas las notificaciones?', { confirmText: 'Eliminar', cancelText: 'Cancelar' });
+      if (!ok) return;
+      NotifyManager.deleteAll();
+      log('Sistema: Todas las notificaciones eliminadas', 'error');
+      uiToast('success', 'Notificaciones eliminadas.');
+      updateUI();
     }
 
     // ============================================================================

@@ -1042,7 +1042,6 @@
           <div class="logo-title">Opsis Suite</div>
           <div id="company-name-header" style="font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.85); margin-top: 2px;">CVE San Diego</div>
         </div>
-        <div id="threadProjectStatus" class="project-status-wrapper"></div>
       </div>
       
       <!-- Module Tabs -->
@@ -1136,10 +1135,11 @@
           Volver a ThreadSync
         </button>
         
-        <h1 class="thread-title" id="threadTitle"></h1>
-        
-        <div class="thread-meta-container" id="threadMeta" style="margin-bottom: 16px;">
-          <!-- Meta items injected via JS -->
+        <div style="display:flex; flex-direction:column; align-items:center; gap:8px; width:100%;">
+          <h1 class="thread-title" id="threadTitle" style="margin:0;"></h1>
+          <div class="thread-meta-container" id="threadMeta" style="margin-bottom: 8px;">
+            <!-- Meta items injected via JS -->
+          </div>
         </div>
 
         <p class="thread-address" id="threadAddress" style="display: none; color: #64748b; font-size: 14px; align-items: center; gap: 6px; justify-content: center;">
@@ -1336,7 +1336,16 @@
     </main>
   </div>
 
-  <script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        // Mostrar rápidamente un título por defecto mientras cargan datos
+        const urlId = new URLSearchParams(window.location.search).get('id');
+        const defaultTitle = urlId || 'Thread';
+        const titleEl = document.getElementById('threadTitle');
+        if (titleEl && !titleEl.textContent) {
+          titleEl.textContent = defaultTitle;
+        }
+      });
     function detectCurrentUser() {
       // Intentar obtener del objeto global de sesión
       if (window.opsisCurrentUser?.displayName) {
@@ -1592,7 +1601,8 @@
 
       const titleElement = document.getElementById('threadTitle');
       if (titleElement) {
-        titleElement.textContent = threadState.title;
+        const fallbackTitle = threadState.title || threadState.clientName || threadState.subject || getCurrentThreadId() || 'Thread';
+        titleElement.textContent = fallbackTitle;
       }
 
       const addressContainer = document.getElementById('threadAddress');
@@ -1668,42 +1678,8 @@
         if (convertSection) convertSection.style.display = 'block';
         if (convertedSection) convertedSection.style.display = 'none';
       }
-
-      renderProjectStatusCard();
     }
 
-    function renderProjectStatusCard() {
-      const wrapper = document.getElementById('threadProjectStatus');
-      if (!wrapper) return;
-      if (threadState.projectId) {
-        const projectName = threadState.projectName || 'Proyecto vinculado';
-        wrapper.innerHTML = `
-          <div class="project-status-card connected">
-            <div class="project-status-content">
-              <h4>Conectado a ${projectName}</h4>
-              <p>Este thread sincroniza actualizaciones con el proyecto activo.</p>
-            </div>
-            <div class="project-status-actions">
-              <button class="btn btn-white" onclick="goToProject()" style="border: 1px solid #e2e8f0; color: #02735E;">Ver en ViewSync</button>
-              <button class="btn btn-white" onclick="editThread()" style="border: 1px solid #e2e8f0;">Editar vínculo</button>
-            </div>
-          </div>
-        `;
-      } else {
-        wrapper.innerHTML = `
-          <div class="project-status-card empty">
-            <div class="project-status-content">
-              <h4>Thread sin proyecto asociado</h4>
-              <p>Vincula este hilo a un proyecto existente o conviértelo en un nuevo proyecto para activar la trazabilidad.</p>
-            </div>
-            <div class="project-status-actions">
-              <button class="btn btn-white" onclick="openLinkProjectModal()" style="border: 1px solid #e2e8f0;">Vincular proyecto</button>
-              <button class="btn btn-success" onclick="convertToProject()">Convertir a proyecto</button>
-            </div>
-          </div>
-        `;
-      }
-    }
 
     // Función para obtener proyectos disponibles (sin threads conectados)
     function getAvailableProjectsOptions() {
@@ -1959,12 +1935,14 @@
       const newProjectId = projectField?.value || null;
 
       if (!newClientName) {
-        alert('El asunto o cliente es obligatorio.');
+        showThreadToast('warning', 'El asunto o cliente es obligatorio.');
+        clientNameField?.focus();
         return;
       }
 
       if (!newSubject) {
-        alert('La descripción es obligatoria.');
+        showThreadToast('warning', 'La descripción es obligatoria.');
+        subjectField?.focus();
         return;
       }
 
@@ -2019,17 +1997,7 @@
       renderThreadHeader();
       closeModal('editThreadModal');
       
-      // Mostrar confirmación
-      const notification = document.createElement('div');
-      notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #02735E; color: white; padding: 16px 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10000; font-weight: 600;';
-      notification.textContent = '✅ Thread actualizado correctamente';
-      document.body.appendChild(notification);
-      
-      setTimeout(() => {
-        notification.style.opacity = '0';
-        notification.style.transition = 'opacity 0.3s';
-        setTimeout(() => notification.remove(), 300);
-      }, 2000);
+      showThreadToast('success', 'Thread actualizado correctamente.');
     }
 
     // Función para agregar actualización
@@ -2238,7 +2206,7 @@
           console.log('Color aplicado:', color, 'a texto:', selectedText);
         }
       } else {
-        alert('Por favor, selecciona el texto al que deseas aplicar color');
+        showThreadToast('warning', 'Selecciona el texto al que deseas aplicar color.');
       }
       
       editor.focus();
@@ -2386,7 +2354,7 @@
 
     function removeFile(index) {
       // Note: Can't directly remove files from input, would need to use DataTransfer API
-      alert('Para remover archivos, por favor selecciona de nuevo los archivos que deseas adjuntar');
+      showThreadToast('info', 'Para remover archivos, vuelve a seleccionar los adjuntos sin el archivo a eliminar.');
     }
 
     // Close mention dropdown when clicking outside
@@ -2414,7 +2382,7 @@
       
       if (!commentEditor) {
         console.error('Editor no encontrado');
-        alert('Error: No se pudo encontrar el editor');
+        showThreadToast('error', 'No se encontró el editor. Recarga e inténtalo de nuevo.');
         return;
       }
       
@@ -2428,7 +2396,8 @@
       const textContent = tempDiv.textContent.trim();
       
       if (!textContent || textContent === '') {
-        alert('Por favor escribe un comentario antes de guardar');
+        showThreadToast('warning', 'Escribe un comentario antes de guardar.');
+        commentEditor.focus();
         return;
       }
 
@@ -2479,7 +2448,7 @@
       commentEditor.innerHTML = '';
 
       closeModal('addCommentModal');
-      alert('Comentario agregado exitosamente');
+      showThreadToast('success', 'Comentario agregado exitosamente.');
     }
 
     function saveUpdate() {
@@ -2490,7 +2459,7 @@
       const docsInput = document.getElementById('updateDocuments');
 
       if (!title || !description) {
-        alert('Por favor completa los campos obligatorios (*)');
+        showThreadToast('warning', 'Completa título y descripción antes de publicar.');
         return;
       }
 
@@ -2573,7 +2542,7 @@
       timeline.insertAdjacentHTML('afterbegin', newTimelineItem);
 
       closeModal('addUpdateModal');
-      alert('Actualización agregada exitosamente');
+      showThreadToast('success', 'Actualización agregada exitosamente.');
     }
 
     // Función principal para convertir Thread a Proyecto
@@ -2815,7 +2784,7 @@
       
       // Validar campos requeridos
       if (!address || !startDate || !endDate) {
-        alert('⚠️ Por favor completa todos los campos requeridos:\n- Dirección del Proyecto\n- Fecha de Inicio\n- Fecha de Fin');
+        showThreadToast('warning', 'Completa dirección y fechas para crear el proyecto.');
         return;
       }
       
@@ -3152,12 +3121,13 @@
       const textContent = tempDiv.textContent || tempDiv.innerText || '';
       
       if (!textContent.trim()) {
-        alert('Escribe una respuesta');
+        showThreadToast('warning', 'Escribe una respuesta antes de publicar.');
+        replyEditor.focus();
         return;
       }
       
       closeModal('replyModal');
-      alert('Respuesta publicada');
+      showThreadToast('success', 'Respuesta publicada.');
       console.log(`Reply to comment ${commentId}:`, replyHTML);
       
       // Clear editor
@@ -3196,15 +3166,19 @@
 
     function saveEdit(commentId) {
       closeModal('editModal');
-      alert('Comentario actualizado');
+      showThreadToast('success', 'Comentario actualizado.');
     }
 
     // Función para eliminar comentario
-    function deleteComment(commentId) {
-      if (confirm('¿Estás seguro de eliminar este comentario?')) {
-        alert('Comentario eliminado');
-        console.log(`Deleted comment ${commentId}`);
-      }
+    async function deleteComment(commentId) {
+      const confirmed = await threadConfirm('¿Estás seguro de eliminar este comentario?', {
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar'
+      });
+      if (!confirmed) return;
+      
+      showThreadToast('success', 'Comentario eliminado.');
+      console.log(`Deleted comment ${commentId}`);
     }
 
     // Filtros de búsqueda

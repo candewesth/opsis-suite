@@ -735,6 +735,7 @@
     </div>
   </div>
 
+  <script src="./js/ui-feedback.js"></script>
   <script>
     // ========================================
     // LOAD REAL DATA FROM LOCALSTORAGE
@@ -1105,10 +1106,12 @@
       updateStats();
     }
 
-    function unlinkPair(threadUUID, projectUUID) {
-      if (!confirm('¿Estás seguro de que quieres desvincular este thread del proyecto?')) {
-        return;
-      }
+    async function unlinkPair(threadUUID, projectUUID) {
+      const ok = await uiConfirm('¿Estás seguro de que quieres desvincular este thread del proyecto?', {
+        confirmText: 'Desvincular',
+        cancelText: 'Cancelar'
+      });
+      if (!ok) return;
       
       linkedPairs = linkedPairs.filter(p => !(p.threadUUID === threadUUID && p.projectUUID === projectUUID));
       saveLinkedPairs();
@@ -1140,6 +1143,7 @@
       renderProjects();
       renderLinked();
       updateStats();
+      uiToast('success', 'Thread desvinculado del proyecto.');
     }
 
     // Click outside modal to close

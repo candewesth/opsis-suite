@@ -16,6 +16,7 @@
   <script src="js/data-projects.js?v=verdi2"></script>
   <script src="js/modules.js?v=verdi2"></script>
   <script src="js/sidebar.js?v=verdi2"></script>
+  <script src="./js/ui-feedback.js"></script>
   <style>
     .btn {
       border: none;
@@ -1725,14 +1726,14 @@
       `).join('');
     }
 
-    function selectThread(threadId) {
+    async function selectThread(threadId) {
       const thread = availableThreads.find(t => t.id === threadId);
-      if (confirm(`¿Conectar este proyecto con "${thread.title}"?`)) {
-        // Aquí se haría la conexión real con el backend
-        console.log('Conectando proyecto con thread:', threadId);
-        closeConnectThreadModal();
-        alert(`Proyecto conectado exitosamente con "${thread.title}"`);
-      }
+      const ok = await uiConfirm(`¿Conectar este proyecto con "${thread.title}"?`, { confirmText: 'Conectar', cancelText: 'Cancelar' });
+      if (!ok) return;
+      // Aquí se haría la conexión real con el backend
+      console.log('Conectando proyecto con thread:', threadId);
+      closeConnectThreadModal();
+      uiToast('success', `Proyecto conectado con "${thread.title}".`);
     }
 
     // Search functionality for threads
@@ -1807,7 +1808,7 @@
       const project = projects.find(p => (p.idSync || p.id) === projectId);
       
       if (!project) {
-        alert('Proyecto no encontrado');
+        uiToast('error', 'Proyecto no encontrado.');
         return;
       }
       
@@ -2117,7 +2118,7 @@
       const projects = loadProjectsFromStorage();
       
       if (projects.length === 0) {
-        alert('No hay proyectos para exportar');
+        uiToast('warning', 'No hay proyectos para exportar.');
         return;
       }
       
@@ -2307,12 +2308,7 @@
       const filename = `ProjectSync_Proyectos_${new Date().toISOString().split('T')[0]}.pdf`;
       doc.save(filename);
       
-      // Notificación de éxito
-      if (window.showToast) {
-        window.showToast('success', `PDF exportado exitosamente: ${projects.length} proyectos`);
-      } else {
-        alert(`PDF exportado exitosamente con ${projects.length} proyectos`);
-      }
+      uiToast('success', `PDF exportado: ${projects.length} proyectos.`);
     }
 
     // ============================================================================

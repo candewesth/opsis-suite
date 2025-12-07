@@ -21,6 +21,12 @@
   <script src="advanced-features.js"></script>
   <script src="advanced-features-extended.js"></script>
   <script src="advanced-features-final.js"></script>
+  <script src="./js/ui-feedback.js"></script>
+  <script>
+    window.showToast = (type, message) => uiToast(type, message);
+    window.showConfirm = (message, opts) => uiConfirm(message, opts);
+    window.alert = (message) => uiToast('info', String(message));
+  </script>
   <script>
     window.MODULE_TABS_CONFIG = {
       motorsync: { name: 'MotorSync', url: 'motorsync.html', order: 1, enabled: true },
@@ -11223,9 +11229,10 @@
         }
       },
 
-      resetDemoData() {
+      async resetDemoData() {
         const message = this.t('resetDemoConfirm') || 'Reset demo data?';
-        if (!window.confirm(message)) return;
+        const ok = await uiConfirm(message, { confirmText: 'Resetear', cancelText: 'Cancelar' });
+        if (!ok) return;
         storage.clearAll();
         this.ordersStatusFilter = 'all';
         this.customersFilter = 'all';
@@ -12873,13 +12880,15 @@
         return member?.role || '';
       },
 
-      deleteInventoryItem(itemId) {
+      async deleteInventoryItem(itemId) {
         if (!itemId) return;
-        if (!window.confirm(this.t('inventoryDeleteConfirm'))) return;
+        const ok = await uiConfirm(this.t('inventoryDeleteConfirm'), { confirmText: 'Eliminar', cancelText: 'Cancelar' });
+        if (!ok) return;
         this.inventory = (this.inventory || []).filter((item) => item.id !== itemId);
         this.persist('inventory');
         this.renderInventory();
         this.closeModal();
+        uiToast('success', this.t('inventoryDeleted') || 'Item eliminado.');
       },
 
       startNewOrderFlow() {
@@ -18273,15 +18282,15 @@
       document.getElementById('newThreadModal').style.display = 'none';
     }
 
-    function selectProjectForThread(projectId, projectName) {
+    async function selectProjectForThread(projectId, projectName) {
       // Cerrar modal
       closeNewThreadModal();
       
       // Confirmar y redirigir
       const confirmMessage = `Crear nuevo thread para:\n\n${projectName}\n\n¿Continuar?`;
-      if (confirm(confirmMessage)) {
-        window.location.href = `threadsync.html?action=new&project=${projectId}&name=${encodeURIComponent(projectName)}`;
-      }
+      const ok = await uiConfirm(confirmMessage, { confirmText: 'Crear', cancelText: 'Cancelar' });
+      if (!ok) return;
+      window.location.href = `threadsync.html?action=new&project=${projectId}&name=${encodeURIComponent(projectName)}`;
     }
 
     // Cerrar modal al hacer clic fuera
@@ -18322,18 +18331,17 @@
       window.location.href = 'threadsync.html?action=new';
     }
 
-    function goToProject(projectId, isActive) {
+    async function goToProject(projectId, isActive) {
       if (isActive) {
         // Si el proyecto ya está activo, ir directamente
         window.location.href = `motorsync.html?project=${projectId}&tab=project`;
       } else {
         // Si no está activo, pedir confirmación
         const confirmMessage = '¿Activar este proyecto?\n\nEsto te llevará a la vista del proyecto en ProjectSync.';
-        if (confirm(confirmMessage)) {
-          // Simular activación del proyecto
-          alert(`✓ Proyecto activado correctamente\n\nRedirigiendo a ProjectSync...`);
-          window.location.href = `motorsync.html?project=${projectId}&tab=project&action=activate`;
-        }
+        const ok = await uiConfirm(confirmMessage, { confirmText: 'Activar', cancelText: 'Cancelar' });
+        if (!ok) return;
+        uiToast('success', 'Proyecto activado correctamente. Redirigiendo a ProjectSync...');
+        window.location.href = `motorsync.html?project=${projectId}&tab=project&action=activate`;
       }
     }
 
@@ -18342,12 +18350,15 @@
       window.location.href = `threadsync.html?action=new&project=${projectId}`;
     }
 
-    function archiveThread(threadId) {
-      if (confirm('¿Archivar este thread?\n\nPodrás encontrarlo en la sección de Archivados.')) {
-        // En producción, esto haría una llamada a la API
-        alert(`✓ Thread ${threadId} archivado correctamente`);
-        // Aquí recargarías la lista
-      }
+    async function archiveThread(threadId) {
+      const ok = await uiConfirm('¿Archivar este thread?\n\nPodrás encontrarlo en la sección de Archivados.', {
+        confirmText: 'Archivar',
+        cancelText: 'Cancelar'
+      });
+      if (!ok) return;
+      // En producción, esto haría una llamada a la API
+      uiToast('success', `Thread ${threadId} archivado correctamente.`);
+      // Aquí recargarías la lista
     }
 
     function refreshThreads() {
@@ -18517,42 +18528,51 @@
     });
 
     // Duplicar proyecto
-    function duplicateProject(projectId) {
+    async function duplicateProject(projectId) {
       // Cerrar menú
       document.getElementById('actions-' + projectId).style.display = 'none';
       
-      if (confirm('¿Estás seguro de que deseas duplicar este proyecto?')) {
-        console.log('Duplicando proyecto:', projectId);
-        // Aquí llamarías a la API para duplicar
-        alert('Proyecto duplicado exitosamente');
-        // location.reload();
-      }
+      const ok = await uiConfirm('¿Estás seguro de que deseas duplicar este proyecto?', {
+        confirmText: 'Duplicar',
+        cancelText: 'Cancelar'
+      });
+      if (!ok) return;
+      console.log('Duplicando proyecto:', projectId);
+      // Aquí llamarías a la API para duplicar
+      uiToast('success', 'Proyecto duplicado exitosamente.');
+      // location.reload();
     }
 
     // Pausar proyecto
-    function pauseProject(projectId) {
+    async function pauseProject(projectId) {
       // Cerrar menú
       document.getElementById('actions-' + projectId).style.display = 'none';
       
-      if (confirm('¿Deseas pausar este proyecto?')) {
-        console.log('Pausando proyecto:', projectId);
-        // Aquí llamarías a la API
-        alert('Proyecto pausado');
-        // Actualizar estado en la tabla
-      }
+      const ok = await uiConfirm('¿Deseas pausar este proyecto?', {
+        confirmText: 'Pausar',
+        cancelText: 'Cancelar'
+      });
+      if (!ok) return;
+      console.log('Pausando proyecto:', projectId);
+      // Aquí llamarías a la API
+      uiToast('info', 'Proyecto pausado.');
+      // Actualizar estado en la tabla
     }
 
     // Cancelar proyecto
-    function cancelProject(projectId) {
+    async function cancelProject(projectId) {
       // Cerrar menú
       document.getElementById('actions-' + projectId).style.display = 'none';
       
-      if (confirm('⚠️ ¿Estás seguro de que deseas CANCELAR este proyecto?\n\nEsta acción no se puede deshacer.')) {
-        console.log('Cancelando proyecto:', projectId);
-        // Aquí llamarías a la API
-        alert('Proyecto cancelado');
-        // Actualizar estado en la tabla
-      }
+      const ok = await uiConfirm('⚠️ ¿Estás seguro de que deseas CANCELAR este proyecto?\n\nEsta acción no se puede deshacer.', {
+        confirmText: 'Cancelar proyecto',
+        cancelText: 'Volver'
+      });
+      if (!ok) return;
+      console.log('Cancelando proyecto:', projectId);
+      // Aquí llamarías a la API
+      uiToast('warning', 'Proyecto cancelado.');
+      // Actualizar estado en la tabla
     }
 
     // Cerrar modales al presionar ESC
@@ -20352,14 +20372,17 @@
     };
 
     // Limpiar todas las notificaciones
-    window.clearAllNotifications = function() {
-      if (confirm('¿Estás seguro de que deseas eliminar todas las notificaciones?')) {
-        localStorage.setItem(NOTIFICATIONS_KEY, '[]');
-        updateNotificationCounts();
-        renderNotificationsGrid();
-        renderDashboardNotifications();
-        showToast('info', 'Todas las notificaciones han sido eliminadas');
-      }
+    window.clearAllNotifications = async function() {
+      const ok = await uiConfirm('¿Estás seguro de que deseas eliminar todas las notificaciones?', {
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar'
+      });
+      if (!ok) return;
+      localStorage.setItem(NOTIFICATIONS_KEY, '[]');
+      updateNotificationCounts();
+      renderNotificationsGrid();
+      renderDashboardNotifications();
+      showToast('info', 'Todas las notificaciones han sido eliminadas');
     };
 
     // Formatear tiempo relativo

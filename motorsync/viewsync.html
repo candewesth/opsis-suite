@@ -6,7 +6,17 @@
   <title>ViewSync - Portal del Proyecto</title>
   <!-- Cache-bust: v2024-11-25 -->
   <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="styles.css?v=verdi2">
+  <link rel="stylesheet" href="css/verdi-overrides.css?v=verdi2">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="js/modules.js?v=verdi2"></script>
+  <script src="js/sidebar.js?v=verdi2"></script>
+  <script src="./js/ui-feedback.js"></script>
+  <script>
+    window.showToast = (type, message) => uiToast(type, message);
+    window.showConfirm = (message, opts) => uiConfirm(message, opts);
+    window.alert = (message) => uiToast('info', String(message));
+  </script>
   <style>
     :root {
       --verdi-dark: #022326;
@@ -20,6 +30,185 @@
       --bg-body: #fafafa;
       --bg-card: #ffffff;
       --border-color: #ebebeb;
+    }
+
+    function updateKpis(project) {
+      const permits = document.getElementById('kpi-permits');
+      if (permits) {
+        const status = project.permitsStatus || 'En revisión';
+        permits.textContent = status;
+      }
+      const hoursEl = document.getElementById('kpi-hours');
+      if (hoursEl) {
+        const planned = project.plannedHours || 0;
+        const actual = project.actualHours || 0;
+        hoursEl.textContent = `${actual}h / ${planned}h`;
+      }
+      const warehouseEl = document.getElementById('kpi-warehouse');
+      if (warehouseEl) {
+        const pending = project.warehousePending || 0;
+        warehouseEl.textContent = pending > 0 ? `${pending} pendientes` : 'Sin pendientes';
+      }
+    }
+
+    function populateQuickGallery(project) {
+      const container = document.getElementById('quickGallery');
+      if (!container) return;
+      container.innerHTML = '';
+      const photos = loadProjectPhotos();
+      if (photos && photos.length > 0) {
+        photos.slice(0, 8).forEach((photo, idx) => {
+          const div = document.createElement('div');
+          div.className = 'photo-chip';
+          div.innerHTML = `
+            <img src="${photo.url}" alt="Foto ${idx + 1}">
+            <div class="label">${photo.category || 'Foto'}</div>
+          `;
+          container.appendChild(div);
+        });
+      } else {
+        ['Sin fotos', 'Captura progreso', 'Documenta avances'].forEach((txt, idx) => {
+          const div = document.createElement('div');
+          div.className = 'photo-chip';
+          div.style.background = idx === 0 ? '#e2e8f0' : 'linear-gradient(135deg, rgba(2,115,94,0.12), rgba(2,115,94,0.05))';
+          div.innerHTML = `<div class="label">${txt}</div>`;
+          container.appendChild(div);
+        });
+      }
+    }
+
+    // Daily Logs (Diario de obra)
+    function renderDailyLogs(project) {
+      const container = document.getElementById('dailyLogsContainer');
+      if (!container) return;
+
+      // Obtener de proyecto o usar datos demo
+      const key = project ? `daily_logs_${project.idSync || project.id}` : null;
+      let storedLogs = [];
+      if (key) {
+        try {
+          storedLogs = JSON.parse(localStorage.getItem(key) || '[]');
+        } catch (e) {
+          storedLogs = [];
+        }
+      }
+
+      const logs = (project.dailyLogs && project.dailyLogs.length ? project.dailyLogs : storedLogs.length ? storedLogs : [
+        {
+          date: '2025-12-10',
+          crew: ['Juan Pérez', 'Ana García'],
+          hours: '8h',
+          work: 'Instalación de ductos principales y sellado de uniones.',
+          weather: 'Soleado 25°C',
+          crewCount: 5,
+          start: '08:00',
+          end: '17:00',
+          materials: 'Ductos 8", sellador, abrazaderas',
+          safety: 'Sin incidentes',
+          photos: ['https://images.unsplash.com/photo-1582719478248-04c0b58ad942?auto=format&fit=crop&w=400&q=80'],
+          notes: 'Sin incidencias. Cliente aprobó avance.'
+        },
+        {
+          date: '2025-12-09',
+          crew: ['Carlos Ruiz'],
+          hours: '6h',
+          work: 'Revisión de soportes y ajustes menores.',
+          weather: 'Nublado 20°C',
+          crewCount: 2,
+          start: '09:00',
+          end: '15:00',
+          materials: 'Soportes, remaches',
+          safety: 'Revisión EPP completa',
+          photos: [],
+          notes: 'Pendiente recibir válvulas nuevas.'
+        }
+      ]);
+
+      container.innerHTML = logs.map(log => `
+        <div class="card" style="padding: 14px 16px; display: grid; gap: 10px; box-shadow: 0 8px 24px rgba(15,23,42,0.08);">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+            <div style="font-weight:700; color:#0f172a;">${formatDate(log.date)}</div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <span class="kpi-badge" style="background: rgba(2,115,94,0.08); border-color: rgba(2,115,94,0.2);">${log.hours || 'Horas no registradas'}</span>
+              <span class="kpi-badge" style="background: rgba(15,23,42,0.06); border-color: rgba(15,23,42,0.15);">${(log.crew || []).join(', ') || 'Equipo no asignado'}</span>
+              ${log.crewCount ? `<span class="kpi-badge" style="background: rgba(3,89,81,0.08); border-color: rgba(3,89,81,0.2);">Crew: ${log.crewCount}</span>` : ''}
+              ${log.weather ? `<span class="kpi-badge" style="background: rgba(59,130,246,0.08); border-color: rgba(59,130,246,0.2);">${log.weather}</span>` : ''}
+            </div>
+          </div>
+          <div style="font-size:14px; color:#1f2937;">${log.work || 'Sin descripción'}</div>
+          <div style="display:flex; gap:12px; flex-wrap:wrap; font-size:12px; color:#475569;">
+            ${log.start ? `<span>Inicio: ${log.start}</span>` : ''}
+            ${log.end ? `<span>Fin: ${log.end}</span>` : ''}
+          </div>
+          ${log.materials ? `<div style="font-size:13px; color:#1f2937;"><strong>Materiales:</strong> ${log.materials}</div>` : ''}
+          ${log.safety ? `<div style="font-size:13px; color:#1f2937;"><strong>Seguridad:</strong> ${log.safety}</div>` : ''}
+          <div style="font-size:13px; color:#475569;">${log.notes || ''}</div>
+          ${log.photos && log.photos.length ? `
+            <div style="display:flex; gap:8px; overflow-x:auto;">
+              ${log.photos.map((ph, idx) => `
+                <div class="photo-chip" style="width:120px; height:80px;">
+                  <img src="${ph}" alt="Foto ${idx+1}">
+                  <div class="label">Foto</div>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+        </div>
+      `).join('');
+    }
+
+    function renderWorkflowRow(state) {
+      const row = document.getElementById('workflowRow');
+      if (!row) return;
+      const states = [
+        { key: 'quoted', label: 'Cotizado', icon: '📋' },
+        { key: 'approved', label: 'Aprobado', icon: '✅' },
+        { key: 'scheduled', label: 'Programado', icon: '📅' },
+        { key: 'in-progress', label: 'En Proceso', icon: '🔧' },
+        { key: 'completed', label: 'Completado', icon: '🎉' },
+      ];
+      const current = state || 'quoted';
+      row.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: space-between;">
+          ${states.map((s, idx) => `
+            <div style="
+              flex: 1;
+              min-width: 120px;
+              text-align: center;
+              padding: 10px;
+              border-radius: 8px;
+              font-size: 12px;
+              font-weight: 700;
+              background: ${s.key === current ? 'linear-gradient(135deg, #10b981, #059669)' : '#e5e7eb'};
+              color: ${s.key === current ? '#fff' : '#94a3b8'};
+              box-shadow: ${s.key === current ? '0 6px 16px rgba(16,185,129,0.25)' : 'none'};
+            ">
+              <div style="font-size:16px; margin-bottom:4px;">${s.icon}</div>
+              ${s.label}
+            </div>
+            ${idx < states.length -1 ? '<div style="color:#cbd5e1; font-weight:700;">→</div>' : ''}
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderProjectState(project) {
+      const badgeEmoji = document.getElementById('badgeEmoji');
+      const badgeTitle = document.getElementById('badgeTitle');
+      const badgeSubtitle = document.getElementById('badgeSubtitle');
+      const status = project.status || 'in-progress';
+      const map = {
+        'quoted': { emoji: '📋', title: 'Cotizado', desc: 'Esperando aprobación del cliente' },
+        'approved': { emoji: '✅', title: 'Aprobado', desc: 'Listo para programar' },
+        'scheduled': { emoji: '📅', title: 'Programado', desc: 'Fechas asignadas' },
+        'in-progress': { emoji: '🔧', title: 'En Proceso', desc: 'Trabajo en curso' },
+        'completed': { emoji: '🎉', title: 'Completado', desc: 'Proyecto finalizado' },
+        'overdue': { emoji: '⚠️', title: 'Retrasado', desc: 'Fuera de fecha' }
+      };
+      const cfg = map[status] || map['in-progress'];
+      if (badgeEmoji) badgeEmoji.textContent = cfg.emoji;
+      if (badgeTitle) badgeTitle.textContent = cfg.title;
+      if (badgeSubtitle) badgeSubtitle.textContent = cfg.desc;
     }
 
     * {
@@ -36,16 +225,149 @@
       line-height: 1.6;
     }
 
-    .portal-header {
-      background: linear-gradient(135deg, #02735E 0%, #035951 100%);
-      color: white;
-      padding: 24px 32px;
-      box-shadow: 0 4px 12px rgba(2, 115, 94, 0.3);
-      border-bottom: none;
-      position: sticky;
-      top: 0;
-      z-index: 100;
+    /* Hero compacto */
+    .project-hero {
+      background: linear-gradient(135deg, #02735E 0%, #035951 90%);
+      color: #fff;
+      padding: 18px 24px;
+      box-shadow: 0 4px 12px rgba(2, 115, 94, 0.15);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
     }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+      align-items: center;
+    }
+
+    .project-title {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.2px;
+    }
+
+    .meta-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .id-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      font-weight: 700;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    /* KPIs compactos estilo tablero */
+    .project-kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      padding: 12px 18px 0 18px;
+      background: #f8fafc;
+    }
+
+    .kpi-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 6px;
+      align-items: center;
+      box-shadow: 0 6px 18px rgba(15,23,42,0.08);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(15,23,42,0.12); }
+
+    .kpi-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    .kpi-sub {
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .kpi-value {
+      font-size: 18px;
+      font-weight: 800;
+      color: #02735E;
+      text-align: right;
+    }
+
+    .kpi-badge {
+      padding: 6px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid rgba(2,115,94,0.15);
+      background: rgba(2,115,94,0.06);
+      color: #02735E;
+    }
+
+    /* Galería rápida */
+    .quick-gallery {
+      display: flex;
+      gap: 12px;
+      padding: 12px 18px 4px 18px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+    }
+
+    .photo-chip {
+      width: 140px;
+      height: 90px;
+      border-radius: 12px;
+      background: #e2e8f0;
+      border: 1px solid #dfe5ec;
+      overflow: hidden;
+      position: relative;
+      scroll-snap-align: start;
+      flex-shrink: 0;
+      box-shadow: 0 6px 18px rgba(15,23,42,0.06);
+    }
+
+    .photo-chip img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .photo-chip .label {
+      position: absolute;
+      bottom: 6px;
+      left: 6px;
+      background: rgba(0,0,0,0.55);
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Ajustes previos */
+    .portal-header { display: none; }
 
     .viewsync-brand {
       display: inline-block;
@@ -380,6 +702,26 @@
       display: flex;
       gap: 12px;
       justify-content: flex-end;
+    }
+
+    /* Modal flotante para equipo */
+    #assignStaffModal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2500;
+      padding: 20px;
+    }
+
+    #assignStaffModal .modal-content {
+      background: white;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 640px;
+      box-shadow: 0 24px 48px rgba(0,0,0,0.25);
     }
 
     .form-group {
@@ -1337,161 +1679,131 @@
 
   </style>
 </head>
-<body>
-
-  <!-- Toast Container -->
-  <div id="toastContainer"></div>
-
-  <!-- HEADER -->
-  <div class="portal-header">
-    <div class="header-top">
-      <div style="display: flex; flex-direction: column; gap: 6px;">
-        <button class="back-button" onclick="window.location.href='motorsync.html'">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
-          Volver a MotorSync
-        </button>
-        
-        <span class="viewsync-brand">
-          ViewSync
-        </span>
+<body data-sidebar-active="projectsync">
+  <div class="app-shell" data-theme="light" data-accent="#02735E">
+    <header style="background: linear-gradient(135deg, #02735E 0%, #035951 50%, #034040 100%); background-size: 200% 200%; animation: aire 8s ease infinite; padding: 0; display: flex; align-items: flex-end;">
+      <div class="logo" aria-label="Opsis Suite" style="padding: 18px 32px;">
+        <div class="logo-text">
+          <div class="logo-title">Opsis Suite</div>
+          <div id="company-name-header" style="font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.85); margin-top: 2px;">CVE San Diego</div>
+        </div>
       </div>
       
-      <div class="header-actions">
-        <button class="btn btn-white" onclick="exportProjectToPDF()" style="background: #f59e0b; color: white; border-color: #f59e0b;" title="Exportar proyecto a PDF">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <line x1="16" y1="13" x2="8" y2="13"></line>
-            <line x1="16" y1="17" x2="8" y2="17"></line>
-          </svg>
-          Exportar PDF
-        </button>
-        <button class="btn btn-white" onclick="editProject()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-          </svg>
-          Editar
-        </button>
-        <button class="btn btn-white" onclick="toggleActionsMenu()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="1"/>
-            <circle cx="12" cy="5" r="1"/>
-            <circle cx="12" cy="19" r="1"/>
-          </svg>
-          Acciones
-        </button>
+      <!-- Module Tabs -->
+      <div class="module-tabs" id="module-tabs-container" style="display: flex; gap: 0;">
+        <a href="motorsync.html" class="module-tab active">MotorSync</a>
+        <a href="../timesync/timesync.html" class="module-tab">TimeSync</a>
       </div>
-      
-      <!-- Menú desplegable de acciones -->
-      <div id="actionsMenu" class="actions-menu" style="display: none;">
-        <div class="actions-menu-header">
-          <span>Gestión del Proyecto</span>
-          <button onclick="toggleActionsMenu()" style="background: none; border: none; color: white; cursor: pointer; font-size: 20px;">×</button>
-        </div>
-        <div class="actions-menu-body">
-          <button class="action-item action-success" onclick="completeProject()">
-            <div class="action-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-            </div>
-            <div class="action-content">
-              <div class="action-title">Marcar como Completado</div>
-              <div class="action-description">Scope de trabajo terminado, pendientes administrativos</div>
-            </div>
-          </button>
-          
-          <button class="action-item action-primary" onclick="closeProject()">
-            <div class="action-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 11l3 3L22 4"/>
-                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-              </svg>
-            </div>
-            <div class="action-content">
-              <div class="action-title">Cerrar Proyecto</div>
-              <div class="action-description">Todo finalizado: trabajo + pagos + facturas</div>
-            </div>
-          </button>
-          
-          <button class="action-item action-warning" onclick="createChangeOrder()">
-            <div class="action-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                <circle cx="18.5" cy="5.5" r="2.5"/>
-              </svg>
-            </div>
-            <div class="action-content">
-              <div class="action-title">Crear Change Order</div>
-              <div class="action-description">Trabajo adicional en proyecto cerrado (CO-1, CO-2...)</div>
-            </div>
-          </button>
-          
-          <div class="action-divider"></div>
-          
-          <button class="action-item action-danger" onclick="cancelProject()">
-            <div class="action-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="15" y1="9" x2="9" y2="15"/>
-                <line x1="9" y1="9" x2="15" y2="15"/>
-              </svg>
-            </div>
-            <div class="action-content">
-              <div class="action-title">Cancelar Proyecto</div>
-              <div class="action-description">Detener y cancelar este proyecto</div>
-            </div>
-          </button>
-        </div>
-      </div>
-    </div>
+    </header>
+    
+    <div class="app-content">
+      <aside id="sidebar"></aside>
 
-    <div class="project-title-row">
-      <div style="flex: 1;">
-        <h1 class="project-title" style="margin-bottom: 16px; text-align: center; font-size: 24px;">Instalación HVAC Completo - Residencial Torres</h1>
-        <div id="thread-link-container" style="display: none; text-align: center; margin-bottom: 12px;">
-          <button onclick="openLinkedThread()" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 8px 16px; border-radius: 8px; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-            <span id="thread-link-text">Ver Conversación Original</span>
-          </button>
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 2px 1fr; gap: 24px; align-items: center; border-top: 1px solid rgba(255,255,255,0.3); border-bottom: 1px solid rgba(255,255,255,0.3); padding: 12px 0;">
-          <div class="project-id" style="justify-content: center;">
-            <span class="id-badge">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-              </svg>
-              <strong>IDSync250001</strong>
-            </span>
-          </div>
-          <div style="width: 2px; height: 30px; background: rgba(255,255,255,0.6);"></div>
-          <div class="meta-item" style="margin: 0; justify-content: center;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-              <circle cx="12" cy="10" r="3"/>
-            </svg>
-            <span>Av. Universidad #456, Guadalajara</span>
+      <main id="main" style="padding: 0; background: #f8fafc;">
+        <div id="toastContainer"></div>
+
+        <div class="project-hero">
+          <div class="hero-grid">
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <div class="meta-row" style="gap:10px;">
+                <button class="back-button" onclick="window.location.href='motorsync.html'" style="background: rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.3); color:#fff; padding:8px 12px; border-radius:8px; display:inline-flex; align-items:center; gap:6px; font-weight:600; cursor:pointer;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                  Volver a MotorSync
+                </button>
+                <span class="id-badge" id="projectIdBadge">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                  </svg>
+                  <strong>IDSync</strong>
+                </span>
+                <button id="threadLinkBtn" onclick="openLinkedThread()" style="display:none; background: rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.3); color:#fff; padding:8px 12px; border-radius:8px; font-weight:600; cursor:pointer; gap:6px; align-items:center;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  Ver Conversación
+                </button>
+              </div>
+              <h1 class="project-title" id="projectTitle">Proyecto</h1>
+              <div class="meta-row" style="color: rgba(255,255,255,0.9); font-weight:600;">
+                <span id="projectAddress" style="display:inline-flex; align-items:center; gap:6px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <span>Dirección</span>
+                </span>
+              </div>
+            </div>
+
+          <div class="hero-actions" style="justify-content:flex-end;">
+            <button class="btn btn-white" onclick="toggleActionsMenu()" style="order:3; background: rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.3); color:#fff;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+              Acciones
+            </button>
+            <button class="btn btn-white" onclick="editProject()" style="order:2; background: rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.35); color:#fff;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Editar
+            </button>
+            <button class="btn btn-white" onclick="exportProjectToPDF()" style="order:1; background:#f59e0b; color:#fff; border-color:#f59e0b; box-shadow:0 6px 14px rgba(245,158,11,0.35);">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+              Exportar PDF
+            </button>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
+        </div>
 
-  <!-- MAIN CONTENT -->
-  <div class="portal-container">
+        <div class="project-kpis">
+        <div class="kpi-card">
+          <div>
+            <div class="kpi-title" style="display:flex; align-items:center; gap:6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Progreso
+            </div>
+            <div class="kpi-sub" id="kpi-progress-dates">Fechas clave</div>
+          </div>
+          <div class="kpi-value" id="kpi-progress">0%</div>
+        </div>
+        <div class="kpi-card">
+          <div>
+            <div class="kpi-title" style="display:flex; align-items:center; gap:6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Permisos
+            </div>
+            <div class="kpi-sub">Estado permisos/inspecciones</div>
+          </div>
+          <div class="kpi-badge" id="kpi-permits">En revisión</div>
+        </div>
+        <div class="kpi-card">
+          <div>
+            <div class="kpi-title" style="display:flex; align-items:center; gap:6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+              Horas laborales
+            </div>
+            <div class="kpi-sub">Plan vs real</div>
+          </div>
+          <div class="kpi-value" id="kpi-hours">0h</div>
+        </div>
+        <div class="kpi-card">
+          <div>
+            <div class="kpi-title" style="display:flex; align-items:center; gap:6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              Logística
+            </div>
+            <div class="kpi-sub">Warehouse / pendientes</div>
+          </div>
+          <div class="kpi-badge" id="kpi-warehouse">0 pendientes</div>
+        </div>
+      </div>
+
+        <div class="quick-gallery" id="quickGallery">
+          <!-- fotos rápidas -->
+        </div>
+
+        <div class="portal-container">
     
     <!-- TABS Y THREADSYNC -->
     <div style="display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 24px;">
       <div class="tabs" style="margin-bottom: 0; flex: 1;">
         <button class="tab active" onclick="switchTab('overview')">Resumen</button>
+        <button class="tab" onclick="switchTab('info')">Información</button>
         <button class="tab" onclick="switchTab('schedule')">Programación</button>
+        <button class="tab" onclick="switchTab('daily')">FormSync</button>
         <button class="tab" onclick="switchTab('team')">Equipo</button>
         <button class="tab" onclick="switchTab('photos')">Fotos</button>
         <button class="tab" onclick="switchTab('docs')">Documentos</button>
@@ -1509,6 +1821,150 @@
           <line x1="10" y1="14" x2="21" y2="3"/>
         </svg>
       </button>
+    </div>
+
+    <!-- TAB: INFORMACIÓN -->
+    <div id="tab-info" class="tab-content">
+      <div style="margin-bottom:12px;">
+        <h3 style="margin:0; font-size:16px; font-weight:700; color:#0f172a;">Ficha completa del proyecto</h3>
+        <p style="margin:0; color:#64748b; font-size:13px;">Datos comerciales, operativos y de contacto</p>
+      </div>
+      <div class="grid grid-2">
+        <div class="card">
+          <h3 class="card-title">Datos del Proyecto</h3>
+          <p class="card-subtitle">Detalles generales</p>
+          <div class="grid grid-2" style="margin-top: 12px;">
+            <div>
+              <div class="kpi-sub">ID Sync</div>
+              <div class="kpi-title" id="info-id">-</div>
+            </div>
+            <div>
+              <div class="kpi-sub">Cliente</div>
+              <div class="kpi-title" id="info-client">-</div>
+            </div>
+            <div>
+              <div class="kpi-sub">Dirección</div>
+              <div class="kpi-title" id="info-address">-</div>
+            </div>
+            <div>
+              <div class="kpi-sub">Estado</div>
+              <div class="kpi-title" id="info-status">-</div>
+            </div>
+            <div>
+              <div class="kpi-sub">Tipo de servicio</div>
+              <div class="kpi-title" id="info-service">-</div>
+            </div>
+            <div>
+              <div class="kpi-sub">Monto estimado</div>
+              <div class="kpi-title" id="info-budget">-</div>
+            </div>
+            <div>
+              <div class="kpi-sub">Contacto</div>
+              <div class="kpi-title" id="info-contact">-</div>
+            </div>
+            <div>
+              <div class="kpi-sub">Teléfono</div>
+              <div class="kpi-title" id="info-phone">-</div>
+            </div>
+            <div>
+              <div class="kpi-sub">Email</div>
+              <div class="kpi-title" id="info-email">-</div>
+            </div>
+            <div>
+              <div class="kpi-sub">Plan</div>
+              <div class="kpi-title" id="info-plan">-</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="card-title">Fechas y responsables</h3>
+          <p class="card-subtitle">Planificación actual</p>
+          <div class="grid grid-2" style="margin-top: 12px;">
+            <div>
+              <div class="kpi-sub">Inicio</div>
+              <div class="kpi-title" id="info-start">-</div>
+            </div>
+            <div>
+              <div class="kpi-sub">Fin</div>
+              <div class="kpi-title" id="info-end">-</div>
+            </div>
+            <div>
+              <div class="kpi-sub">Duración</div>
+              <div class="kpi-title" id="info-duration">-</div>
+            </div>
+            <div>
+              <div class="kpi-sub">Supervisor</div>
+              <div class="kpi-title" id="info-supervisor">-</div>
+            </div>
+            <div>
+              <div class="kpi-sub">Creado por</div>
+              <div class="kpi-title" id="info-owner">-</div>
+            </div>
+            <div>
+              <div class="kpi-sub">SLA / Prioridad</div>
+              <div class="kpi-title" id="info-sla">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: DIARIO / FORMSYNC -->
+    <div id="tab-daily" class="tab-content">
+      <div class="card" style="margin-bottom: 16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+          <h3 class="card-title" style="margin-bottom:0;">Nuevo FormSync</h3>
+          <button class="btn btn-white" onclick="resetDailyForm()" style="padding:8px 12px;">Nuevo formulario</button>
+        </div>
+        <div class="grid grid-2" style="gap: 12px; margin-top: 10px;">
+          <div>
+            <label class="kpi-sub">Fecha</label>
+            <input type="date" id="daily-date" class="form-input" />
+          </div>
+          <div>
+            <label class="kpi-sub">Equipo (separar por coma)</label>
+            <input type="text" id="daily-crew" class="form-input" placeholder="Juan, Ana" />
+          </div>
+          <div>
+            <label class="kpi-sub">Horas totales</label>
+            <input type="text" id="daily-hours" class="form-input" placeholder="8h" />
+          </div>
+          <div>
+            <label class="kpi-sub">Clima</label>
+            <input type="text" id="daily-weather" class="form-input" placeholder="Soleado 25°C" />
+          </div>
+          <div>
+            <label class="kpi-sub">Inicio</label>
+            <input type="time" id="daily-start" class="form-input" />
+          </div>
+          <div>
+            <label class="kpi-sub">Fin</label>
+            <input type="time" id="daily-end" class="form-input" />
+          </div>
+          <div>
+            <label class="kpi-sub">Crew (número)</label>
+            <input type="number" id="daily-crew-count" class="form-input" min="1" placeholder="5" />
+          </div>
+          <div>
+            <label class="kpi-sub">Foto (URL opcional)</label>
+            <input type="text" id="daily-photo" class="form-input" placeholder="https://...jpg" />
+          </div>
+        </div>
+        <label class="kpi-sub" style="margin-top: 10px;">Trabajo realizado</label>
+        <textarea id="daily-work" class="form-textarea" rows="2" placeholder="Descripción del trabajo..."></textarea>
+        <label class="kpi-sub" style="margin-top: 10px;">Materiales usados</label>
+        <textarea id="daily-materials" class="form-textarea" rows="2" placeholder="Listado breve de materiales"></textarea>
+        <label class="kpi-sub" style="margin-top: 10px;">Seguridad / incidencias</label>
+        <textarea id="daily-safety" class="form-textarea" rows="2" placeholder="Incidentes, EPP, observaciones"></textarea>
+        <label class="kpi-sub" style="margin-top: 10px;">Notas</label>
+        <textarea id="daily-notes" class="form-textarea" rows="2" placeholder="Notas adicionales"></textarea>
+        <div style="display:flex; justify-content:flex-end; margin-top:12px; gap:10px; flex-wrap:wrap;">
+          <button class="btn btn-white" onclick="resetDailyForm()">Cancelar</button>
+          <button class="btn btn-primary" onclick="saveDailyLog()">Guardar FormSync</button>
+        </div>
+      </div>
+      <h3 style="margin: 0 0 8px; font-size:16px; font-weight:700; color:#0f172a;">Historial FormSync</h3>
+      <div class="grid grid-2" id="dailyLogsContainer"></div>
     </div>
 
     <!-- TAB: RESUMEN -->
@@ -1539,184 +1995,49 @@
         </div>
       </div>
 
-      <!-- Estado del Proyecto Workflow -->
-      <div class="card" style="margin-bottom: 20px; padding: 20px; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 2px solid #e2e8f0;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-          <div>
-            <h3 style="font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M12 6v6l4 2"/>
-              </svg>
-              Estado Actual del Proyecto
-            </h3>
-            <p style="font-size: 12px; color: #64748b;">Workflow operativo con transiciones automáticas</p>
-          </div>
-          <button onclick="changeProjectState()" id="btnChangeState" style="background: rgba(2, 115, 94, 0.1); color: #02735E; border: 1px solid rgba(2, 115, 94, 0.3); padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.background='rgba(2, 115, 94, 0.15)'" onmouseout="this.style.background='rgba(2, 115, 94, 0.1)'">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="1 4 1 10 7 10"/>
-              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
-            </svg>
-            Cambiar Estado
-          </button>
-        </div>
-
-        <!-- Estado actual con badge grande -->
-        <div id="currentStateBadge" style="text-align: center; padding: 24px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-          <div style="font-size: 48px; margin-bottom: 12px;">⏳</div>
-          <div style="font-size: 22px; font-weight: 700; color: #1e293b; margin-bottom: 8px;">Cotizado</div>
-          <div style="font-size: 13px; color: #64748b;">Esperando aprobación del cliente</div>
-        </div>
-
-        <!-- Workflow visual -->
-        <div style="margin-top: 20px; padding: 16px; background: rgba(255,255,255,0.7); border-radius: 10px;">
-          <div style="font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 12px; text-align: center;">FLUJO DEL PROYECTO</div>
-          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
-            <div class="workflow-step" data-state="quoted" style="flex: 1; min-width: 100px; text-align: center; padding: 8px; background: #3b82f6; color: white; border-radius: 6px; font-size: 11px; font-weight: 600; opacity: 1;">
-              📋 Cotizado
-            </div>
-            <div style="color: #cbd5e1; font-weight: 700;">→</div>
-            <div class="workflow-step" data-state="approved" style="flex: 1; min-width: 100px; text-align: center; padding: 8px; background: #e5e7eb; color: #94a3b8; border-radius: 6px; font-size: 11px; font-weight: 600; opacity: 0.5;">
-              ✅ Aprobado
-            </div>
-            <div style="color: #cbd5e1; font-weight: 700;">→</div>
-            <div class="workflow-step" data-state="scheduled" style="flex: 1; min-width: 100px; text-align: center; padding: 8px; background: #e5e7eb; color: #94a3b8; border-radius: 6px; font-size: 11px; font-weight: 600; opacity: 0.5;">
-              📅 Programado
-            </div>
-            <div style="color: #cbd5e1; font-weight: 700;">→</div>
-            <div class="workflow-step" data-state="in-progress" style="flex: 1; min-width: 100px; text-align: center; padding: 8px; background: #e5e7eb; color: #94a3b8; border-radius: 6px; font-size: 11px; font-weight: 600; opacity: 0.5;">
-              🔧 En Proceso
-            </div>
-            <div style="color: #cbd5e1; font-weight: 700;">→</div>
-            <div class="workflow-step" data-state="completed" style="flex: 1; min-width: 100px; text-align: center; padding: 8px; background: #e5e7eb; color: #94a3b8; border-radius: 6px; font-size: 11px; font-weight: 600; opacity: 0.5;">
-              🎉 Completado
-            </div>
-          </div>
-          <div style="display: flex; justify-content: center; gap: 16px; margin-top: 12px; flex-wrap: wrap;">
-            <div class="workflow-step" data-state="paused" style="padding: 6px 12px; background: #fbbf24; color: white; border-radius: 6px; font-size: 10px; font-weight: 600; opacity: 0.4;">
-              ⏸️ Pausado
-            </div>
-            <div class="workflow-step" data-state="cancelled" style="padding: 6px 12px; background: #ef4444; color: white; border-radius: 6px; font-size: 10px; font-weight: 600; opacity: 0.4;">
-              ❌ Cancelado
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="grid-2">
-        <div class="card">
-          <h3 class="card-title">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <polyline points="12 6 12 12 16 14"/>
-            </svg>
-            Información del Proyecto
-          </h3>
-          <div class="info-grid">
-            <div class="info-item">
-              <span class="info-label">Cliente</span>
-              <span class="info-value">Residencial Torres</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Contacto</span>
-              <span class="info-value">María Torres</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Teléfono</span>
-              <span class="info-value">+52 33 1234 5678</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Email</span>
-              <span class="info-value">maria@torres.com</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Tipo de Servicio</span>
-              <span class="info-value">Instalación HVAC</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Contrato</span>
-              <span class="info-value">CT-2024-1024</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
+<!-- Estado + Flujo en paralelo -->
+      <div class="grid-2" style="gap:16px; margin-bottom:20px;">
+        <div class="card" style="padding: 20px; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 2px solid #e2e8f0;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <h3 class="card-title" style="margin-bottom: 0;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-              </svg>
-              Estado del Proyecto
-            </h3>
-            <button onclick="editProjectStatus()" style="background: rgba(2, 115, 94, 0.1); color: #02735E; border: 1px solid rgba(2, 115, 94, 0.3); padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.background='rgba(2, 115, 94, 0.15)'" onmouseout="this.style.background='rgba(2, 115, 94, 0.1)'">
+            <div>
+              <h3 style="font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M12 6v6l4 2"/>
+                </svg>
+                Estado Actual
+              </h3>
+              <p style="font-size: 12px; color: #64748b;">Estado operativo del proyecto</p>
+            </div>
+            <button onclick="changeProjectState()" id="btnChangeState" style="background: rgba(2, 115, 94, 0.1); color: #02735E; border: 1px solid rgba(2, 115, 94, 0.3); padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.background='rgba(2, 115, 94, 0.15)'" onmouseout="this.style.background='rgba(2, 115, 94, 0.1)';">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 11l3 3L22 4"/>
-                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                <polyline points="1 4 1 10 7 10"/>
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
               </svg>
-              Editar Checklist
+              Cambiar Estado
             </button>
           </div>
-          
-          <!-- Indicador de Change Order si aplica -->
-          <div id="changeOrderBanner" style="display: none; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <div style="font-size: 24px;">📝</div>
-              <div style="flex: 1;">
-                <div style="font-weight: 700; font-size: 13px; color: #92400e; margin-bottom: 2px;">CHANGE ORDER ACTIVO</div>
-                <div id="changeOrderDescription" style="font-size: 12px; color: #92400e;"></div>
-              </div>
+          <div id="currentStateBadge" style="text-align: center; padding: 24px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+            <div style="font-size: 48px; margin-bottom: 12px;" id="badgeEmoji">⏳</div>
+            <div style="font-size: 22px; font-weight: 700; color: #1e293b; margin-bottom: 8px;" id="badgeTitle">Estado</div>
+            <div style="font-size: 13px; color: #64748b;" id="badgeSubtitle">Descripción del estado</div>
+          </div>
+        </div>
+
+        <div class="card" style="padding: 20px; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 2px solid #e2e8f0;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div>
+              <h3 style="font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M12 6v6l4 2"/>
+                </svg>
+                Flujo del Proyecto
+              </h3>
+              <p style="font-size: 12px; color: #64748b;">Estados operativos del proyecto</p>
             </div>
           </div>
-          
-          <div class="timeline">
-            <div class="timeline-item">
-              <div class="timeline-dot"></div>
-              <div class="timeline-content">
-                <div class="timeline-title">Inspección inicial completada</div>
-                <div class="timeline-date">10 Nov 2024 - 08:00 AM</div>
-              </div>
-            </div>
-            <div class="timeline-item">
-              <div class="timeline-dot"></div>
-              <div class="timeline-content">
-                <div class="timeline-title">Instalación de ductos</div>
-                <div class="timeline-date">11 Nov 2024 - 09:00 AM</div>
-              </div>
-            </div>
-            <div class="timeline-item">
-              <div class="timeline-dot"></div>
-              <div class="timeline-content">
-                <div class="timeline-title">Montaje de unidades</div>
-                <div class="timeline-date">14 Nov 2024 - 10:00 AM</div>
-              </div>
-            </div>
-            <div class="timeline-item">
-              <div class="timeline-dot pending"></div>
-              <div class="timeline-content">
-                <div class="timeline-title">Pruebas de sistema</div>
-                <div class="timeline-date">19 Nov 2024 - Programado</div>
-              </div>
-            </div>
-            <div class="timeline-item">
-              <div class="timeline-dot pending"></div>
-              <div class="timeline-content">
-                <div class="timeline-title">Entrega final</div>
-                <div class="timeline-date">20 Nov 2024 - Pendiente</div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Botón de historial al final del card -->
-          <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
-            <button onclick="showProjectHistory()" style="width: 100%; background: rgba(59, 130, 246, 0.05); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='rgba(59, 130, 246, 0.1)'" onmouseout="this.style.background='rgba(59, 130, 246, 0.05)'">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
-              </svg>
-              Ver Historial de Cambios
-              <span style="background: #3b82f6; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700;" id="historyCount">0</span>
-            </button>
-          </div>
+          <div id="workflowRow" style="margin-top: 0; padding: 16px; background: rgba(255,255,255,0.7); border-radius: 10px;"></div>
         </div>
       </div>
     </div>
@@ -1787,78 +2108,14 @@
           </svg>
           Programación Detallada del Proyecto
         </h3>
-        
-        <div style="margin-top: 24px;">
-          <div style="display: grid; gap: 16px;">
-            <div style="background: #f0fdf4; border-left: 4px solid #10b981; padding: 16px; border-radius: 8px;">
-              <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
-                <div>
-                  <div style="font-weight: 600; font-size: 16px; margin-bottom: 4px;">Día 1-2: Inspección e Instalación Inicial</div>
-                  <div style="font-size: 14px; color: var(--text-secondary);">10-11 Nov 2024</div>
-                </div>
-                <span style="background: #10b981; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">COMPLETADO</span>
-              </div>
-              <div style="font-size: 14px; margin-top: 12px;">
-                • Inspección del sitio y mediciones<br>
-                • Preparación del área de trabajo<br>
-                • Instalación de ductos principales
-              </div>
-            </div>
-            
-            <div style="background: #f0fdf4; border-left: 4px solid #10b981; padding: 16px; border-radius: 8px;">
-              <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
-                <div>
-                  <div style="font-weight: 600; font-size: 16px; margin-bottom: 4px;">Día 3-5: Instalación de Sistema</div>
-                  <div style="font-size: 14px; color: var(--text-secondary);">12-14 Nov 2024</div>
-                </div>
-                <span style="background: #10b981; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">COMPLETADO</span>
-              </div>
-              <div style="font-size: 14px; margin-top: 12px;">
-                • Montaje de unidades interiores<br>
-                • Conexiones eléctricas<br>
-                • Instalación de controles
-              </div>
-            </div>
-            
-            <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; border-radius: 8px;">
-              <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
-                <div>
-                  <div style="font-weight: 600; font-size: 16px; margin-bottom: 4px;">Día 6-8: Pruebas y Ajustes</div>
-                  <div style="font-size: 14px; color: var(--text-secondary);">15-17 Nov 2024</div>
-                </div>
-                <span style="background: #f59e0b; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">EN PROGRESO</span>
-              </div>
-              <div style="font-size: 14px; margin-top: 12px;">
-                • Pruebas de presión del sistema<br>
-                • Calibración de temperaturas<br>
-                • Ajustes finales
-              </div>
-            </div>
-            
-            <div style="background: #f3f4f6; border-left: 4px solid #9ca3af; padding: 16px; border-radius: 8px;">
-              <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
-                <div>
-                  <div style="font-weight: 600; font-size: 16px; margin-bottom: 4px;">Día 9-10: Verificación Final</div>
-                  <div style="font-size: 14px; color: var(--text-secondary);">18-19 Nov 2024</div>
-                </div>
-                <span style="background: #9ca3af; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">PENDIENTE</span>
-              </div>
-              <div style="font-size: 14px; margin-top: 12px;">
-                • Inspección final con cliente<br>
-                • Capacitación de uso del sistema<br>
-                • Documentación y entrega
-              </div>
-            </div>
-          </div>
-          
-          <button class="btn btn-primary" style="margin-top: 20px;" onclick="editSchedule()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-            </svg>
-            Editar Programación
-          </button>
-        </div>
+        <div id="schedule-blocks" style="margin-top:24px; display:grid; gap:16px;"></div>
+        <button class="btn btn-primary" style="margin-top: 20px;" onclick="editSchedule()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          Editar Programación
+        </button>
       </div>
     </div>
 
@@ -1893,7 +2150,7 @@
     </div>
 
     <!-- Modal: Asignar Personal -->
-    <div id="assignStaffModal" class="modal" style="display: none;">
+    <div id="assignStaffModal" style="display: none;">
       <div class="modal-content" style="max-width: 600px;">
         <div class="modal-header">
           <h3>Asignar Personal al Proyecto</h3>
@@ -2126,16 +2383,15 @@
         titleElement.textContent = `${project.name} - ${project.client}`;
       }
       
-      // Check if project was converted from thread
-      if (project.convertedFromThread) {
-        const threadLinkContainer = document.getElementById('thread-link-container');
-        if (threadLinkContainer) {
-          threadLinkContainer.style.display = 'block';
-          
-          // Store thread ID globally for openLinkedThread function
-          window.linkedThreadId = project.convertedFromThread;
-          
-          console.log('🔗 Proyecto convertido desde thread:', project.convertedFromThread);
+      // Hero background con cover si existe
+      const hero = document.querySelector('.project-hero');
+      if (hero) {
+        if (project.cover) {
+          hero.style.backgroundImage = `linear-gradient(135deg, rgba(2,115,94,0.94) 0%, rgba(3,89,81,0.92) 60%), url(${project.cover})`;
+          hero.style.backgroundSize = 'cover';
+          hero.style.backgroundPosition = 'center';
+        } else {
+          hero.style.backgroundImage = 'linear-gradient(135deg, #02735E 0%, #035951 90%)';
         }
       }
       
@@ -2146,23 +2402,16 @@
       }
       
       // Update address
-      const addressElement = document.querySelector('.meta-item span');
+      const addressElement = document.getElementById('projectAddress');
       if (addressElement) {
-        addressElement.textContent = project.address || 'Sin dirección';
+        addressElement.querySelector('span').textContent = project.address || 'Sin dirección';
       }
-      
-      // Update project info in overview tab
-      const infoElements = document.querySelectorAll('.info-value');
-      if (infoElements.length >= 7) {
-        infoElements[0].textContent = project.name || 'N/A';
-        infoElements[1].textContent = project.client || 'N/A';
-        infoElements[2].textContent = project.contact || 'N/A';
-        infoElements[3].textContent = formatDate(project.startDate);
-        infoElements[4].textContent = formatDate(project.endDate);
-        infoElements[5].textContent = project.description || 'Sin descripción';
-        infoElements[6].textContent = `$${(project.amount || 0).toLocaleString()} USD`;
-      }
-      
+      renderProjectInfo(project);
+      renderProjectState(project);
+      updateKpis(project);
+      populateQuickGallery(project);
+
+      renderProjectInfo(project);
       console.log('✅ Project data rendered:', project);
     }
     
@@ -2274,7 +2523,149 @@
         }
       }
       
+      // KPIs rápidos
+      const kpiProgress = document.getElementById('kpi-progress');
+      if (kpiProgress) kpiProgress.textContent = `${percent}%`;
+      const kpiDates = document.getElementById('kpi-progress-dates');
+      if (kpiDates) kpiDates.textContent = `${formatDate(project.startDate)} - ${formatDate(project.endDate)} · ${totalDays} días`;
+      
+      // Render workflow visual con estado actual
+      const flowState = status === 'not-started' ? 'quoted' : status === 'overdue' ? 'in-progress' : status === 'completed' ? 'completed' : 'in-progress';
+      renderWorkflowRow(flowState);
       console.log('📊 Progress updated:', { percent, daysElapsed, totalDays, status });
+    }
+
+    function renderProjectInfo(project) {
+      const setText = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value || 'N/A';
+      };
+
+      setText('info-id', project.idSync || project.id || 'N/A');
+      setText('info-client', project.client || 'N/A');
+      setText('info-address', project.address || 'Sin dirección');
+      setText('info-status', project.status || 'Activo');
+
+      if (project.startDate) setText('info-start', formatDate(project.startDate));
+      if (project.endDate) setText('info-end', formatDate(project.endDate));
+      if (project.startDate && project.endDate) {
+        const start = new Date(project.startDate);
+        const end = new Date(project.endDate);
+        const days = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1);
+        setText('info-duration', `${days} días`);
+      }
+
+      setText('info-supervisor', project.supervisor || project.owner || 'No asignado');
+      setText('info-service', project.serviceType || project.category || 'Operativo');
+      setText('info-budget', project.budget ? `$${project.budget}` : 'No definido');
+      setText('info-owner', project.createdBy || project.accountOwner || 'Opsis Suite');
+      setText('info-sla', project.sla || project.priority || 'Estándar');
+      setText('info-contact', project.contactName || project.clientContact || 'N/A');
+      setText('info-phone', project.phone || project.contactPhone || 'N/A');
+      setText('info-email', project.email || project.contactEmail || 'N/A');
+      setText('info-plan', project.plan || project.tier || 'MotorSync Base');
+    }
+
+    function saveDailyLog() {
+      if (!currentProject) {
+        showToast('warning', 'No hay proyecto activo para guardar el diario.');
+        return;
+      }
+
+      const date = document.getElementById('daily-date')?.value || new Date().toISOString().slice(0,10);
+      const crewText = document.getElementById('daily-crew')?.value || '';
+      const crew = crewText ? crewText.split(',').map(c => c.trim()).filter(Boolean) : [];
+      const hours = document.getElementById('daily-hours')?.value || '';
+      const weather = document.getElementById('daily-weather')?.value || '';
+      const start = document.getElementById('daily-start')?.value || '';
+      const end = document.getElementById('daily-end')?.value || '';
+      const crewCount = Number(document.getElementById('daily-crew-count')?.value || 0) || null;
+      const work = document.getElementById('daily-work')?.value || '';
+      const materials = document.getElementById('daily-materials')?.value || '';
+      const safety = document.getElementById('daily-safety')?.value || '';
+      const notes = document.getElementById('daily-notes')?.value || '';
+      const photo = document.getElementById('daily-photo')?.value || '';
+
+      const key = `daily_logs_${currentProject.idSync || currentProject.id}`;
+      const logs = JSON.parse(localStorage.getItem(key) || '[]');
+      logs.unshift({
+        date, crew, hours, weather, start, end, crewCount, work, materials, safety, notes,
+        photos: photo ? [photo] : [],
+        createdAt: new Date().toISOString()
+      });
+      localStorage.setItem(key, JSON.stringify(logs));
+
+      renderDailyLogs(currentProject);
+      showToast('success', 'Reporte diario guardado.');
+      resetDailyForm();
+    }
+
+    function resetDailyForm() {
+      ['daily-date','daily-crew','daily-hours','daily-weather','daily-start','daily-end','daily-crew-count','daily-work','daily-materials','daily-safety','daily-notes','daily-photo']
+        .forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.value = '';
+        });
+      const today = new Date().toISOString().slice(0,10);
+      const dateEl = document.getElementById('daily-date');
+      if (dateEl) dateEl.value = today;
+    }
+
+    // Semillas y render wrappers para mantener secciones pobladas
+    function seedStaffData() {
+      const existing = localStorage.getItem(STAFF_KEY);
+      if (existing && JSON.parse(existing).length) return;
+      const demo = [
+        { id: 'STAFF-1', name: 'Juan Pérez', email: 'juan@opsis.demo', phone: '+52 55 1000 2000', role: 'supervisor' },
+        { id: 'STAFF-2', name: 'Ana García', email: 'ana@opsis.demo', phone: '+52 55 3000 4000', role: 'tech' },
+        { id: 'STAFF-3', name: 'Luis Romero', email: 'luis@opsis.demo', phone: '+52 55 5000 6000', role: 'admin' },
+        { id: 'STAFF-4', name: 'Carla Méndez', email: 'carla@opsis.demo', phone: '+52 55 7000 8000', role: 'owner' }
+      ];
+      localStorage.setItem(STAFF_KEY, JSON.stringify(demo));
+    }
+
+    function renderTeamSection(project) {
+      seedStaffData();
+      const assignmentsKey = `project_staff_${project.idSync || project.id}`;
+      const existing = JSON.parse(localStorage.getItem(assignmentsKey) || '[]');
+      if (!existing.length) {
+        const allStaff = JSON.parse(localStorage.getItem(STAFF_KEY) || '[]');
+        const demoAssign = allStaff.slice(0, 2).map(s => ({ staffId: s.id, assignedDate: new Date().toISOString(), projectRole: null }));
+        localStorage.setItem(assignmentsKey, JSON.stringify(demoAssign));
+      }
+      renderAssignedTeam();
+    }
+
+    function seedPhotoData() {
+      const photos = loadProjectPhotos();
+      if (photos.length) return;
+      const demoPhotos = [
+        { id: 'PHOTO-1', category: 'before', caption: 'Condición inicial fachada', url: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=80', uploadDate: new Date().toISOString() },
+        { id: 'PHOTO-2', category: 'during', caption: 'Instalación ductos', url: 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=800&q=80', uploadDate: new Date().toISOString() },
+        { id: 'PHOTO-3', category: 'after', caption: 'Entrega preliminar', url: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=800&q=80', uploadDate: new Date().toISOString() }
+      ];
+      saveProjectPhotos(demoPhotos);
+    }
+
+    function renderPhotosSection(project) {
+      seedPhotoData();
+      renderPhotoGallery();
+    }
+
+    function seedDocumentData() {
+      const docs = loadProjectDocuments();
+      if (docs.length) return;
+      const demoDocs = [
+        { id: 'DOC-1', category: 'contrato', description: 'Contrato firmado', fileName: 'Contrato_Cliente.pdf', fileSize: 560000, fileType: 'application/pdf', url: '#', uploadDate: new Date().toISOString(), uploadedBy: 'Opsis Suite', origin: 'project' },
+        { id: 'DOC-2', category: 'permiso', description: 'Permiso municipal', fileName: 'Permiso_Municipal.pdf', fileSize: 230000, fileType: 'application/pdf', url: '#', uploadDate: new Date().toISOString(), uploadedBy: 'Opsis Suite', origin: 'project' },
+        { id: 'DOC-3', category: 'plano', description: 'Plano HVAC', fileName: 'Plano_HVAC.dwg', fileSize: 1200000, fileType: 'application/octet-stream', url: '#', uploadDate: new Date().toISOString(), uploadedBy: 'Opsis Suite', origin: 'project' }
+      ];
+      saveProjectDocuments(demoDocs);
+    }
+
+    function renderDocsSection(project) {
+      seedDocumentData();
+      renderDocumentsList();
     }
 
     // Initialize on page load
@@ -2286,6 +2677,11 @@
         initializeProjectHistory();
         updateHistoryCounter();
         checkForActiveChangeOrder();
+        renderDailyLogs(currentProject);
+        renderTeamSection(currentProject);
+        renderPhotosSection(currentProject);
+        renderDocsSection(currentProject);
+        renderScheduleBlocks();
       }
     });
     
@@ -2823,16 +3219,62 @@
       closeModal('docModal');
     }
 
-    // Función para editar programación
+    // Función para editar programación (modal con guardado)
     function editSchedule() {
-      alert('📅 Editar Programación\\n\\nEn desarrollo: Interfaz para modificar fechas y etapas del proyecto.\\n\\n• Ajustar fechas de inicio/fin\\n• Reordenar etapas\\n• Asignar recursos por etapa\\n• Establecer dependencias');
+      const scheduleKey = `project_schedule_${currentProject.idSync || currentProject.id}`;
+      const existing = JSON.parse(localStorage.getItem(scheduleKey) || '[]');
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      const phasesText = existing.map(p => `${p.title}|${p.start}|${p.end}|${p.status}|${p.notes || ''}`).join('\\n');
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 640px;">
+          <div class="modal-header">
+            <div class="modal-title" style="gap:10px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Editar Programación
+            </div>
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
+          </div>
+          <div class="modal-body" style="display:grid; gap:12px;">
+            <div class="form-group">
+              <label class="form-label">Etapas (formato: título|inicio|fin|status|notas)</label>
+              <textarea class="form-textarea" id="sch-lines" rows="5" placeholder="Inspección|2024-11-10|2024-11-11|completed|Mediciones&#10;Instalación|2024-11-12|2024-11-14|completed|Montaje de unidades">${phasesText}</textarea>
+            </div>
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px; font-size:13px; color:#475569;">
+              Demo: guardado local. En producción se sincronizará con ProjectSync/TimeSync.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-white" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
+            <button class="btn btn-primary" onclick="saveScheduleModal(this)">Guardar</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function saveScheduleModal(btn) {
+      const modal = btn.closest('.modal-overlay');
+      const lines = modal.querySelector('#sch-lines')?.value || '';
+      const phases = lines.split(/\\n/).map(l => l.trim()).filter(Boolean).map(line => {
+        const [title, start, end, status, notes] = line.split('|').map(x => x && x.trim());
+        return { title: title || 'Etapa', start: start || '', end: end || '', status: status || 'pending', notes: notes || '' };
+      });
+      const scheduleKey = `project_schedule_${currentProject.idSync || currentProject.id}`;
+      localStorage.setItem(scheduleKey, JSON.stringify(phases));
+      modal.remove();
+      renderScheduleBlocks();
+      uiToast('success', 'Programación actualizada');
     }
 
     // Función para contactar miembro del equipo
-    function contactMember(name, phone) {
-      if (confirm(`📞 Contactar a ${name}\\n\\nTeléfono: ${phone}\\n\\n¿Deseas llamar ahora?`)) {
-        alert(`Marcando ${phone}...\\n\\nEn un entorno móvil, esto abriría la aplicación de teléfono.`);
-      }
+    async function contactMember(name, phone) {
+      const ok = await uiConfirm(`📞 Contactar a ${name}\\n\\nTeléfono: ${phone}\\n\\n¿Deseas llamar ahora?`, {
+        confirmText: 'Llamar',
+        cancelText: 'Cancelar'
+      });
+      if (!ok) return;
+      uiToast('info', `Marcando ${phone}... (demo)`);
     }
 
     // Función para agregar miembro al equipo
@@ -2916,12 +3358,15 @@
     }
 
     // Función para marcar proyecto como COMPLETADO (scope terminado)
-    function completeProject() {
+    async function completeProject() {
       toggleActionsMenu(); // Cerrar menú
-      if (confirm('✓ Marcar Proyecto como COMPLETADO\n\nEsto indica que:\n• El scope de trabajo ha sido terminado\n• Quedan pendientes administrativos (pagos, facturas, etc.)\n\n¿Marcar como completado?')) {
-        console.log('Marcando proyecto como completado...');
-        alert('✓ Proyecto marcado como COMPLETADO\n\nPendientes:\n• Verificar pagos recibidos\n• Emitir facturas pendientes\n• Documentación final\n\nUna vez todo esté listo, usa "Cerrar Proyecto"');
-      }
+      const ok = await uiConfirm('✓ Marcar Proyecto como COMPLETADO\n\nEsto indica que:\n• El scope de trabajo ha sido terminado\n• Quedan pendientes administrativos (pagos, facturas, etc.)\n\n¿Marcar como completado?', {
+        confirmText: 'Marcar completado',
+        cancelText: 'Cancelar'
+      });
+      if (!ok) return;
+      console.log('Marcando proyecto como completado...');
+      uiToast('success', 'Proyecto marcado como COMPLETADO. Revisa pendientes administrativos.');
     }
 
     // Función para editar el estado del proyecto como checklist
@@ -3157,15 +3602,17 @@
     }
 
     // Cargar template
-    function loadTemplate(templateType) {
+    async function loadTemplate(templateType) {
       if (!checklistTemplates[templateType]) {
-        alert('❌ Error\n\nTemplate no encontrado.');
+        uiToast('error', '❌ Error: Template no encontrado.');
         return;
       }
       
-      if (!confirm(`🚀 Cargar Template: ${templateType.toUpperCase()}\n\n¿Deseas cargar el template predefinido para ${templateType}?\n\nEsto agregará ${checklistTemplates[templateType].length} tareas al checklist.`)) {
-        return;
-      }
+      const ok = await uiConfirm(`🚀 Cargar Template: ${templateType.toUpperCase()}\n\n¿Deseas cargar el template predefinido para ${templateType}?\n\nEsto agregará ${checklistTemplates[templateType].length} tareas al checklist.`, {
+        confirmText: 'Cargar',
+        cancelText: 'Cancelar'
+      });
+      if (!ok) return;
       
       const checklist = checklistTemplates[templateType].map((item, index) => ({
         id: `TASK-${Date.now()}-${index}`,
@@ -3179,7 +3626,7 @@
       renderChecklistItems();
       updateChecklistProgress();
       
-      alert(`✅ Template Cargado\n\nSe han agregado ${checklist.length} tareas al checklist.\n\nAhora puedes personalizarlas según tus necesidades.`);
+      uiToast('success', `Template cargado. ${checklist.length} tareas agregadas.`);
     }
 
     // Renderizar items del checklist
@@ -3258,10 +3705,12 @@
     }
 
     // Eliminar tarea
-    function deleteChecklistItem(taskId) {
-      if (!confirm('⚠️ Eliminar Tarea\n\n¿Estás seguro de eliminar esta tarea?\n\nEsta acción no se puede deshacer.')) {
-        return;
-      }
+    async function deleteChecklistItem(taskId) {
+      const ok = await uiConfirm('⚠️ Eliminar Tarea\n\n¿Estás seguro de eliminar esta tarea?\n\nEsta acción no se puede deshacer.', {
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar'
+      });
+      if (!ok) return;
       
       const checklist = loadProjectChecklist();
       const filtered = checklist.filter(t => t.id !== taskId);
@@ -3272,16 +3721,17 @@
     }
 
     // Limpiar todo el checklist
-    function clearChecklist() {
-      if (!confirm('⚠️ Limpiar Checklist\n\n¿Estás seguro de eliminar TODAS las tareas?\n\nEsta acción no se puede deshacer.')) {
-        return;
-      }
+    async function clearChecklist() {
+      const ok = await uiConfirm('⚠️ Limpiar Checklist\n\n¿Estás seguro de eliminar TODAS las tareas?\n\nEsta acción no se puede deshacer.', {
+        confirmText: 'Limpiar',
+        cancelText: 'Cancelar'
+      });
+      if (!ok) return;
       
       saveProjectChecklist([]);
       renderChecklistItems();
       updateChecklistProgress();
-      
-      alert('✅ Checklist limpiado correctamente.');
+      uiToast('success', 'Checklist limpiado correctamente.');
     }
 
     // Actualizar progreso del checklist
@@ -3499,16 +3949,18 @@
       document.body.insertAdjacentHTML('beforeend', modalHTML);
     }
 
-    function restoreProjectStatus(historyIndex) {
-      if (!confirm('⚠️ Restaurar Estado Anterior\n\n¿Deseas restaurar el estado del proyecto a esta versión?\n\nEsto creará una nueva entrada en el historial.')) {
-        return;
-      }
+    async function restoreProjectStatus(historyIndex) {
+      const ok = await uiConfirm('⚠️ Restaurar Estado Anterior\n\n¿Deseas restaurar el estado del proyecto a esta versión?\n\nEsto creará una nueva entrada en el historial.', {
+        confirmText: 'Restaurar',
+        cancelText: 'Cancelar'
+      });
+      if (!ok) return;
 
       const history = JSON.parse(localStorage.getItem('projectStatusHistory_IDSync250001') || '[]');
       const entryToRestore = history[historyIndex];
       
       if (!entryToRestore) {
-        alert('❌ Error: No se pudo encontrar esta versión en el historial.');
+        uiToast('error', '❌ Error: No se pudo encontrar esta versión en el historial.');
         return;
       }
 
@@ -3762,15 +4214,18 @@
     }
 
     // Función para CERRAR proyecto (todo terminado)
-    function closeProject() {
+    async function closeProject() {
       toggleActionsMenu(); // Cerrar menú
-      if (confirm('🔒 CERRAR PROYECTO\n\nEsto indica que TODO está completo:\n• Trabajo terminado\n• Pagos recibidos\n• Facturas emitidas\n• Documentación completa\n\nDespués de cerrar, solo podrás crear Change Orders.\n\n¿Cerrar proyecto?')) {
-        console.log('Cerrando proyecto...');
-        alert('🔒 Proyecto CERRADO\n\nTodo finalizado. El proyecto está archivado.\n\nSi necesitas trabajar adicional en el futuro,\nusa "Change Order" (CO-1, CO-2, CO-3...)');
-        setTimeout(() => {
-          window.location.href = 'motorsync.html';
-        }, 2000);
-      }
+      const ok = await uiConfirm('🔒 CERRAR PROYECTO\n\nEsto indica que TODO está completo:\n• Trabajo terminado\n• Pagos recibidos\n• Facturas emitidas\n• Documentación completa\n\nDespués de cerrar, solo podrás crear Change Orders.\n\n¿Cerrar proyecto?', {
+        confirmText: 'Cerrar proyecto',
+        cancelText: 'Cancelar'
+      });
+      if (!ok) return;
+      console.log('Cerrando proyecto...');
+      uiToast('success', 'Proyecto CERRADO. Se archiva y solo permite Change Orders.');
+      setTimeout(() => {
+        window.location.href = 'motorsync.html';
+      }, 2000);
     }
 
     // Función para crear Change Order
@@ -4073,17 +4528,23 @@
     }
 
     // Función para CANCELAR proyecto
-    function cancelProject() {
+    async function cancelProject() {
       toggleActionsMenu(); // Cerrar menú
-      if (confirm('⚠️ CANCELAR PROYECTO\n\nEsto detendrá el proyecto permanentemente:\n• Se liberarán recursos asignados\n• Se cancelarán órdenes pendientes\n• No se podrá reactivar\n\n¿Estás seguro de cancelar?')) {
-        if (confirm('⚠️ CONFIRMACIÓN FINAL\n\n¿Realmente deseas CANCELAR este proyecto?\n\nEsta acción no se puede deshacer.')) {
-          console.log('Cancelando proyecto...');
-          alert('❌ Proyecto CANCELADO\n\nSe han liberado todos los recursos.\nRedirigiendo a MotorSync...');
-          setTimeout(() => {
-            window.location.href = 'motorsync.html';
-          }, 1500);
-        }
-      }
+      const first = await uiConfirm('⚠️ CANCELAR PROYECTO\n\nEsto detendrá el proyecto permanentemente:\n• Se liberarán recursos asignados\n• Se cancelarán órdenes pendientes\n• No se podrá reactivar\n\n¿Estás seguro de cancelar?', {
+        confirmText: 'Cancelar proyecto',
+        cancelText: 'Volver'
+      });
+      if (!first) return;
+      const second = await uiConfirm('⚠️ CONFIRMACIÓN FINAL\n\n¿Realmente deseas CANCELAR este proyecto?\n\nEsta acción no se puede deshacer.', {
+        confirmText: 'Confirmar cancelación',
+        cancelText: 'Abortar'
+      });
+      if (!second) return;
+      console.log('Cancelando proyecto...');
+      uiToast('warning', 'Proyecto CANCELADO. Redirigiendo a MotorSync...');
+      setTimeout(() => {
+        window.location.href = 'motorsync.html';
+      }, 1500);
     }
 
     // ===================================
@@ -4199,42 +4660,47 @@
     }
 
     // Renderizar estado actual
-    function renderProjectState() {
-      const currentState = getCurrentProjectState();
-      const stateConfig = PROJECT_STATES[currentState];
+    function renderProjectState(project) {
+      const statusFromProject = project && (project.status || project.state || project.phase);
+      const currentState = statusFromProject || getCurrentProjectState() || 'in-progress';
+      const map = {
+        'quoted': { emoji: '📋', name: 'Cotizado', description: 'Esperando aprobación del cliente', color: '#e2e8f0' },
+        'approved': { emoji: '✅', name: 'Aprobado', description: 'Listo para programar', color: '#c7f9cc' },
+        'scheduled': { emoji: '📅', name: 'Programado', description: 'Fechas asignadas', color: '#bae6fd' },
+        'in-progress': { emoji: '🔧', name: 'En Proceso', description: 'Trabajo en curso', color: '#bbf7d0' },
+        'completed': { emoji: '🎉', name: 'Completado', description: 'Proyecto finalizado', color: '#dbeafe' },
+        'overdue': { emoji: '⚠️', name: 'Retrasado', description: 'Fuera de fecha', color: '#fee2e2' }
+      };
+      const stateConfig = map[currentState] || map['in-progress'];
       
-      if (!stateConfig) return;
+      // Actualizar badge compacto
+      const badgeEmoji = document.getElementById('badgeEmoji');
+      const badgeTitle = document.getElementById('badgeTitle');
+      const badgeSubtitle = document.getElementById('badgeSubtitle');
+      if (badgeEmoji) badgeEmoji.textContent = stateConfig.emoji;
+      if (badgeTitle) badgeTitle.textContent = stateConfig.name;
+      if (badgeSubtitle) badgeSubtitle.textContent = stateConfig.description;
       
-      // Actualizar badge grande
-      const badge = document.getElementById('currentStateBadge');
-      if (badge) {
-        badge.innerHTML = `
-          <div style="font-size: 48px; margin-bottom: 12px;">${stateConfig.emoji}</div>
-          <div style="font-size: 22px; font-weight: 700; color: #1e293b; margin-bottom: 8px;">${stateConfig.name}</div>
-          <div style="font-size: 13px; color: #64748b;">${stateConfig.description}</div>
-        `;
-      }
-      
-      // Actualizar workflow steps
+      // Actualizar workflow steps heredados
       document.querySelectorAll('.workflow-step').forEach(step => {
         const stepState = step.dataset.state;
         
         if (stepState === currentState) {
-          // Estado actual - resaltado
           step.style.background = stateConfig.color;
-          step.style.color = 'white';
+          step.style.color = '#0f172a';
           step.style.opacity = '1';
           step.style.boxShadow = `0 4px 12px ${stateConfig.color}40`;
-          step.style.transform = 'scale(1.05)';
+          step.style.transform = 'scale(1.02)';
         } else {
-          // Otros estados - grisados
           step.style.background = '#e5e7eb';
           step.style.color = '#94a3b8';
-          step.style.opacity = '0.5';
+          step.style.opacity = '0.65';
           step.style.boxShadow = 'none';
           step.style.transform = 'scale(1)';
         }
       });
+      
+      renderWorkflowRow(currentState);
       
       // Habilitar/deshabilitar botón de cambio según estado
       const btnChange = document.getElementById('btnChangeState');
@@ -4345,26 +4811,28 @@
     }
 
     // Confirmar cambio de estado
-    function confirmStateChange() {
+    async function confirmStateChange() {
       const selected = document.querySelector('input[name="newState"]:checked');
       
       if (!selected) {
-        alert('❌ Error\n\nPor favor selecciona un estado.');
+        uiToast('error', 'Por favor selecciona un estado.');
         return;
       }
       
       const newState = selected.value;
       const stateConfig = PROJECT_STATES[newState];
       
-      if (!confirm(`🔄 Confirmar Cambio de Estado\n\n¿Confirmas cambiar el estado del proyecto a "${stateConfig.name}"?\n\n${stateConfig.emoji} ${stateConfig.description}\n\nEste cambio se registrará en el historial.`)) {
-        return;
-      }
+      const ok = await uiConfirm(`🔄 Confirmar Cambio de Estado\n\n¿Confirmas cambiar el estado del proyecto a "${stateConfig.name}"?\n\n${stateConfig.emoji} ${stateConfig.description}\n\nEste cambio se registrará en el historial.`, {
+        confirmText: 'Confirmar',
+        cancelText: 'Cancelar'
+      });
+      if (!ok) return;
       
       saveProjectState(newState);
       
       closeModal('stateChangeModal');
       
-      alert(`✅ Estado Actualizado\n\n${stateConfig.emoji} Nuevo Estado: ${stateConfig.name}\n\nEl proyecto se ha actualizado correctamente.`);
+      uiToast('success', `${stateConfig.emoji} Estado actualizado a ${stateConfig.name}.`);
     }
 
     // Helper: convertir hex a rgb para backgrounds
@@ -4391,8 +4859,12 @@
       
       const key = `photo_gallery_${projectId}`;
       const stored = localStorage.getItem(key);
-      
-      return stored ? JSON.parse(stored) : [];
+      const parsed = stored ? JSON.parse(stored) : [];
+      if (parsed.length) return parsed;
+      return [
+        { id: 'PHOTO-DEMO-1', category: 'before', caption: 'Condición inicial', url: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=800&q=80', uploadDate: new Date().toISOString() },
+        { id: 'PHOTO-DEMO-2', category: 'during', caption: 'Trabajo en proceso', url: 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=800&q=80', uploadDate: new Date().toISOString() }
+      ];
     }
 
     // Guardar fotos del proyecto
@@ -4500,9 +4972,14 @@
                   </svg>
                   ${new Date(photo.uploadDate).toLocaleDateString('es-MX', { month: 'short', day: 'numeric' })}
                 </p>
-                <button onclick="event.stopPropagation(); deletePhoto('${photo.id}')" style="background: #fee2e2; color: #dc2626; border: none; padding: 6px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'">
-                  🗑️ Eliminar
-                </button>
+                <div style="display:flex; gap:6px;">
+                  <button onclick="event.stopPropagation(); renamePhoto('${photo.id}')" style="background: #e0f2fe; color: #0369a1; border: none; padding: 6px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#bae6fd'" onmouseout="this.style.background='#e0f2fe'">
+                    Renombrar
+                  </button>
+                  <button onclick="event.stopPropagation(); deletePhoto('${photo.id}')" style="background: #fee2e2; color: #dc2626; border: none; padding: 6px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'">
+                    🗑️ Eliminar
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -4698,17 +5175,31 @@
     }
 
     // Eliminar foto
-    function deletePhoto(photoId) {
-      if (!confirm('⚠️ Eliminar Foto\n\n¿Estás seguro de eliminar esta foto?\n\nEsta acción no se puede deshacer.')) {
-        return;
-      }
+    async function deletePhoto(photoId) {
+      const ok = await uiConfirm('⚠️ Eliminar Foto\n\n¿Estás seguro de eliminar esta foto?\n\nEsta acción no se puede deshacer.', {
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar'
+      });
+      if (!ok) return;
       
       const photos = loadProjectPhotos();
       const filtered = photos.filter(p => p.id !== photoId);
       
       saveProjectPhotos(filtered);
       
-      alert('✅ Foto eliminada correctamente.');
+      uiToast('success', 'Foto eliminada correctamente.');
+    }
+
+    // Renombrar foto
+    async function renamePhoto(photoId) {
+      const photos = loadProjectPhotos();
+      const photo = photos.find(p => p.id === photoId);
+      if (!photo) return;
+      const newName = prompt('Nuevo nombre para la foto', photo.caption || 'Foto del proyecto');
+      if (!newName) return;
+      photo.caption = newName;
+      saveProjectPhotos(photos);
+      uiToast('success', 'Nombre actualizado');
     }
 
     // Helper: obtener nombre de categoría
@@ -4727,7 +5218,7 @@
     document.addEventListener('DOMContentLoaded', function() {
       // Solo ejecutar si estamos en viewsync.html
       if (window.location.pathname.includes('viewsync.html')) {
-        renderProjectState();
+        renderProjectState(currentProject);
         renderPhotoGallery();
         renderDocumentsList();
       }
@@ -4765,36 +5256,82 @@
       renderDocumentsList();
     }
 
-    // Renderizar lista de documentos
+    // Renderizar lista de documentos con secciones
     function renderDocumentsList() {
-      const documents = loadProjectDocuments();
+      const projectDocs = loadProjectDocuments();
+      const generatedDocs = getGeneratedDocsFromDailyLogs();
+      const allDocs = [...projectDocs, ...generatedDocs];
       const listEl = document.getElementById('documents-list');
-      
       if (!listEl) return;
-      
-      // Actualizar contadores
+
+      const categoryEmoji = { contrato: '📄', permiso: '📋', factura: '💰', plano: '📐', manual: '📚', otro: '📎', daily: '📝', foto: '🖼️' };
+      const categoryName = { contrato: 'Contrato', permiso: 'Permiso', factura: 'Factura', plano: 'Plano', manual: 'Manual', otro: 'Otro', daily: 'FormSync', foto: 'Fotos' };
+      const categoryColor = { contrato: '#3b82f6', permiso: '#10b981', factura: '#f59e0b', plano: '#8b5cf6', manual: '#06b6d4', otro: '#64748b', daily: '#0ea5e9', foto: '#16a34a' };
+
       const counts = {
-        all: documents.length,
-        contrato: documents.filter(d => d.category === 'contrato').length,
-        permiso: documents.filter(d => d.category === 'permiso').length,
-        factura: documents.filter(d => d.category === 'factura').length,
-        plano: documents.filter(d => d.category === 'plano').length,
-        manual: documents.filter(d => d.category === 'manual').length,
-        otro: documents.filter(d => d.category === 'otro').length
+        all: allDocs.length,
+        contrato: allDocs.filter(d => d.category === 'contrato').length,
+        permiso: allDocs.filter(d => d.category === 'permiso').length,
+        factura: allDocs.filter(d => d.category === 'factura').length,
+        plano: allDocs.filter(d => d.category === 'plano').length,
+        manual: allDocs.filter(d => d.category === 'manual').length,
+        otro: allDocs.filter(d => d.category === 'otro').length
       };
-      
       Object.keys(counts).forEach(cat => {
         const counter = document.getElementById(`doc-count-${cat}`);
         if (counter) counter.textContent = counts[cat];
       });
-      
-      // Filtrar documentos
-      const filtered = currentDocFilter === 'all'
-        ? documents
-        : documents.filter(d => d.category === currentDocFilter);
-      
-      // Renderizar
-      if (filtered.length === 0) {
+
+      const applyFilter = docs => currentDocFilter === 'all' ? docs : docs.filter(d => d.category === currentDocFilter);
+      const filteredProjectDocs = applyFilter(projectDocs);
+      const filteredGeneratedDocs = applyFilter(generatedDocs);
+
+      const renderCards = docs => {
+        if (docs.length === 0) {
+          return `<div style="text-align: center; padding: 24px; color: #94a3b8; border: 1px dashed #e5e7eb; border-radius: 10px;">Sin elementos en esta sección</div>`;
+        }
+        return docs.map(doc => {
+          const fileIcon = getFileIcon(doc.fileName);
+          const fileSize = doc.fileSize ? formatFileSize(doc.fileSize) : '';
+          return `
+            <div class="doc-item" style="padding: 16px; background: white; border: 2px solid #e5e7eb; border-radius: 12px; display: flex; align-items: center; gap: 16px; transition: all 0.2s; cursor: pointer;" onmouseover="this.style.borderColor='#cbd5e1'" onmouseout="this.style.borderColor='#e5e7eb'" onclick="viewDocument('${doc.id}')">
+              <div style="font-size: 32px;">${fileIcon}</div>
+              <div style="flex: 1;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                  <span style="font-weight: 600; font-size: 14px; color: #1e293b;">${doc.fileName}</span>
+                  <span style="background: ${categoryColor[doc.category] || '#02735E'}; color: white; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">
+                    ${categoryEmoji[doc.category] || '📎'} ${categoryName[doc.category] || 'Documento'}
+                  </span>
+                </div>
+                ${doc.description ? `<div style="font-size: 12px; color: #64748b; margin-bottom: 6px;">${doc.description}</div>` : ''}
+                <div style="font-size: 11px; color: #94a3b8;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                  ${doc.uploadDate ? new Date(doc.uploadDate).toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Sin fecha'}
+                  ${fileSize ? ` • ${fileSize}` : ''}
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button onclick="event.stopPropagation(); downloadDocument('${doc.id}')" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: none; padding: 10px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;" onmouseover="this.style.background='rgba(59, 130, 246, 0.2)'" onmouseout="this.style.background='rgba(59, 130, 246, 0.1)'">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  Descargar
+                </button>
+                <button onclick="event.stopPropagation(); deleteDocument('${doc.id}')" style="background: #fee2e2; color: #dc2626; border: none; padding: 10px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'">
+                  🗑️ Eliminar
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      };
+
+      if (filteredProjectDocs.length === 0 && filteredGeneratedDocs.length === 0) {
         listEl.innerHTML = `
           <div style="text-align: center; padding: 60px 20px; color: #94a3b8;">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 16px;">
@@ -4807,73 +5344,55 @@
         `;
         return;
       }
-      
-      const categoryEmoji = {
-        contrato: '📄',
-        permiso: '📋',
-        factura: '💰',
-        plano: '📐',
-        manual: '📚',
-        otro: '📎'
-      };
-      
-      const categoryName = {
-        contrato: 'Contrato',
-        permiso: 'Permiso',
-        factura: 'Factura',
-        plano: 'Plano',
-        manual: 'Manual',
-        otro: 'Otro'
-      };
-      
-      const categoryColor = {
-        contrato: '#3b82f6',
-        permiso: '#10b981',
-        factura: '#f59e0b',
-        plano: '#8b5cf6',
-        manual: '#06b6d4',
-        otro: '#64748b'
-      };
-      
-      listEl.innerHTML = filtered.map(doc => {
-        const fileIcon = getFileIcon(doc.fileName);
-        const fileSize = formatFileSize(doc.fileSize);
-        
-        return `
-          <div class="doc-item" style="padding: 16px; background: white; border: 2px solid #e5e7eb; border-radius: 12px; display: flex; align-items: center; gap: 16px; transition: all 0.2s; cursor: pointer;" onmouseover="this.style.borderColor='#cbd5e1'" onmouseout="this.style.borderColor='#e5e7eb'" onclick="viewDocument('${doc.id}')">
-            <div style="font-size: 32px;">${fileIcon}</div>
-            <div style="flex: 1;">
-              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                <span style="font-weight: 600; font-size: 14px; color: #1e293b;">${doc.fileName}</span>
-                <span style="background: ${categoryColor[doc.category]}; color: white; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">
-                  ${categoryEmoji[doc.category]} ${categoryName[doc.category]}
-                </span>
-              </div>
-              ${doc.description ? `<div style="font-size: 12px; color: #64748b; margin-bottom: 6px;">${doc.description}</div>` : ''}
-              <div style="font-size: 11px; color: #94a3b8;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
-                  <circle cx="12" cy="12" r="10"/>
-                  <polyline points="12 6 12 12 16 14"/>
-                </svg>
-                ${new Date(doc.uploadDate).toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric' })} • ${fileSize}
-              </div>
-            </div>
-            <div style="display: flex; gap: 8px;">
-              <button onclick="event.stopPropagation(); downloadDocument('${doc.id}')" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: none; padding: 10px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;" onmouseover="this.style.background='rgba(59, 130, 246, 0.2)'" onmouseout="this.style.background='rgba(59, 130, 246, 0.1)'">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="7 10 12 15 17 10"/>
-                  <line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
-                Descargar
-              </button>
-              <button onclick="event.stopPropagation(); deleteDocument('${doc.id}')" style="background: #fee2e2; color: #dc2626; border: none; padding: 10px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'">
-                🗑️ Eliminar
-              </button>
-            </div>
+
+      listEl.innerHTML = `
+        <div class="grid-2" style="gap:16px;">
+          <div>
+            <div style="font-weight:700; color:#0f172a; margin-bottom:8px;">Documentos del Proyecto</div>
+            ${renderCards(filteredProjectDocs)}
           </div>
-        `;
-      }).join('');
+          <div>
+            <div style="font-weight:700; color:#0f172a; margin-bottom:8px;">Generados desde MotorSync</div>
+            ${renderCards(filteredGeneratedDocs)}
+          </div>
+        </div>
+      `;
+    }
+
+    function getGeneratedDocsFromDailyLogs() {
+      if (!currentProject) return [];
+      const key = `daily_logs_${currentProject.idSync || currentProject.id}`;
+      let logs = [];
+      try {
+        logs = JSON.parse(localStorage.getItem(key) || '[]');
+      } catch (e) {
+        logs = [];
+      }
+      if (!logs.length) {
+        return [{
+          id: 'DAILY-DEMO',
+          category: 'daily',
+          description: 'Ejemplo de reporte diario',
+          fileName: 'Reporte_Diario.pdf',
+          fileSize: 220000,
+          fileType: 'application/pdf',
+          url: '#',
+          uploadDate: new Date().toISOString(),
+          uploadedBy: 'Opsis Suite',
+          origin: 'generated'
+        }];
+      }
+      return logs.map((log, idx) => ({
+        id: `DAILY-${idx}`,
+        category: 'daily',
+        description: log.work || 'Actividad diaria',
+        fileName: `Diario_${formatDate(log.date)}.pdf`,
+        fileSize: 150000,
+        fileType: 'application/pdf',
+        url: '#',
+        uploadDate: log.createdAt || log.date,
+        uploadedBy: (log.crew && log.crew[0]) || 'Equipo'
+      }));
     }
 
     // Filtrar documentos
@@ -5025,6 +5544,10 @@
       const doc = documents.find(d => d.id === docId);
       
       if (!doc) return;
+      if (!doc.url || doc.url === '#') {
+        uiToast('info', 'Documento demo disponible solo como referencia.');
+        return;
+      }
       
       // Si es PDF o imagen, abrir en nueva pestaña
       if (doc.fileType.includes('pdf') || doc.fileType.includes('image')) {
@@ -5041,6 +5564,10 @@
       const doc = documents.find(d => d.id === docId);
       
       if (!doc) return;
+      if (!doc.url || doc.url === '#') {
+        uiToast('info', 'Documento demo disponible solo como referencia.');
+        return;
+      }
       
       const link = document.createElement('a');
       link.href = doc.url;
@@ -5053,17 +5580,19 @@
     }
 
     // Eliminar documento
-    function deleteDocument(docId) {
-      if (!confirm('⚠️ Eliminar Documento\n\n¿Estás seguro de eliminar este documento?\n\nEsta acción no se puede deshacer.')) {
-        return;
-      }
+    async function deleteDocument(docId) {
+      const ok = await uiConfirm('⚠️ Eliminar Documento\n\n¿Estás seguro de eliminar este documento?\n\nEsta acción no se puede deshacer.', {
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar'
+      });
+      if (!ok) return;
       
       const documents = loadProjectDocuments();
       const filtered = documents.filter(d => d.id !== docId);
       
       saveProjectDocuments(filtered);
       
-      alert('✅ Documento eliminado correctamente.');
+      uiToast('success', 'Documento eliminado correctamente.');
     }
 
     // Helper: obtener icono de archivo
@@ -5520,15 +6049,22 @@
     }
 
     // Contactar staff
-    function contactStaff(name, phone) {
-      if (confirm(`¿Contactar a ${name}?\n\nTeléfono: ${phone}\n\n¿Deseas llamar ahora?`)) {
-        window.location.href = `tel:${phone}`;
-      }
+    async function contactStaff(name, phone) {
+      const ok = await uiConfirm(`¿Contactar a ${name}?\n\nTeléfono: ${phone}\n\n¿Deseas llamar ahora?`, {
+        confirmText: 'Llamar',
+        cancelText: 'Cancelar'
+      });
+      if (!ok) return;
+      window.location.href = `tel:${phone}`;
     }
 
     // Remover staff del proyecto
-    function removeStaffFromProject(staffId) {
-      if (!confirm('¿Estás seguro de remover este miembro del equipo?')) return;
+    async function removeStaffFromProject(staffId) {
+      const ok = await uiConfirm('¿Estás seguro de remover este miembro del equipo?', {
+        confirmText: 'Remover',
+        cancelText: 'Cancelar'
+      });
+      if (!ok) return;
       
       const assignmentsKey = `project_staff_${currentProject.idSync || currentProject.id}`;
       let assignments = JSON.parse(localStorage.getItem(assignmentsKey) || '[]');
@@ -5794,12 +6330,119 @@
       `;
     }
 
-    // Editar timeline (placeholder)
+    // Programación detallada (card)
+    function renderScheduleBlocks() {
+      const container = document.getElementById('schedule-blocks');
+      if (!container) return;
+      const scheduleKey = `project_schedule_${currentProject.idSync || currentProject.id}`;
+      let phases = JSON.parse(localStorage.getItem(scheduleKey) || '[]');
+      if (!phases.length) {
+        phases = [
+          { title: 'Día 1-2: Inspección e Instalación Inicial', start: '2024-11-10', end: '2024-11-11', status: 'completed', notes: 'Inspección del sitio y mediciones' },
+          { title: 'Día 3-5: Instalación de Sistema', start: '2024-11-12', end: '2024-11-14', status: 'completed', notes: 'Montaje de unidades, conexiones eléctricas' },
+          { title: 'Día 6-8: Pruebas y Ajustes', start: '2024-11-15', end: '2024-11-17', status: 'in-progress', notes: 'Pruebas de presión y calibración' },
+          { title: 'Día 9-10: Verificación Final', start: '2024-11-18', end: '2024-11-19', status: 'pending', notes: 'Inspección final y entrega' }
+        ];
+      }
+      const statusColor = {
+        'completed': { bg: '#f0fdf4', border: '#10b981', label: 'COMPLETADO', text: '#065f46' },
+        'in-progress': { bg: '#fef3c7', border: '#f59e0b', label: 'EN PROGRESO', text: '#92400e' },
+        'pending': { bg: '#f3f4f6', border: '#9ca3af', label: 'PENDIENTE', text: '#374151' },
+        'cancelled': { bg: '#fee2e2', border: '#ef4444', label: 'CANCELADO', text: '#991b1b' }
+      };
+      container.innerHTML = phases.map(p => {
+        const cfg = statusColor[p.status] || statusColor.pending;
+        return `
+          <div style="background:${cfg.bg}; border-left:4px solid ${cfg.border}; padding:16px; border-radius:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:8px;">
+              <div>
+                <div style="font-weight:600; font-size:16px; margin-bottom:4px;">${p.title}</div>
+                <div style="font-size:14px; color: var(--text-secondary);">${p.start || ''}${p.end ? ' - ' + p.end : ''}</div>
+              </div>
+              <span style="background:${cfg.border}; color:white; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600;">${cfg.label}</span>
+            </div>
+            ${p.notes ? `<div style="font-size:14px; margin-top:12px; color:${cfg.text};">${p.notes}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Editar timeline (modal con guardado)
     function editTimeline() {
-      showToast('info', '🔧 Editor de Timeline en desarrollo\n\n• Agregar/editar fases\n• Establecer dependencias\n• Asignar recursos\n• Ajustar fechas');
+      const timelineKey = `project_timeline_${currentProject.idSync || currentProject.id}`;
+      const existing = JSON.parse(localStorage.getItem(timelineKey) || 'null');
+      const startVal = existing?.startDate || currentProject.startDate || '';
+      const endVal = existing?.endDate || currentProject.endDate || '';
+      const phasesVal = existing?.tasks ? existing.tasks.map(t => `${t.label}|${t.startOffset}|${t.duration}|${t.status}`).join('\\n') : '';
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 720px;">
+          <div class="modal-header">
+            <div class="modal-title" style="gap:10px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              Editar Timeline
+            </div>
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
+          </div>
+          <div class="modal-body" style="display:grid; gap:12px;">
+            <div class="form-group">
+              <label class="form-label">Rango de fechas</label>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <input type="date" class="form-input" id="tl-start" value="${startVal || ''}">
+                <input type="date" class="form-input" id="tl-end" value="${endVal || ''}">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Fases principales (formato: nombre|offset inicio (días)|duración|status)</label>
+              <textarea class="form-textarea" id="tl-phases" rows="4" placeholder="Inspección|0|2|completed&#10;Instalación|2|3|completed&#10;Pruebas|5|3|in-progress">${phasesVal}</textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Notas</label>
+              <input class="form-input" id="tl-notes" placeholder="Dependencias o comentarios" value="${existing?.notes || ''}">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-white" onclick="this.closest('.modal-overlay').remove()">Cerrar</button>
+            <button class="btn btn-primary" onclick="saveTimelineModal(this)">Guardar</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function saveTimelineModal(btn) {
+      const modal = btn.closest('.modal-overlay');
+      const start = modal.querySelector('#tl-start')?.value || currentProject.startDate;
+      const end = modal.querySelector('#tl-end')?.value || currentProject.endDate;
+      const phasesText = modal.querySelector('#tl-phases')?.value || '';
+      const tasks = phasesText.split(/\\n/).map(line => line.trim()).filter(Boolean).map(line => {
+        const [label, offset, duration, status] = line.split('|').map(x => x && x.trim());
+        return {
+          label: label || 'Fase',
+          startOffset: Number(offset) || 0,
+          duration: Number(duration) || 1,
+          status: status || 'pending'
+        };
+      });
+      const data = {
+        startDate: start,
+        endDate: end,
+        tasks,
+        notes: modal.querySelector('#tl-notes')?.value || ''
+      };
+      const timelineKey = `project_timeline_${currentProject.idSync || currentProject.id}`;
+      localStorage.setItem(timelineKey, JSON.stringify(data));
+      modal.remove();
+      renderProjectTimeline();
+      uiToast('success', 'Timeline actualizado');
     }
 
   </script>
+
+      </main>
+    </div> <!-- app-content -->
+  </div> <!-- app-shell -->
 
 </body>
 </html>

@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;500;600;700;900&display=swap">
   <script src="js/modules.js?v=verdi2"></script>
   <script src="js/sidebar.js?v=verdi2"></script>
+  <script src="./js/ui-feedback.js"></script>
   <style>
     :root {
       /* VERDI Color Palette */
@@ -1966,7 +1967,7 @@
     }
 
     // Archive thread (no borra, solo marca como archivado)
-    function archiveThread(threadId) {
+    async function archiveThread(threadId) {
       event.stopPropagation(); // Evitar que se abra el thread
       
       const thread = threadsData[threadId];
@@ -1975,48 +1976,54 @@
       const isCurrentlyArchived = thread.isArchived;
       
       if (isCurrentlyArchived) {
-        // Desarchivar
-        if (confirm('¿Restaurar este thread?\n\nVolverá a aparecer en tu lista principal.')) {
-          thread.isArchived = false;
-          
-          // 💾 GUARDAR EN LOCALSTORAGE
-          saveThreadsToStorage(threadsData);
-          
-          alert('✓ Thread restaurado correctamente');
-          
-          // Actualizar iconos
-          updateArchiveButtons();
-          
-          // Si estamos en vista de archivados, aplicar el filtro nuevamente
-          const activeFilter = document.querySelector('.chip-filter.active');
-          if (activeFilter) {
-            const filterType = activeFilter.getAttribute('data-thread-filter');
-            filterThreads(filterType);
-          }
+        const ok = await uiConfirm('¿Restaurar este thread?\n\nVolverá a aparecer en tu lista principal.', {
+          confirmText: 'Restaurar',
+          cancelText: 'Cancelar'
+        });
+        if (!ok) return;
+
+        thread.isArchived = false;
+        
+        // 💾 GUARDAR EN LOCALSTORAGE
+        saveThreadsToStorage(threadsData);
+        
+        uiToast('success', 'Thread restaurado correctamente.');
+        
+        // Actualizar iconos
+        updateArchiveButtons();
+        
+        // Si estamos en vista de archivados, aplicar el filtro nuevamente
+        const activeFilter = document.querySelector('.chip-filter.active');
+        if (activeFilter) {
+          const filterType = activeFilter.getAttribute('data-thread-filter');
+          filterThreads(filterType);
         }
       } else {
-        // Archivar
-        if (confirm('¿Archivar este thread?\n\nNo se eliminará, podrás encontrarlo en "Archivados".')) {
-          thread.isArchived = true;
-          
-          // 💾 GUARDAR EN LOCALSTORAGE
-          saveThreadsToStorage(threadsData);
-          
-          alert('✓ Thread archivado correctamente\n\nPuedes recuperarlo desde el filtro "Archivados"');
-          
-          // Actualizar iconos
-          updateArchiveButtons();
-          
-          // Aplicar filtro actual para ocultar el card archivado
-          const activeFilter = document.querySelector('.chip-filter.active');
-          if (activeFilter) {
-            const filterType = activeFilter.getAttribute('data-thread-filter');
-            filterThreads(filterType);
-          }
-          
-          // Actualizar contador de no leídos
-          updateUnreadBadge();
+        const ok = await uiConfirm('¿Archivar este thread?\n\nNo se eliminará, podrás encontrarlo en "Archivados".', {
+          confirmText: 'Archivar',
+          cancelText: 'Cancelar'
+        });
+        if (!ok) return;
+
+        thread.isArchived = true;
+        
+        // 💾 GUARDAR EN LOCALSTORAGE
+        saveThreadsToStorage(threadsData);
+        
+        uiToast('success', 'Thread archivado. Puedes recuperarlo desde "Archivados".');
+        
+        // Actualizar iconos
+        updateArchiveButtons();
+        
+        // Aplicar filtro actual para ocultar el card archivado
+        const activeFilter = document.querySelector('.chip-filter.active');
+        if (activeFilter) {
+          const filterType = activeFilter.getAttribute('data-thread-filter');
+          filterThreads(filterType);
         }
+        
+        // Actualizar contador de no leídos
+        updateUnreadBadge();
       }
     }
     

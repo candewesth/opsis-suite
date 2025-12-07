@@ -13,6 +13,7 @@
   <script src="js/modules.js?v=verdi2"></script>
   <script src="js/sidebar.js?v=verdi2"></script>
   <script src="notifications-manager.js"></script>
+  <script src="./js/ui-feedback.js"></script>
   
 </head>
 <body>
@@ -492,7 +493,8 @@
         'search': '🔍 Búsqueda Global\n\nUsa Ctrl/Cmd + K para buscar en todo el sistema'
       };
 
-      alert(actions[action] || 'Acción no disponible');
+      const msg = (actions[action] || 'Acción no disponible').replace(/\n/g, '<br>');
+      uiToast('info', msg);
       console.log(`⚡ Quick Action: ${action}`);
     }
 
@@ -563,7 +565,7 @@
     }
 
     function viewFullCalendar() {
-      alert('📅 Calendario Completo\n\nAbriendo vista de calendario mensual con todas las citas y eventos programados.\n\nFuncionalidad en desarrollo.');
+      uiToast('info', '📅 Calendario Completo.<br>Vista mensual en desarrollo.');
     }
 
     function updateTodayDate() {
@@ -845,7 +847,7 @@
           duration: 5000
         });
       } else {
-        alert(`${title}\n\n${message}`);
+        uiToast(type === 'error' ? 'error' : type === 'success' ? 'success' : 'info', `${title}: ${message}`);
       }
     }
 
