@@ -44,10 +44,11 @@
         const actual = project.actualHours || 0;
         hoursEl.textContent = `${actual}h / ${planned}h`;
       }
-      const warehouseEl = document.getElementById('kpi-warehouse');
-      if (warehouseEl) {
-        const pending = project.warehousePending || 0;
-        warehouseEl.textContent = pending > 0 ? `${pending} pendientes` : 'Sin pendientes';
+      const slaEl = document.getElementById('kpi-sla');
+      if (slaEl) {
+        const sla = project.sla || 'Estándar';
+        const risk = project.risk || project.alerts || 0;
+        slaEl.textContent = risk > 0 ? `Alertas: ${risk}` : `${sla} · En objetivo`;
       }
     }
 
@@ -246,6 +247,7 @@
       font-size: 22px;
       font-weight: 800;
       letter-spacing: -0.2px;
+      color: #fff;
     }
 
     .meta-row {
@@ -1731,18 +1733,15 @@
               </div>
             </div>
 
-          <div class="hero-actions" style="justify-content:flex-end;">
-            <button class="btn btn-white" onclick="toggleActionsMenu()" style="order:3; background: rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.3); color:#fff;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
-              Acciones
+          <div class="hero-actions" style="justify-content:flex-end; gap:8px;">
+            <button class="btn btn-white" onclick="toggleActionsMenu()" title="Acciones rápidas" style="order:3; background: rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.3); color:#fff; width:50px; height:50px; border-radius:14px; justify-content:center;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
             </button>
-            <button class="btn btn-white" onclick="editProject()" style="order:2; background: rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.35); color:#fff;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-              Editar
+            <button class="btn btn-white" onclick="editProject()" title="Editar Información" style="order:2; background: rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.35); color:#fff; width:50px; height:50px; border-radius:14px; justify-content:center;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             </button>
-            <button class="btn btn-white" onclick="exportProjectToPDF()" style="order:1; background:#f59e0b; color:#fff; border-color:#f59e0b; box-shadow:0 6px 14px rgba(245,158,11,0.35);">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-              Exportar PDF
+            <button class="btn btn-white" onclick="exportProjectToPDF()" title="Exportar PDF" style="order:1; background:#f59e0b; color:#fff; border-color:#f59e0b; box-shadow:0 6px 14px rgba(245,158,11,0.35); width:50px; height:50px; border-radius:14px; justify-content:center;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
             </button>
           </div>
         </div>
@@ -1782,12 +1781,12 @@
         <div class="kpi-card">
           <div>
             <div class="kpi-title" style="display:flex; align-items:center; gap:6px;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-              Logística
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12h6"/><path d="M9 16h6"/><path d="M9 8h6"/><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+              SLA / Riesgos
             </div>
-            <div class="kpi-sub">Warehouse / pendientes</div>
+            <div class="kpi-sub">Cumplimiento y alertas</div>
           </div>
-          <div class="kpi-badge" id="kpi-warehouse">0 pendientes</div>
+          <div class="kpi-badge" id="kpi-sla">En objetivo</div>
         </div>
       </div>
 
@@ -1911,10 +1910,23 @@
 
     <!-- TAB: DIARIO / FORMSYNC -->
     <div id="tab-daily" class="tab-content">
-      <div class="card" style="margin-bottom: 16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px;">
+        <div>
+          <h3 style="margin:0; font-size:16px; font-weight:700; color:#0f172a;">FormSync</h3>
+          <p style="margin:0; color:#64748b; font-size:13px;">Reportes diarios y formularios configurables</p>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="toggleFormSyncForm(true)" style="padding:10px 14px; border-radius:12px; box-shadow:0 6px 16px rgba(2,115,94,0.2); display:flex; align-items:center; gap:8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Agregar Form
+          </button>
+          <button class="btn btn-white" onclick="configureFormSync()" style="padding:10px 12px; border-radius:12px;">Configurar Formularios</button>
+        </div>
+      </div>
+      <div class="card" id="formSyncForm" style="margin-bottom: 16px; display:none;">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
           <h3 class="card-title" style="margin-bottom:0;">Nuevo FormSync</h3>
-          <button class="btn btn-white" onclick="resetDailyForm()" style="padding:8px 12px;">Nuevo formulario</button>
+          <button class="btn btn-white" onclick="toggleFormSyncForm(false)" style="padding:8px 12px;">Cerrar</button>
         </div>
         <div class="grid grid-2" style="gap: 12px; margin-top: 10px;">
           <div>
@@ -1959,12 +1971,17 @@
         <label class="kpi-sub" style="margin-top: 10px;">Notas</label>
         <textarea id="daily-notes" class="form-textarea" rows="2" placeholder="Notas adicionales"></textarea>
         <div style="display:flex; justify-content:flex-end; margin-top:12px; gap:10px; flex-wrap:wrap;">
-          <button class="btn btn-white" onclick="resetDailyForm()">Cancelar</button>
+          <button class="btn btn-white" onclick="resetDailyForm()">Limpiar</button>
           <button class="btn btn-primary" onclick="saveDailyLog()">Guardar FormSync</button>
         </div>
       </div>
-      <h3 style="margin: 0 0 8px; font-size:16px; font-weight:700; color:#0f172a;">Historial FormSync</h3>
-      <div class="grid grid-2" id="dailyLogsContainer"></div>
+      <div class="card" style="margin-top:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <h3 style="margin:0; font-size:16px; font-weight:700; color:#0f172a;">Historial FormSync</h3>
+          <button class="btn btn-white" onclick="configureFormSync()" style="padding:6px 10px; border-radius:10px;">Configurar</button>
+        </div>
+        <div class="grid grid-2" id="dailyLogsContainer"></div>
+      </div>
     </div>
 
     <!-- TAB: RESUMEN -->
@@ -2061,6 +2078,12 @@
             </h3>
             <p style="font-size: 13px; color: var(--text-secondary);">Visualización de fases, milestones y progreso</p>
           </div>
+          <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+            <button class="btn btn-white" onclick="setTimelineView('phase')" style="padding:8px 10px;">Fases</button>
+            <button class="btn btn-white" onclick="setTimelineView('week')" style="padding:8px 10px;">Semanal</button>
+            <button class="btn btn-white" onclick="setTimelineView('day')" style="padding:8px 10px;">Diario</button>
+            <button class="btn btn-white" onclick="setTimelineView('month')" style="padding:8px 10px;">Mensual</button>
+          </div>
           <button class="btn btn-white" onclick="editTimeline()" style="display: flex; align-items: center; gap: 8px;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -2099,23 +2122,22 @@
       </div>
 
       <div class="card">
-        <h3 class="card-title">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-            <line x1="16" y1="2" x2="16" y2="6"/>
-            <line x1="8" y1="2" x2="8" y2="6"/>
-            <line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
-          Programación Detallada del Proyecto
-        </h3>
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+          <h3 class="card-title" style="margin:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            Programación Detallada del Proyecto
+          </h3>
+          <button class="btn btn-primary" onclick="editSchedule()" style="padding:8px 12px; border-radius:10px; display:flex; gap:6px; align-items:center;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Agregar programación
+          </button>
+        </div>
         <div id="schedule-blocks" style="margin-top:24px; display:grid; gap:16px;"></div>
-        <button class="btn btn-primary" style="margin-top: 20px;" onclick="editSchedule()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-          </svg>
-          Editar Programación
-        </button>
       </div>
     </div>
 
@@ -2170,6 +2192,10 @@
               style="width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px;"
               onkeyup="filterStaffList()"
             />
+          </div>
+          <div style="margin-bottom: 16px;">
+            <label style="display:block; font-weight:600; margin-bottom:6px; font-size:13px; color:var(--text-secondary);">Fase / Día asignación (opcional)</label>
+            <input type="text" id="assignPhaseInput" class="form-input" placeholder="Ej: Instalación - Día 2">
           </div>
 
           <div style="background: var(--bg-body); border-radius: 12px; padding: 12px; max-height: 400px; overflow-y: auto; border: 1px solid var(--border-color);">
@@ -2319,6 +2345,7 @@
     
     // Global variable for linked thread ID
     window.linkedThreadId = null;
+    let timelineView = 'phase';
     
     // Function to open linked thread
     function openLinkedThread() {
@@ -2598,6 +2625,59 @@
       renderDailyLogs(currentProject);
       showToast('success', 'Reporte diario guardado.');
       resetDailyForm();
+    }
+
+    function toggleFormSyncForm(show) {
+      const form = document.getElementById('formSyncForm');
+      if (!form) return;
+      form.style.display = show ? 'block' : 'none';
+      if (show) resetDailyForm();
+    }
+
+    function configureFormSync() {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 640px;">
+          <div class="modal-header">
+            <div class="modal-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="M9 9h6v6H9z"/><path d="M9 3v6"/><path d="M15 15v6"/></svg>
+              Configurar Formularios
+            </div>
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
+          </div>
+          <div class="modal-body" style="display:grid; gap:12px;">
+            <div class="form-group">
+              <label class="form-label">Plantilla base</label>
+              <select class="form-select" id="fs-template">
+                <option value="daily">Diario de obra</option>
+                <option value="safety">Seguridad</option>
+                <option value="handoff">Entrega</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Campos</label>
+              <div id="fs-fields" style="display:grid; gap:8px;">
+                <label style="display:flex; gap:6px; align-items:center;"><input type="checkbox" checked> Equipo / Crew</label>
+                <label style="display:flex; gap:6px; align-items:center;"><input type="checkbox" checked> Horas</label>
+                <label style="display:flex; gap:6px; align-items:center;"><input type="checkbox" checked> Clima</label>
+                <label style="display:flex; gap:6px; align-items:center;"><input type="checkbox" checked> Materiales</label>
+                <label style="display:flex; gap:6px; align-items:center;"><input type="checkbox" checked> Seguridad / Incidencias</label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Firmas requeridas</label>
+              <label style="display:flex; gap:6px; align-items:center;"><input type="checkbox" checked> Supervisor</label>
+              <label style="display:flex; gap:6px; align-items:center;"><input type="checkbox"> Cliente</label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-white" onclick="this.closest('.modal-overlay').remove()">Cerrar</button>
+            <button class="btn btn-primary" onclick="uiToast('success','Plantilla guardada (demo)'); this.closest('.modal-overlay').remove();">Guardar</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
     }
 
     function resetDailyForm() {
@@ -3219,15 +3299,19 @@
       closeModal('docModal');
     }
 
-    // Función para editar programación (modal con guardado)
+    // Función para editar programación (modal con filas)
     function editSchedule() {
       const scheduleKey = `project_schedule_${currentProject.idSync || currentProject.id}`;
       const existing = JSON.parse(localStorage.getItem(scheduleKey) || '[]');
+      const phases = existing.length ? existing : [
+        { title: 'Inspección', start: '2024-11-10', end: '2024-11-11', status: 'completed', notes: 'Mediciones y revisión' },
+        { title: 'Instalación', start: '2024-11-12', end: '2024-11-14', status: 'completed', notes: 'Montaje de unidades' },
+        { title: 'Pruebas', start: '2024-11-15', end: '2024-11-17', status: 'in-progress', notes: 'Calibración' }
+      ];
       const modal = document.createElement('div');
       modal.className = 'modal-overlay';
-      const phasesText = existing.map(p => `${p.title}|${p.start}|${p.end}|${p.status}|${p.notes || ''}`).join('\\n');
       modal.innerHTML = `
-        <div class="modal" style="max-width: 640px;">
+        <div class="modal" style="max-width: 720px;">
           <div class="modal-header">
             <div class="modal-title" style="gap:10px;">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -3237,8 +3321,23 @@
           </div>
           <div class="modal-body" style="display:grid; gap:12px;">
             <div class="form-group">
-              <label class="form-label">Etapas (formato: título|inicio|fin|status|notas)</label>
-              <textarea class="form-textarea" id="sch-lines" rows="5" placeholder="Inspección|2024-11-10|2024-11-11|completed|Mediciones&#10;Instalación|2024-11-12|2024-11-14|completed|Montaje de unidades">${phasesText}</textarea>
+              <label class="form-label">Etapas</label>
+              <div id="sch-rows" style="display:grid; gap:8px;">
+                ${phases.map((p, idx) => `
+                  <div class="sch-row" data-idx="${idx}" style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:6px; align-items:center;">
+                    <input class="form-input" data-idx="${idx}" data-field="title" value="${p.title}">
+                    <input class="form-input" data-idx="${idx}" data-field="start" type="date" value="${p.start}">
+                    <input class="form-input" data-idx="${idx}" data-field="end" type="date" value="${p.end}">
+                    <select class="form-select" data-idx="${idx}" data-field="status">
+                      <option value="pending" ${p.status === 'pending' ? 'selected' : ''}>Pendiente</option>
+                      <option value="in-progress" ${p.status === 'in-progress' ? 'selected' : ''}>En Proceso</option>
+                      <option value="completed" ${p.status === 'completed' ? 'selected' : ''}>Completado</option>
+                    </select>
+                  </div>
+                  <input class="form-input sch-note" data-idx="${idx}" data-field="notes" placeholder="Notas" value="${p.notes || ''}">
+                `).join('')}
+              </div>
+              <button class="btn btn-white" style="margin-top:8px;" onclick="addScheduleRow()">+ Agregar etapa</button>
             </div>
             <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px; font-size:13px; color:#475569;">
               Demo: guardado local. En producción se sincronizará con ProjectSync/TimeSync.
@@ -3253,17 +3352,44 @@
       document.body.appendChild(modal);
     }
 
+    function addScheduleRow() {
+      const rows = document.getElementById('sch-rows');
+      if (!rows) return;
+      const idx = rows.querySelectorAll('.sch-row').length ? Math.max(...Array.from(rows.querySelectorAll('.sch-row')).map(i => Number(i.dataset.idx))) + 1 : 0;
+      rows.insertAdjacentHTML('beforeend', `
+        <div class="sch-row" data-idx="${idx}" style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:6px; align-items:center;">
+          <input class="form-input" data-idx="${idx}" data-field="title" placeholder="Etapa">
+          <input class="form-input" data-idx="${idx}" data-field="start" type="date">
+          <input class="form-input" data-idx="${idx}" data-field="end" type="date">
+          <select class="form-select" data-idx="${idx}" data-field="status">
+            <option value="pending">Pendiente</option>
+            <option value="in-progress">En Proceso</option>
+            <option value="completed">Completado</option>
+          </select>
+        </div>
+        <input class="form-input sch-note" data-idx="${idx}" data-field="notes" placeholder="Notas">
+      `);
+    }
+
     function saveScheduleModal(btn) {
       const modal = btn.closest('.modal-overlay');
-      const lines = modal.querySelector('#sch-lines')?.value || '';
-      const phases = lines.split(/\\n/).map(l => l.trim()).filter(Boolean).map(line => {
-        const [title, start, end, status, notes] = line.split('|').map(x => x && x.trim());
-        return { title: title || 'Etapa', start: start || '', end: end || '', status: status || 'pending', notes: notes || '' };
-      });
+      const rows = modal.querySelectorAll('#sch-rows .sch-row');
+      const phases = Array.from(rows).map(row => {
+        const idx = row.dataset.idx;
+        const getVal = (field) => modal.querySelector(`[data-idx="${idx}"][data-field="${field}"]`)?.value || '';
+        return {
+          title: getVal('title'),
+          start: getVal('start'),
+          end: getVal('end'),
+          status: getVal('status') || 'pending',
+          notes: getVal('notes') || ''
+        };
+      }).filter(p => p.title || p.start);
       const scheduleKey = `project_schedule_${currentProject.idSync || currentProject.id}`;
       localStorage.setItem(scheduleKey, JSON.stringify(phases));
       modal.remove();
       renderScheduleBlocks();
+      syncScheduleToTimeline(phases);
       uiToast('success', 'Programación actualizada');
     }
 
@@ -6020,6 +6146,9 @@
                 <span class="role-badge ${staff.role}">${getRoleLabel(staff.role)}</span>
                 ${assignment.projectRole ? ` • ${assignment.projectRole}` : ''}
               </div>
+              <div style="font-size:12px; color:#6b7280;">
+                ${assignment.phase ? `Fase: ${assignment.phase} • ` : ''}Asignado: ${formatDate(assignment.assignedDate || new Date())}
+              </div>
             </div>
             <button class="btn btn-white" onclick="contactStaff('${staff.name}', '${staff.phone}')" title="Contactar">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -6158,11 +6287,13 @@
     // Guardar asignaciones
     function saveStaffAssignments() {
       const assignmentsKey = `project_staff_${currentProject.idSync || currentProject.id}`;
+      const phaseNote = document.getElementById('assignPhaseInput')?.value || '';
       
       const assignments = selectedStaffIds.map(staffId => ({
         staffId: staffId,
         assignedDate: new Date().toISOString(),
-        projectRole: null // Se puede extender para asignar roles específicos
+        projectRole: null, // Se puede extender para asignar roles específicos
+        phase: phaseNote
       }));
       
       localStorage.setItem(assignmentsKey, JSON.stringify(assignments));
@@ -6193,68 +6324,46 @@
       const timelineKey = `project_timeline_${currentProject.idSync || currentProject.id}`;
       let timeline = JSON.parse(localStorage.getItem(timelineKey) || 'null');
 
-      // Si no existe timeline, crear uno de ejemplo
+      // Si no existe timeline, crear uno de ejemplo o construir desde programación
       if (!timeline) {
-        timeline = {
-          startDate: '2024-11-10',
-          endDate: '2024-11-19',
-          phases: [
-            {
-              id: 1,
-              name: 'Inspección Inicial',
-              start: '2024-11-10',
-              end: '2024-11-11',
-              status: 'completed',
-              progress: 100
-            },
-            {
-              id: 2,
-              name: 'Instalación Sistema',
-              start: '2024-11-12',
-              end: '2024-11-14',
-              status: 'completed',
-              progress: 100
-            },
-            {
-              id: 3,
-              name: 'Pruebas y Ajustes',
-              start: '2024-11-15',
-              end: '2024-11-17',
-              status: 'in-progress',
-              progress: 60
-            },
-            {
-              id: 4,
-              name: 'Verificación Final',
-              start: '2024-11-18',
-              end: '2024-11-19',
-              status: 'pending',
-              progress: 0
-            }
-          ],
-          milestones: [
-            {
-              id: 1,
-              name: 'Inicio',
-              date: '2024-11-10'
-            },
-            {
-              id: 2,
-              name: 'Inspección OK',
-              date: '2024-11-11'
-            },
-            {
-              id: 3,
-              name: 'Sistema Instalado',
-              date: '2024-11-14'
-            },
-            {
-              id: 4,
-              name: 'Entrega',
-              date: '2024-11-19'
-            }
-          ]
-        };
+        const scheduleKey = `project_schedule_${currentProject.idSync || currentProject.id}`;
+        const phasesSched = JSON.parse(localStorage.getItem(scheduleKey) || '[]');
+        if (phasesSched.length) {
+          const startDates = phasesSched.map(p => new Date(p.start)).filter(d => !isNaN(d));
+          const endDates = phasesSched.map(p => new Date(p.end)).filter(d => !isNaN(d));
+          const minStart = startDates.length ? new Date(Math.min(...startDates)) : new Date();
+          const maxEnd = endDates.length ? new Date(Math.max(...endDates)) : new Date(minStart.getTime() + 7 * 86400000);
+          timeline = {
+            startDate: minStart.toISOString().slice(0, 10),
+            endDate: maxEnd.toISOString().slice(0, 10),
+            phases: phasesSched.map((p, idx) => ({
+              id: idx + 1,
+              name: p.title || 'Etapa',
+              start: p.start,
+              end: p.end,
+              status: p.status || 'pending',
+              progress: p.status === 'completed' ? 100 : p.status === 'in-progress' ? 60 : 0
+            })),
+            milestones: []
+          };
+        } else {
+          timeline = {
+            startDate: '2024-11-10',
+            endDate: '2024-11-19',
+            phases: [
+              { id: 1, name: 'Inspección Inicial', start: '2024-11-10', end: '2024-11-11', status: 'completed', progress: 100 },
+              { id: 2, name: 'Instalación Sistema', start: '2024-11-12', end: '2024-11-14', status: 'completed', progress: 100 },
+              { id: 3, name: 'Pruebas y Ajustes', start: '2024-11-15', end: '2024-11-17', status: 'in-progress', progress: 60 },
+              { id: 4, name: 'Verificación Final', start: '2024-11-18', end: '2024-11-19', status: 'pending', progress: 0 }
+            ],
+            milestones: [
+              { id: 1, name: 'Inicio', date: '2024-11-10' },
+              { id: 2, name: 'Inspección OK', date: '2024-11-11' },
+              { id: 3, name: 'Sistema Instalado', date: '2024-11-14' },
+              { id: 4, name: 'Entrega', date: '2024-11-19' }
+            ]
+          };
+        }
         localStorage.setItem(timelineKey, JSON.stringify(timeline));
       }
 
@@ -6305,12 +6414,28 @@
         `;
       }).join('');
 
-      // Generar labels de fecha para el eje X
+      // Generar labels de fecha para el eje X según vista
       const dateLabels = [];
-      for (let i = 0; i < totalDays; i += Math.ceil(totalDays / 7)) {
-        const labelDate = new Date(startDate);
-        labelDate.setDate(startDate.getDate() + i);
-        dateLabels.push(labelDate.toLocaleDateString('es-MX', { month: 'short', day: 'numeric' }));
+      if (timelineView === 'month') {
+        ['Sem 1','Sem 2','Sem 3','Sem 4'].forEach(l => dateLabels.push(l));
+      } else if (timelineView === 'week') {
+        for (let i = 0; i < Math.min(totalDays, 7); i++) {
+          const labelDate = new Date(startDate);
+          labelDate.setDate(startDate.getDate() + i);
+          dateLabels.push(labelDate.toLocaleDateString('es-MX', { weekday: 'short' }));
+        }
+      } else if (timelineView === 'day') {
+        for (let i = 0; i < Math.min(totalDays, 3); i++) {
+          const labelDate = new Date(startDate);
+          labelDate.setDate(startDate.getDate() + i);
+          dateLabels.push(labelDate.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric' }));
+        }
+      } else { // fases (por defecto)
+        for (let i = 0; i < totalDays; i += Math.ceil(totalDays / 7)) {
+          const labelDate = new Date(startDate);
+          labelDate.setDate(startDate.getDate() + i);
+          dateLabels.push(labelDate.toLocaleDateString('es-MX', { month: 'short', day: 'numeric' }));
+        }
       }
 
       const labelsHTML = dateLabels.map(label => `<span>${label}</span>`).join('');
@@ -6330,6 +6455,12 @@
       `;
     }
 
+    function setTimelineView(mode) {
+      timelineView = mode;
+      renderProjectTimeline();
+      uiToast('info', `Vista de timeline: ${mode}`);
+    }
+
     // Programación detallada (card)
     function renderScheduleBlocks() {
       const container = document.getElementById('schedule-blocks');
@@ -6343,6 +6474,8 @@
           { title: 'Día 6-8: Pruebas y Ajustes', start: '2024-11-15', end: '2024-11-17', status: 'in-progress', notes: 'Pruebas de presión y calibración' },
           { title: 'Día 9-10: Verificación Final', start: '2024-11-18', end: '2024-11-19', status: 'pending', notes: 'Inspección final y entrega' }
         ];
+        localStorage.setItem(scheduleKey, JSON.stringify(phases));
+        syncScheduleToTimeline(phases);
       }
       const statusColor = {
         'completed': { bg: '#f0fdf4', border: '#10b981', label: 'COMPLETADO', text: '#065f46' },
@@ -6367,13 +6500,17 @@
       }).join('');
     }
 
-    // Editar timeline (modal con guardado)
+    // Editar timeline (modal con filas simples)
     function editTimeline() {
       const timelineKey = `project_timeline_${currentProject.idSync || currentProject.id}`;
       const existing = JSON.parse(localStorage.getItem(timelineKey) || 'null');
       const startVal = existing?.startDate || currentProject.startDate || '';
       const endVal = existing?.endDate || currentProject.endDate || '';
-      const phasesVal = existing?.tasks ? existing.tasks.map(t => `${t.label}|${t.startOffset}|${t.duration}|${t.status}`).join('\\n') : '';
+      const tasks = existing?.tasks || [
+        { label: 'Inspección', startOffset: 0, duration: 2, status: 'completed' },
+        { label: 'Instalación', startOffset: 2, duration: 3, status: 'completed' },
+        { label: 'Pruebas', startOffset: 5, duration: 3, status: 'in-progress' }
+      ];
       const modal = document.createElement('div');
       modal.className = 'modal-overlay';
       modal.innerHTML = `
@@ -6394,8 +6531,22 @@
               </div>
             </div>
             <div class="form-group">
-              <label class="form-label">Fases principales (formato: nombre|offset inicio (días)|duración|status)</label>
-              <textarea class="form-textarea" id="tl-phases" rows="4" placeholder="Inspección|0|2|completed&#10;Instalación|2|3|completed&#10;Pruebas|5|3|in-progress">${phasesVal}</textarea>
+              <label class="form-label">Fases principales</label>
+              <div id="tl-rows" style="display:grid; gap:8px;">
+                ${tasks.map((t, idx) => `
+                  <div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:6px; align-items:center;">
+                    <input class="form-input" data-idx="${idx}" data-field="label" value="${t.label}">
+                    <input class="form-input" data-idx="${idx}" data-field="startOffset" type="number" min="0" value="${t.startOffset}">
+                    <input class="form-input" data-idx="${idx}" data-field="duration" type="number" min="1" value="${t.duration}">
+                    <select class="form-select" data-idx="${idx}" data-field="status">
+                      <option value="pending" ${t.status === 'pending' ? 'selected' : ''}>Pendiente</option>
+                      <option value="in-progress" ${t.status === 'in-progress' ? 'selected' : ''}>En Proceso</option>
+                      <option value="completed" ${t.status === 'completed' ? 'selected' : ''}>Completado</option>
+                    </select>
+                  </div>
+                `).join('')}
+              </div>
+              <button class="btn btn-white" style="margin-top:8px;" onclick="addTimelineRow()">+ Agregar fase</button>
             </div>
             <div class="form-group">
               <label class="form-label">Notas</label>
@@ -6403,39 +6554,80 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button class="btn btn-white" onclick="this.closest('.modal-overlay').remove()">Cerrar</button>
-            <button class="btn btn-primary" onclick="saveTimelineModal(this)">Guardar</button>
+            <button type="button" class="btn btn-white" onclick="this.closest('.modal-overlay').remove()">Cerrar</button>
+            <button type="button" class="btn btn-primary" onclick="saveTimelineModal(this, false)">Guardar</button>
+            <button type="button" class="btn btn-primary" style="background:#02735E; border-color:#02735E;" onclick="saveTimelineModal(this, true)">Guardar y aplicar al Timeline</button>
           </div>
         </div>
       `;
       document.body.appendChild(modal);
     }
 
-    function saveTimelineModal(btn) {
+    function addTimelineRow() {
+      const rows = document.getElementById('tl-rows');
+      if (!rows) return;
+      const idx = rows.children.length;
+      rows.insertAdjacentHTML('beforeend', `
+        <div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:6px; align-items:center;">
+          <input class="form-input" data-idx="${idx}" data-field="label" placeholder="Fase">
+          <input class="form-input" data-idx="${idx}" data-field="startOffset" type="number" min="0" value="0">
+          <input class="form-input" data-idx="${idx}" data-field="duration" type="number" min="1" value="1">
+          <select class="form-select" data-idx="${idx}" data-field="status">
+            <option value="pending">Pendiente</option>
+            <option value="in-progress">En Proceso</option>
+            <option value="completed">Completado</option>
+          </select>
+        </div>
+      `);
+    }
+
+    function saveTimelineModal(btn, applyTimeline = false) {
       const modal = btn.closest('.modal-overlay');
       const start = modal.querySelector('#tl-start')?.value || currentProject.startDate;
       const end = modal.querySelector('#tl-end')?.value || currentProject.endDate;
-      const phasesText = modal.querySelector('#tl-phases')?.value || '';
-      const tasks = phasesText.split(/\\n/).map(line => line.trim()).filter(Boolean).map(line => {
-        const [label, offset, duration, status] = line.split('|').map(x => x && x.trim());
+      const rows = modal.querySelectorAll('#tl-rows [data-idx]');
+      const tasksMap = {};
+      rows.forEach(input => {
+        const idx = input.dataset.idx;
+        tasksMap[idx] = tasksMap[idx] || { label: 'Fase', startOffset: 0, duration: 1, status: 'pending' };
+        tasksMap[idx][input.dataset.field] = input.type === 'number' ? Number(input.value || 0) : (input.value || 'pending');
+      });
+      const tasks = Object.values(tasksMap).filter(t => t.label || t.duration);
+      // Calcular fechas absolutas desde start + offset
+      const baseDate = new Date(start || new Date());
+      const phases = (tasks.length ? tasks : [
+        { label: 'Inspección', startOffset: 0, duration: 2, status: 'completed' },
+        { label: 'Instalación', startOffset: 2, duration: 3, status: 'in-progress' }
+      ]).map((t, idx) => {
+        const s = new Date(baseDate);
+        s.setDate(s.getDate() + (t.startOffset || 0));
+        const e = new Date(s);
+        e.setDate(e.getDate() + Math.max(0, (t.duration || 1) - 1));
         return {
-          label: label || 'Fase',
-          startOffset: Number(offset) || 0,
-          duration: Number(duration) || 1,
-          status: status || 'pending'
+          id: idx + 1,
+          name: t.label || 'Etapa',
+          start: s.toISOString().slice(0, 10),
+          end: e.toISOString().slice(0, 10),
+          status: t.status || 'pending',
+          progress: t.status === 'completed' ? 100 : t.status === 'in-progress' ? 60 : 0
         };
       });
       const data = {
-        startDate: start,
-        endDate: end,
-        tasks,
-        notes: modal.querySelector('#tl-notes')?.value || ''
+        startDate: phases[0]?.start || start,
+        endDate: phases[phases.length - 1]?.end || end,
+        phases,
+        notes: modal.querySelector('#tl-notes')?.value || '',
+        milestones: []
       };
       const timelineKey = `project_timeline_${currentProject.idSync || currentProject.id}`;
       localStorage.setItem(timelineKey, JSON.stringify(data));
       modal.remove();
       renderProjectTimeline();
-      uiToast('success', 'Timeline actualizado');
+      if (applyTimeline) {
+        uiToast('success', 'Fases aplicadas al Timeline');
+      } else {
+        uiToast('success', 'Timeline guardado');
+      }
     }
 
   </script>
