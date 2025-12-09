@@ -11114,6 +11114,139 @@
             }
           });
         }
+        
+        // Agenda view filters (mes/semana/lista)
+        const agendaViewButtons = document.querySelectorAll('[data-agenda-view]');
+        const agendaViews = document.querySelectorAll('[data-agenda-view-content]');
+        agendaViewButtons.forEach(button => {
+          button.addEventListener('click', () => {
+            const viewType = button.dataset.agendaView;
+            agendaViewButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            agendaViews.forEach(view => {
+              view.style.display = view.dataset.agendaViewContent === viewType ? 'block' : 'none';
+            });
+          });
+        });
+        
+        // Project status filters (tabla de proyectos)
+        const statusFilterButtons = document.querySelectorAll('[data-project-status-filter]');
+        statusFilterButtons.forEach(btn => {
+          btn.addEventListener('click', function(e) {
+            const filterValue = e.target.dataset.projectStatusFilter;
+            statusFilterButtons.forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            
+            const tableRows = document.querySelectorAll('tbody tr[data-order-id]');
+            tableRows.forEach(row => {
+              const statusBadge = row.querySelector('.badge');
+              if (!statusBadge) return;
+              const statusText = statusBadge.textContent.trim().toUpperCase();
+              let rowStatus = 'active';
+              
+              if (statusText.includes('CURSO') || statusText.includes('ACTIVO')) {
+                rowStatus = 'active';
+              } else if (statusText.includes('PROGRAMADO') || statusText.includes('PENDIENTE')) {
+                rowStatus = 'scheduled';
+              } else if (statusText.includes('COMPLETADO') || statusText.includes('FINALIZADO')) {
+                rowStatus = 'completed';
+              } else if (statusText.includes('CANCELADO')) {
+                rowStatus = 'cancelled';
+              } else if (statusText.includes('PAUSADO')) {
+                rowStatus = 'paused';
+              }
+              
+              row.style.display = (filterValue === 'all' || filterValue === rowStatus) ? '' : 'none';
+            });
+          });
+        });
+        
+        // Calendar events clickeable
+        setTimeout(() => {
+          const monthEvents = document.querySelectorAll('[data-agenda-view-content="month"] [style*="background: #02735E"], [data-agenda-view-content="month"] [style*="background: #eab308"], [data-agenda-view-content="month"] [style*="background: #3b82f6"]');
+          monthEvents.forEach(event => {
+            event.style.cursor = 'pointer';
+            event.style.transition = 'all 0.2s ease';
+            event.addEventListener('mouseenter', function() {
+              this.style.transform = 'scale(1.05)';
+              this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+            });
+            event.addEventListener('mouseleave', function() {
+              this.style.transform = 'scale(1)';
+              this.style.boxShadow = 'none';
+            });
+            event.addEventListener('click', function() {
+              const eventText = this.textContent.trim();
+              if (typeof window.openEventDetail === 'function') {
+                window.openEventDetail({
+                  service: eventText,
+                  date: 'Nov 2025',
+                  status: 'Programado'
+                });
+              }
+            });
+          });
+          
+          const weekEvents = document.querySelectorAll('[data-agenda-view-content="week"] td[style*="background: rgba"]');
+          weekEvents.forEach(cell => {
+            if (cell.querySelector('small')) {
+              cell.style.cursor = 'pointer';
+              cell.addEventListener('click', function() {
+                const eventText = cell.querySelector('small')?.textContent.trim();
+                if (eventText && typeof window.openEventDetail === 'function') {
+                  window.openEventDetail({
+                    service: eventText,
+                    date: 'Nov 2025',
+                    status: 'Programado'
+                  });
+                }
+              });
+            }
+          });
+          
+          const viewButtons = document.querySelectorAll('[data-agenda-view-content="list"] .btn-secondary');
+          viewButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+              const row = this.closest('tr');
+              const cells = row.querySelectorAll('td');
+              if (typeof window.openEventDetail === 'function') {
+                window.openEventDetail({
+                  date: cells[0]?.textContent.trim(),
+                  time: cells[1]?.textContent.trim(),
+                  service: cells[2]?.textContent.trim(),
+                  client: cells[3]?.textContent.trim(),
+                  location: cells[4]?.textContent.trim(),
+                  crew: cells[5]?.textContent.trim(),
+                  status: cells[6]?.textContent.trim()
+                });
+              }
+            });
+          });
+        }, 500);
+        
+        // HowSync links - guardar referrer
+        const howSyncLinks = document.querySelectorAll('a[href="howsync.html"]');
+        howSyncLinks.forEach(link => {
+          link.addEventListener('click', (e) => {
+            sessionStorage.setItem('howsync_referrer', window.location.pathname);
+            console.log('📍 Referrer guardado:', window.location.pathname);
+          });
+        });
+        
+        // Calculate project stats from localStorage
+        if (window.location.pathname.includes('motorsync.html')) {
+          if (typeof window.calculateProjectStats === 'function') {
+            window.calculateProjectStats();
+          }
+        }
+        
+        // Initialize notifications
+        if (typeof window.initializeDemoNotifications === 'function') {
+          window.initializeDemoNotifications();
+        }
+        if (typeof window.updateNotificationCounts === 'function') {
+          window.updateNotificationCounts();
+        }
       },
 
       hydrateSettingsForm() {
