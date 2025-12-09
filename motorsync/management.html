@@ -16,6 +16,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <script src="js/seeds.js?v=verdi2"></script>
   <script src="js/modules.js?v=verdi2"></script>
   <script src="js/sidebar.js?v=verdi2"></script>
   <script src="notifications-manager.js"></script>
@@ -59,7 +60,7 @@
         <section class="page active">
           <div class="page-header">
             <h2 class="page-title">Gestión de Usuarios y Roles</h2>
-            <button class="btn btn-primary" onclick="openInviteModal()">+ Invitar Usuario</button>
+            <button type="button" class="btn btn-primary" onclick="openInviteModal()">+ Invitar Usuario</button>
           </div>
 
           <!-- KPIs Summary -->
@@ -325,36 +326,34 @@
   </div>
 
   <!-- Invite User Modal -->
-  <div id="invite-modal" class="modal">
-    <div class="modal-card invite-modal-card">
+  <div id="invite-modal" class="invite-overlay" aria-hidden="true">
+    <div class="invite-card" role="dialog" aria-modal="true" aria-labelledby="invite-modal-title">
+      <button class="invite-close" type="button" onclick="closeInviteModal()" aria-label="Cerrar">×</button>
       <form id="invite-form" onsubmit="sendInvite(event)">
-        <div class="modal-card-header">
+        <div class="invite-header">
+          <div class="invite-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M4 7.5a2.5 2.5 0 0 1 2.5-2.5h11A2.5 2.5 0 0 1 20 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5v-9Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M5 8.5 10.8 12a2.5 2.5 0 0 0 2.4 0L19 8.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
           <div>
-            <p class="modal-eyebrow">Gestión de acceso</p>
-            <h3>Nuevo usuario</h3>
-            <p class="modal-subtitle">Comparte acceso asignando rol y canal interno.</p>
+            <h3 id="invite-modal-title">Invitar usuario</h3>
+            <p class="invite-copy">Da acceso seguro a MotorSync definiendo el correo corporativo y el rol operativo.</p>
           </div>
-          <button class="modal-close" type="button" onclick="closeInviteModal()">×</button>
         </div>
-        <div class="modal-body">
-          <div class="modal-hero">
-            <div class="modal-hero-icon">MS</div>
-            <div class="modal-hero-text">
-              <h4>MotorSync Core</h4>
-              <p>Las invitaciones activan acceso a Dashboard, PlanSync, ProjectSync y ThreadSync.</p>
+        <div class="invite-body">
+          <div class="form-field">
+            <label for="invite-email">Email corporativo</label>
+            <div class="invite-field">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"></rect><polyline points="3 7 12 13 21 7"></polyline></svg>
+              <input type="email" id="invite-email" placeholder="persona@compania.com" required>
             </div>
           </div>
-          <div class="form-grid">
-            <div class="form-group field">
-              <label><span class="icon">✉️</span>Email del usuario</label>
-              <input type="email" id="invite-email" placeholder="usuario@empresa.com" required>
-            </div>
-            <div class="form-group field">
-              <label><span class="icon">👤</span>Nombre completo</label>
-              <input type="text" id="invite-name" placeholder="Juan Pérez" required>
-            </div>
-            <div class="form-group field">
-              <label><span class="icon">🛡️</span>Rol</label>
+          <div class="form-field">
+            <label for="invite-role">Rol operativo</label>
+            <div class="invite-field">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="7" r="4"></circle><path d="M5.5 21a6.5 6.5 0 0 1 13 0"></path></svg>
               <select id="invite-role" required>
                 <option value="">Selecciona un rol...</option>
                 <option value="owner">Owner</option>
@@ -367,17 +366,9 @@
                 <option value="viewer">Viewer</option>
               </select>
             </div>
-            <div class="form-group field">
-              <label><span class="icon">🏢</span>Departamento (opcional)</label>
-              <input type="text" id="invite-department" placeholder="Operaciones">
-            </div>
-          </div>
-          <div class="form-group field">
-            <label><span class="icon">💬</span>Mensaje personalizado (opcional)</label>
-            <textarea id="invite-message" rows="3" placeholder="Bienvenido al equipo de CVE San Diego..."></textarea>
           </div>
         </div>
-        <div class="modal-actions">
+        <div class="invite-actions">
           <button type="button" class="btn btn-secondary" onclick="closeInviteModal()">Cancelar</button>
           <button type="submit" class="btn btn-primary">Enviar invitación</button>
         </div>
@@ -386,11 +377,9 @@
   </div>
 
   <script>
-    const inviteRequests = [
-      { email: 'pedro.garcia@email.com', name: 'Pedro García', role: 'Técnico', invitedBy: 'Candelario Delgado', daysAgo: 2, status: 'Pendiente' },
-      { email: 'sofia.ramirez@email.com', name: 'Sofía Ramírez', role: 'Admin', invitedBy: 'Candelario Delgado', daysAgo: 5, status: 'Pendiente' },
-      { email: 'miguel.torres@email.com', name: 'Miguel Torres', role: 'Técnico', invitedBy: 'María González', daysAgo: 7, status: 'Venciendo' }
-    ];
+    const inviteRequests = (window.DemoSeeds ? DemoSeeds.getInvites() : []).map((invite) => ({
+      ...invite
+    }));
 
     function renderInvites() {
       const tbody = document.getElementById('pending-invitations');
@@ -411,8 +400,8 @@
             <td><span class="badge ${invite.status === 'Pendiente' ? 'badge-warning' : 'badge-info'}">${invite.status} · ${invite.daysAgo}d</span></td>
             <td>
               <div class="action-buttons">
-                <button class="btn btn-small btn-secondary" onclick="resendInvite('${invite.email}')">↻ Reenviar</button>
-                <button class="btn btn-small btn-danger" onclick="cancelInvite('${invite.email}')">✕ Cancelar</button>
+                <button type="button" class="btn btn-small btn-secondary" onclick="resendInvite('${invite.email}')">↻ Reenviar</button>
+                <button type="button" class="btn btn-small btn-danger" onclick="cancelInvite('${invite.email}')">✕ Cancelar</button>
               </div>
             </td>
           </tr>
@@ -423,20 +412,32 @@
 
     // Modal functions
     function openInviteModal() {
-      document.getElementById('invite-modal').classList.add('active');
+      const modal = document.getElementById('invite-modal');
+      modal.classList.add('active');
+      modal.setAttribute('aria-hidden', 'false');
+      setTimeout(() => {
+        const emailInput = document.getElementById('invite-email');
+        if (emailInput) emailInput.focus();
+      }, 150);
     }
 
     function closeInviteModal() {
-      document.getElementById('invite-modal').classList.remove('active');
+      const modal = document.getElementById('invite-modal');
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
       document.getElementById('invite-form').reset();
     }
 
     function sendInvite(event) {
       event.preventDefault();
       const email = document.getElementById('invite-email').value;
-      const name = document.getElementById('invite-name').value;
       const role = document.getElementById('invite-role').value;
       const invitedBy = 'CVE Admin';
+      const derivedName = (email.split('@')[0] || 'Invitado')
+        .replace(/[\.\-_]+/g, ' ')
+        .replace(/\b\w/g, (l) => l.toUpperCase())
+        .trim();
+      const name = derivedName || 'Invitado';
       
       inviteRequests.unshift({
         email,

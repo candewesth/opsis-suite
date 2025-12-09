@@ -30,6 +30,34 @@
       }
     }
 
+    function getTimelineModalBaseStart(modal) {
+      const startInput = modal?.querySelector('#tl-start');
+      return startInput?.value || currentProject?.startDate || toInputDate(new Date());
+    }
+
+    function updateTimelineComputedRow(row, modal) {
+      if (!row || !modal) return;
+      const baseStart = parseInputDate(getTimelineModalBaseStart(modal));
+      const offsetInput = row.querySelector('[data-field="startOffset"]');
+      const durationInput = row.querySelector('[data-field="duration"]');
+      const manualStart = row.querySelector('[data-field="startDate"]')?.value;
+      const manualEnd = row.querySelector('[data-field="endDate"]')?.value;
+      const offset = Number(offsetInput?.value || 0);
+      const duration = Math.max(1, Number(durationInput?.value || 1));
+      let computedStart = manualStart ? parseInputDate(manualStart) : (baseStart ? addDays(baseStart, offset) : null);
+      let computedEnd = manualEnd ? parseInputDate(manualEnd) : (computedStart ? addDays(computedStart, duration - 1) : null);
+      const startLabel = row.querySelector(`[data-computed-start="${row.dataset.idx}"]`);
+      const endLabel = row.querySelector(`[data-computed-end="${row.dataset.idx}"]`);
+      if (startLabel) startLabel.textContent = formatShortDate(computedStart);
+      if (endLabel) endLabel.textContent = formatShortDate(computedEnd);
+    }
+
+    function refreshTimelineComputed(modal) {
+      if (!modal) return;
+      const rows = modal.querySelectorAll('.timeline-row');
+      rows.forEach((row) => updateTimelineComputedRow(row, modal));
+    }
+
     function getClientRecord(clientId) {
       if (!clientId) return null;
       const clients = loadClientsFromStore();
@@ -167,6 +195,49 @@
           }
         });
       });
+    }
+
+    function collectFormSyncTemplateFromModal(modal) {
+      const template = { fields: {}, signatures: {} };
+      FORMSYNC_FIELDS.forEach((field) => {
+        const selected = modal.querySelector(`input[name="fs-field-${field.key}"]:checked`);
+        template.fields[field.key] = selected ? selected.value : 'optional';
+      });
+      FORMSYNC_SIGNATURE_OPTIONS.forEach((sig) => {
+        template.signatures[sig.key] = modal.querySelector(`#fs-sign-${sig.key}`)?.checked || false;
+      });
+      return template;
+    }
+
+    function renderFormSyncTemplatePreview(modal) {
+      const container = modal.querySelector('#fs-template-preview');
+      if (!container) return;
+      const template = collectFormSyncTemplateFromModal(modal);
+      const required = FORMSYNC_FIELDS.filter((field) => template.fields[field.key] === 'required');
+      const optional = FORMSYNC_FIELDS.filter((field) => template.fields[field.key] === 'optional');
+      const hidden = FORMSYNC_FIELDS.filter((field) => template.fields[field.key] === 'hidden');
+      container.innerHTML = `
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div>
+            <p style="margin:0; font-size:12px; color:#94a3b8;">Campos obligatorios</p>
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:6px;">
+              ${required.length ? required.map(field => `<span class="kpi-badge" style="background:rgba(2,115,94,0.12); border-color:rgba(2,115,94,0.2);">${field.label}</span>`).join('') : '<span style="font-size:12px; color:#94a3b8;">Ninguno</span>'}
+            </div>
+          </div>
+          <div>
+            <p style="margin:0; font-size:12px; color:#94a3b8;">Campos visibles opcionales</p>
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:6px;">
+              ${optional.length ? optional.map(field => `<span class="kpi-badge" style="background:#f8fafc; border-color:#e2e8f0; color:#475569;">${field.label}</span>`).join('') : '<span style="font-size:12px; color:#94a3b8;">Ninguno</span>'}
+            </div>
+          </div>
+          <div>
+            <p style="margin:0; font-size:12px; color:#94a3b8;">Campos ocultos</p>
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:6px;">
+              ${hidden.length ? hidden.map(field => `<span class="kpi-badge" style="background:#fee2e2; border-color:#fecaca; color:#b91c1c;">${field.label}</span>`).join('') : '<span style="font-size:12px; color:#94a3b8;">Ninguno</span>'}
+            </div>
+          </div>
+        </div>
+      `;
     }
 
     function getSignatureFallbacks(template, project) {
@@ -1763,7 +1834,7 @@
                   </svg>
                   <strong>IDSync</strong>
                 </span>
-                <button id="threadLinkBtn" onclick="openLinkedThread()" style="display:none; background: rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.3); color:#fff; padding:8px 12px; border-radius:8px; font-weight:600; cursor:pointer; gap:6px; align-items:center;">
+                <button type="button" id="threadLinkBtn" onclick="openLinkedThread()" style="display:none; background: rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.3); color:#fff; padding:8px 12px; border-radius:8px; font-weight:600; cursor:pointer; gap:6px; align-items:center;">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                   Ver Conversación
                 </button>
@@ -1777,16 +1848,16 @@
               </div>
             </div>
             <div class="hero-actions">
-              <button class="btn btn-white" id="heroSizeToggle" onclick="toggleHeroTitleSize()" title="Ajustar tamaño del título" style="background: rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.35); color:#fff; width:50px; height:50px; border-radius:14px; justify-content:center;">
+              <button type="button" class="btn btn-white" id="heroSizeToggle" onclick="toggleHeroTitleSize()" title="Ajustar tamaño del título" style="background: rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.35); color:#fff; width:50px; height:50px; border-radius:14px; justify-content:center;">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19h6M7 19V5m-3 4h6"/><path d="M14 10h7m-3.5-3v10"/></svg>
               </button>
-              <button class="btn btn-white" onclick="toggleActionsMenu()" title="Acciones rápidas" style="background: rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.3); color:#fff; width:50px; height:50px; border-radius:14px; justify-content:center;">
+              <button type="button" class="btn btn-white" onclick="toggleActionsMenu()" title="Acciones rápidas" style="background: rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.3); color:#fff; width:50px; height:50px; border-radius:14px; justify-content:center;">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
               </button>
-              <button class="btn btn-white" onclick="editProject()" title="Editar Información" style="background: rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.35); color:#fff; width:50px; height:50px; border-radius:14px; justify-content:center;">
+              <button type="button" class="btn btn-white" onclick="editProject()" title="Editar Información" style="background: rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.35); color:#fff; width:50px; height:50px; border-radius:14px; justify-content:center;">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               </button>
-              <button class="btn btn-white" onclick="exportProjectToPDF()" title="Exportar PDF" style="background:#f59e0b; color:#fff; border-color:#f59e0b; box-shadow:0 6px 14px rgba(245,158,11,0.35); width:50px; height:50px; border-radius:14px; justify-content:center;">
+              <button type="button" class="btn btn-white" onclick="exportProjectToPDF()" title="Exportar PDF" style="background:#f59e0b; color:#fff; border-color:#f59e0b; box-shadow:0 6px 14px rgba(245,158,11,0.35); width:50px; height:50px; border-radius:14px; justify-content:center;">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
               </button>
             </div>
@@ -1845,17 +1916,17 @@
     <!-- TABS Y THREADSYNC -->
     <div style="display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 24px;">
       <div class="tabs" style="margin-bottom: 0; flex: 1;">
-        <button class="tab active" onclick="switchTab('overview')">Resumen</button>
-        <button class="tab" onclick="switchTab('info')">Información</button>
-        <button class="tab" onclick="switchTab('schedule')">Programación</button>
-        <button class="tab" onclick="switchTab('daily')">FormSync</button>
-        <button class="tab" onclick="switchTab('team')">Equipo</button>
-        <button class="tab" onclick="switchTab('photos')">Fotos</button>
-        <button class="tab" onclick="switchTab('docs')">Documentos</button>
+        <button type="button" class="tab active" onclick="switchTab('overview')">Resumen</button>
+        <button type="button" class="tab" onclick="switchTab('info')">Información</button>
+        <button type="button" class="tab" onclick="switchTab('schedule')">Programación</button>
+        <button type="button" class="tab" onclick="switchTab('daily')">FormSync</button>
+        <button type="button" class="tab" onclick="switchTab('team')">Equipo</button>
+        <button type="button" class="tab" onclick="switchTab('photos')">Fotos</button>
+        <button type="button" class="tab" onclick="switchTab('docs')">Documentos</button>
       </div>
       
       <!-- Botón ThreadSync separado -->
-      <button onclick="openThreadSync()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 10px; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); white-space: nowrap; backdrop-filter: blur(10px);" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.3)'; this.style.background='linear-gradient(135deg, #059669 0%, #047857 100%)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(16, 185, 129, 0.25)'; this.style.background='linear-gradient(135deg, #10b981 0%, #059669 100%)';">
+      <button type="button" onclick="openThreadSync()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 10px; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); white-space: nowrap; backdrop-filter: blur(10px);" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.3)'; this.style.background='linear-gradient(135deg, #059669 0%, #047857 100%)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(16, 185, 129, 0.25)'; this.style.background='linear-gradient(135deg, #10b981 0%, #059669 100%)';">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
         </svg>
@@ -1962,17 +2033,17 @@
           <p style="margin:0; color:#64748b; font-size:13px;">Reportes diarios y formularios configurables</p>
         </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn btn-primary" onclick="toggleFormSyncForm(true)" style="padding:10px 14px; border-radius:12px; box-shadow:0 6px 16px rgba(2,115,94,0.2); display:flex; align-items:center; gap:8px;">
+          <button type="button" class="btn btn-primary" onclick="toggleFormSyncForm(true)" style="padding:10px 14px; border-radius:12px; box-shadow:0 6px 16px rgba(2,115,94,0.2); display:flex; align-items:center; gap:8px;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Agregar Form
           </button>
-          <button class="btn btn-white" onclick="configureFormSync()" style="padding:10px 12px; border-radius:12px;">Configurar Formularios</button>
+          <button type="button" class="btn btn-white" onclick="configureFormSync()" style="padding:10px 12px; border-radius:12px;">Configurar Formularios</button>
         </div>
       </div>
       <div class="card" id="formSyncForm" style="margin-bottom: 16px; display:none;">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
           <h3 class="card-title" style="margin-bottom:0;">Nuevo FormSync</h3>
-          <button class="btn btn-white" onclick="toggleFormSyncForm(false)" style="padding:8px 12px;">Cerrar</button>
+          <button type="button" class="btn btn-white" onclick="toggleFormSyncForm(false)" style="padding:8px 12px;">Cerrar</button>
         </div>
         <div class="grid grid-2" style="gap: 12px; margin-top: 10px;">
           <div>
@@ -2025,14 +2096,14 @@
           <textarea id="daily-notes" class="form-textarea" rows="2" placeholder="Notas adicionales"></textarea>
         </div>
         <div style="display:flex; justify-content:flex-end; margin-top:12px; gap:10px; flex-wrap:wrap;">
-          <button class="btn btn-white" onclick="resetDailyForm()">Limpiar</button>
-          <button class="btn btn-primary" onclick="saveDailyLog()">Guardar FormSync</button>
+          <button type="button" class="btn btn-white" onclick="resetDailyForm()">Limpiar</button>
+          <button type="button" class="btn btn-primary" onclick="saveDailyLog()">Guardar FormSync</button>
         </div>
       </div>
       <div class="card" style="margin-top:12px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
           <h3 style="margin:0; font-size:16px; font-weight:700; color:#0f172a;">Historial FormSync</h3>
-          <button class="btn btn-white" onclick="configureFormSync()" style="padding:6px 10px; border-radius:10px;">Configurar</button>
+          <button type="button" class="btn btn-white" onclick="configureFormSync()" style="padding:6px 10px; border-radius:10px;">Configurar</button>
         </div>
         <div class="grid grid-2" id="dailyLogsContainer"></div>
       </div>
@@ -2080,7 +2151,7 @@
               </h3>
               <p style="font-size: 12px; color: #64748b;">Estado operativo del proyecto</p>
             </div>
-            <button onclick="changeProjectState()" id="btnChangeState" style="background: rgba(2, 115, 94, 0.1); color: #02735E; border: 1px solid rgba(2, 115, 94, 0.3); padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.background='rgba(2, 115, 94, 0.15)'" onmouseout="this.style.background='rgba(2, 115, 94, 0.1)';">
+            <button type="button" onclick="changeProjectState()" id="btnChangeState" style="background: rgba(2, 115, 94, 0.1); color: #02735E; border: 1px solid rgba(2, 115, 94, 0.3); padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.background='rgba(2, 115, 94, 0.15)'" onmouseout="this.style.background='rgba(2, 115, 94, 0.1)';">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="1 4 1 10 7 10"/>
                 <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
@@ -2134,20 +2205,20 @@
           </div>
           <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
-              <button class="btn btn-white" onclick="setTimelineView('phase')" style="padding:8px 10px;">Fases</button>
-              <button class="btn btn-white" onclick="setTimelineView('week')" style="padding:8px 10px;">Semanal</button>
-              <button class="btn btn-white" onclick="setTimelineView('day')" style="padding:8px 10px;">Diario</button>
-              <button class="btn btn-white" onclick="setTimelineView('month')" style="padding:8px 10px;">Mensual</button>
+              <button type="button" class="btn btn-white" onclick="setTimelineView('phase')" style="padding:8px 10px;">Fases</button>
+              <button type="button" class="btn btn-white" onclick="setTimelineView('week')" style="padding:8px 10px;">Semanal</button>
+              <button type="button" class="btn btn-white" onclick="setTimelineView('day')" style="padding:8px 10px;">Diario</button>
+              <button type="button" class="btn btn-white" onclick="setTimelineView('month')" style="padding:8px 10px;">Mensual</button>
             </div>
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              <button class="btn btn-primary" onclick="quickAddTimelinePhase()" style="display:flex; align-items:center; gap:8px; background:#02735E; border-color:#02735E;">
+              <button type="button" class="btn btn-primary" onclick="quickAddTimelinePhase()" style="display:flex; align-items:center; gap:8px; background:#02735E; border-color:#02735E;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="12" y1="5" x2="12" y2="19"></line>
                   <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
                 + Fase
               </button>
-              <button class="btn btn-white" onclick="editTimeline()" style="display: flex; align-items: center; gap: 8px;">
+              <button type="button" class="btn btn-white" onclick="editTimeline()" style="display: flex; align-items: center; gap: 8px;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -2197,7 +2268,7 @@
             </svg>
             Programación Detallada del Proyecto
           </h3>
-          <button class="btn btn-primary" onclick="editSchedule()" style="padding:8px 12px; border-radius:10px; display:flex; gap:6px; align-items:center;">
+          <button type="button" class="btn btn-primary" onclick="editSchedule()" style="padding:8px 12px; border-radius:10px; display:flex; gap:6px; align-items:center;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Agregar programación
           </button>
@@ -2219,7 +2290,7 @@
             </svg>
             Personal Asignado al Proyecto
           </h3>
-          <button class="btn btn-primary" onclick="openAssignStaffModal()">
+          <button type="button" class="btn btn-primary" onclick="openAssignStaffModal()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
               <circle cx="8.5" cy="7" r="4"/>
@@ -2241,7 +2312,7 @@
       <div class="modal-content" style="max-width: 600px;">
         <div class="modal-header">
           <h3>Asignar Personal al Proyecto</h3>
-          <button class="modal-close" onclick="closeAssignStaffModal()">&times;</button>
+          <button type="button" class="modal-close" onclick="closeAssignStaffModal()">&times;</button>
         </div>
         <div class="modal-body" style="padding: 24px;">
           <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px;">
@@ -2270,8 +2341,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-white" onclick="closeAssignStaffModal()">Cancelar</button>
-          <button class="btn btn-primary" onclick="saveStaffAssignments()">Guardar Asignaciones</button>
+          <button type="button" class="btn btn-white" onclick="closeAssignStaffModal()">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="saveStaffAssignments()">Guardar Asignaciones</button>
         </div>
       </div>
     </div>
@@ -2291,7 +2362,7 @@
             </h3>
             <p style="font-size: 13px; color: var(--text-secondary);">Fotos organizadas por categoría del proyecto</p>
           </div>
-          <button class="btn btn-primary" onclick="openUploadPhotoModal()" style="display: flex; align-items: center; gap: 8px;">
+          <button type="button" class="btn btn-primary" onclick="openUploadPhotoModal()" style="display: flex; align-items: center; gap: 8px;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
               <polyline points="17 8 12 3 7 8"/>
@@ -2303,22 +2374,22 @@
 
         <!-- Filtros de categoría -->
         <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
-          <button class="photo-filter active" data-category="all" onclick="filterPhotos('all')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: linear-gradient(135deg, #02735E, #035951); color: white; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+          <button type="button" class="photo-filter active" data-category="all" onclick="filterPhotos('all')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: linear-gradient(135deg, #02735E, #035951); color: white; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
             Todas (<span id="count-all">0</span>)
           </button>
-          <button class="photo-filter" data-category="before" onclick="filterPhotos('before')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+          <button type="button" class="photo-filter" data-category="before" onclick="filterPhotos('before')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
             📷 Antes (<span id="count-before">0</span>)
           </button>
-          <button class="photo-filter" data-category="during" onclick="filterPhotos('during')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+          <button type="button" class="photo-filter" data-category="during" onclick="filterPhotos('during')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
             🔧 En Proceso (<span id="count-during">0</span>)
           </button>
-          <button class="photo-filter" data-category="after" onclick="filterPhotos('after')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+          <button type="button" class="photo-filter" data-category="after" onclick="filterPhotos('after')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
             ✅ Después (<span id="count-after">0</span>)
           </button>
-          <button class="photo-filter" data-category="defect" onclick="filterPhotos('defect')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+          <button type="button" class="photo-filter" data-category="defect" onclick="filterPhotos('defect')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
             ⚠️ Defectos (<span id="count-defect">0</span>)
           </button>
-          <button class="photo-filter" data-category="completion" onclick="filterPhotos('completion')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+          <button type="button" class="photo-filter" data-category="completion" onclick="filterPhotos('completion')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
             📋 Entrega (<span id="count-completion">0</span>)
           </button>
         </div>
@@ -2339,8 +2410,8 @@
             <label style="display:block; font-size:12px; font-weight:600; color:#64748b; margin-bottom:6px;">Fecha de captura</label>
             <input type="date" id="photoDateFilter" onchange="handlePhotoDateChange(this)" style="width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:14px;">
           </div>
-          <button class="btn btn-white" onclick="resetPhotoFilters()" style="height:42px; padding:0 18px; border:1px solid #e5e7eb;">Limpiar filtros</button>
-          <button class="btn btn-secondary" onclick="downloadSelectedPhotos()" style="height:42px; padding:0 22px; display:flex; align-items:center; gap:6px;">
+          <button type="button" class="btn btn-white" onclick="resetPhotoFilters()" style="height:42px; padding:0 18px; border:1px solid #e5e7eb;">Limpiar filtros</button>
+          <button type="button" class="btn btn-secondary" onclick="downloadSelectedPhotos()" style="height:42px; padding:0 22px; display:flex; align-items:center; gap:6px;">
             Descargar selección (<span id="photoSelectionCount">0</span>)
           </button>
         </div>
@@ -2375,7 +2446,7 @@
             </h3>
             <p style="font-size: 13px; color: var(--text-secondary);">Archivos organizados por categoría del proyecto</p>
           </div>
-          <button class="btn btn-primary" onclick="openUploadDocumentModal()" style="display: flex; align-items: center; gap: 8px;">
+          <button type="button" class="btn btn-primary" onclick="openUploadDocumentModal()" style="display: flex; align-items: center; gap: 8px;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
               <polyline points="17 8 12 3 7 8"/>
@@ -2387,28 +2458,28 @@
 
         <!-- Filtros de categoría -->
         <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
-          <button class="doc-filter active" data-category="all" onclick="filterDocuments('all')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: linear-gradient(135deg, #02735E, #035951); color: white; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+          <button type="button" class="doc-filter active" data-category="all" onclick="filterDocuments('all')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: linear-gradient(135deg, #02735E, #035951); color: white; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
             Todos (<span id="doc-count-all">0</span>)
           </button>
-          <button class="doc-filter" data-category="contrato" onclick="filterDocuments('contrato')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+          <button type="button" class="doc-filter" data-category="contrato" onclick="filterDocuments('contrato')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
             📄 Contratos (<span id="doc-count-contrato">0</span>)
           </button>
-          <button class="doc-filter" data-category="permiso" onclick="filterDocuments('permiso')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+          <button type="button" class="doc-filter" data-category="permiso" onclick="filterDocuments('permiso')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
             📋 Permisos (<span id="doc-count-permiso">0</span>)
           </button>
-          <button class="doc-filter" data-category="factura" onclick="filterDocuments('factura')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+          <button type="button" class="doc-filter" data-category="factura" onclick="filterDocuments('factura')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
             💰 Facturas (<span id="doc-count-factura">0</span>)
           </button>
-          <button class="doc-filter" data-category="plano" onclick="filterDocuments('plano')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+          <button type="button" class="doc-filter" data-category="plano" onclick="filterDocuments('plano')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
             📐 Planos (<span id="doc-count-plano">0</span>)
           </button>
-          <button class="doc-filter" data-category="manual" onclick="filterDocuments('manual')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+          <button type="button" class="doc-filter" data-category="manual" onclick="filterDocuments('manual')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
             📚 Manuales (<span id="doc-count-manual">0</span>)
           </button>
-          <button class="doc-filter" data-category="otro" onclick="filterDocuments('otro')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+          <button type="button" class="doc-filter" data-category="otro" onclick="filterDocuments('otro')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
             📎 Otros (<span id="doc-count-otro">0</span>)
           </button>
-          <button class="doc-filter" data-category="daily" onclick="filterDocuments('daily')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+          <button type="button" class="doc-filter" data-category="daily" onclick="filterDocuments('daily')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
             📝 FormSync (<span id="doc-count-daily">0</span>)
           </button>
         </div>
@@ -2453,12 +2524,24 @@
       return copy;
     }
 
+    function parseInputDate(value) {
+      if (!value) return null;
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+
     function diffInDays(start, end) {
       if (!start || !end) return 0;
       const startDate = new Date(start);
       const endDate = new Date(end);
       if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) return 0;
       return Math.round((endDate - startDate) / DAY_IN_MS);
+    }
+
+    function formatShortDate(value) {
+      const date = parseInputDate(value);
+      if (!date) return '—';
+      return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
     }
 
     function loadDailyLogsForProject(project) {
@@ -2803,6 +2886,9 @@
             `).join('')}
           </div>
         ` : '';
+        const materialChips = (log.materials || '').split(/[,;]/).map(item => item.trim()).filter(Boolean).map(item => `
+          <span style="background: rgba(245,158,11,0.1); color:#b45309; padding:4px 10px; border-radius:999px; font-size:12px;">${item}</span>
+        `).join('');
         const signatures = (log.signatures && log.signatures.length ? log.signatures : fallbackSignatures).map(sig => `
           <div style="display:flex; flex-direction:column; gap:2px;">
             <span style="font-weight:600; color:#0f172a;">${sig.name}</span>
@@ -2816,14 +2902,22 @@
               <div>
                 <p style="margin:0; font-size:12px; color:#94a3b8;">Registro Diario</p>
                 <h3 style="margin:4px 0 0; font-size:20px; color:#0f172a;">${formatDate(log.date)}</h3>
-                <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:8px; font-size:13px; color:#475569;">
-                  ${log.start ? `<span><strong>Inicio:</strong> ${log.start}</span>` : ''}
-                  ${log.end ? `<span><strong>Fin:</strong> ${log.end}</span>` : ''}
-                  ${log.hours ? `<span><strong>Horas:</strong> ${log.hours}</span>` : ''}
-                  ${log.weather ? `<span><strong>Clima:</strong> ${log.weather}</span>` : ''}
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:8px; margin-top:10px;">
+                  <div style="background:#f1f5f9; border-radius:10px; padding:10px;">
+                    <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:#94a3b8;">Clima</div>
+                    <div style="font-weight:600; color:#0f172a;">${log.weather || 'No registrado'}</div>
+                  </div>
+                  <div style="background:#f1f5f9; border-radius:10px; padding:10px;">
+                    <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:#94a3b8;">Horas</div>
+                    <div style="font-weight:600; color:#0f172a;">${log.hours || (log.start && log.end ? `${log.start} - ${log.end}` : 'N/A')}</div>
+                  </div>
+                  <div style="background:#f1f5f9; border-radius:10px; padding:10px;">
+                    <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:#94a3b8;">Crew</div>
+                    <div style="font-weight:600; color:#0f172a;">${log.crewCount || (log.crew ? log.crew.length : 0)} personas</div>
+                  </div>
                 </div>
               </div>
-              <button class="btn btn-white" onclick="exportDailyLog(${index})" style="display:flex; align-items:center; gap:8px;">
+              <button type="button" class="btn btn-white" onclick="exportDailyLog(${index})" style="display:flex; align-items:center; gap:8px;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M12 5v14"></path>
                   <path d="M18 13l-6 6-6-6"></path>
@@ -2837,13 +2931,15 @@
                 <p style="margin:0; font-size:12px; font-weight:600; color:#94a3b8;">Trabajo Realizado</p>
                 <p style="margin:8px 0 0; color:#0f172a;">${log.work || 'Sin descripción'}</p>
               </div>
-              <div style="background:#fef9c3; border-radius:12px; padding:14px;">
-                <p style="margin:0; font-size:12px; font-weight:600; color:#b45309;">Materiales</p>
-                <p style="margin:8px 0 0; color:#713f12;">${log.materials || 'No registrado'}</p>
-              </div>
               <div style="background:#ecfccb; border-radius:12px; padding:14px;">
                 <p style="margin:0; font-size:12px; font-weight:600; color:#3f6212;">Seguridad</p>
                 <p style="margin:8px 0 0; color:#1f2937;">${log.safety || 'Sin observaciones'}</p>
+              </div>
+              <div style="background:#fef9c3; border-radius:12px; padding:14px;">
+                <p style="margin:0; font-size:12px; font-weight:600; color:#b45309;">Materiales</p>
+                <div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:6px;">
+                  ${materialChips || '<span style="color:#b45309;">No registrado</span>'}
+                </div>
               </div>
             </section>
 
@@ -3306,12 +3402,13 @@
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="M9 9h6v6H9z"/><path d="M9 3v6"/><path d="M15 15v6"/></svg>
               Configurar Formularios
             </div>
-            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
+            <button type="button" class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
           </div>
           <div class="modal-body" style="display:grid; gap:16px;">
             <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px; font-size:13px; color:#475569;">
               Define qué campos serán obligatorios u opcionales para todos los formularios de esta compañía.
             </div>
+            <div id="fs-template-preview" style="border:1px dashed rgba(2,115,94,0.3); border-radius:12px; padding:12px;"></div>
             <div style="display:grid; gap:12px; max-height:360px; overflow-y:auto; padding-right:6px;">
               ${fieldsHTML}
             </div>
@@ -3323,22 +3420,21 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button class="btn btn-white" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
+            <button type="button" class="btn btn-white" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
             <button class="btn btn-primary" id="fs-save-template">Guardar</button>
           </div>
         </div>
       `;
       document.body.appendChild(modal);
+      renderFormSyncTemplatePreview(modal);
+      modal.addEventListener('change', (event) => {
+        if (event.target.name?.startsWith('fs-field-') || event.target.id?.startsWith('fs-sign-')) {
+          renderFormSyncTemplatePreview(modal);
+        }
+      });
 
       modal.querySelector('#fs-save-template').addEventListener('click', () => {
-        const updated = { fields: {}, signatures: {} };
-        FORMSYNC_FIELDS.forEach((field) => {
-          const value = modal.querySelector(`input[name="fs-field-${field.key}"]:checked`)?.value || 'optional';
-          updated.fields[field.key] = value;
-        });
-        FORMSYNC_SIGNATURE_OPTIONS.forEach((sig) => {
-          updated.signatures[sig.key] = modal.querySelector(`#fs-sign-${sig.key}`)?.checked || false;
-        });
+        const updated = collectFormSyncTemplateFromModal(modal);
         saveFormTemplateConfig(updated);
         applyFormTemplateToForm();
         uiToast('success', 'Plantilla guardada');
@@ -3533,7 +3629,7 @@
                 </svg>
                 ThreadSync no encontrado
               </div>
-              <button class="modal-close" onclick="closeModal('threadModal')">
+              <button type="button" class="modal-close" onclick="closeModal('threadModal')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="18" y1="6" x2="6" y2="18"/>
                   <line x1="6" y1="6" x2="18" y2="18"/>
@@ -3591,8 +3687,8 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button class="btn btn-secondary" onclick="closeModal('threadModal')">Cancelar</button>
-              <button class="btn btn-primary" onclick="createNewThread('${projectId}')" style="background: #10b981; border-color: #10b981;">
+              <button type="button" class="btn btn-secondary" onclick="closeModal('threadModal')">Cancelar</button>
+              <button type="button" class="btn btn-primary" onclick="createNewThread('${projectId}')" style="background: #10b981; border-color: #10b981;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                 </svg>
@@ -3655,7 +3751,7 @@
                 </svg>
                 Editar Proyecto ${currentProject.idSync || currentProject.id}
               </div>
-              <button class="modal-close" onclick="closeModal('editModal')">
+              <button type="button" class="modal-close" onclick="closeModal('editModal')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="18" y1="6" x2="6" y2="18"/>
                   <line x1="6" y1="6" x2="18" y2="18"/>
@@ -3740,8 +3836,8 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button class="btn btn-secondary" onclick="closeModal('editModal')">Cancelar</button>
-              <button class="btn btn-primary" onclick="saveProjectEdit()">
+              <button type="button" class="btn btn-secondary" onclick="closeModal('editModal')">Cancelar</button>
+              <button type="button" class="btn btn-primary" onclick="saveProjectEdit()">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
@@ -3844,7 +3940,7 @@
                 </svg>
                 Subir Fotos del Proyecto
               </div>
-              <button class="modal-close" onclick="closeModal('photoModal')">
+              <button type="button" class="modal-close" onclick="closeModal('photoModal')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="18" y1="6" x2="6" y2="18"/>
                   <line x1="6" y1="6" x2="18" y2="18"/>
@@ -3865,8 +3961,8 @@
               <div id="fileList" style="margin-top: 16px;"></div>
             </div>
             <div class="modal-footer">
-              <button class="btn btn-secondary" onclick="closeModal('photoModal')">Cancelar</button>
-              <button class="btn btn-primary" onclick="savePhotos()">Subir Fotos</button>
+              <button type="button" class="btn btn-secondary" onclick="closeModal('photoModal')">Cancelar</button>
+              <button type="button" class="btn btn-primary" onclick="savePhotos()">Subir Fotos</button>
             </div>
           </div>
         </div>
@@ -3927,7 +4023,7 @@
                 </svg>
                 Subir Documento
               </div>
-              <button class="modal-close" onclick="closeModal('docModal')">
+              <button type="button" class="modal-close" onclick="closeModal('docModal')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="18" y1="6" x2="6" y2="18"/>
                   <line x1="6" y1="6" x2="18" y2="18"/>
@@ -3963,8 +4059,8 @@
               <div id="docFileList" style="margin-top: 16px;"></div>
             </div>
             <div class="modal-footer">
-              <button class="btn btn-secondary" onclick="closeModal('docModal')">Cancelar</button>
-              <button class="btn btn-primary" onclick="saveDocument()">Subir Documento</button>
+              <button type="button" class="btn btn-secondary" onclick="closeModal('docModal')">Cancelar</button>
+              <button type="button" class="btn btn-primary" onclick="saveDocument()">Subir Documento</button>
             </div>
           </div>
         </div>
@@ -4019,7 +4115,7 @@
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               Editar Programación
             </div>
-            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
+            <button type="button" class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
           </div>
           <div class="modal-body" style="display:grid; gap:12px;">
             <div class="form-group">
@@ -4027,15 +4123,15 @@
               <div id="sch-rows" style="display:grid; gap:12px;">
                 ${phases.map((p, idx) => scheduleRowTemplate(p, idx)).join('')}
               </div>
-              <button class="btn btn-white" style="margin-top:8px;" onclick="addScheduleRow()">+ Agregar etapa</button>
+              <button type="button" class="btn btn-white" style="margin-top:8px;" onclick="addScheduleRow()">+ Agregar etapa</button>
             </div>
             <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px; font-size:13px; color:#475569;">
               Demo: guardado local. En producción se sincronizará con ProjectSync/TimeSync.
             </div>
           </div>
           <div class="modal-footer">
-            <button class="btn btn-white" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
-            <button class="btn btn-primary" onclick="saveScheduleModal(this)">Guardar</button>
+            <button type="button" class="btn btn-white" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
+            <button type="button" class="btn btn-primary" onclick="saveScheduleModal(this)">Guardar</button>
           </div>
         </div>
       `;
@@ -4112,7 +4208,7 @@
                 </svg>
                 Agregar Miembro al Equipo
               </div>
-              <button class="modal-close" onclick="closeModal('teamModal')">
+              <button type="button" class="modal-close" onclick="closeModal('teamModal')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="18" y1="6" x2="6" y2="18"/>
                   <line x1="6" y1="6" x2="18" y2="18"/>
@@ -4158,8 +4254,8 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button class="btn btn-secondary" onclick="closeModal('teamModal')">Cancelar</button>
-              <button class="btn btn-primary" onclick="saveTeamMember()">Agregar al Proyecto</button>
+              <button type="button" class="btn btn-secondary" onclick="closeModal('teamModal')">Cancelar</button>
+              <button type="button" class="btn btn-primary" onclick="saveTeamMember()">Agregar al Proyecto</button>
             </div>
           </div>
         </div>
@@ -4205,7 +4301,7 @@
                 </svg>
                 Checklist Operativo del Proyecto
               </div>
-              <button class="modal-close" onclick="closeModal('statusModal')">
+              <button type="button" class="modal-close" onclick="closeModal('statusModal')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="18" y1="6" x2="6" y2="18"/>
                   <line x1="6" y1="6" x2="18" y2="18"/>
@@ -4224,22 +4320,22 @@
                   </div>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 12px;">
-                  <button onclick="loadTemplate('plomeria')" style="padding: 12px; background: white; border: 2px solid #fbbf24; color: #92400e; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; justify-content: center;" onmouseover="this.style.background='#fffbeb'" onmouseout="this.style.background='white'">
+                  <button type="button" onclick="loadTemplate('plomeria')" style="padding: 12px; background: white; border: 2px solid #fbbf24; color: #92400e; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; justify-content: center;" onmouseover="this.style.background='#fffbeb'" onmouseout="this.style.background='white'">
                     🔧 Plomería
                   </button>
-                  <button onclick="loadTemplate('hvac')" style="padding: 12px; background: white; border: 2px solid #fbbf24; color: #92400e; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; justify-content: center;" onmouseover="this.style.background='#fffbeb'" onmouseout="this.style.background='white'">
+                  <button type="button" onclick="loadTemplate('hvac')" style="padding: 12px; background: white; border: 2px solid #fbbf24; color: #92400e; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; justify-content: center;" onmouseover="this.style.background='#fffbeb'" onmouseout="this.style.background='white'">
                     ❄️ HVAC
                   </button>
-                  <button onclick="loadTemplate('electrico')" style="padding: 12px; background: white; border: 2px solid #fbbf24; color: #92400e; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; justify-content: center;" onmouseover="this.style.background='#fffbeb'" onmouseout="this.style.background='white'">
+                  <button type="button" onclick="loadTemplate('electrico')" style="padding: 12px; background: white; border: 2px solid #fbbf24; color: #92400e; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; justify-content: center;" onmouseover="this.style.background='#fffbeb'" onmouseout="this.style.background='white'">
                     ⚡ Eléctrico
                   </button>
-                  <button onclick="loadTemplate('construccion')" style="padding: 12px; background: white; border: 2px solid #fbbf24; color: #92400e; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; justify-content: center;" onmouseover="this.style.background='#fffbeb'" onmouseout="this.style.background='white'">
+                  <button type="button" onclick="loadTemplate('construccion')" style="padding: 12px; background: white; border: 2px solid #fbbf24; color: #92400e; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; justify-content: center;" onmouseover="this.style.background='#fffbeb'" onmouseout="this.style.background='white'">
                     🏗️ Construcción
                   </button>
-                  <button onclick="loadTemplate('mantenimiento')" style="padding: 12px; background: white; border: 2px solid #fbbf24; color: #92400e; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; justify-content: center;" onmouseover="this.style.background='#fffbeb'" onmouseout="this.style.background='white'">
+                  <button type="button" onclick="loadTemplate('mantenimiento')" style="padding: 12px; background: white; border: 2px solid #fbbf24; color: #92400e; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; justify-content: center;" onmouseover="this.style.background='#fffbeb'" onmouseout="this.style.background='white'">
                     🔨 Mantenimiento
                   </button>
-                  <button onclick="loadTemplate('limpieza')" style="padding: 12px; background: white; border: 2px solid #fbbf24; color: #92400e; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; justify-content: center;" onmouseover="this.style.background='#fffbeb'" onmouseout="this.style.background='white'">
+                  <button type="button" onclick="loadTemplate('limpieza')" style="padding: 12px; background: white; border: 2px solid #fbbf24; color: #92400e; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; justify-content: center;" onmouseover="this.style.background='#fffbeb'" onmouseout="this.style.background='white'">
                     🧹 Limpieza
                   </button>
                 </div>
@@ -4267,7 +4363,7 @@
               </div>
 
               <div style="display: flex; gap: 12px; margin-top: 16px;">
-                <button onclick="addNewChecklistItem()" style="flex: 1; padding: 12px; background: rgba(2, 115, 94, 0.1); color: #02735E; border: 2px dashed rgba(2, 115, 94, 0.3); border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;" onmouseover="this.style.background='rgba(2, 115, 94, 0.15)'" onmouseout="this.style.background='rgba(2, 115, 94, 0.1)'">
+                <button type="button" onclick="addNewChecklistItem()" style="flex: 1; padding: 12px; background: rgba(2, 115, 94, 0.1); color: #02735E; border: 2px dashed rgba(2, 115, 94, 0.3); border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;" onmouseover="this.style.background='rgba(2, 115, 94, 0.15)'" onmouseout="this.style.background='rgba(2, 115, 94, 0.1)'">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="12" y1="5" x2="12" y2="19"/>
                     <line x1="5" y1="12" x2="19" y2="12"/>
@@ -4276,7 +4372,7 @@
                 </button>
                 
                 ${currentChecklist.length > 0 ? `
-                <button onclick="clearChecklist()" style="padding: 12px 16px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 2px solid rgba(239, 68, 68, 0.2); border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='rgba(239, 68, 68, 0.15)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'">
+                <button type="button" onclick="clearChecklist()" style="padding: 12px 16px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 2px solid rgba(239, 68, 68, 0.2); border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='rgba(239, 68, 68, 0.15)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'">
                   🗑️ Limpiar Todo
                 </button>
                 ` : ''}
@@ -4292,15 +4388,15 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button class="btn btn-secondary" onclick="closeModal('statusModal')">Cancelar</button>
-              <button class="btn btn-secondary" onclick="showProjectHistory()" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3);">
+              <button type="button" class="btn btn-secondary" onclick="closeModal('statusModal')">Cancelar</button>
+              <button type="button" class="btn btn-secondary" onclick="showProjectHistory()" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3);">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; margin-right: 6px;">
                   <circle cx="12" cy="12" r="10"/>
                   <polyline points="12 6 12 12 16 14"/>
                 </svg>
                 Ver Historial
               </button>
-              <button class="btn btn-primary" onclick="saveProjectStatus()">
+              <button type="button" class="btn btn-primary" onclick="saveProjectStatus()">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; margin-right: 6px;">
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
@@ -4477,7 +4573,7 @@
                 ${item.completedDate ? '✅ Completada: ' + new Date(item.completedDate).toLocaleDateString('es-MX', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : (item.date || 'Sin fecha programada')}
               </div>
             </div>
-            <button onclick="event.stopPropagation(); deleteChecklistItem('${item.id}')" style="background: #fee2e2; color: #dc2626; border: none; padding: 8px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'">
+            <button type="button" onclick="event.stopPropagation(); deleteChecklistItem('${item.id}')" style="background: #fee2e2; color: #dc2626; border: none; padding: 8px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'">
               🗑️
             </button>
           </label>
@@ -4647,7 +4743,7 @@
             <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
               Aún no se han definido etapas para este proyecto.
             </div>
-            <button onclick="editProjectStatus()" style="background: rgba(2, 115, 94, 0.1); color: #02735E; border: 1px solid rgba(2, 115, 94, 0.3); padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">
+            <button type="button" onclick="editProjectStatus()" style="background: rgba(2, 115, 94, 0.1); color: #02735E; border: 1px solid rgba(2, 115, 94, 0.3); padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; margin-right: 6px;">
                 <line x1="12" y1="5" x2="12" y2="19"/>
                 <line x1="5" y1="12" x2="19" y2="12"/>
@@ -4697,7 +4793,7 @@
                 </svg>
                 Historial de Cambios del Proyecto
               </div>
-              <button class="modal-close" onclick="closeModal('historyModal')">
+              <button type="button" class="modal-close" onclick="closeModal('historyModal')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="18" y1="6" x2="6" y2="18"/>
                   <line x1="6" y1="6" x2="18" y2="18"/>
@@ -4709,7 +4805,7 @@
                 <p style="color: var(--text-secondary); font-size: 14px; margin: 0;">
                   Revisa todos los cambios realizados al estado del proyecto. Puedes restaurar cualquier versión anterior.
                 </p>
-                <button onclick="showArchivedHistory()" style="background: rgba(107, 114, 128, 0.1); color: #6b7280; border: 1px solid rgba(107, 114, 128, 0.3); padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;">
+                <button type="button" onclick="showArchivedHistory()" style="background: rgba(107, 114, 128, 0.1); color: #6b7280; border: 1px solid rgba(107, 114, 128, 0.3); padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; margin-right: 4px;">
                     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
                   </svg>
@@ -4739,7 +4835,7 @@
                         </div>
                       </div>
                       ${index !== 0 ? `
-                        <button onclick="restoreProjectStatus(${index})" style="background: rgba(2, 115, 94, 0.1); color: #02735E; border: 1px solid rgba(2, 115, 94, 0.3); padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">
+                        <button type="button" onclick="restoreProjectStatus(${index})" style="background: rgba(2, 115, 94, 0.1); color: #02735E; border: 1px solid rgba(2, 115, 94, 0.3); padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; margin-right: 4px;">
                             <polyline points="1 4 1 10 7 10"/>
                             <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
@@ -4761,7 +4857,7 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button class="btn btn-secondary" onclick="closeModal('historyModal')">Cerrar</button>
+              <button type="button" class="btn btn-secondary" onclick="closeModal('historyModal')">Cerrar</button>
             </div>
           </div>
         </div>
@@ -4830,7 +4926,7 @@
                 </svg>
                 Historiales Archivados
               </div>
-              <button class="modal-close" onclick="closeModal('archivedModal')">
+              <button type="button" class="modal-close" onclick="closeModal('archivedModal')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="18" y1="6" x2="6" y2="18"/>
                   <line x1="6" y1="6" x2="18" y2="18"/>
@@ -4907,7 +5003,7 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button class="btn btn-secondary" onclick="closeModal('archivedModal')">Cerrar</button>
+              <button type="button" class="btn btn-secondary" onclick="closeModal('archivedModal')">Cerrar</button>
             </div>
           </div>
         </div>
@@ -5063,7 +5159,7 @@
                 </svg>
                 Crear Change Order
               </div>
-              <button class="modal-close" onclick="closeModal('changeOrderModal')">
+              <button type="button" class="modal-close" onclick="closeModal('changeOrderModal')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="18" y1="6" x2="6" y2="18"/>
                   <line x1="6" y1="6" x2="18" y2="18"/>
@@ -5168,8 +5264,8 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button class="btn btn-secondary" onclick="closeModal('changeOrderModal')">Cancelar</button>
-              <button class="btn btn-primary" onclick="confirmCreateChangeOrder()" style="background: #f59e0b; border-color: #f59e0b;">
+              <button type="button" class="btn btn-secondary" onclick="closeModal('changeOrderModal')">Cancelar</button>
+              <button type="button" class="btn btn-primary" onclick="confirmCreateChangeOrder()" style="background: #f59e0b; border-color: #f59e0b;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; margin-right: 6px;">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -5606,7 +5702,7 @@
                 </svg>
                 Cambiar Estado del Proyecto
               </div>
-              <button class="modal-close" onclick="closeModal('stateChangeModal')">
+              <button type="button" class="modal-close" onclick="closeModal('stateChangeModal')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="18" y1="6" x2="6" y2="18"/>
                   <line x1="6" y1="6" x2="18" y2="18"/>
@@ -5648,8 +5744,8 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button class="btn btn-secondary" onclick="closeModal('stateChangeModal')">Cancelar</button>
-              <button class="btn btn-primary" onclick="confirmStateChange()">
+              <button type="button" class="btn btn-secondary" onclick="closeModal('stateChangeModal')">Cancelar</button>
+              <button type="button" class="btn btn-primary" onclick="confirmStateChange()">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; margin-right: 6px;">
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
@@ -5875,10 +5971,10 @@
               </div>
               <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
                 <div style="display:flex; gap:6px;">
-                  <button onclick="event.stopPropagation(); renamePhoto('${photo.id}')" style="background: #e0f2fe; color: #0369a1; border: none; padding: 6px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                  <button type="button" onclick="event.stopPropagation(); renamePhoto('${photo.id}')" style="background: #e0f2fe; color: #0369a1; border: none; padding: 6px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
                     Renombrar
                   </button>
-                  <button onclick="event.stopPropagation(); deletePhoto('${photo.id}')" style="background: #fee2e2; color: #dc2626; border: none; padding: 6px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                  <button type="button" onclick="event.stopPropagation(); deletePhoto('${photo.id}')" style="background: #fee2e2; color: #dc2626; border: none; padding: 6px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
                     🗑️ Eliminar
                   </button>
                 </div>
@@ -6055,7 +6151,7 @@
                 </svg>
                 Subir Foto
               </h3>
-              <button onclick="closeUploadPhotoModal()" style="background: none; border: none; font-size: 28px; color: #94a3b8; cursor: pointer; line-height: 1; padding: 0; width: 32px; height: 32px;">&times;</button>
+              <button type="button" onclick="closeUploadPhotoModal()" style="background: none; border: none; font-size: 28px; color: #94a3b8; cursor: pointer; line-height: 1; padding: 0; width: 32px; height: 32px;">&times;</button>
             </div>
 
             <div style="margin-bottom: 20px;">
@@ -6103,10 +6199,10 @@
             </div>
 
             <div style="display: flex; gap: 12px;">
-              <button onclick="closeUploadPhotoModal()" style="flex: 1; padding: 14px; border: 2px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;">
+              <button type="button" onclick="closeUploadPhotoModal()" style="flex: 1; padding: 14px; border: 2px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;">
                 Cancelar
               </button>
-              <button onclick="confirmUploadPhoto()" style="flex: 1; padding: 14px; border: none; background: linear-gradient(135deg, #02735E, #035951); color: white; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;">
+              <button type="button" onclick="confirmUploadPhoto()" style="flex: 1; padding: 14px; border: none; background: linear-gradient(135deg, #02735E, #035951); color: white; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;">
                 Subir Foto
               </button>
             </div>
@@ -6204,7 +6300,7 @@
       
       const lightboxHTML = `
         <div id="photoLightbox" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 10001; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.2s;" onclick="closePhotoLightbox()">
-          <button onclick="closePhotoLightbox()" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; font-size: 36px; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; z-index: 10002; backdrop-filter: blur(10px);">&times;</button>
+          <button type="button" onclick="closePhotoLightbox()" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; font-size: 36px; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; z-index: 10002; backdrop-filter: blur(10px);">&times;</button>
           
           <div style="max-width: 90vw; max-height: 90vh; text-align: center;" onclick="event.stopPropagation()">
             <img src="${photo.url}" alt="${photo.caption || 'Foto del proyecto'}" style="max-width: 100%; max-height: 80vh; border-radius: 12px; box-shadow: 0 20px 80px rgba(0,0,0,0.5);">
@@ -6450,7 +6546,7 @@
                 </div>
               </div>
               <div style="display: flex; gap: 8px;">
-                <button onclick="event.stopPropagation(); downloadDocument('${doc.id}')" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: none; padding: 10px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;" onmouseover="this.style.background='rgba(59, 130, 246, 0.2)'" onmouseout="this.style.background='rgba(59, 130, 246, 0.1)'">
+                <button type="button" onclick="event.stopPropagation(); downloadDocument('${doc.id}')" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: none; padding: 10px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;" onmouseover="this.style.background='rgba(59, 130, 246, 0.2)'" onmouseout="this.style.background='rgba(59, 130, 246, 0.1)'">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                     <polyline points="7 10 12 15 17 10"/>
@@ -6458,7 +6554,7 @@
                   </svg>
                   Descargar
                 </button>
-                <button onclick="event.stopPropagation(); deleteDocument('${doc.id}')" style="background: #fee2e2; color: #dc2626; border: none; padding: 10px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'">
+                <button type="button" onclick="event.stopPropagation(); deleteDocument('${doc.id}')" style="background: #fee2e2; color: #dc2626; border: none; padding: 10px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'">
                   🗑️ Eliminar
                 </button>
               </div>
@@ -6529,7 +6625,7 @@
                 </svg>
                 Subir Documento
               </h3>
-              <button onclick="closeUploadDocumentModal()" style="background: none; border: none; font-size: 28px; color: #94a3b8; cursor: pointer; line-height: 1; padding: 0; width: 32px; height: 32px;">&times;</button>
+              <button type="button" onclick="closeUploadDocumentModal()" style="background: none; border: none; font-size: 28px; color: #94a3b8; cursor: pointer; line-height: 1; padding: 0; width: 32px; height: 32px;">&times;</button>
             </div>
 
             <div style="margin-bottom: 20px;">
@@ -6563,10 +6659,10 @@
             </div>
 
             <div style="display: flex; gap: 12px;">
-              <button onclick="closeUploadDocumentModal()" style="flex: 1; padding: 14px; border: 2px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;">
+              <button type="button" onclick="closeUploadDocumentModal()" style="flex: 1; padding: 14px; border: 2px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;">
                 Cancelar
               </button>
-              <button onclick="confirmUploadDocument()" style="flex: 1; padding: 14px; border: none; background: linear-gradient(135deg, #02735E, #035951); color: white; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;">
+              <button type="button" onclick="confirmUploadDocument()" style="flex: 1; padding: 14px; border: none; background: linear-gradient(135deg, #02735E, #035951); color: white; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;">
                 Subir Documento
               </button>
             </div>
@@ -6782,7 +6878,7 @@
             ${icons[type] || icons.info}
           </div>
           <div class="toast-message">${message}</div>
-          <button class="toast-close" onclick="removeToast('${toastId}')">
+          <button type="button" class="toast-close" onclick="removeToast('${toastId}')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="18" y1="6" x2="6" y2="18"/>
               <line x1="6" y1="6" x2="18" y2="18"/>
@@ -7126,12 +7222,12 @@
                 ${assignment.phase ? `Fase: ${assignment.phase} • ` : ''}Asignado: ${formatDate(assignment.assignedDate || new Date())}
               </div>
             </div>
-            <button class="btn btn-white" onclick="contactStaff('${staff.name}', '${staff.phone}')" title="Contactar">
+            <button type="button" class="btn btn-white" onclick="contactStaff('${staff.name}', '${staff.phone}')" title="Contactar">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
               </svg>
             </button>
-            <button class="btn btn-white" onclick="removeStaffFromProject('${staff.id}')" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.3);" title="Remover">
+            <button type="button" class="btn btn-white" onclick="removeStaffFromProject('${staff.id}')" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.3);" title="Remover">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -7591,18 +7687,42 @@
     function timelineRowTemplate(data, idx) {
       const status = data.status || 'pending';
       const statusOptions = ['pending', 'in-progress', 'completed'];
+      const offsetVal = Number.isFinite(data.startOffset) ? data.startOffset : 0;
+      const durationVal = data.duration || 1;
       return `
-        <div class="timeline-row" data-idx="${idx}" style="display:grid; grid-template-columns:1.6fr repeat(2,0.8fr) repeat(2,1fr) auto; gap:6px; align-items:center;">
-          <input class="form-input" data-field="label" value="${data.label || ''}" placeholder="Nombre de la fase">
-          <input class="form-input" data-field="startOffset" type="number" min="0" value="${Number.isFinite(data.startOffset) ? data.startOffset : 0}">
-          <input class="form-input" data-field="duration" type="number" min="1" value="${data.duration || 1}">
-          <input class="form-input" data-field="startDate" type="date" value="${data.startDate || ''}">
-          <input class="form-input" data-field="endDate" type="date" value="${data.endDate || ''}">
-          <div style="display:flex; gap:6px; align-items:center;">
-            <select class="form-select" data-field="status">
+        <div class="timeline-row" data-idx="${idx}" style="display:flex; flex-direction:column; gap:10px; padding:12px; border:1px solid #e2e8f0; border-radius:12px; background:#fff;">
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <input class="form-input" data-field="label" value="${data.label || ''}" placeholder="Nombre de la fase" style="flex:1; min-width:220px;">
+            <select class="form-select" data-field="status" style="min-width:160px;">
               ${statusOptions.map(opt => `<option value="${opt}" ${opt === status ? 'selected' : ''}>${opt === 'pending' ? 'Pendiente' : opt === 'in-progress' ? 'En Proceso' : 'Completado'}</option>`).join('')}
             </select>
-            <button type="button" onclick="removeTimelineRow(${idx})" title="Eliminar fase" style="background:none;border:none;color:#94a3b8;font-size:18px;line-height:1;padding:4px 8px;cursor:pointer;">&times;</button>
+            <button type="button" onclick="removeTimelineRow(${idx})" title="Eliminar fase" style="background:none;border:none;color:#94a3b8;font-size:20px;line-height:1;padding:4px 8px;cursor:pointer;">&times;</button>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:8px;">
+            <div>
+              <label class="form-label" style="font-size:12px;">Offset desde inicio (días)</label>
+              <input class="form-input" data-field="startOffset" type="number" min="0" value="${offsetVal}">
+            </div>
+            <div>
+              <label class="form-label" style="font-size:12px;">Duración (días)</label>
+              <input class="form-input" data-field="duration" type="number" min="1" value="${durationVal}">
+            </div>
+            <div>
+              <label class="form-label" style="font-size:12px;">Fecha inicio</label>
+              <input class="form-input" data-field="startDate" type="date" value="${data.startDate || ''}">
+            </div>
+            <div>
+              <label class="form-label" style="font-size:12px;">Fecha fin</label>
+              <input class="form-input" data-field="endDate" type="date" value="${data.endDate || ''}">
+            </div>
+          </div>
+          <div class="timeline-computed" data-computed="${idx}" style="display:flex; gap:12px; flex-wrap:wrap; font-size:12px;">
+            <span style="background:#f1f5f9; border-radius:999px; padding:4px 10px; color:#0f172a;">
+              Inicio estimado: <strong data-computed-start="${idx}">—</strong>
+            </span>
+            <span style="background:#ecfeff; border-radius:999px; padding:4px 10px; color:#0369a1;">
+              Fin estimado: <strong data-computed-end="${idx}">—</strong>
+            </span>
           </div>
         </div>
       `;
@@ -7618,6 +7738,7 @@
           lastRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
           const input = lastRow.querySelector('[data-field="label"]');
           if (input) input.focus();
+          updateTimelineComputedRow(lastRow, existingModal);
         }
         return;
       }
@@ -7671,7 +7792,7 @@
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
               Editar Timeline
             </div>
-            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
+            <button type="button" class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
           </div>
           <div class="modal-body" style="display:grid; gap:16px;">
             <div class="form-group">
@@ -7687,7 +7808,7 @@
               <div id="tl-rows" style="display:grid; gap:8px;" data-next-idx="${normalizedRows.length}">
                 ${normalizedRows.map((phase, idx) => timelineRowTemplate(phase, idx)).join('')}
               </div>
-              <button class="btn btn-white" style="margin-top:8px;" onclick="addTimelineRow()">+ Agregar fase</button>
+              <button type="button" class="btn btn-white" style="margin-top:8px;" onclick="addTimelineRow()">+ Agregar fase</button>
             </div>
             <div class="form-group">
               <label class="form-label">Notas</label>
@@ -7702,6 +7823,17 @@
         </div>
       `;
       document.body.appendChild(modal);
+      refreshTimelineComputed(modal);
+      modal.addEventListener('input', (event) => {
+        if (event.target.matches('#tl-start')) {
+          refreshTimelineComputed(modal);
+          return;
+        }
+        const row = event.target.closest('.timeline-row');
+        if (row) {
+          updateTimelineComputedRow(row, modal);
+        }
+      });
     }
 
     function addTimelineRow() {
@@ -7717,11 +7849,20 @@
         endDate: '',
         status: 'pending'
       }, idx));
+      const modal = document.getElementById('timelineEditorModal');
+      const newRow = rows.querySelector(`.timeline-row[data-idx="${idx}"]`);
+      if (modal && newRow) {
+        updateTimelineComputedRow(newRow, modal);
+      }
     }
 
     function removeTimelineRow(idx) {
       const row = document.querySelector(`.timeline-row[data-idx="${idx}"]`);
-      if (row) row.remove();
+      if (row) {
+        const modal = row.closest('.modal-overlay');
+        row.remove();
+        if (modal) refreshTimelineComputed(modal);
+      }
     }
 
     function saveTimelineModal(btn, applyTimeline = false) {
