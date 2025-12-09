@@ -4639,7 +4639,7 @@
     .toast-notification.info::before { background: #3b82f6; }
   </style>
 </head>
-<body data-sidebar-active="dashboard">
+<body>
   <a href="#main" class="skip-link">Ir al contenido principal</a>
   <!-- MotorSync - Sistema Operacional Base | Opsis Suite -->
   <div class="app-shell" data-theme="light" data-accent="#02735E">
@@ -4680,7 +4680,7 @@
     <aside id="sidebar"></aside>
 
     <main id="main">
-      <section id="page-dashboard" class="page active" aria-labelledby="dashboard-title">
+      <section id="page-dashboard" class="page" aria-labelledby="dashboard-title">
         <div class="page-header dashboard-hero">
           <div>
             <p class="dashboard-kicker" id="dashboard-kicker" data-i18n="dashboardKicker">Operación en vivo</p>
@@ -9802,6 +9802,10 @@
         this.bindUI();
         this.translatePage();
         this.renderAll();
+        
+        // Activar página inicial según rol
+        const initialPage = this.getRoleDefaultPage() || 'dashboard';
+        this.showPage(initialPage);
       },
 
       seedData() {
@@ -10918,6 +10922,198 @@
           roleDuplicateBtn.addEventListener('click', () => this.duplicateRole());
         }
         this.initRoleSwitcher();
+        
+        // CONSOLIDADO: Inicializar UI extendida (antes estaba en múltiples DOMContentLoaded)
+        this.initializeExtendedUI();
+      },
+      
+      initializeExtendedUI() {
+        // Category selector
+        const selector = document.getElementById('category-selector');
+        if (selector) {
+          const saved = localStorage.getItem('motorsync_category');
+          if (saved && window.CATEGORY_CONFIG && window.CATEGORY_CONFIG[saved]) {
+            selector.value = saved;
+            if (typeof window.updateCategory === 'function') {
+              window.updateCategory();
+            }
+          }
+          selector.addEventListener('change', () => {
+            if (typeof window.updateCategory === 'function') {
+              window.updateCategory();
+            }
+          });
+        }
+        
+        // Logo upload handler
+        const logoUpload = document.getElementById('logo-upload');
+        const logoPreview = document.getElementById('logo-preview');
+        if (logoUpload && logoPreview) {
+          logoUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+              const reader = new FileReader();
+              reader.onload = (event) => {
+                logoPreview.innerHTML = `<img src="${event.target.result}" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px;">`;
+                localStorage.setItem('company_logo', event.target.result);
+              };
+              reader.readAsDataURL(file);
+            }
+          });
+          
+          const savedLogo = localStorage.getItem('company_logo');
+          if (savedLogo && logoPreview) {
+            logoPreview.innerHTML = `<img src="${savedLogo}" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px;">`;
+          }
+        }
+        
+        // Accent picker
+        const accentPicker = document.getElementById('accent-picker');
+        if (accentPicker) {
+          accentPicker.addEventListener('input', (e) => {
+            localStorage.setItem('company_accent', e.target.value);
+          });
+          const savedAccent = localStorage.getItem('company_accent');
+          if (savedAccent) {
+            accentPicker.value = savedAccent;
+          }
+        }
+        
+        // Tabs system
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabs.forEach(tab => {
+          tab.addEventListener('click', () => {
+            const targetTab = tab.getAttribute('data-tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(tc => tc.classList.remove('active'));
+            tab.classList.add('active');
+            const targetContent = document.querySelector(`[data-tab-content="${targetTab}"]`);
+            if (targetContent) {
+              targetContent.classList.add('active');
+            }
+          });
+        });
+        
+        // Chat input
+        const chatInput = document.getElementById('chat-input');
+        if (chatInput) {
+          chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              if (typeof window.sendChatMessage === 'function') {
+                window.sendChatMessage();
+              }
+            }
+          });
+          chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+          });
+        }
+        
+        // Update dashboard counters
+        if (typeof window.updateDashboardDate === 'function') {
+          window.updateDashboardDate();
+        }
+        if (typeof window.updateDashboardCounters === 'function') {
+          window.updateDashboardCounters();
+        }
+        if (typeof window.updateThreadCounters === 'function') {
+          window.updateThreadCounters();
+        }
+        if (typeof window.updateOperationalKPIs === 'function') {
+          window.updateOperationalKPIs();
+        }
+        
+        // Visibility change handler
+        document.addEventListener('visibilitychange', () => {
+          if (!document.hidden) {
+            if (typeof window.updateDashboardDate === 'function') {
+              window.updateDashboardDate();
+            }
+            if (typeof window.updateDashboardCounters === 'function') {
+              window.updateDashboardCounters();
+            }
+            if (typeof window.updateThreadCounters === 'function') {
+              window.updateThreadCounters();
+            }
+            if (typeof window.updateOperationalKPIs === 'function') {
+              window.updateOperationalKPIs();
+            }
+            console.log('🔄 Page visible - counters refreshed');
+          }
+        });
+        
+        // Initialize customers and staff data
+        if (typeof window.initializeDemoCustomers === 'function') {
+          window.initializeDemoCustomers();
+        }
+        if (typeof window.initializeDemoStaff === 'function') {
+          window.initializeDemoStaff();
+        }
+        
+        // SINCRONIZAR: Asegurar que this.customers y this.users estén actualizados
+        const customersFromStorage = storage.get(STORAGE_KEYS.customers, []);
+        if (customersFromStorage && customersFromStorage.length > 0) {
+          this.customers = customersFromStorage;
+        }
+        
+        const usersFromStorage = storage.get(STORAGE_KEYS.users, []);
+        if (usersFromStorage && usersFromStorage.length > 0) {
+          this.users = usersFromStorage;
+        }
+        
+        // Render customers and staff if on those pages
+        if (typeof window.renderCustomersUI === 'function') {
+          window.renderCustomersUI();
+        }
+        if (typeof window.renderStaffUI === 'function') {
+          window.renderStaffUI();
+        }
+        
+        // Thread items hover effects
+        setTimeout(() => {
+          const threadItems = document.querySelectorAll('.thread-item');
+          threadItems.forEach(item => {
+            item.addEventListener('mouseenter', function() {
+              this.style.transform = 'translateX(4px)';
+              this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+            });
+            item.addEventListener('mouseleave', function() {
+              this.style.transform = 'translateX(0)';
+              this.style.boxShadow = 'none';
+            });
+          });
+        }, 500);
+        
+        // Edit project form handler
+        const editForm = document.getElementById('editProjectForm');
+        if (editForm) {
+          editForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = {
+              name: document.getElementById('edit-project-name').value,
+              client: document.getElementById('edit-project-client').value,
+              address: document.getElementById('edit-project-address').value,
+              startDate: document.getElementById('edit-project-start').value,
+              endDate: document.getElementById('edit-project-end').value,
+              amount: document.getElementById('edit-project-amount').value,
+              status: document.getElementById('edit-project-status').value,
+              progress: document.getElementById('edit-project-progress').value,
+              team: document.getElementById('edit-project-team').value,
+              contract: document.getElementById('edit-project-contract').value,
+              notes: document.getElementById('edit-project-notes').value
+            };
+            console.log('Guardando cambios:', formData);
+            if (typeof window.showToast === 'function') {
+              window.showToast('success', 'Proyecto actualizado exitosamente');
+            }
+            if (typeof window.closeEditProject === 'function') {
+              window.closeEditProject();
+            }
+          });
+        }
       },
 
       hydrateSettingsForm() {
@@ -16921,7 +17117,15 @@
       },
     };
 
+    // INIT PRINCIPAL - CONSOLIDADO
     window.addEventListener('DOMContentLoaded', () => {
+      // Prevenir múltiples inicializaciones
+      if (window.opsisInitialized) {
+        console.warn('⚠️ Opsis ya fue inicializado, saltando DOMContentLoaded duplicado');
+        return;
+      }
+      window.opsisInitialized = true;
+      
       app.init();
       
       // Hash navigation support - para links desde otras páginas
@@ -17341,7 +17545,8 @@
     }
 
     // Initialize category selector
-    document.addEventListener('DOMContentLoaded', () => {
+    // CONSOLIDADO EN app.initializeExtendedUI() - Ya no es necesario
+    /* document.addEventListener('DOMContentLoaded', () => {
       const selector = document.getElementById('category-selector');
       const saved = localStorage.getItem('motorsync_category');
       
@@ -17351,10 +17556,11 @@
       }
       
       selector.addEventListener('change', updateCategory);
-    });
+    }); */
 
     // Logo upload handler
-    document.addEventListener('DOMContentLoaded', () => {
+    // CONSOLIDADO EN app.initializeExtendedUI()
+    /* document.addEventListener('DOMContentLoaded', () => {
       const logoUpload = document.getElementById('logo-upload');
       const logoPreview = document.getElementById('logo-preview');
       const accentPicker = document.getElementById('accent-picker');
@@ -17395,9 +17601,11 @@
           document.documentElement.style.setProperty('--accent-color', savedAccent);
         }
       }
-    });
+    }); */
 
-    // Tab functionality for new pages
+    // CONSOLIDADO EN app.initializeExtendedUI()
+    /* Tab functionality for new pages
+    /* CONSOLIDADO EN initializeExtendedUI()
     document.addEventListener('DOMContentLoaded', () => {
       const tabs = document.querySelectorAll('.tab');
       const tabContents = document.querySelectorAll('.tab-content');
@@ -17650,6 +17858,7 @@
 
     // Allow Enter to send message (Shift+Enter for new line)
     document.addEventListener('DOMContentLoaded', () => {
+      if (window.opsisInitialized) return; // Prevenir duplicados
       const chatInput = document.getElementById('chat-input');
       if (chatInput) {
         chatInput.addEventListener('keydown', (e) => {
@@ -17831,12 +18040,14 @@
     }
 
     // Initialize on load
+    /* CONSOLIDADO EN initializeExtendedUI()
     document.addEventListener('DOMContentLoaded', () => {
+      if (window.opsisInitialized) return; // Prevenir duplicados
       updateDashboardDate();
       updateDashboardCounters();
       updateThreadCounters();
       updateOperationalKPIs();
-    });
+    }); */
     
     // Update counters when page becomes visible (user returns from another page)
     document.addEventListener('visibilitychange', () => {
@@ -18111,6 +18322,7 @@
     }
 
     // Hover effects para hilos
+    /* CONSOLIDADO EN initializeExtendedUI()
     document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
         const threadItems = document.querySelectorAll('.thread-item');
@@ -18125,7 +18337,7 @@
           });
         });
       }, 500);
-    });
+    }); */
 
     // ========================================
     // PROJECT ACTIONS & MODALS
@@ -18222,6 +18434,7 @@
     }
 
     // Manejar submit del formulario de edición
+    /* CONSOLIDADO EN initializeExtendedUI()
     document.addEventListener('DOMContentLoaded', () => {
       const editForm = document.getElementById('editProjectForm');
       if (editForm) {
@@ -18256,7 +18469,7 @@
           // location.reload();
         });
       }
-    });
+    }); */
 
     // Duplicar proyecto
     async function duplicateProject(projectId) {
@@ -18771,8 +18984,8 @@
 
   <!-- ==================== CUSTOMERS MANAGEMENT ==================== -->
   <script>
-    // Customers localStorage key
-    const CUSTOMERS_KEY = 'motorsync_customers';
+    // Customers localStorage key - USANDO SISTEMA PRINCIPAL UNIFICADO
+    const CUSTOMERS_KEY = 'opsis_customers';
 
     // Initialize demo customers if none exist (based on Opsis Plumbing structure)
     function initializeDemoCustomers() {
@@ -18878,6 +19091,12 @@
     // Save customers
     function saveCustomers(customers) {
       localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(customers));
+      
+      // SINCRONIZAR con objeto app principal
+      if (window.app && window.app.customers) {
+        window.app.customers = customers;
+        window.app.saveCollection('customers', customers);
+      }
     }
 
     // Add new customer (improved structure from Opsis Plumbing)
@@ -19263,8 +19482,8 @@
 
   <!-- ==================== STAFF/EMPLOYEES MANAGEMENT ==================== -->
   <script>
-    // Staff localStorage key
-    const STAFF_KEY = 'motorsync_staff';
+    // Staff localStorage key - USANDO SISTEMA PRINCIPAL UNIFICADO
+    const STAFF_KEY = 'opsis_users';
 
     // Initialize demo staff if none exist
     function initializeDemoStaff() {
@@ -19329,6 +19548,12 @@
     // Save staff
     function saveStaff(staff) {
       localStorage.setItem(STAFF_KEY, JSON.stringify(staff));
+      
+      // SINCRONIZAR con objeto app principal
+      if (window.app && window.app.users) {
+        window.app.users = staff;
+        window.app.saveCollection('users', staff);
+      }
     }
 
     // Add new staff member
