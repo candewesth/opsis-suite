@@ -8279,6 +8279,12 @@
       portalInvites: 'opsis_portal_invites',
       projectIds: 'opsis_project_idsync',
       notificationPrefs: 'opsis_notification_prefs',
+      projectsyncProjects: 'projectsync_projects',
+      threadsyncThreads: 'threadsync_threads',
+      projectsyncAppointments: 'projectsync_appointments',
+      motorsyncCategory: 'motorsync_category',
+      companyLogo: 'company_logo',
+      companyAccent: 'company_accent',
     };
 
     const storage = {
@@ -10931,7 +10937,7 @@
         // Category selector
         const selector = document.getElementById('category-selector');
         if (selector) {
-          const saved = localStorage.getItem('motorsync_category');
+          const saved = localStorage.getItem(STORAGE_KEYS.motorsyncCategory);
           if (saved && window.CATEGORY_CONFIG && window.CATEGORY_CONFIG[saved]) {
             selector.value = saved;
             if (typeof window.updateCategory === 'function') {
@@ -10955,13 +10961,13 @@
               const reader = new FileReader();
               reader.onload = (event) => {
                 logoPreview.innerHTML = `<img src="${event.target.result}" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px;">`;
-                localStorage.setItem('company_logo', event.target.result);
+                localStorage.setItem(STORAGE_KEYS.companyLogo, event.target.result);
               };
               reader.readAsDataURL(file);
             }
           });
           
-          const savedLogo = localStorage.getItem('company_logo');
+          const savedLogo = localStorage.getItem(STORAGE_KEYS.companyLogo);
           if (savedLogo && logoPreview) {
             logoPreview.innerHTML = `<img src="${savedLogo}" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px;">`;
           }
@@ -10971,9 +10977,9 @@
         const accentPicker = document.getElementById('accent-picker');
         if (accentPicker) {
           accentPicker.addEventListener('input', (e) => {
-            localStorage.setItem('company_accent', e.target.value);
+            localStorage.setItem(STORAGE_KEYS.companyAccent, e.target.value);
           });
-          const savedAccent = localStorage.getItem('company_accent');
+          const savedAccent = localStorage.getItem(STORAGE_KEYS.companyAccent);
           if (savedAccent) {
             accentPicker.value = savedAccent;
           }
@@ -17300,7 +17306,8 @@
       const dropdown = document.getElementById('searchResultsDropdown');
       
       // Search in projects
-      const projects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+      const projectsData = JSON.parse(localStorage.getItem(STORAGE_KEYS.projectsyncProjects) || '{}');
+      const projects = Object.values(projectsData);
       const projectResults = projects.filter(p => {
         return (p.name && p.name.toLowerCase().includes(query)) ||
                (p.client && p.client.toLowerCase().includes(query)) ||
@@ -17313,7 +17320,7 @@
       }).slice(0, 5); // Limit to 5 results
       
       // Search in threads
-      const threadsData = JSON.parse(localStorage.getItem('threadsync_threads') || '{}');
+      const threadsData = JSON.parse(localStorage.getItem(STORAGE_KEYS.threadsyncThreads) || '{}');
       const threads = Object.values(threadsData);
       const threadResults = threads.filter(t => {
         return (t.clientName && t.clientName.toLowerCase().includes(query)) ||
@@ -17669,7 +17676,7 @@
       if (!config) return;
       
       // Save preference
-      localStorage.setItem('motorsync_category', category);
+      localStorage.setItem(STORAGE_KEYS.motorsyncCategory, category);
       
       // Update dynamically throughout the UI
       console.log('MotorSync adaptado a:', config.name);
@@ -17681,7 +17688,7 @@
     // CONSOLIDADO EN app.initializeExtendedUI() - Ya no es necesario
     /* document.addEventListener('DOMContentLoaded', () => {
       const selector = document.getElementById('category-selector');
-      const saved = localStorage.getItem('motorsync_category');
+      const saved = localStorage.getItem(STORAGE_KEYS.motorsyncCategory);
       
       if (saved && CATEGORY_CONFIG[saved]) {
         selector.value = saved;
@@ -17706,14 +17713,14 @@
             const reader = new FileReader();
             reader.onload = (event) => {
               logoPreview.innerHTML = `<img src="${event.target.result}" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px;">`;
-              localStorage.setItem('company_logo', event.target.result);
+              localStorage.setItem(STORAGE_KEYS.companyLogo, event.target.result);
             };
             reader.readAsDataURL(file);
           }
         });
 
         // Load saved logo
-        const savedLogo = localStorage.getItem('company_logo');
+        const savedLogo = localStorage.getItem(STORAGE_KEYS.companyLogo);
         if (savedLogo) {
           logoPreview.innerHTML = `<img src="${savedLogo}" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px;">`;
         }
@@ -17723,11 +17730,11 @@
         accentPicker.addEventListener('input', (e) => {
           accentHex.value = e.target.value;
           document.documentElement.style.setProperty('--accent-color', e.target.value);
-          localStorage.setItem('company_accent', e.target.value);
+          localStorage.setItem(STORAGE_KEYS.companyAccent, e.target.value);
         });
 
         // Load saved accent
-        const savedAccent = localStorage.getItem('company_accent');
+        const savedAccent = localStorage.getItem(STORAGE_KEYS.companyAccent);
         if (savedAccent) {
           accentPicker.value = savedAccent;
           accentHex.value = savedAccent;
@@ -18088,7 +18095,7 @@
     }
 
     function updateThreadCounters() {
-      const storedThreads = localStorage.getItem('threadsync_threads');
+      const storedThreads = localStorage.getItem(STORAGE_KEYS.threadsyncThreads);
       if (!storedThreads) return;
       
       try {
@@ -18929,7 +18936,7 @@
     // SISTEMA DINÁMICO DE ESTADÍSTICAS DEL DASHBOARD
     // ========================================================================
     function calculateProjectStats() {
-      const projectsData = JSON.parse(localStorage.getItem('projectsync_projects') || '{}');
+      const projectsData = JSON.parse(localStorage.getItem(STORAGE_KEYS.projectsyncProjects) || '{}');
       const projects = Object.values(projectsData);
       
       const total = projects.length;
@@ -18957,7 +18964,7 @@
     }
     
     function calculateAgendaStats() {
-      const appointmentsData = JSON.parse(localStorage.getItem('projectsync_appointments') || '{}');
+      const appointmentsData = JSON.parse(localStorage.getItem(STORAGE_KEYS.projectsyncAppointments) || '{}');
       const appointments = Object.values(appointmentsData);
       
       const today = new Date();
@@ -18998,7 +19005,7 @@
       const tbody = document.getElementById('overview-projects-tbody');
       if (!tbody) return;
       
-      const projectsData = JSON.parse(localStorage.getItem('projectsync_projects') || '{}');
+      const projectsData = JSON.parse(localStorage.getItem(STORAGE_KEYS.projectsyncProjects) || '{}');
       const projects = Object.values(projectsData).slice(0, 10); // Mostrar solo 10
       
       if (projects.length === 0) {
@@ -19068,7 +19075,7 @@
       const tbody = document.getElementById('agenda-appointments-tbody');
       if (!tbody) return;
       
-      const appointmentsData = JSON.parse(localStorage.getItem('projectsync_appointments') || '{}');
+      const appointmentsData = JSON.parse(localStorage.getItem(STORAGE_KEYS.projectsyncAppointments) || '{}');
       const appointments = Object.values(appointmentsData).slice(0, 10);
       
       if (appointments.length === 0) {
@@ -19336,7 +19343,8 @@
     // Update customer statistics
     function updateCustomerStats() {
       const customers = getCustomers();
-      const projects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+      const projectsData = JSON.parse(localStorage.getItem(STORAGE_KEYS.projectsyncProjects) || '{}');
+      const projects = Object.values(projectsData);
 
       document.getElementById('customer-stat-total').textContent = customers.length;
       document.getElementById('customer-stat-addresses').textContent = projects.length;
@@ -19350,7 +19358,8 @@
       const customer = getCustomers().find(c => c.id === customerId);
       if (!customer) return;
 
-      const projects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+      const projectsData = JSON.parse(localStorage.getItem(STORAGE_KEYS.projectsyncProjects) || '{}');
+      const projects = Object.values(projectsData);
       const customerProjects = projects.filter(p => p.customerId === customerId || p.customer === customer.name);
       const tags = customer.tags?.join(', ') || 'Sin tags';
 
@@ -19839,7 +19848,8 @@
         };
 
         // 1. Buscar en Proyectos
-        const projects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+        const projectsData = JSON.parse(localStorage.getItem(STORAGE_KEYS.projectsyncProjects) || '{}');
+        const projects = Object.values(projectsData);
         results.projects = projects.filter(p => 
           (p.idSync && p.idSync.toLowerCase().includes(searchTerm)) ||
           (p.projectName && p.projectName.toLowerCase().includes(searchTerm)) ||
@@ -19848,7 +19858,7 @@
         ).slice(0, 5);
 
         // 2. Buscar en Clientes
-        const customers = JSON.parse(localStorage.getItem('motorsync_customers') || '[]');
+        const customers = JSON.parse(localStorage.getItem(CUSTOMERS_KEY) || '[]');
         results.customers = customers.filter(c => 
           (c.name && c.name.toLowerCase().includes(searchTerm)) ||
           (c.phone && c.phone.includes(searchTerm)) ||
@@ -19856,7 +19866,8 @@
         ).slice(0, 5);
 
         // 3. Buscar en Citas
-        const appointments = JSON.parse(localStorage.getItem('projectsync_appointments') || '[]');
+        const appointmentsData = JSON.parse(localStorage.getItem(STORAGE_KEYS.projectsyncAppointments) || '{}');
+        const appointments = Object.values(appointmentsData);
         results.appointments = appointments.filter(a => 
           (a.id && a.id.toString().includes(searchTerm)) ||
           (a.projectId && a.projectId.toLowerCase().includes(searchTerm)) ||
@@ -19864,7 +19875,8 @@
         ).slice(0, 5);
 
         // 4. Buscar en Threads
-        const threads = JSON.parse(localStorage.getItem('threadsync_threads') || '[]');
+        const threadsData = JSON.parse(localStorage.getItem(STORAGE_KEYS.threadsyncThreads) || '{}');
+        const threads = Object.values(threadsData);
         results.threads = threads.filter(t => 
           (t.id && t.id.toLowerCase().includes(searchTerm)) ||
           (t.subject && t.subject.toLowerCase().includes(searchTerm)) ||
@@ -20115,9 +20127,9 @@
     // Escuchar cambios en localStorage desde otras pestañas/ventanas
     window.addEventListener('storage', (e) => {
       // Solo reaccionar a cambios en datos relevantes
-      if (e.key === 'projectsync_projects' || 
-          e.key === 'projectsync_appointments' || 
-          e.key === 'threadsync_threads') {
+      if (e.key === STORAGE_KEYS.projectsyncProjects || 
+          e.key === STORAGE_KEYS.projectsyncAppointments || 
+          e.key === STORAGE_KEYS.threadsyncThreads) {
         console.log(`📡 Cambio detectado en ${e.key}`);
         updateRealtimeCounters();
       }
@@ -20127,9 +20139,9 @@
     // Esto permite que otros módulos disparen actualizaciones
     window.addEventListener('localStorageUpdate', (e) => {
       if (e.detail && (
-          e.detail.key === 'projectsync_projects' || 
-          e.detail.key === 'projectsync_appointments' || 
-          e.detail.key === 'threadsync_threads')) {
+          e.detail.key === STORAGE_KEYS.projectsyncProjects || 
+          e.detail.key === STORAGE_KEYS.projectsyncAppointments || 
+          e.detail.key === STORAGE_KEYS.threadsyncThreads)) {
         console.log(`🔄 Actualización local detectada en ${e.detail.key}`);
         updateRealtimeCounters();
       }
