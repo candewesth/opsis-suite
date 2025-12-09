@@ -11,11 +11,183 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="js/modules.js?v=verdi2"></script>
   <script src="js/sidebar.js?v=verdi2"></script>
+  <script src="js/back-link.js?v=verdi2"></script>
   <script src="./js/ui-feedback.js"></script>
   <script>
     window.showToast = (type, message) => uiToast(type, message);
     window.showConfirm = (message, opts) => uiConfirm(message, opts);
     window.alert = (message) => uiToast('info', String(message));
+  </script>
+  <script>
+    const CLIENTS_DATA_KEY = 'clientsync_clients';
+
+    function loadClientsFromStore() {
+      try {
+        return JSON.parse(localStorage.getItem(CLIENTS_DATA_KEY) || '[]');
+      } catch (err) {
+        console.warn('No se pudieron cargar clientes', err);
+        return [];
+      }
+    }
+
+    function getClientRecord(clientId) {
+      if (!clientId) return null;
+      const clients = loadClientsFromStore();
+      return clients.find(c => c.id === clientId) || null;
+    }
+
+    function updateClientRecord(clientId, payload) {
+      if (!clientId) return;
+      const clients = loadClientsFromStore();
+      const idx = clients.findIndex(c => c.id === clientId);
+      if (idx === -1) return;
+      clients[idx] = { ...clients[idx], ...payload };
+      localStorage.setItem(CLIENTS_DATA_KEY, JSON.stringify(clients));
+    }
+
+    const FORMSYNC_FIELDS = [
+      { key: 'crew', label: 'Equipo / Crew', selector: '[data-formsync-field=\"crew\"]' },
+      { key: 'hours', label: 'Horas totales', selector: '[data-formsync-field=\"hours\"]' },
+      { key: 'weather', label: 'Clima', selector: '[data-formsync-field=\"weather\"]' },
+      { key: 'start', label: 'Inicio', selector: '[data-formsync-field=\"start\"]' },
+      { key: 'end', label: 'Fin', selector: '[data-formsync-field=\"end\"]' },
+      { key: 'crewCount', label: 'Crew (número)', selector: '[data-formsync-field=\"crewCount\"]' },
+      { key: 'photo', label: 'Foto', selector: '[data-formsync-field=\"photo\"]' },
+      { key: 'work', label: 'Trabajo realizado', selector: '[data-formsync-field=\"work\"]' },
+      { key: 'materials', label: 'Materiales usados', selector: '[data-formsync-field=\"materials\"]' },
+      { key: 'safety', label: 'Seguridad / incidencias', selector: '[data-formsync-field=\"safety\"]' },
+      { key: 'notes', label: 'Notas', selector: '[data-formsync-field=\"notes\"]' }
+    ];
+
+    const FORMSYNC_SIGNATURE_OPTIONS = [
+      { key: 'supervisor', label: 'Supervisor', resolveName: (project) => project?.supervisor || project?.owner || 'Supervisor del Proyecto' },
+      { key: 'client', label: 'Cliente', resolveName: (project) => project?.clientContact || project?.client || project?.clientName || 'Cliente' }
+    ];
+
+    const FORMSYNC_TEMPLATE_DEFAULT = {
+      fields: {
+        crew: 'required',
+        hours: 'required',
+        weather: 'optional',
+        start: 'optional',
+        end: 'optional',
+        crewCount: 'optional',
+        photo: 'optional',
+        work: 'required',
+        materials: 'optional',
+        safety: 'optional',
+        notes: 'optional'
+      },
+      signatures: {
+        supervisor: true,
+        client: false
+      }
+    };
+
+    let currentFormTemplate = null;
+
+    function cloneTemplate(obj) {
+      return JSON.parse(JSON.stringify(obj));
+    }
+
+    function getFormTemplateStorageKey() {
+      const companyId = (currentProject && (currentProject.companyId || currentProject.company || currentProject.clientCompany)) || 'default';
+      return `formsync_template_${companyId}`;
+    }
+
+    function ensureTemplateStructure(template) {
+      const base = { fields: {}, signatures: {} };
+      FORMSYNC_FIELDS.forEach((field) => {
+        const state = template?.fields?.[field.key];
+        base.fields[field.key] = ['required', 'optional', 'hidden'].includes(state)
+          ? state
+          : (FORMSYNC_TEMPLATE_DEFAULT.fields[field.key] || 'optional');
+      });
+      FORMSYNC_SIGNATURE_OPTIONS.forEach((sig) => {
+        base.signatures[sig.key] = Boolean(template?.signatures?.[sig.key]);
+      });
+      return base;
+    }
+
+    function getStoredProjects() {
+      try {
+        return JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+      } catch (err) {
+        return [];
+      }
+    }
+
+    function getProjectMeta(projectId) {
+      if (!projectId) return null;
+      const projects = getStoredProjects();
+      return projects.find((p) => p.id === projectId || p.idSync === projectId) || null;
+    }
+
+    function loadFormTemplate() {
+      if (currentFormTemplate) return currentFormTemplate;
+      const key = getFormTemplateStorageKey();
+      let template = null;
+      try {
+        template = JSON.parse(localStorage.getItem(key) || 'null');
+      } catch (err) {
+        template = null;
+      }
+      if (!template) {
+        template = cloneTemplate(FORMSYNC_TEMPLATE_DEFAULT);
+        localStorage.setItem(key, JSON.stringify(template));
+      }
+      currentFormTemplate = ensureTemplateStructure(template);
+      return currentFormTemplate;
+    }
+
+    function saveFormTemplateConfig(template) {
+      const sanitized = ensureTemplateStructure(template || {});
+      currentFormTemplate = sanitized;
+      localStorage.setItem(getFormTemplateStorageKey(), JSON.stringify(sanitized));
+    }
+
+    function applyFormTemplateToForm() {
+      const template = loadFormTemplate();
+      const form = document.getElementById('formSyncForm');
+      if (!form) return;
+      FORMSYNC_FIELDS.forEach((field) => {
+        const wrappers = form.querySelectorAll(field.selector);
+        const state = template.fields?.[field.key] || 'optional';
+        wrappers.forEach((wrapper) => {
+          wrapper.style.display = state === 'hidden' ? 'none' : '';
+          wrapper.querySelectorAll('input, textarea, select').forEach((input) => {
+            input.required = state === 'required';
+            if (state === 'hidden') {
+              input.value = '';
+            }
+          });
+          const label = wrapper.querySelector('.kpi-sub');
+          if (label) {
+            label.style.color = state === 'required' ? '#b45309' : '#64748b';
+          }
+        });
+      });
+    }
+
+    function getSignatureFallbacks(template, project) {
+      const list = [];
+      FORMSYNC_SIGNATURE_OPTIONS.forEach((sig) => {
+        if (template.signatures?.[sig.key]) {
+          list.push({
+            name: sig.resolveName ? sig.resolveName(project) : sig.label,
+            role: sig.label
+          });
+        }
+      });
+      return list;
+    }
+
+    function isFormFieldFilled(key, value) {
+      if (key === 'crewCount') {
+        return Number(value) > 0;
+      }
+      return Boolean(String(value || '').trim());
+    }
   </script>
   <style>
     :root {
@@ -30,186 +202,7 @@
       --bg-body: #fafafa;
       --bg-card: #ffffff;
       --border-color: #ebebeb;
-    }
-
-    function updateKpis(project) {
-      const permits = document.getElementById('kpi-permits');
-      if (permits) {
-        const status = project.permitsStatus || 'En revisión';
-        permits.textContent = status;
-      }
-      const hoursEl = document.getElementById('kpi-hours');
-      if (hoursEl) {
-        const planned = project.plannedHours || 0;
-        const actual = project.actualHours || 0;
-        hoursEl.textContent = `${actual}h / ${planned}h`;
-      }
-      const slaEl = document.getElementById('kpi-sla');
-      if (slaEl) {
-        const sla = project.sla || 'Estándar';
-        const risk = project.risk || project.alerts || 0;
-        slaEl.textContent = risk > 0 ? `Alertas: ${risk}` : `${sla} · En objetivo`;
-      }
-    }
-
-    function populateQuickGallery(project) {
-      const container = document.getElementById('quickGallery');
-      if (!container) return;
-      container.innerHTML = '';
-      const photos = loadProjectPhotos();
-      if (photos && photos.length > 0) {
-        photos.slice(0, 8).forEach((photo, idx) => {
-          const div = document.createElement('div');
-          div.className = 'photo-chip';
-          div.innerHTML = `
-            <img src="${photo.url}" alt="Foto ${idx + 1}">
-            <div class="label">${photo.category || 'Foto'}</div>
-          `;
-          container.appendChild(div);
-        });
-      } else {
-        ['Sin fotos', 'Captura progreso', 'Documenta avances'].forEach((txt, idx) => {
-          const div = document.createElement('div');
-          div.className = 'photo-chip';
-          div.style.background = idx === 0 ? '#e2e8f0' : 'linear-gradient(135deg, rgba(2,115,94,0.12), rgba(2,115,94,0.05))';
-          div.innerHTML = `<div class="label">${txt}</div>`;
-          container.appendChild(div);
-        });
-      }
-    }
-
-    // Daily Logs (Diario de obra)
-    function renderDailyLogs(project) {
-      const container = document.getElementById('dailyLogsContainer');
-      if (!container) return;
-
-      // Obtener de proyecto o usar datos demo
-      const key = project ? `daily_logs_${project.idSync || project.id}` : null;
-      let storedLogs = [];
-      if (key) {
-        try {
-          storedLogs = JSON.parse(localStorage.getItem(key) || '[]');
-        } catch (e) {
-          storedLogs = [];
-        }
-      }
-
-      const logs = (project.dailyLogs && project.dailyLogs.length ? project.dailyLogs : storedLogs.length ? storedLogs : [
-        {
-          date: '2025-12-10',
-          crew: ['Juan Pérez', 'Ana García'],
-          hours: '8h',
-          work: 'Instalación de ductos principales y sellado de uniones.',
-          weather: 'Soleado 25°C',
-          crewCount: 5,
-          start: '08:00',
-          end: '17:00',
-          materials: 'Ductos 8", sellador, abrazaderas',
-          safety: 'Sin incidentes',
-          photos: ['https://images.unsplash.com/photo-1582719478248-04c0b58ad942?auto=format&fit=crop&w=400&q=80'],
-          notes: 'Sin incidencias. Cliente aprobó avance.'
-        },
-        {
-          date: '2025-12-09',
-          crew: ['Carlos Ruiz'],
-          hours: '6h',
-          work: 'Revisión de soportes y ajustes menores.',
-          weather: 'Nublado 20°C',
-          crewCount: 2,
-          start: '09:00',
-          end: '15:00',
-          materials: 'Soportes, remaches',
-          safety: 'Revisión EPP completa',
-          photos: [],
-          notes: 'Pendiente recibir válvulas nuevas.'
-        }
-      ]);
-
-      container.innerHTML = logs.map(log => `
-        <div class="card" style="padding: 14px 16px; display: grid; gap: 10px; box-shadow: 0 8px 24px rgba(15,23,42,0.08);">
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-            <div style="font-weight:700; color:#0f172a;">${formatDate(log.date)}</div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              <span class="kpi-badge" style="background: rgba(2,115,94,0.08); border-color: rgba(2,115,94,0.2);">${log.hours || 'Horas no registradas'}</span>
-              <span class="kpi-badge" style="background: rgba(15,23,42,0.06); border-color: rgba(15,23,42,0.15);">${(log.crew || []).join(', ') || 'Equipo no asignado'}</span>
-              ${log.crewCount ? `<span class="kpi-badge" style="background: rgba(3,89,81,0.08); border-color: rgba(3,89,81,0.2);">Crew: ${log.crewCount}</span>` : ''}
-              ${log.weather ? `<span class="kpi-badge" style="background: rgba(59,130,246,0.08); border-color: rgba(59,130,246,0.2);">${log.weather}</span>` : ''}
-            </div>
-          </div>
-          <div style="font-size:14px; color:#1f2937;">${log.work || 'Sin descripción'}</div>
-          <div style="display:flex; gap:12px; flex-wrap:wrap; font-size:12px; color:#475569;">
-            ${log.start ? `<span>Inicio: ${log.start}</span>` : ''}
-            ${log.end ? `<span>Fin: ${log.end}</span>` : ''}
-          </div>
-          ${log.materials ? `<div style="font-size:13px; color:#1f2937;"><strong>Materiales:</strong> ${log.materials}</div>` : ''}
-          ${log.safety ? `<div style="font-size:13px; color:#1f2937;"><strong>Seguridad:</strong> ${log.safety}</div>` : ''}
-          <div style="font-size:13px; color:#475569;">${log.notes || ''}</div>
-          ${log.photos && log.photos.length ? `
-            <div style="display:flex; gap:8px; overflow-x:auto;">
-              ${log.photos.map((ph, idx) => `
-                <div class="photo-chip" style="width:120px; height:80px;">
-                  <img src="${ph}" alt="Foto ${idx+1}">
-                  <div class="label">Foto</div>
-                </div>
-              `).join('')}
-            </div>
-          ` : ''}
-        </div>
-      `).join('');
-    }
-
-    function renderWorkflowRow(state) {
-      const row = document.getElementById('workflowRow');
-      if (!row) return;
-      const states = [
-        { key: 'quoted', label: 'Cotizado', icon: '📋' },
-        { key: 'approved', label: 'Aprobado', icon: '✅' },
-        { key: 'scheduled', label: 'Programado', icon: '📅' },
-        { key: 'in-progress', label: 'En Proceso', icon: '🔧' },
-        { key: 'completed', label: 'Completado', icon: '🎉' },
-      ];
-      const current = state || 'quoted';
-      row.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: space-between;">
-          ${states.map((s, idx) => `
-            <div style="
-              flex: 1;
-              min-width: 120px;
-              text-align: center;
-              padding: 10px;
-              border-radius: 8px;
-              font-size: 12px;
-              font-weight: 700;
-              background: ${s.key === current ? 'linear-gradient(135deg, #10b981, #059669)' : '#e5e7eb'};
-              color: ${s.key === current ? '#fff' : '#94a3b8'};
-              box-shadow: ${s.key === current ? '0 6px 16px rgba(16,185,129,0.25)' : 'none'};
-            ">
-              <div style="font-size:16px; margin-bottom:4px;">${s.icon}</div>
-              ${s.label}
-            </div>
-            ${idx < states.length -1 ? '<div style="color:#cbd5e1; font-weight:700;">→</div>' : ''}
-          `).join('')}
-        </div>
-      `;
-    }
-
-    function renderProjectState(project) {
-      const badgeEmoji = document.getElementById('badgeEmoji');
-      const badgeTitle = document.getElementById('badgeTitle');
-      const badgeSubtitle = document.getElementById('badgeSubtitle');
-      const status = project.status || 'in-progress';
-      const map = {
-        'quoted': { emoji: '📋', title: 'Cotizado', desc: 'Esperando aprobación del cliente' },
-        'approved': { emoji: '✅', title: 'Aprobado', desc: 'Listo para programar' },
-        'scheduled': { emoji: '📅', title: 'Programado', desc: 'Fechas asignadas' },
-        'in-progress': { emoji: '🔧', title: 'En Proceso', desc: 'Trabajo en curso' },
-        'completed': { emoji: '🎉', title: 'Completado', desc: 'Proyecto finalizado' },
-        'overdue': { emoji: '⚠️', title: 'Retrasado', desc: 'Fuera de fecha' }
-      };
-      const cfg = map[status] || map['in-progress'];
-      if (badgeEmoji) badgeEmoji.textContent = cfg.emoji;
-      if (badgeTitle) badgeTitle.textContent = cfg.title;
-      if (badgeSubtitle) badgeSubtitle.textContent = cfg.desc;
+      --hero-title-size-base: clamp(28px, 3vw, 36px);
     }
 
     * {
@@ -233,20 +226,50 @@
       padding: 18px 24px;
       box-shadow: 0 4px 12px rgba(2, 115, 94, 0.15);
       border-bottom: 1px solid rgba(255,255,255,0.08);
+      --project-hero-title-size: var(--hero-title-size-base);
+    }
+    .project-hero[data-title-size="lg"] {
+      --project-hero-title-size: clamp(40px, 5vw, 56px);
     }
 
     .hero-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 12px;
+      display: flex;
       align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .project-hero .hero-primary {
+      flex: 1 1 320px;
+      min-width: 0;
     }
 
     .project-title {
       margin: 0;
-      font-size: 22px;
+      font-size: var(--project-hero-title-size, 32px);
       font-weight: 800;
       letter-spacing: -0.2px;
+      color: #fff;
+      line-height: 1.2;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+
+    .project-hero .meta-row span,
+    .project-hero .meta-row svg,
+    .project-hero .meta-row strong {
+      color: #fff;
+    }
+
+    .hero-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .hero-actions button {
       color: #fff;
     }
 
@@ -1420,6 +1443,27 @@
       opacity: 0.3;
     }
 
+    .drag-handle {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: 1px dashed #cbd5e1;
+      background: #f8fafc;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #94a3b8;
+      cursor: grab;
+    }
+
+    .drag-handle svg {
+      pointer-events: none;
+    }
+
+    .sch-row-wrapper.dragging {
+      opacity: 0.7;
+    }
+
     .comment-feed {
       display: flex;
       flex-direction: column;
@@ -1704,11 +1748,11 @@
       <main id="main" style="padding: 0; background: #f8fafc;">
         <div id="toastContainer"></div>
 
-        <div class="project-hero">
+        <div class="project-hero" data-title-size="md">
           <div class="hero-grid">
-            <div style="display:flex; flex-direction:column; gap:10px;">
+            <div class="hero-primary" style="display:flex; flex-direction:column; gap:10px;">
               <div class="meta-row" style="gap:10px;">
-                <button class="back-button" onclick="window.location.href='motorsync.html'" style="background: rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.3); color:#fff; padding:8px 12px; border-radius:8px; display:inline-flex; align-items:center; gap:6px; font-weight:600; cursor:pointer;">
+                <button class="back-button" data-return-target="motorsync" style="background: rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.3); color:#fff; padding:8px 12px; border-radius:8px; display:inline-flex; align-items:center; gap:6px; font-weight:600; cursor:pointer;">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                   Volver a MotorSync
                 </button>
@@ -1732,19 +1776,21 @@
                 </span>
               </div>
             </div>
-
-          <div class="hero-actions" style="justify-content:flex-end; gap:8px;">
-            <button class="btn btn-white" onclick="toggleActionsMenu()" title="Acciones rápidas" style="order:3; background: rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.3); color:#fff; width:50px; height:50px; border-radius:14px; justify-content:center;">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
-            </button>
-            <button class="btn btn-white" onclick="editProject()" title="Editar Información" style="order:2; background: rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.35); color:#fff; width:50px; height:50px; border-radius:14px; justify-content:center;">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            </button>
-            <button class="btn btn-white" onclick="exportProjectToPDF()" title="Exportar PDF" style="order:1; background:#f59e0b; color:#fff; border-color:#f59e0b; box-shadow:0 6px 14px rgba(245,158,11,0.35); width:50px; height:50px; border-radius:14px; justify-content:center;">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-            </button>
+            <div class="hero-actions">
+              <button class="btn btn-white" id="heroSizeToggle" onclick="toggleHeroTitleSize()" title="Ajustar tamaño del título" style="background: rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.35); color:#fff; width:50px; height:50px; border-radius:14px; justify-content:center;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19h6M7 19V5m-3 4h6"/><path d="M14 10h7m-3.5-3v10"/></svg>
+              </button>
+              <button class="btn btn-white" onclick="toggleActionsMenu()" title="Acciones rápidas" style="background: rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.3); color:#fff; width:50px; height:50px; border-radius:14px; justify-content:center;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+              </button>
+              <button class="btn btn-white" onclick="editProject()" title="Editar Información" style="background: rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.35); color:#fff; width:50px; height:50px; border-radius:14px; justify-content:center;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <button class="btn btn-white" onclick="exportProjectToPDF()" title="Exportar PDF" style="background:#f59e0b; color:#fff; border-color:#f59e0b; box-shadow:0 6px 14px rgba(245,158,11,0.35); width:50px; height:50px; border-radius:14px; justify-content:center;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+              </button>
+            </div>
           </div>
-        </div>
         </div>
 
         <div class="project-kpis">
@@ -1933,43 +1979,51 @@
             <label class="kpi-sub">Fecha</label>
             <input type="date" id="daily-date" class="form-input" />
           </div>
-          <div>
+          <div data-formsync-field="crew">
             <label class="kpi-sub">Equipo (separar por coma)</label>
             <input type="text" id="daily-crew" class="form-input" placeholder="Juan, Ana" />
           </div>
-          <div>
+          <div data-formsync-field="hours">
             <label class="kpi-sub">Horas totales</label>
             <input type="text" id="daily-hours" class="form-input" placeholder="8h" />
           </div>
-          <div>
+          <div data-formsync-field="weather">
             <label class="kpi-sub">Clima</label>
             <input type="text" id="daily-weather" class="form-input" placeholder="Soleado 25°C" />
           </div>
-          <div>
+          <div data-formsync-field="start">
             <label class="kpi-sub">Inicio</label>
             <input type="time" id="daily-start" class="form-input" />
           </div>
-          <div>
+          <div data-formsync-field="end">
             <label class="kpi-sub">Fin</label>
             <input type="time" id="daily-end" class="form-input" />
           </div>
-          <div>
+          <div data-formsync-field="crewCount">
             <label class="kpi-sub">Crew (número)</label>
             <input type="number" id="daily-crew-count" class="form-input" min="1" placeholder="5" />
           </div>
-          <div>
+          <div data-formsync-field="photo">
             <label class="kpi-sub">Foto (URL opcional)</label>
             <input type="text" id="daily-photo" class="form-input" placeholder="https://...jpg" />
           </div>
         </div>
-        <label class="kpi-sub" style="margin-top: 10px;">Trabajo realizado</label>
-        <textarea id="daily-work" class="form-textarea" rows="2" placeholder="Descripción del trabajo..."></textarea>
-        <label class="kpi-sub" style="margin-top: 10px;">Materiales usados</label>
-        <textarea id="daily-materials" class="form-textarea" rows="2" placeholder="Listado breve de materiales"></textarea>
-        <label class="kpi-sub" style="margin-top: 10px;">Seguridad / incidencias</label>
-        <textarea id="daily-safety" class="form-textarea" rows="2" placeholder="Incidentes, EPP, observaciones"></textarea>
-        <label class="kpi-sub" style="margin-top: 10px;">Notas</label>
-        <textarea id="daily-notes" class="form-textarea" rows="2" placeholder="Notas adicionales"></textarea>
+        <div data-formsync-field="work">
+          <label class="kpi-sub" style="margin-top: 10px;">Trabajo realizado</label>
+          <textarea id="daily-work" class="form-textarea" rows="2" placeholder="Descripción del trabajo..."></textarea>
+        </div>
+        <div data-formsync-field="materials">
+          <label class="kpi-sub" style="margin-top: 10px;">Materiales usados</label>
+          <textarea id="daily-materials" class="form-textarea" rows="2" placeholder="Listado breve de materiales"></textarea>
+        </div>
+        <div data-formsync-field="safety">
+          <label class="kpi-sub" style="margin-top: 10px;">Seguridad / incidencias</label>
+          <textarea id="daily-safety" class="form-textarea" rows="2" placeholder="Incidentes, EPP, observaciones"></textarea>
+        </div>
+        <div data-formsync-field="notes">
+          <label class="kpi-sub" style="margin-top: 10px;">Notas</label>
+          <textarea id="daily-notes" class="form-textarea" rows="2" placeholder="Notas adicionales"></textarea>
+        </div>
         <div style="display:flex; justify-content:flex-end; margin-top:12px; gap:10px; flex-wrap:wrap;">
           <button class="btn btn-white" onclick="resetDailyForm()">Limpiar</button>
           <button class="btn btn-primary" onclick="saveDailyLog()">Guardar FormSync</button>
@@ -2078,19 +2132,30 @@
             </h3>
             <p style="font-size: 13px; color: var(--text-secondary);">Visualización de fases, milestones y progreso</p>
           </div>
-          <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-            <button class="btn btn-white" onclick="setTimelineView('phase')" style="padding:8px 10px;">Fases</button>
-            <button class="btn btn-white" onclick="setTimelineView('week')" style="padding:8px 10px;">Semanal</button>
-            <button class="btn btn-white" onclick="setTimelineView('day')" style="padding:8px 10px;">Diario</button>
-            <button class="btn btn-white" onclick="setTimelineView('month')" style="padding:8px 10px;">Mensual</button>
+          <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <button class="btn btn-white" onclick="setTimelineView('phase')" style="padding:8px 10px;">Fases</button>
+              <button class="btn btn-white" onclick="setTimelineView('week')" style="padding:8px 10px;">Semanal</button>
+              <button class="btn btn-white" onclick="setTimelineView('day')" style="padding:8px 10px;">Diario</button>
+              <button class="btn btn-white" onclick="setTimelineView('month')" style="padding:8px 10px;">Mensual</button>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn btn-primary" onclick="quickAddTimelinePhase()" style="display:flex; align-items:center; gap:8px; background:#02735E; border-color:#02735E;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                + Fase
+              </button>
+              <button class="btn btn-white" onclick="editTimeline()" style="display: flex; align-items: center; gap: 8px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                Editar Timeline
+              </button>
+            </div>
           </div>
-          <button class="btn btn-white" onclick="editTimeline()" style="display: flex; align-items: center; gap: 8px;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-            </svg>
-            Editar Timeline
-          </button>
         </div>
 
         <div id="timelineChart">
@@ -2257,6 +2322,28 @@
             📋 Entrega (<span id="count-completion">0</span>)
           </button>
         </div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; align-items:flex-end;">
+          <div style="flex:1; min-width:200px;">
+            <label style="display:block; font-size:12px; font-weight:600; color:#64748b; margin-bottom:6px;">Proyecto</label>
+            <select id="photoProjectFilter" onchange="handlePhotoProjectChange(this)" style="width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:14px;">
+              <option value="">Cargando proyectos...</option>
+            </select>
+          </div>
+          <div style="flex:1; min-width:200px;">
+            <label style="display:block; font-size:12px; font-weight:600; color:#64748b; margin-bottom:6px;">Fase</label>
+            <select id="photoPhaseFilter" onchange="handlePhotoPhaseChange(this)" style="width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:14px;">
+              <option value="all">Todas las fases</option>
+            </select>
+          </div>
+          <div style="min-width:180px;">
+            <label style="display:block; font-size:12px; font-weight:600; color:#64748b; margin-bottom:6px;">Fecha de captura</label>
+            <input type="date" id="photoDateFilter" onchange="handlePhotoDateChange(this)" style="width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:14px;">
+          </div>
+          <button class="btn btn-white" onclick="resetPhotoFilters()" style="height:42px; padding:0 18px; border:1px solid #e5e7eb;">Limpiar filtros</button>
+          <button class="btn btn-secondary" onclick="downloadSelectedPhotos()" style="height:42px; padding:0 22px; display:flex; align-items:center; gap:6px;">
+            Descargar selección (<span id="photoSelectionCount">0</span>)
+          </button>
+        </div>
 
         <!-- Grid de fotos -->
         <div id="photo-gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; min-height: 200px;">
@@ -2321,6 +2408,9 @@
           <button class="doc-filter" data-category="otro" onclick="filterDocuments('otro')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
             📎 Otros (<span id="doc-count-otro">0</span>)
           </button>
+          <button class="doc-filter" data-category="daily" onclick="filterDocuments('daily')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+            📝 FormSync (<span id="doc-count-daily">0</span>)
+          </button>
         </div>
 
         <!-- Lista de documentos -->
@@ -2346,6 +2436,503 @@
     // Global variable for linked thread ID
     window.linkedThreadId = null;
     let timelineView = 'phase';
+    const DAY_IN_MS = 24 * 60 * 60 * 1000;
+
+    function toInputDate(value) {
+      if (!value) return '';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '';
+      return date.toISOString().slice(0, 10);
+    }
+
+    function addDays(value, days) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return null;
+      const copy = new Date(date);
+      copy.setDate(copy.getDate() + (days || 0));
+      return copy;
+    }
+
+    function diffInDays(start, end) {
+      if (!start || !end) return 0;
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+      if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) return 0;
+      return Math.round((endDate - startDate) / DAY_IN_MS);
+    }
+
+    function loadDailyLogsForProject(project) {
+      if (!project) return [];
+      const key = `daily_logs_${project.idSync || project.id}`;
+      try {
+        return JSON.parse(localStorage.getItem(key) || '[]');
+      } catch (error) {
+        console.warn('No se pudieron cargar los diarios', error);
+        return [];
+      }
+    }
+
+    function parseHoursValue(value) {
+      if (typeof value === 'number') return value;
+      if (!value) return 0;
+      const match = String(value).match(/([\d.]+)/);
+      return match ? Number(match[1]) : 0;
+    }
+
+    function loadTimelineSnapshot(project) {
+      if (!project) return null;
+      const key = `project_timeline_${project.idSync || project.id}`;
+      try {
+        return JSON.parse(localStorage.getItem(key) || 'null');
+      } catch (error) {
+        console.warn('Timeline corrupto, usando null', error);
+        return null;
+      }
+    }
+
+    function computePlannedHours(project, timeline) {
+      if (!project) return 0;
+      if (project.plannedHours) return Number(project.plannedHours);
+      const start = timeline?.startDate || project.startDate;
+      const end = timeline?.endDate || project.endDate;
+      if (start && end) {
+        return (diffInDays(start, end) + 1) * 8;
+      }
+      return 0;
+    }
+
+    const scheduleDragState = { dragged: null };
+    const photoFilters = { projectId: null, category: 'all', phase: 'all', date: 'all' };
+    const selectedPhotoIds = new Set();
+    const HERO_TITLE_SIZE_KEY = 'viewsync_hero_title_size';
+
+    function applyHeroTitleSize(mode) {
+      const hero = document.querySelector('.project-hero');
+      if (!hero) return;
+      const normalized = mode === 'lg' ? 'lg' : 'md';
+      hero.dataset.titleSize = normalized;
+      const toggle = document.getElementById('heroSizeToggle');
+      if (toggle) {
+        toggle.setAttribute('aria-pressed', normalized === 'lg');
+        toggle.setAttribute('title', normalized === 'lg' ? 'Reducir tamaño del título' : 'Ampliar tamaño del título');
+      }
+    }
+
+    function toggleHeroTitleSize() {
+      const hero = document.querySelector('.project-hero');
+      if (!hero) return;
+      const current = hero.dataset.titleSize === 'lg' ? 'lg' : 'md';
+      const next = current === 'lg' ? 'md' : 'lg';
+      localStorage.setItem(HERO_TITLE_SIZE_KEY, next);
+      applyHeroTitleSize(next);
+    }
+
+    function initHeroTitleSize() {
+      const saved = localStorage.getItem(HERO_TITLE_SIZE_KEY) || 'md';
+      applyHeroTitleSize(saved);
+    }
+    let cachedSchedulePhases = [];
+    let cachedProjectOptions = [];
+
+    function ensureProjectSchedule(project) {
+      if (!project) return [];
+      const key = `project_schedule_${project.idSync || project.id}`;
+      let phases = [];
+      try {
+        phases = JSON.parse(localStorage.getItem(key) || '[]');
+      } catch (err) {
+        phases = [];
+      }
+      if (phases.length) {
+        cachedSchedulePhases = phases;
+        return phases;
+      }
+      const baseStart = project.startDate ? new Date(project.startDate) : new Date();
+      const template = [
+        { title: 'Inspección inicial', offset: 0, duration: 2, status: 'completed', notes: 'Visita y diagnósticos' },
+        { title: 'Instalación principal', offset: 2, duration: 3, status: 'in-progress', notes: 'Montaje y pruebas' },
+        { title: 'Ajustes y QA', offset: 5, duration: 2, status: 'pending', notes: 'Calibración final' },
+        { title: 'Entrega y cierre', offset: 7, duration: 1, status: 'pending', notes: 'Cliente firma aceptación' }
+      ];
+      const computed = template.map((item) => {
+        const start = toInputDate(addDays(baseStart, item.offset));
+        const end = toInputDate(addDays(start, item.duration - 1));
+        return {
+          title: item.title,
+          start,
+          end,
+          status: item.status,
+          notes: item.notes
+        };
+      });
+      localStorage.setItem(key, JSON.stringify(computed));
+      syncScheduleToTimeline(computed);
+      cachedSchedulePhases = computed;
+      return computed;
+    }
+
+    function scheduleRowTemplate(phase, idx) {
+      const title = phase.title || '';
+      const start = phase.start || '';
+      const end = phase.end || '';
+      const status = phase.status || 'pending';
+      const notes = phase.notes || '';
+      return `
+        <div class="sch-row-wrapper" data-idx="${idx}">
+          <div class="sch-row" data-idx="${idx}" style="display:grid; grid-template-columns:auto 2fr 1fr 1fr 1fr; gap:8px; align-items:center;">
+            <button type="button" class="drag-handle" aria-label="Reordenar etapa" draggable="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="7" cy="5" r="1"></circle>
+                <circle cx="7" cy="12" r="1"></circle>
+                <circle cx="7" cy="19" r="1"></circle>
+                <circle cx="17" cy="5" r="1"></circle>
+                <circle cx="17" cy="12" r="1"></circle>
+                <circle cx="17" cy="19" r="1"></circle>
+              </svg>
+            </button>
+            <input class="form-input" data-field="title" value="${title}" placeholder="Etapa">
+            <input class="form-input" data-field="start" type="date" value="${start}">
+            <input class="form-input" data-field="end" type="date" value="${end}">
+            <select class="form-select" data-field="status">
+              <option value="pending" ${status === 'pending' ? 'selected' : ''}>Pendiente</option>
+              <option value="in-progress" ${status === 'in-progress' ? 'selected' : ''}>En Proceso</option>
+              <option value="completed" ${status === 'completed' ? 'selected' : ''}>Completado</option>
+            </select>
+          </div>
+          <input class="form-input sch-note" data-field="notes" placeholder="Notas" value="${notes}">
+        </div>
+      `;
+    }
+
+    function attachScheduleRowInteractions(wrapper) {
+      if (!wrapper) return;
+      wrapper.addEventListener('dragover', scheduleDragOver);
+      wrapper.addEventListener('drop', scheduleDragDrop);
+      const handle = wrapper.querySelector('.drag-handle');
+      if (handle) {
+        handle.addEventListener('dragstart', scheduleDragStart);
+        handle.addEventListener('dragend', scheduleDragEnd);
+      }
+    }
+
+    function initScheduleDrag(container) {
+      if (!container) return;
+      container.querySelectorAll('.sch-row-wrapper').forEach(attachScheduleRowInteractions);
+    }
+
+    function reindexScheduleRows(container) {
+      if (!container) return;
+      container.querySelectorAll('.sch-row-wrapper').forEach((wrapper, index) => {
+        wrapper.dataset.idx = index;
+        wrapper.querySelectorAll('[data-field]').forEach((field) => {
+          field.dataset.idx = index;
+        });
+      });
+    }
+
+    function scheduleDragStart(event) {
+      const wrapper = event.currentTarget.closest('.sch-row-wrapper');
+      if (!wrapper) return;
+      scheduleDragState.dragged = wrapper;
+      wrapper.classList.add('dragging');
+      if (event.dataTransfer) {
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', '');
+      }
+    }
+
+    function scheduleDragOver(event) {
+      event.preventDefault();
+      const target = event.currentTarget;
+      const dragged = scheduleDragState.dragged;
+      if (!dragged || target === dragged) return;
+      const container = target.parentElement;
+      const rect = target.getBoundingClientRect();
+      const shouldPlaceAfter = (event.clientY - rect.top) > rect.height / 2;
+      container.insertBefore(dragged, shouldPlaceAfter ? target.nextSibling : target);
+    }
+
+    function scheduleDragDrop(event) {
+      event.preventDefault();
+    }
+
+    function scheduleDragEnd() {
+      if (scheduleDragState.dragged) {
+        scheduleDragState.dragged.classList.remove('dragging');
+      }
+      const container = document.querySelector('#scheduleModalOverlay #sch-rows');
+      if (container) {
+        reindexScheduleRows(container);
+      }
+      scheduleDragState.dragged = null;
+    }
+
+    function updateKpis(project) {
+      if (!project) return;
+      const timeline = loadTimelineSnapshot(project);
+      const permitsEl = document.getElementById('kpi-permits');
+      if (permitsEl) {
+        const normalized = (project.permitsStatus || project.permitStatus || project.inspectionStatus || project.status || '').toString().toLowerCase();
+        const permitLabels = {
+          approved: 'Aprobados',
+          completed: 'Aprobados',
+          scheduled: 'Programados',
+          pending: 'Pendientes',
+          submitted: 'En revisión',
+          reviewing: 'En revisión',
+          rejected: 'Rechazados'
+        };
+        permitsEl.textContent = permitLabels[normalized] || (project.permitsStatus || project.status || 'Sin seguimiento');
+      }
+
+      const logs = loadDailyLogsForProject(project);
+      const actualFromLogs = logs.reduce((sum, log) => sum + parseHoursValue(log.hours), 0);
+      const actualHours = actualFromLogs || Number(project.actualHours) || 0;
+      const plannedHours = computePlannedHours(project, timeline);
+      const hoursEl = document.getElementById('kpi-hours');
+      if (hoursEl) {
+        if (plannedHours) {
+          hoursEl.textContent = `${actualHours}h / ${plannedHours}h`;
+        } else {
+          hoursEl.textContent = `${actualHours}h`;
+        }
+      }
+
+      const slaEl = document.getElementById('kpi-sla');
+      if (slaEl) {
+        const sla = project.sla || project.priority || 'Standard';
+        const alertsCount = Array.isArray(project.alerts) ? project.alerts.length : Number(project.alerts) || 0;
+        const riskLabel = project.risk || project.riskLevel || 'En objetivo';
+        slaEl.textContent = alertsCount > 0 ? `${sla} · ${alertsCount} alertas` : `${sla} · ${riskLabel}`;
+      }
+
+      const progressEl = document.getElementById('kpi-progress');
+      const datesEl = document.getElementById('kpi-progress-dates');
+      if (progressEl && datesEl && project.startDate && project.endDate) {
+        const startDate = new Date(project.startDate);
+        const endDate = new Date(project.endDate);
+        const today = new Date();
+        const total = Math.max(1, diffInDays(startDate, endDate) + 1);
+        const elapsed = Math.max(0, diffInDays(startDate, today) + 1);
+        const percent = Math.min(100, Math.max(0, Math.round((elapsed / total) * 100)));
+        progressEl.textContent = `${percent}%`;
+        datesEl.textContent = `${formatDate(project.startDate)} - ${formatDate(project.endDate)} · ${total} días`;
+      }
+    }
+
+    function populateQuickGallery(project) {
+      const container = document.getElementById('quickGallery');
+      if (!container) return;
+      container.innerHTML = '';
+      const photos = loadProjectPhotos(resolveDefaultProjectId());
+      if (photos && photos.length > 0) {
+        photos.slice(0, 8).forEach((photo, idx) => {
+          const div = document.createElement('div');
+          div.className = 'photo-chip';
+          div.innerHTML = `
+            <img src="${photo.url}" alt="Foto ${idx + 1}">
+            <div class="label">${photo.category || 'Foto'}</div>
+          `;
+          container.appendChild(div);
+        });
+      } else {
+        ['Sin fotos', 'Captura progreso', 'Documenta avances'].forEach((txt, idx) => {
+          const div = document.createElement('div');
+          div.className = 'photo-chip';
+          div.style.background = idx === 0 ? '#e2e8f0' : 'linear-gradient(135deg, rgba(2,115,94,0.12), rgba(2,115,94,0.05))';
+          div.innerHTML = `<div class="label">${txt}</div>`;
+          container.appendChild(div);
+        });
+      }
+    }
+
+    function renderDailyLogs(project) {
+      const container = document.getElementById('dailyLogsContainer');
+      if (!container) return;
+      const storedLogs = loadDailyLogsForProject(project);
+      const logs = (project?.dailyLogs && project.dailyLogs.length ? project.dailyLogs : storedLogs.length ? storedLogs : [
+        {
+          date: '2025-12-10',
+          crew: ['Juan Pérez', 'Ana García'],
+          hours: '8h',
+          work: 'Instalación de ductos principales y sellado de uniones.',
+          weather: 'Soleado 25°C',
+          crewCount: 5,
+          start: '08:00',
+          end: '17:00',
+          materials: 'Ductos 8", sellador, abrazaderas',
+          safety: 'Sin incidentes',
+          photos: ['https://images.unsplash.com/photo-1582719478248-04c0b58ad942?auto=format&fit=crop&w=400&q=80'],
+          notes: 'Sin incidencias. Cliente aprobó avance.',
+          signatures: [
+            { name: 'Laura Mendoza', role: 'Supervisor de Proyecto' },
+            { name: 'Carlos Rivera', role: 'Cliente / Propietario' }
+          ]
+        },
+        {
+          date: '2025-12-09',
+          crew: ['Carlos Ruiz'],
+          hours: '6h',
+          work: 'Revisión de soportes y ajustes menores.',
+          weather: 'Nublado 20°C',
+          crewCount: 2,
+          start: '09:00',
+          end: '15:00',
+          materials: 'Soportes, remaches',
+          safety: 'Revisión EPP completa',
+          photos: [],
+          notes: 'Pendiente recibir válvulas nuevas.',
+          signatures: [
+            { name: 'Sofía Delgado', role: 'Coordinadora' }
+          ]
+        }
+      ]);
+
+      const template = loadFormTemplate();
+      const fallbackSignatures = getSignatureFallbacks(template, project);
+      window._latestDailyLogs = logs;
+      container.innerHTML = logs.map((log, index) => {
+        const crewChips = (log.crew || []).map(member => `<span class="kpi-badge" style="background: rgba(2,115,94,0.08); border-color: rgba(2,115,94,0.2);">${member}</span>`).join('');
+        const photos = log.photos && log.photos.length ? `
+          <div style="display:flex; gap:12px; overflow-x:auto; padding-top:8px;">
+            ${log.photos.map((photo, idx) => `
+              <div class="photo-chip" style="width:140px; height:90px;">
+                <img src="${photo}" alt="Foto ${idx + 1}">
+                <div class="label">Foto ${idx + 1}</div>
+              </div>
+            `).join('')}
+          </div>
+        ` : '';
+        const signatures = (log.signatures && log.signatures.length ? log.signatures : fallbackSignatures).map(sig => `
+          <div style="display:flex; flex-direction:column; gap:2px;">
+            <span style="font-weight:600; color:#0f172a;">${sig.name}</span>
+            <span style="font-size:12px; color:#475569;">${sig.role}</span>
+          </div>
+        `).join('');
+
+        return `
+          <article class="card" style="padding:18px 20px; display:grid; gap:16px; border:1px solid rgba(2,115,94,0.08); box-shadow:0 16px 40px rgba(15,23,42,0.08);">
+            <header style="display:flex; flex-wrap:wrap; gap:12px; justify-content:space-between; align-items:flex-start;">
+              <div>
+                <p style="margin:0; font-size:12px; color:#94a3b8;">Registro Diario</p>
+                <h3 style="margin:4px 0 0; font-size:20px; color:#0f172a;">${formatDate(log.date)}</h3>
+                <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:8px; font-size:13px; color:#475569;">
+                  ${log.start ? `<span><strong>Inicio:</strong> ${log.start}</span>` : ''}
+                  ${log.end ? `<span><strong>Fin:</strong> ${log.end}</span>` : ''}
+                  ${log.hours ? `<span><strong>Horas:</strong> ${log.hours}</span>` : ''}
+                  ${log.weather ? `<span><strong>Clima:</strong> ${log.weather}</span>` : ''}
+                </div>
+              </div>
+              <button class="btn btn-white" onclick="exportDailyLog(${index})" style="display:flex; align-items:center; gap:8px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 5v14"></path>
+                  <path d="M18 13l-6 6-6-6"></path>
+                </svg>
+                Exportar PDF
+              </button>
+            </header>
+
+            <section style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
+              <div style="background:#f8fafc; border-radius:12px; padding:14px;">
+                <p style="margin:0; font-size:12px; font-weight:600; color:#94a3b8;">Trabajo Realizado</p>
+                <p style="margin:8px 0 0; color:#0f172a;">${log.work || 'Sin descripción'}</p>
+              </div>
+              <div style="background:#fef9c3; border-radius:12px; padding:14px;">
+                <p style="margin:0; font-size:12px; font-weight:600; color:#b45309;">Materiales</p>
+                <p style="margin:8px 0 0; color:#713f12;">${log.materials || 'No registrado'}</p>
+              </div>
+              <div style="background:#ecfccb; border-radius:12px; padding:14px;">
+                <p style="margin:0; font-size:12px; font-weight:600; color:#3f6212;">Seguridad</p>
+                <p style="margin:8px 0 0; color:#1f2937;">${log.safety || 'Sin observaciones'}</p>
+              </div>
+            </section>
+
+            <section style="display:grid; gap:12px;">
+              <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                <span style="font-size:12px; font-weight:600; color:#94a3b8;">Crew</span>
+                ${crewChips || '<span style="font-size:13px; color:#94a3b8;">Equipo no asignado</span>'}
+                ${log.crewCount ? `<span class="kpi-badge" style="background: rgba(3,89,81,0.08); border-color: rgba(3,89,81,0.2);">Total: ${log.crewCount}</span>` : ''}
+              </div>
+              ${log.notes ? `<p style="font-size:13px; color:#475569;">${log.notes}</p>` : ''}
+              ${photos}
+            </section>
+
+            <section style="display:flex; flex-direction:column; gap:8px;">
+              <p style="margin:0; font-size:12px; font-weight:600; color:#94a3b8;">Firmas</p>
+              <div style="display:flex; gap:20px; flex-wrap:wrap;">${signatures}</div>
+            </section>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function exportDailyLog(index) {
+      const log = (window._latestDailyLogs || [])[index];
+      if (!log) {
+        uiToast('error', 'No se encontró el registro solicitado.');
+        return;
+      }
+      uiToast('success', `Generando PDF del ${formatDate(log.date)}... (demo)`);
+      console.log('📄 Export daily log', log);
+    }
+
+    function renderWorkflowRow(stateKey) {
+      const row = document.getElementById('workflowRow');
+      if (!row) return;
+      const resolved = PROJECT_STATES[stateKey] ? stateKey : 'quoted';
+      const highlightKey = WORKFLOW_SEQUENCE.includes(resolved)
+        ? resolved
+        : resolved === 'overdue'
+          ? 'in-progress'
+          : 'quoted';
+      const currentIndex = WORKFLOW_SEQUENCE.indexOf(highlightKey);
+      row.innerHTML = `
+        <div style="display: flex; align-items: stretch; gap: 12px; flex-wrap: wrap;">
+          ${WORKFLOW_SEQUENCE.map((key, idx) => {
+            const config = PROJECT_STATES[key];
+            if (!config) return '';
+            const isActive = key === highlightKey && currentIndex === idx;
+            const isCompleted = currentIndex > idx;
+            const background = isActive ? `${config.color}22` : '#ffffff';
+            const borderColor = isActive ? config.color : isCompleted ? '#d1fae5' : '#e2e8f0';
+            const labelColor = isActive ? '#0f172a' : '#475569';
+            const iconColor = isActive ? '#fff' : '#475569';
+            return `
+              <div class="workflow-step ${isActive ? 'active' : ''}" data-state="${key}" style="
+                flex: 1;
+                min-width: 140px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px 16px;
+                border-radius: 12px;
+                border: 1px solid ${borderColor};
+                background: ${background};
+                box-shadow: ${isActive ? `0 6px 16px ${config.color}28` : 'none'};
+                opacity: ${isCompleted || isActive ? 1 : 0.6};
+              ">
+                <span style="
+                  width: 36px;
+                  height: 36px;
+                  border-radius: 12px;
+                  background: ${isActive ? config.color : '#f1f5f9'};
+                  display: inline-flex;
+                  align-items: center;
+                  justify-content: center;
+                  color: ${iconColor};
+                ">
+                  ${config.icon}
+                </span>
+                <div>
+                  <div style="font-weight: 700; color: ${labelColor};">${config.name}</div>
+                  <div style="font-size: 12px; color: #94a3b8;">Paso ${idx + 1}</div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
     
     // Function to open linked thread
     function openLinkedThread() {
@@ -2403,11 +2990,16 @@
     
     function renderProjectData(project) {
       if (!project) return;
+
+      const clientRecord = getClientRecord(project.clientId);
+      const displayClient = project.client || project.clientName || clientRecord?.name || 'Cliente';
+      ensureProjectSchedule(project);
       
       // Update title
       const titleElement = document.querySelector('.project-title');
       if (titleElement) {
-        titleElement.textContent = `${project.name} - ${project.client}`;
+        const projectName = project.name || project.projectName || 'Proyecto';
+        titleElement.textContent = `${projectName} - ${displayClient}`;
       }
       
       // Hero background con cover si existe
@@ -2433,12 +3025,10 @@
       if (addressElement) {
         addressElement.querySelector('span').textContent = project.address || 'Sin dirección';
       }
-      renderProjectInfo(project);
+      renderProjectInfo(project, clientRecord);
       renderProjectState(project);
       updateKpis(project);
       populateQuickGallery(project);
-
-      renderProjectInfo(project);
       console.log('✅ Project data rendered:', project);
     }
     
@@ -2556,21 +3146,18 @@
       const kpiDates = document.getElementById('kpi-progress-dates');
       if (kpiDates) kpiDates.textContent = `${formatDate(project.startDate)} - ${formatDate(project.endDate)} · ${totalDays} días`;
       
-      // Render workflow visual con estado actual
-      const flowState = status === 'not-started' ? 'quoted' : status === 'overdue' ? 'in-progress' : status === 'completed' ? 'completed' : 'in-progress';
-      renderWorkflowRow(flowState);
       console.log('📊 Progress updated:', { percent, daysElapsed, totalDays, status });
     }
 
-    function renderProjectInfo(project) {
+    function renderProjectInfo(project, clientRecord = null) {
       const setText = (id, value) => {
         const el = document.getElementById(id);
         if (el) el.textContent = value || 'N/A';
       };
 
       setText('info-id', project.idSync || project.id || 'N/A');
-      setText('info-client', project.client || 'N/A');
-      setText('info-address', project.address || 'Sin dirección');
+      setText('info-client', clientRecord?.name || project.client || project.clientName || 'N/A');
+      setText('info-address', project.address || clientRecord?.address || 'Sin dirección');
       setText('info-status', project.status || 'Activo');
 
       if (project.startDate) setText('info-start', formatDate(project.startDate));
@@ -2587,9 +3174,9 @@
       setText('info-budget', project.budget ? `$${project.budget}` : 'No definido');
       setText('info-owner', project.createdBy || project.accountOwner || 'Opsis Suite');
       setText('info-sla', project.sla || project.priority || 'Estándar');
-      setText('info-contact', project.contactName || project.clientContact || 'N/A');
-      setText('info-phone', project.phone || project.contactPhone || 'N/A');
-      setText('info-email', project.email || project.contactEmail || 'N/A');
+      setText('info-contact', clientRecord?.contact || project.contactName || project.clientContact || 'N/A');
+      setText('info-phone', clientRecord?.phone || project.phone || project.contactPhone || 'N/A');
+      setText('info-email', clientRecord?.email || project.email || project.contactEmail || 'N/A');
       setText('info-plan', project.plan || project.tier || 'MotorSync Base');
     }
 
@@ -2599,46 +3186,121 @@
         return;
       }
 
-      const date = document.getElementById('daily-date')?.value || new Date().toISOString().slice(0,10);
-      const crewText = document.getElementById('daily-crew')?.value || '';
-      const crew = crewText ? crewText.split(',').map(c => c.trim()).filter(Boolean) : [];
-      const hours = document.getElementById('daily-hours')?.value || '';
-      const weather = document.getElementById('daily-weather')?.value || '';
-      const start = document.getElementById('daily-start')?.value || '';
-      const end = document.getElementById('daily-end')?.value || '';
-      const crewCount = Number(document.getElementById('daily-crew-count')?.value || 0) || null;
-      const work = document.getElementById('daily-work')?.value || '';
-      const materials = document.getElementById('daily-materials')?.value || '';
-      const safety = document.getElementById('daily-safety')?.value || '';
-      const notes = document.getElementById('daily-notes')?.value || '';
-      const photo = document.getElementById('daily-photo')?.value || '';
+      const template = loadFormTemplate();
+      const date = document.getElementById('daily-date')?.value || new Date().toISOString().slice(0, 10);
+      const values = {
+        crew: document.getElementById('daily-crew')?.value || '',
+        hours: document.getElementById('daily-hours')?.value || '',
+        weather: document.getElementById('daily-weather')?.value || '',
+        start: document.getElementById('daily-start')?.value || '',
+        end: document.getElementById('daily-end')?.value || '',
+        crewCount: document.getElementById('daily-crew-count')?.value || '',
+        photo: document.getElementById('daily-photo')?.value || '',
+        work: document.getElementById('daily-work')?.value || '',
+        materials: document.getElementById('daily-materials')?.value || '',
+        safety: document.getElementById('daily-safety')?.value || '',
+        notes: document.getElementById('daily-notes')?.value || ''
+      };
+
+      const missingRequired = FORMSYNC_FIELDS.filter((field) => (template.fields?.[field.key] || 'optional') === 'required')
+        .filter((field) => !isFormFieldFilled(field.key, values[field.key]))
+        .map((field) => field.label);
+
+      if (!date) {
+        missingRequired.unshift('Fecha');
+      }
+
+      if (missingRequired.length) {
+        uiToast('error', `Completa los campos requeridos: ${missingRequired.join(', ')}`);
+        return;
+      }
+
+      const crew = values.crew
+        ? values.crew.split(',').map((member) => member.trim()).filter(Boolean)
+        : [];
+      const crewCount = values.crewCount ? Number(values.crewCount) : null;
+      const photoList = values.photo ? [values.photo] : [];
+      const signatures = getSignatureFallbacks(template, currentProject);
 
       const key = `daily_logs_${currentProject.idSync || currentProject.id}`;
       const logs = JSON.parse(localStorage.getItem(key) || '[]');
-      logs.unshift({
-        date, crew, hours, weather, start, end, crewCount, work, materials, safety, notes,
-        photos: photo ? [photo] : [],
+      const logEntry = {
+        id: `LOG-${Date.now()}`,
+        date,
+        crew,
+        hours: values.hours,
+        weather: values.weather,
+        start: values.start,
+        end: values.end,
+        crewCount,
+        work: values.work,
+        materials: values.materials,
+        safety: values.safety,
+        notes: values.notes,
+        photos: photoList,
+        signatures,
+        templateConfig: template,
         createdAt: new Date().toISOString()
-      });
+      };
+      logs.unshift(logEntry);
       localStorage.setItem(key, JSON.stringify(logs));
+      registerFormSyncDocument(logEntry);
 
       renderDailyLogs(currentProject);
       showToast('success', 'Reporte diario guardado.');
       resetDailyForm();
+      applyFormTemplateToForm();
     }
 
     function toggleFormSyncForm(show) {
       const form = document.getElementById('formSyncForm');
       if (!form) return;
       form.style.display = show ? 'block' : 'none';
-      if (show) resetDailyForm();
+      if (show) {
+        resetDailyForm();
+        applyFormTemplateToForm();
+      }
     }
 
     function configureFormSync() {
+      const template = loadFormTemplate();
       const modal = document.createElement('div');
       modal.className = 'modal-overlay';
+      const fieldsHTML = FORMSYNC_FIELDS.map((field) => {
+        const state = template.fields?.[field.key] || 'optional';
+        return `
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #f1f5f9;">
+            <div>
+              <p style="margin:0; font-size:14px; font-weight:600; color:#0f172a;">${field.label}</p>
+              <p style="margin:2px 0 0; font-size:12px; color:#94a3b8;">Configura si es obligatorio, opcional u oculto</p>
+            </div>
+            <div style="display:flex; gap:12px; font-size:12px; color:#475569;">
+              <label style="display:flex; gap:4px; align-items:center;">
+                <input type="radio" name="fs-field-${field.key}" value="required" ${state === 'required' ? 'checked' : ''}>
+                Obligatorio
+              </label>
+              <label style="display:flex; gap:4px; align-items:center;">
+                <input type="radio" name="fs-field-${field.key}" value="optional" ${state === 'optional' ? 'checked' : ''}>
+                Opcional
+              </label>
+              <label style="display:flex; gap:4px; align-items:center;">
+                <input type="radio" name="fs-field-${field.key}" value="hidden" ${state === 'hidden' ? 'checked' : ''}>
+                Oculto
+              </label>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const signaturesHTML = FORMSYNC_SIGNATURE_OPTIONS.map((sig) => `
+        <label style="display:flex; gap:8px; align-items:center;">
+          <input type="checkbox" id="fs-sign-${sig.key}" ${template.signatures?.[sig.key] ? 'checked' : ''}>
+          ${sig.label}
+        </label>
+      `).join('');
+
       modal.innerHTML = `
-        <div class="modal" style="max-width: 640px;">
+        <div class="modal" style="max-width: 760px;">
           <div class="modal-header">
             <div class="modal-title">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="M9 9h6v6H9z"/><path d="M9 3v6"/><path d="M15 15v6"/></svg>
@@ -2646,38 +3308,42 @@
             </div>
             <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
           </div>
-          <div class="modal-body" style="display:grid; gap:12px;">
-            <div class="form-group">
-              <label class="form-label">Plantilla base</label>
-              <select class="form-select" id="fs-template">
-                <option value="daily">Diario de obra</option>
-                <option value="safety">Seguridad</option>
-                <option value="handoff">Entrega</option>
-              </select>
+          <div class="modal-body" style="display:grid; gap:16px;">
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px; font-size:13px; color:#475569;">
+              Define qué campos serán obligatorios u opcionales para todos los formularios de esta compañía.
             </div>
-            <div class="form-group">
-              <label class="form-label">Campos</label>
-              <div id="fs-fields" style="display:grid; gap:8px;">
-                <label style="display:flex; gap:6px; align-items:center;"><input type="checkbox" checked> Equipo / Crew</label>
-                <label style="display:flex; gap:6px; align-items:center;"><input type="checkbox" checked> Horas</label>
-                <label style="display:flex; gap:6px; align-items:center;"><input type="checkbox" checked> Clima</label>
-                <label style="display:flex; gap:6px; align-items:center;"><input type="checkbox" checked> Materiales</label>
-                <label style="display:flex; gap:6px; align-items:center;"><input type="checkbox" checked> Seguridad / Incidencias</label>
-              </div>
+            <div style="display:grid; gap:12px; max-height:360px; overflow-y:auto; padding-right:6px;">
+              ${fieldsHTML}
             </div>
             <div class="form-group">
               <label class="form-label">Firmas requeridas</label>
-              <label style="display:flex; gap:6px; align-items:center;"><input type="checkbox" checked> Supervisor</label>
-              <label style="display:flex; gap:6px; align-items:center;"><input type="checkbox"> Cliente</label>
+              <div style="display:flex; gap:16px; flex-wrap:wrap; font-size:13px;">
+                ${signaturesHTML}
+              </div>
             </div>
           </div>
           <div class="modal-footer">
-            <button class="btn btn-white" onclick="this.closest('.modal-overlay').remove()">Cerrar</button>
-            <button class="btn btn-primary" onclick="uiToast('success','Plantilla guardada (demo)'); this.closest('.modal-overlay').remove();">Guardar</button>
+            <button class="btn btn-white" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
+            <button class="btn btn-primary" id="fs-save-template">Guardar</button>
           </div>
         </div>
       `;
       document.body.appendChild(modal);
+
+      modal.querySelector('#fs-save-template').addEventListener('click', () => {
+        const updated = { fields: {}, signatures: {} };
+        FORMSYNC_FIELDS.forEach((field) => {
+          const value = modal.querySelector(`input[name="fs-field-${field.key}"]:checked`)?.value || 'optional';
+          updated.fields[field.key] = value;
+        });
+        FORMSYNC_SIGNATURE_OPTIONS.forEach((sig) => {
+          updated.signatures[sig.key] = modal.querySelector(`#fs-sign-${sig.key}`)?.checked || false;
+        });
+        saveFormTemplateConfig(updated);
+        applyFormTemplateToForm();
+        uiToast('success', 'Plantilla guardada');
+        modal.remove();
+      });
     }
 
     function resetDailyForm() {
@@ -2717,18 +3383,25 @@
     }
 
     function seedPhotoData() {
-      const photos = loadProjectPhotos();
+      const baseProjectId = resolveDefaultProjectId();
+      const photos = loadProjectPhotos(baseProjectId);
       if (photos.length) return;
+      const defaultPhases = cachedSchedulePhases.length ? cachedSchedulePhases : ensureProjectSchedule(currentProject);
+      const firstPhase = defaultPhases[0]?.title || 'Inspección inicial';
+      const secondPhase = defaultPhases[1]?.title || 'Instalación principal';
+      const thirdPhase = defaultPhases[2]?.title || 'Pruebas';
       const demoPhotos = [
-        { id: 'PHOTO-1', category: 'before', caption: 'Condición inicial fachada', url: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=80', uploadDate: new Date().toISOString() },
-        { id: 'PHOTO-2', category: 'during', caption: 'Instalación ductos', url: 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=800&q=80', uploadDate: new Date().toISOString() },
-        { id: 'PHOTO-3', category: 'after', caption: 'Entrega preliminar', url: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=800&q=80', uploadDate: new Date().toISOString() }
+        { id: 'PHOTO-1', projectId: baseProjectId, category: 'before', caption: 'Condición inicial fachada', url: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=80', uploadDate: new Date().toISOString(), captureDate: new Date().toISOString().slice(0,10), phaseName: firstPhase, phaseId: 'demo-1' },
+        { id: 'PHOTO-2', projectId: baseProjectId, category: 'during', caption: 'Instalación ductos', url: 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=800&q=80', uploadDate: new Date().toISOString(), captureDate: new Date().toISOString().slice(0,10), phaseName: secondPhase, phaseId: 'demo-2' },
+        { id: 'PHOTO-3', projectId: baseProjectId, category: 'after', caption: 'Entrega preliminar', url: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=800&q=80', uploadDate: new Date().toISOString(), captureDate: new Date().toISOString().slice(0,10), phaseName: thirdPhase, phaseId: 'demo-3' }
       ];
-      saveProjectPhotos(demoPhotos);
+      saveProjectPhotos(demoPhotos, baseProjectId);
     }
 
     function renderPhotosSection(project) {
+      ensurePhotoFilterDefaults();
       seedPhotoData();
+      hydratePhotoFilterControls();
       renderPhotoGallery();
     }
 
@@ -2736,9 +3409,9 @@
       const docs = loadProjectDocuments();
       if (docs.length) return;
       const demoDocs = [
-        { id: 'DOC-1', category: 'contrato', description: 'Contrato firmado', fileName: 'Contrato_Cliente.pdf', fileSize: 560000, fileType: 'application/pdf', url: '#', uploadDate: new Date().toISOString(), uploadedBy: 'Opsis Suite', origin: 'project' },
-        { id: 'DOC-2', category: 'permiso', description: 'Permiso municipal', fileName: 'Permiso_Municipal.pdf', fileSize: 230000, fileType: 'application/pdf', url: '#', uploadDate: new Date().toISOString(), uploadedBy: 'Opsis Suite', origin: 'project' },
-        { id: 'DOC-3', category: 'plano', description: 'Plano HVAC', fileName: 'Plano_HVAC.dwg', fileSize: 1200000, fileType: 'application/octet-stream', url: '#', uploadDate: new Date().toISOString(), uploadedBy: 'Opsis Suite', origin: 'project' }
+        { id: 'DOC-1', category: 'contrato', description: 'Contrato firmado', fileName: 'Contrato_Cliente.pdf', fileSize: 560000, fileType: 'application/pdf', url: '#', uploadDate: new Date().toISOString(), uploadedBy: 'Opsis Suite', origin: 'manual' },
+        { id: 'DOC-2', category: 'permiso', description: 'Permiso municipal', fileName: 'Permiso_Municipal.pdf', fileSize: 230000, fileType: 'application/pdf', url: '#', uploadDate: new Date().toISOString(), uploadedBy: 'Opsis Suite', origin: 'manual' },
+        { id: 'DOC-3', category: 'plano', description: 'Plano HVAC', fileName: 'Plano_HVAC.dwg', fileSize: 1200000, fileType: 'application/octet-stream', url: '#', uploadDate: new Date().toISOString(), uploadedBy: 'Opsis Suite', origin: 'manual' }
       ];
       saveProjectDocuments(demoDocs);
     }
@@ -2752,16 +3425,21 @@
     document.addEventListener('DOMContentLoaded', function() {
       currentProject = loadProjectData();
       if (currentProject) {
+        currentFormTemplate = null;
+        loadFormTemplate();
+        ensureProjectSchedule(currentProject);
         renderProjectData(currentProject);
         updateProgressBar(currentProject);
         initializeProjectHistory();
         updateHistoryCounter();
         checkForActiveChangeOrder();
         renderDailyLogs(currentProject);
+        applyFormTemplateToForm();
         renderTeamSection(currentProject);
         renderPhotosSection(currentProject);
         renderDocsSection(currentProject);
         renderScheduleBlocks();
+        initHeroTitleSize();
       }
     });
     
@@ -2959,6 +3637,13 @@
         return;
       }
 
+      const linkedClient = getClientRecord(currentProject.clientId);
+      const projectNameValue = currentProject.projectName || currentProject.name || '';
+      const clientNameValue = linkedClient?.name || currentProject.client || currentProject.clientName || '';
+      const contactValue = linkedClient?.contact || currentProject.contact || currentProject.contactName || '';
+      const phoneValue = linkedClient?.phone || currentProject.phone || '';
+      const emailValue = linkedClient?.email || currentProject.email || '';
+
       const modalHTML = `
         <div class="modal-overlay" id="editModal" onclick="if(event.target === this) closeModal('editModal')">
           <div class="modal">
@@ -2994,24 +3679,24 @@
 
               <div class="form-group">
                 <label class="form-label">Nombre del Proyecto</label>
-                <input type="text" class="form-input" id="editProjectName" value="${currentProject.projectName || ''}" />
+                <input type="text" class="form-input" id="editProjectName" value="${projectNameValue}" />
               </div>
               <div class="form-group">
                 <label class="form-label">Cliente</label>
-                <input type="text" class="form-input" id="editClientName" value="${currentProject.clientName || ''}" />
+                <input type="text" class="form-input" id="editClientName" value="${clientNameValue}" />
               </div>
               <div class="form-group">
                 <label class="form-label">Contacto Principal</label>
-                <input type="text" class="form-input" id="editContactName" value="${currentProject.contactName || ''}" />
+                <input type="text" class="form-input" id="editContactName" value="${contactValue}" />
               </div>
               <div class="grid-2" style="gap: 16px;">
                 <div class="form-group">
                   <label class="form-label">Teléfono</label>
-                  <input type="tel" class="form-input" id="editPhone" value="${currentProject.phone || ''}" />
+                  <input type="tel" class="form-input" id="editPhone" value="${phoneValue}" />
                 </div>
                 <div class="form-group">
                   <label class="form-label">Email</label>
-                  <input type="email" class="form-input" id="editEmail" value="${currentProject.email || ''}" />
+                  <input type="email" class="form-input" id="editEmail" value="${emailValue}" />
                 </div>
               </div>
 
@@ -3076,12 +3761,22 @@
       }
 
       // Obtener valores del formulario
+      const projectName = (document.getElementById('editProjectName').value || '').trim() || currentProject.projectName || currentProject.name || '';
+      const clientName = (document.getElementById('editClientName').value || '').trim() || currentProject.client || '';
+      const contactName = (document.getElementById('editContactName').value || '').trim() || currentProject.contact || '';
+      const phoneValue = (document.getElementById('editPhone').value || '').trim() || currentProject.phone || '';
+      const emailValue = (document.getElementById('editEmail').value || '').trim() || currentProject.email || '';
+
       const updatedData = {
-        projectName: document.getElementById('editProjectName').value,
-        clientName: document.getElementById('editClientName').value,
-        contactName: document.getElementById('editContactName').value,
-        phone: document.getElementById('editPhone').value,
-        email: document.getElementById('editEmail').value,
+        name: projectName,
+        projectName,
+        client: clientName,
+        clientName,
+        contact: contactName,
+        contactName,
+        clientContact: contactName,
+        phone: phoneValue,
+        email: emailValue,
         address: document.getElementById('editAddress').value,
         startDate: document.getElementById('editStartDate').value,
         endDate: document.getElementById('editEndDate').value,
@@ -3105,6 +3800,16 @@
         projects[projectIndex] = { ...projects[projectIndex], ...updatedData };
         localStorage.setItem('projectsync_projects', JSON.stringify(projects));
         console.log('✅ Proyecto actualizado en localStorage:', projects[projectIndex]);
+      }
+
+      // Si el proyecto está vinculado a un cliente, actualizamos también ese registro
+      if (currentProject.clientId) {
+        updateClientRecord(currentProject.clientId, {
+          name: clientName,
+          contact: contactName,
+          phone: phoneValue,
+          email: emailValue
+        });
       }
 
       // Actualizar la UI
@@ -3303,13 +4008,10 @@
     function editSchedule() {
       const scheduleKey = `project_schedule_${currentProject.idSync || currentProject.id}`;
       const existing = JSON.parse(localStorage.getItem(scheduleKey) || '[]');
-      const phases = existing.length ? existing : [
-        { title: 'Inspección', start: '2024-11-10', end: '2024-11-11', status: 'completed', notes: 'Mediciones y revisión' },
-        { title: 'Instalación', start: '2024-11-12', end: '2024-11-14', status: 'completed', notes: 'Montaje de unidades' },
-        { title: 'Pruebas', start: '2024-11-15', end: '2024-11-17', status: 'in-progress', notes: 'Calibración' }
-      ];
+      const phases = existing.length ? existing : ensureProjectSchedule(currentProject);
       const modal = document.createElement('div');
-      modal.className = 'modal-overlay';
+      modal.className = 'modal-overlay schedule-editor';
+      modal.id = 'scheduleModalOverlay';
       modal.innerHTML = `
         <div class="modal" style="max-width: 720px;">
           <div class="modal-header">
@@ -3322,20 +4024,8 @@
           <div class="modal-body" style="display:grid; gap:12px;">
             <div class="form-group">
               <label class="form-label">Etapas</label>
-              <div id="sch-rows" style="display:grid; gap:8px;">
-                ${phases.map((p, idx) => `
-                  <div class="sch-row" data-idx="${idx}" style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:6px; align-items:center;">
-                    <input class="form-input" data-idx="${idx}" data-field="title" value="${p.title}">
-                    <input class="form-input" data-idx="${idx}" data-field="start" type="date" value="${p.start}">
-                    <input class="form-input" data-idx="${idx}" data-field="end" type="date" value="${p.end}">
-                    <select class="form-select" data-idx="${idx}" data-field="status">
-                      <option value="pending" ${p.status === 'pending' ? 'selected' : ''}>Pendiente</option>
-                      <option value="in-progress" ${p.status === 'in-progress' ? 'selected' : ''}>En Proceso</option>
-                      <option value="completed" ${p.status === 'completed' ? 'selected' : ''}>Completado</option>
-                    </select>
-                  </div>
-                  <input class="form-input sch-note" data-idx="${idx}" data-field="notes" placeholder="Notas" value="${p.notes || ''}">
-                `).join('')}
+              <div id="sch-rows" style="display:grid; gap:12px;">
+                ${phases.map((p, idx) => scheduleRowTemplate(p, idx)).join('')}
               </div>
               <button class="btn btn-white" style="margin-top:8px;" onclick="addScheduleRow()">+ Agregar etapa</button>
             </div>
@@ -3350,41 +4040,45 @@
         </div>
       `;
       document.body.appendChild(modal);
+      initScheduleDrag(modal.querySelector('#sch-rows'));
+      reindexScheduleRows(modal.querySelector('#sch-rows'));
     }
 
     function addScheduleRow() {
-      const rows = document.getElementById('sch-rows');
+      const modal = document.getElementById('scheduleModalOverlay');
+      const rows = modal ? modal.querySelector('#sch-rows') : null;
       if (!rows) return;
-      const idx = rows.querySelectorAll('.sch-row').length ? Math.max(...Array.from(rows.querySelectorAll('.sch-row')).map(i => Number(i.dataset.idx))) + 1 : 0;
-      rows.insertAdjacentHTML('beforeend', `
-        <div class="sch-row" data-idx="${idx}" style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:6px; align-items:center;">
-          <input class="form-input" data-idx="${idx}" data-field="title" placeholder="Etapa">
-          <input class="form-input" data-idx="${idx}" data-field="start" type="date">
-          <input class="form-input" data-idx="${idx}" data-field="end" type="date">
-          <select class="form-select" data-idx="${idx}" data-field="status">
-            <option value="pending">Pendiente</option>
-            <option value="in-progress">En Proceso</option>
-            <option value="completed">Completado</option>
-          </select>
-        </div>
-        <input class="form-input sch-note" data-idx="${idx}" data-field="notes" placeholder="Notas">
-      `);
+      const idx = rows.querySelectorAll('.sch-row-wrapper').length;
+      rows.insertAdjacentHTML('beforeend', scheduleRowTemplate({}, idx));
+      const newWrapper = rows.querySelector('.sch-row-wrapper:last-of-type');
+      attachScheduleRowInteractions(newWrapper);
+      reindexScheduleRows(rows);
     }
 
     function saveScheduleModal(btn) {
       const modal = btn.closest('.modal-overlay');
-      const rows = modal.querySelectorAll('#sch-rows .sch-row');
-      const phases = Array.from(rows).map(row => {
-        const idx = row.dataset.idx;
-        const getVal = (field) => modal.querySelector(`[data-idx="${idx}"][data-field="${field}"]`)?.value || '';
-        return {
-          title: getVal('title'),
-          start: getVal('start'),
-          end: getVal('end'),
-          status: getVal('status') || 'pending',
-          notes: getVal('notes') || ''
-        };
-      }).filter(p => p.title || p.start);
+      const wrappers = modal.querySelectorAll('#sch-rows .sch-row-wrapper');
+      if (!wrappers.length) {
+        uiToast('error', 'Agrega al menos una etapa para guardar');
+        return;
+      }
+      const phases = [];
+      for (const [index, wrapper] of Array.from(wrappers).entries()) {
+        const title = (wrapper.querySelector('[data-field="title"]')?.value || '').trim();
+        const start = wrapper.querySelector('[data-field="start"]')?.value || '';
+        const end = wrapper.querySelector('[data-field="end"]')?.value || '';
+        const status = wrapper.querySelector('[data-field="status"]')?.value || 'pending';
+        const notes = wrapper.querySelector('[data-field="notes"]')?.value || '';
+        if (!title || !start || !end) {
+          uiToast('error', `Completa título y fechas en la fase ${index + 1}`);
+          return;
+        }
+        if (new Date(end) < new Date(start)) {
+          uiToast('error', `La fase "${title}" tiene una fecha final anterior a la inicial`);
+          return;
+        }
+        phases.push({ title, start, end, status, notes });
+      }
       const scheduleKey = `project_schedule_${currentProject.idSync || currentProject.id}`;
       localStorage.setItem(scheduleKey, JSON.stringify(phases));
       modal.remove();
@@ -4677,57 +5371,120 @@
     // SISTEMA DE ESTADOS AVANZADOS
     // ===================================
 
+    const STATE_ICONS = {
+      quoted: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="16" rx="2"></rect><polyline points="14 4 20 4 20 14"></polyline><line x1="7" y1="9" x2="13" y2="9"></line><line x1="7" y1="13" x2="11" y2="13"></line></svg>',
+      approved: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polyline points="8 12 11 15 16 9"></polyline></svg>',
+      scheduled: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><path d="M12 14h4"></path></svg>',
+      'in-progress': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 21v-4a2 2 0 0 1 2-2h1"></path><path d="M14 14h1a2 2 0 0 1 2 2v4"></path><circle cx="12" cy="7" r="3"></circle><path d="M5 7h1"></path><path d="M18 7h1"></path><path d="M12 3v1"></path><path d="M12 10v1"></path></svg>',
+      paused: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><line x1="9" y1="9" x2="9" y2="15"></line><line x1="15" y1="9" x2="15" y2="15"></line></svg>',
+      completed: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.09 6.26L20 9.27l-5 3.73L16.18 20 12 16.9 7.82 20 9 13 4 9.27l5.91-.99z"></path></svg>',
+      cancelled: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><line x1="9" y1="9" x2="15" y2="15"></line><line x1="15" y1="9" x2="9" y2="15"></line></svg>',
+      overdue: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>'
+    };
+
+    const WORKFLOW_SEQUENCE = ['quoted', 'approved', 'scheduled', 'in-progress', 'paused', 'completed', 'cancelled'];
+
+    const STATE_ALIASES = {
+      'en-progreso': 'in-progress',
+      'en-proceso': 'in-progress',
+      'en curso': 'in-progress',
+      'en-curso': 'in-progress',
+      'en progreso': 'in-progress',
+      'aprobado': 'approved',
+      'programado': 'scheduled',
+      'cotizado': 'quoted',
+      'completado': 'completed',
+      'finalizado': 'completed',
+      'cancelado': 'cancelled',
+      'pausado': 'paused',
+      'pendiente': 'quoted',
+      'activo': 'in-progress',
+      'overdue': 'overdue',
+      'not-started': 'quoted'
+    };
+
     const PROJECT_STATES = {
       quoted: {
         name: 'Cotizado',
-        emoji: '📋',
+        icon: STATE_ICONS.quoted,
         description: 'Esperando aprobación del cliente',
         color: '#3b82f6',
         next: ['approved', 'cancelled']
       },
       approved: {
         name: 'Aprobado',
-        emoji: '✅',
+        icon: STATE_ICONS.approved,
         description: 'Aprobado por cliente, pendiente programación',
         color: '#10b981',
         next: ['scheduled', 'cancelled']
       },
       scheduled: {
         name: 'Programado',
-        emoji: '📅',
+        icon: STATE_ICONS.scheduled,
         description: 'Fechas confirmadas, listo para iniciar',
         color: '#8b5cf6',
         next: ['in-progress', 'paused', 'cancelled']
       },
       'in-progress': {
         name: 'En Proceso',
-        emoji: '🔧',
+        icon: STATE_ICONS['in-progress'],
         description: 'Trabajo activo en sitio',
         color: '#f59e0b',
         next: ['paused', 'completed', 'cancelled']
       },
       paused: {
         name: 'Pausado',
-        emoji: '⏸️',
+        icon: STATE_ICONS.paused,
         description: 'Temporalmente detenido',
         color: '#fbbf24',
         next: ['in-progress', 'cancelled']
       },
       completed: {
         name: 'Completado',
-        emoji: '🎉',
+        icon: STATE_ICONS.completed,
         description: 'Proyecto finalizado exitosamente',
         color: '#059669',
         next: []
       },
       cancelled: {
         name: 'Cancelado',
-        emoji: '❌',
+        icon: STATE_ICONS.cancelled,
         description: 'Proyecto cancelado',
         color: '#ef4444',
         next: []
+      },
+      overdue: {
+        name: 'Retrasado',
+        icon: STATE_ICONS.overdue,
+        description: 'Fuera de fecha planificada',
+        color: '#ef4444',
+        next: ['in-progress', 'completed', 'cancelled']
       }
     };
+
+    function normalizeStateKey(value) {
+      if (!value) return null;
+      const raw = String(value).trim().toLowerCase();
+      const stripped = raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const slug = stripped.replace(/[\s_]+/g, '-');
+      if (PROJECT_STATES[slug]) return slug;
+      if (STATE_ALIASES[slug]) return STATE_ALIASES[slug];
+      if (STATE_ALIASES[stripped]) return STATE_ALIASES[stripped];
+      return slug;
+    }
+
+    function resolveProjectState(project) {
+      const fromProject = project && (project.state || project.status || project.phase);
+      const normalizedProjectState = normalizeStateKey(fromProject);
+      if (normalizedProjectState && PROJECT_STATES[normalizedProjectState]) {
+        return normalizedProjectState;
+      }
+      const storedState = normalizeStateKey(getCurrentProjectState());
+      if (storedState && PROJECT_STATES[storedState]) {
+        return storedState;
+      }
+      return 'in-progress';
+    }
 
     // Cargar estado actual del proyecto
     function getCurrentProjectState() {
@@ -4787,51 +5544,27 @@
 
     // Renderizar estado actual
     function renderProjectState(project) {
-      const statusFromProject = project && (project.status || project.state || project.phase);
-      const currentState = statusFromProject || getCurrentProjectState() || 'in-progress';
-      const map = {
-        'quoted': { emoji: '📋', name: 'Cotizado', description: 'Esperando aprobación del cliente', color: '#e2e8f0' },
-        'approved': { emoji: '✅', name: 'Aprobado', description: 'Listo para programar', color: '#c7f9cc' },
-        'scheduled': { emoji: '📅', name: 'Programado', description: 'Fechas asignadas', color: '#bae6fd' },
-        'in-progress': { emoji: '🔧', name: 'En Proceso', description: 'Trabajo en curso', color: '#bbf7d0' },
-        'completed': { emoji: '🎉', name: 'Completado', description: 'Proyecto finalizado', color: '#dbeafe' },
-        'overdue': { emoji: '⚠️', name: 'Retrasado', description: 'Fuera de fecha', color: '#fee2e2' }
-      };
-      const stateConfig = map[currentState] || map['in-progress'];
+      const currentStateKey = resolveProjectState(project);
+      const stateConfig = PROJECT_STATES[currentStateKey] || PROJECT_STATES['in-progress'];
       
-      // Actualizar badge compacto
       const badgeEmoji = document.getElementById('badgeEmoji');
       const badgeTitle = document.getElementById('badgeTitle');
       const badgeSubtitle = document.getElementById('badgeSubtitle');
-      if (badgeEmoji) badgeEmoji.textContent = stateConfig.emoji;
+      const badgeContainer = document.getElementById('currentStateBadge');
+      if (badgeEmoji) {
+        badgeEmoji.innerHTML = stateConfig.icon;
+      }
       if (badgeTitle) badgeTitle.textContent = stateConfig.name;
       if (badgeSubtitle) badgeSubtitle.textContent = stateConfig.description;
+      if (badgeContainer) {
+        badgeContainer.style.border = `1px solid ${stateConfig.color}`;
+      }
       
-      // Actualizar workflow steps heredados
-      document.querySelectorAll('.workflow-step').forEach(step => {
-        const stepState = step.dataset.state;
-        
-        if (stepState === currentState) {
-          step.style.background = stateConfig.color;
-          step.style.color = '#0f172a';
-          step.style.opacity = '1';
-          step.style.boxShadow = `0 4px 12px ${stateConfig.color}40`;
-          step.style.transform = 'scale(1.02)';
-        } else {
-          step.style.background = '#e5e7eb';
-          step.style.color = '#94a3b8';
-          step.style.opacity = '0.65';
-          step.style.boxShadow = 'none';
-          step.style.transform = 'scale(1)';
-        }
-      });
+      renderWorkflowRow(currentStateKey);
       
-      renderWorkflowRow(currentState);
-      
-      // Habilitar/deshabilitar botón de cambio según estado
       const btnChange = document.getElementById('btnChangeState');
       if (btnChange) {
-        if (currentState === 'completed' || currentState === 'cancelled') {
+        if (currentStateKey === 'completed' || currentStateKey === 'cancelled') {
           btnChange.disabled = true;
           btnChange.style.opacity = '0.5';
           btnChange.style.cursor = 'not-allowed';
@@ -4883,7 +5616,7 @@
             <div class="modal-body">
               <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-left: 4px solid #3b82f6; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
                 <div style="display: flex; align-items: center; gap: 12px;">
-                  <div style="font-size: 32px;">${stateConfig.emoji}</div>
+                  <div style="width: 36px; height: 36px; color: #1e40af;">${stateConfig.icon}</div>
                   <div>
                     <div style="font-weight: 700; font-size: 14px; color: #1e40af; margin-bottom: 2px;">Estado Actual: ${stateConfig.name}</div>
                     <div style="font-size: 12px; color: #1e40af;">${stateConfig.description}</div>
@@ -4899,7 +5632,7 @@
                   return `
                     <label onclick="selectNewState('${state}')" style="display: flex; align-items: center; gap: 16px; padding: 16px; border: 2px solid #e5e7eb; border-radius: 12px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.borderColor='${nextConfig.color}'; this.style.background='rgba(${hexToRgb(nextConfig.color)}, 0.05)'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.background='white'">
                       <input type="radio" name="newState" value="${state}" style="width: 20px; height: 20px; cursor: pointer;" />
-                      <div style="font-size: 36px;">${nextConfig.emoji}</div>
+                      <div style="width: 36px; height: 36px; color:${nextConfig.color}; display:flex; align-items:center; justify-content:center;">${nextConfig.icon}</div>
                       <div style="flex: 1;">
                         <div style="font-weight: 700; font-size: 15px; color: #1e293b; margin-bottom: 4px;">${nextConfig.name}</div>
                         <div style="font-size: 12px; color: #64748b;">${nextConfig.description}</div>
@@ -4948,7 +5681,7 @@
       const newState = selected.value;
       const stateConfig = PROJECT_STATES[newState];
       
-      const ok = await uiConfirm(`🔄 Confirmar Cambio de Estado\n\n¿Confirmas cambiar el estado del proyecto a "${stateConfig.name}"?\n\n${stateConfig.emoji} ${stateConfig.description}\n\nEste cambio se registrará en el historial.`, {
+      const ok = await uiConfirm(`🔄 Confirmar Cambio de Estado\n\n¿Confirmas cambiar el estado del proyecto a "${stateConfig.name}"?\n\n${stateConfig.description}\n\nEste cambio se registrará en el historial.`, {
         confirmText: 'Confirmar',
         cancelText: 'Cancelar'
       });
@@ -4958,7 +5691,7 @@
       
       closeModal('stateChangeModal');
       
-      uiToast('success', `${stateConfig.emoji} Estado actualizado a ${stateConfig.name}.`);
+      uiToast('success', `Estado actualizado a ${stateConfig.name}.`);
     }
 
     // Helper: convertir hex a rgb para backgrounds
@@ -4971,74 +5704,102 @@
     // SISTEMA DE FOTOS Y EVIDENCIAS
     // ===================================
 
-    let currentFilter = 'all';
-    
-    // Cargar fotos del proyecto
-    function loadProjectPhotos() {
+    function resolveDefaultProjectId() {
+      if (currentProject) return currentProject.idSync || currentProject.id;
       const urlParams = new URLSearchParams(window.location.search);
-      const projectId = urlParams.get('id');
-      
-      if (!projectId) {
-        console.error('No project ID found');
-        return [];
+      return urlParams.get('id');
+    }
+
+    function ensurePhotoFilterDefaults() {
+      if (!photoFilters.projectId) {
+        photoFilters.projectId = resolveDefaultProjectId();
       }
-      
+    }
+
+    function listPhotoProjectIds() {
+      const ids = new Set();
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('photo_gallery_')) {
+          ids.add(key.replace('photo_gallery_', ''));
+        }
+      }
+      const fallback = resolveDefaultProjectId();
+      if (fallback) ids.add(fallback);
+      return Array.from(ids);
+    }
+
+    function normalizePhotoRecord(photo, projectId) {
+      const baseDate = photo.uploadDate || new Date().toISOString();
+      return {
+        ...photo,
+        projectId: photo.projectId || projectId || resolveDefaultProjectId(),
+        captureDate: photo.captureDate || baseDate.slice(0, 10),
+        uploadDate: baseDate,
+        phaseName: photo.phaseName || photo.phase || 'General',
+        phaseId: photo.phaseId || photo.phase || null
+      };
+    }
+
+    function loadProjectPhotos(targetProjectId = resolveDefaultProjectId()) {
+      const projectId = targetProjectId || resolveDefaultProjectId();
+      if (!projectId) return [];
       const key = `photo_gallery_${projectId}`;
       const stored = localStorage.getItem(key);
       const parsed = stored ? JSON.parse(stored) : [];
-      if (parsed.length) return parsed;
-      return [
-        { id: 'PHOTO-DEMO-1', category: 'before', caption: 'Condición inicial', url: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=800&q=80', uploadDate: new Date().toISOString() },
-        { id: 'PHOTO-DEMO-2', category: 'during', caption: 'Trabajo en proceso', url: 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=800&q=80', uploadDate: new Date().toISOString() }
-      ];
+      return parsed.map((photo) => normalizePhotoRecord(photo, projectId));
     }
 
-    // Guardar fotos del proyecto
-    function saveProjectPhotos(photos) {
-      const urlParams = new URLSearchParams(window.location.search);
-      const projectId = urlParams.get('id');
-      
+    function loadPhotoUniverse() {
+      ensurePhotoFilterDefaults();
+      if (photoFilters.projectId === 'all') {
+        return listPhotoProjectIds().flatMap((projectId) => loadProjectPhotos(projectId));
+      }
+      return loadProjectPhotos(photoFilters.projectId || resolveDefaultProjectId());
+    }
+
+    function saveProjectPhotos(photos, targetProjectId = resolveDefaultProjectId()) {
+      const projectId = targetProjectId || resolveDefaultProjectId();
       if (!projectId) {
         console.error('No project ID found');
         return;
       }
-      
       const key = `photo_gallery_${projectId}`;
       localStorage.setItem(key, JSON.stringify(photos));
-      
-      // Recargar galería
       renderPhotoGallery();
     }
 
-    // Renderizar galería de fotos
+    // Renderizar galería de fotos con filtros avanzados
     function renderPhotoGallery() {
-      const photos = loadProjectPhotos();
+      ensurePhotoFilterDefaults();
       const grid = document.getElementById('photo-gallery-grid');
-      
       if (!grid) return;
-      
-      // Actualizar contadores
+
+      const scopedPhotos = loadPhotoUniverse().filter((photo) => {
+        const matchesPhase = photoFilters.phase === 'all' || photo.phaseId === photoFilters.phase || photo.phaseName === photoFilters.phase;
+        const matchesDate = photoFilters.date === 'all' || (photo.captureDate && photo.captureDate === photoFilters.date);
+        return matchesPhase && matchesDate;
+      });
+
       const counts = {
-        all: photos.length,
-        before: photos.filter(p => p.category === 'before').length,
-        during: photos.filter(p => p.category === 'during').length,
-        after: photos.filter(p => p.category === 'after').length,
-        defect: photos.filter(p => p.category === 'defect').length,
-        completion: photos.filter(p => p.category === 'completion').length
+        all: scopedPhotos.length,
+        before: scopedPhotos.filter((p) => p.category === 'before').length,
+        during: scopedPhotos.filter((p) => p.category === 'during').length,
+        after: scopedPhotos.filter((p) => p.category === 'after').length,
+        defect: scopedPhotos.filter((p) => p.category === 'defect').length,
+        completion: scopedPhotos.filter((p) => p.category === 'completion').length
       };
-      
-      Object.keys(counts).forEach(cat => {
+
+      Object.keys(counts).forEach((cat) => {
         const counter = document.getElementById(`count-${cat}`);
         if (counter) counter.textContent = counts[cat];
       });
-      
-      // Filtrar fotos según categoría activa
-      const filtered = currentFilter === 'all' 
-        ? photos 
-        : photos.filter(p => p.category === currentFilter);
-      
-      // Renderizar
-      if (filtered.length === 0) {
+
+      const filtered = photoFilters.category === 'all'
+        ? scopedPhotos
+        : scopedPhotos.filter((p) => p.category === photoFilters.category);
+
+      if (!filtered.length) {
         grid.innerHTML = `
           <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #94a3b8;">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 16px;">
@@ -5046,41 +5807,46 @@
               <circle cx="8.5" cy="8.5" r="1.5"/>
               <polyline points="21 15 16 10 5 21"/>
             </svg>
-            <p style="font-size: 15px; font-weight: 500; margin-bottom: 8px;">${currentFilter === 'all' ? 'No hay fotos en este proyecto' : 'No hay fotos en esta categoría'}</p>
-            <p style="font-size: 13px; color: #cbd5e1;">Sube fotos para documentar el progreso del trabajo</p>
+            <p style="font-size: 15px; font-weight: 500; margin-bottom: 8px;">No hay fotos que coincidan con los filtros seleccionados</p>
+            <p style="font-size: 13px; color: #cbd5e1;">Ajusta los filtros o sube nuevas evidencias del proyecto.</p>
           </div>
         `;
+        updatePhotoSelectionCount();
         return;
       }
-      
-      grid.innerHTML = filtered.map(photo => {
-        const categoryEmoji = {
-          before: '📷',
-          during: '🔧',
-          after: '✅',
-          defect: '⚠️',
-          completion: '📋'
-        };
-        
-        const categoryName = {
-          before: 'Antes',
-          during: 'En Proceso',
-          after: 'Después',
-          defect: 'Defecto',
-          completion: 'Entrega'
-        };
-        
-        const categoryColor = {
-          before: '#3b82f6',
-          during: '#f59e0b',
-          after: '#10b981',
-          defect: '#ef4444',
-          completion: '#8b5cf6'
-        };
-        
+
+      const categoryEmoji = {
+        before: '📷',
+        during: '🔧',
+        after: '✅',
+        defect: '⚠️',
+        completion: '📋'
+      };
+      const categoryName = {
+        before: 'Antes',
+        during: 'En Proceso',
+        after: 'Después',
+        defect: 'Defecto',
+        completion: 'Entrega'
+      };
+      const categoryColor = {
+        before: '#3b82f6',
+        during: '#f59e0b',
+        after: '#10b981',
+        defect: '#ef4444',
+        completion: '#8b5cf6'
+      };
+
+      grid.innerHTML = filtered.map((photo) => {
+        const isSelected = selectedPhotoIds.has(photo.id);
+        const showProjectTag = photoFilters.projectId === 'all';
         return `
-          <div class="photo-card" style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s;" onclick="openPhotoLightbox('${photo.id}')">
-            <div style="position: relative; padding-top: 75%; background: #f1f5f9; overflow: hidden;">
+          <div class="photo-card" style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.2s; position: relative;">
+            <label style="position:absolute; top:10px; right:10px; z-index:5; background:rgba(255,255,255,0.9); border-radius:8px; padding:4px 8px; display:flex; align-items:center; gap:4px; font-size:11px; font-weight:600;">
+              <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="togglePhotoSelection('${photo.id}', this.checked)">
+              Seleccionar
+            </label>
+            <div style="position: relative; padding-top: 75%; background: #f1f5f9; overflow: hidden; cursor:pointer;" onclick="openPhotoLightbox('${photo.id}')">
               <img src="${photo.url}" alt="${photo.caption || 'Foto del proyecto'}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
               <div style="position: absolute; top: 8px; left: 8px;">
                 <span style="background: ${categoryColor[photo.category]}; color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
@@ -5088,21 +5854,31 @@
                 </span>
               </div>
             </div>
-            <div style="padding: 12px;">
-              ${photo.caption ? `<p style="font-size: 13px; font-weight: 600; color: #1e293b; margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${photo.caption}</p>` : ''}
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <p style="font-size: 11px; color: #94a3b8; margin: 0;">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+            <div style="padding: 12px; display:flex; flex-direction:column; gap:8px;">
+              ${photo.caption ? `<p style="font-size: 13px; font-weight: 600; color: #1e293b; margin: 0;">${photo.caption}</p>` : ''}
+              <div style="display:flex; flex-wrap:wrap; gap:8px; font-size:11px; color:#64748b;">
+                <span style="display:inline-flex; align-items:center; gap:4px;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="10"/>
                     <polyline points="12 6 12 12 16 14"/>
                   </svg>
-                  ${new Date(photo.uploadDate).toLocaleDateString('es-MX', { month: 'short', day: 'numeric' })}
-                </p>
+                  ${photo.captureDate}
+                </span>
+                ${photo.phaseName ? `<span style="display:inline-flex; align-items:center; gap:4px;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                  ${photo.phaseName}
+                </span>` : ''}
+                ${showProjectTag ? `<span style="display:inline-flex; align-items:center; gap:4px;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21v-4a8 8 0 0 1 8-8 8 8 0 0 1 8 8v4"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                  ${photo.projectId}
+                </span>` : ''}
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
                 <div style="display:flex; gap:6px;">
-                  <button onclick="event.stopPropagation(); renamePhoto('${photo.id}')" style="background: #e0f2fe; color: #0369a1; border: none; padding: 6px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#bae6fd'" onmouseout="this.style.background='#e0f2fe'">
+                  <button onclick="event.stopPropagation(); renamePhoto('${photo.id}')" style="background: #e0f2fe; color: #0369a1; border: none; padding: 6px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
                     Renombrar
                   </button>
-                  <button onclick="event.stopPropagation(); deletePhoto('${photo.id}')" style="background: #fee2e2; color: #dc2626; border: none; padding: 6px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'">
+                  <button onclick="event.stopPropagation(); deletePhoto('${photo.id}')" style="background: #fee2e2; color: #dc2626; border: none; padding: 6px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
                     🗑️ Eliminar
                   </button>
                 </div>
@@ -5111,14 +5887,15 @@
           </div>
         `;
       }).join('');
+
+      updatePhotoSelectionCount();
     }
 
     // Filtrar fotos por categoría
     function filterPhotos(category) {
-      currentFilter = category;
-      
-      // Actualizar botones activos
-      document.querySelectorAll('.photo-filter').forEach(btn => {
+      photoFilters.category = category;
+      selectedPhotoIds.clear();
+      document.querySelectorAll('.photo-filter').forEach((btn) => {
         if (btn.dataset.category === category) {
           btn.style.background = 'linear-gradient(135deg, #02735E, #035951)';
           btn.style.color = 'white';
@@ -5129,12 +5906,143 @@
           btn.classList.remove('active');
         }
       });
-      
+      updatePhotoSelectionCount();
       renderPhotoGallery();
+    }
+
+    function hydratePhotoFilterControls() {
+      ensurePhotoFilterDefaults();
+      const projectSelect = document.getElementById('photoProjectFilter');
+      if (projectSelect) {
+        const projectId = resolveDefaultProjectId();
+        const options = listPhotoProjectIds();
+        projectSelect.innerHTML = `
+          <option value="${projectId}">Proyecto actual (${projectId})</option>
+          <option value="all">Todos los proyectos</option>
+          ${options.filter((id) => id !== projectId).map((id) => `<option value="${id}">${id}</option>`).join('')}
+        `;
+        projectSelect.value = photoFilters.projectId || projectId;
+      }
+      const phaseSelect = document.getElementById('photoPhaseFilter');
+      if (phaseSelect) {
+        const phases = cachedSchedulePhases.length ? cachedSchedulePhases : ensureProjectSchedule(currentProject);
+        phaseSelect.innerHTML = `
+          <option value="all">Todas las fases</option>
+          ${phases.map((phase, index) => `<option value="${phase.id || phase.title || index}">${phase.title || phase.name}</option>`).join('')}
+        `;
+        phaseSelect.value = photoFilters.phase || 'all';
+      }
+      const dateInput = document.getElementById('photoDateFilter');
+      if (dateInput) {
+        dateInput.value = photoFilters.date !== 'all' ? photoFilters.date : '';
+      }
+    }
+
+    function handlePhotoProjectChange(select) {
+      photoFilters.projectId = select.value === 'all' ? 'all' : select.value;
+      selectedPhotoIds.clear();
+      updatePhotoSelectionCount();
+      hydratePhotoFilterControls();
+      renderPhotoGallery();
+    }
+
+    function handlePhotoPhaseChange(select) {
+      photoFilters.phase = select.value || 'all';
+      selectedPhotoIds.clear();
+      updatePhotoSelectionCount();
+      renderPhotoGallery();
+    }
+
+    function handlePhotoDateChange(input) {
+      photoFilters.date = input.value ? input.value : 'all';
+      selectedPhotoIds.clear();
+      updatePhotoSelectionCount();
+      renderPhotoGallery();
+    }
+
+    function resetPhotoFilters() {
+      photoFilters.category = 'all';
+      photoFilters.phase = 'all';
+      photoFilters.date = 'all';
+      photoFilters.projectId = resolveDefaultProjectId();
+      selectedPhotoIds.clear();
+      updatePhotoSelectionCount();
+      hydratePhotoFilterControls();
+      document.querySelectorAll('.photo-filter').forEach((btn) => {
+        if (btn.dataset.category === 'all') {
+          btn.style.background = 'linear-gradient(135deg, #02735E, #035951)';
+          btn.style.color = 'white';
+          btn.classList.add('active');
+        } else {
+          btn.style.background = 'white';
+          btn.style.color = '#64748b';
+          btn.classList.remove('active');
+        }
+      });
+      renderPhotoGallery();
+    }
+
+    function togglePhotoSelection(photoId, checked) {
+      if (checked) {
+        selectedPhotoIds.add(photoId);
+      } else {
+        selectedPhotoIds.delete(photoId);
+      }
+      updatePhotoSelectionCount();
+    }
+
+    function updatePhotoSelectionCount() {
+      const counter = document.getElementById('photoSelectionCount');
+      if (counter) {
+        counter.textContent = selectedPhotoIds.size;
+      }
+    }
+
+    function sanitizeFileName(text) {
+      return text.replace(/[^a-z0-9-_]+/gi, '_');
+    }
+
+    function downloadSelectedPhotos() {
+      if (!selectedPhotoIds.size) {
+        uiToast('info', 'Selecciona al menos una foto para descargar.');
+        return;
+      }
+      selectedPhotoIds.forEach((photoId) => {
+        const context = getPhotoContext(photoId);
+        if (!context) return;
+        const link = document.createElement('a');
+        link.href = context.photo.url;
+        const safeName = sanitizeFileName(context.photo.caption || context.photo.id || 'foto');
+        link.download = `${safeName}.jpg`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+      uiToast('success', `Descarga iniciada para ${selectedPhotoIds.size} foto(s).`);
+    }
+
+    function getPhotoContext(photoId) {
+      const projectIds = photoFilters.projectId === 'all'
+        ? listPhotoProjectIds()
+        : [photoFilters.projectId || resolveDefaultProjectId()];
+      for (const pid of projectIds) {
+        const photos = loadProjectPhotos(pid);
+        const index = photos.findIndex((p) => p.id === photoId);
+        if (index !== -1) {
+          return { projectId: pid, photos, index, photo: photos[index] };
+        }
+      }
+      return null;
     }
 
     // Abrir modal de subir foto
     function openUploadPhotoModal() {
+      const phases = cachedSchedulePhases.length ? cachedSchedulePhases : ensureProjectSchedule(currentProject);
+      const phaseOptions = phases.map((phase, index) => {
+        const value = phase.id || phase.title || `phase-${index}`;
+        return `<option value="${value}">${phase.title || phase.name}</option>`;
+      }).join('');
+      const today = new Date().toISOString().slice(0, 10);
       const modalHTML = `
         <div id="uploadPhotoModal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.2s;">
           <div style="background: white; border-radius: 16px; padding: 32px; max-width: 500px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: slideUp 0.3s;">
@@ -5169,6 +6077,21 @@
                 Descripción (opcional)
               </label>
               <input type="text" id="photoCaption" placeholder="Ej: Instalación de tubería principal" style="width: 100%; padding: 12px 14px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px;">
+            </div>
+            <div style="margin-bottom: 20px;">
+              <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #334155; font-size: 14px;">
+                Fase asociada
+              </label>
+              <select id="photoPhaseSelect" style="width: 100%; padding: 12px 14px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; background: white;">
+                <option value="">General</option>
+                ${phaseOptions}
+              </select>
+            </div>
+            <div style="margin-bottom: 20px;">
+              <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #334155; font-size: 14px;">
+                Fecha de captura
+              </label>
+              <input type="date" id="photoCaptureDate" value="${today}" style="width: 100%; padding: 12px 14px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px;">
             </div>
 
             <div style="margin-bottom: 24px;">
@@ -5205,6 +6128,12 @@
       const category = document.getElementById('photoCategory').value;
       const caption = document.getElementById('photoCaption').value.trim();
       const fileInput = document.getElementById('photoFile');
+      const phaseSelect = document.getElementById('photoPhaseSelect');
+      const captureDate = document.getElementById('photoCaptureDate').value || new Date().toISOString().slice(0, 10);
+      const selectedPhaseValue = phaseSelect ? phaseSelect.value : '';
+      const selectedPhaseLabel = phaseSelect && phaseSelect.options[phaseSelect.selectedIndex]
+        ? phaseSelect.options[phaseSelect.selectedIndex].text
+        : 'General';
       
       if (!category) {
         alert('❌ Error\n\nPor favor selecciona una categoría para la foto.');
@@ -5227,7 +6156,8 @@
       // Leer archivo como Base64
       const reader = new FileReader();
       reader.onload = function(e) {
-        const photos = loadProjectPhotos();
+        const projectId = resolveDefaultProjectId();
+        const photos = loadProjectPhotos(projectId);
         
         const newPhoto = {
           id: 'PHOTO-' + Date.now(),
@@ -5237,11 +6167,15 @@
           uploadDate: new Date().toISOString(),
           uploadedBy: 'Usuario Actual', // TODO: integrar con sistema de auth
           fileName: file.name,
-          fileSize: file.size
+          fileSize: file.size,
+          projectId,
+          captureDate,
+          phaseId: selectedPhaseValue || null,
+          phaseName: selectedPhaseLabel
         };
         
         photos.push(newPhoto);
-        saveProjectPhotos(photos);
+        saveProjectPhotos(photos, projectId);
         
         closeUploadPhotoModal();
         
@@ -5256,10 +6190,9 @@
 
     // Abrir lightbox para ver foto
     function openPhotoLightbox(photoId) {
-      const photos = loadProjectPhotos();
-      const photo = photos.find(p => p.id === photoId);
-      
-      if (!photo) return;
+      const context = getPhotoContext(photoId);
+      if (!context) return;
+      const photo = context.photo;
       
       const categoryEmoji = {
         before: '📷',
@@ -5308,23 +6241,24 @@
       });
       if (!ok) return;
       
-      const photos = loadProjectPhotos();
-      const filtered = photos.filter(p => p.id !== photoId);
-      
-      saveProjectPhotos(filtered);
-      
+      const context = getPhotoContext(photoId);
+      if (!context) return;
+      context.photos.splice(context.index, 1);
+      saveProjectPhotos(context.photos, context.projectId);
+      selectedPhotoIds.delete(photoId);
+      updatePhotoSelectionCount();
       uiToast('success', 'Foto eliminada correctamente.');
     }
 
     // Renombrar foto
     async function renamePhoto(photoId) {
-      const photos = loadProjectPhotos();
-      const photo = photos.find(p => p.id === photoId);
-      if (!photo) return;
+      const context = getPhotoContext(photoId);
+      if (!context) return;
+      const photo = context.photo;
       const newName = prompt('Nuevo nombre para la foto', photo.caption || 'Foto del proyecto');
       if (!newName) return;
       photo.caption = newName;
-      saveProjectPhotos(photos);
+      saveProjectPhotos(context.photos, context.projectId);
       uiToast('success', 'Nombre actualizado');
     }
 
@@ -5356,37 +6290,108 @@
 
     let currentDocFilter = 'all';
 
-    // Cargar documentos del proyecto
-    function loadProjectDocuments() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const projectId = urlParams.get('id');
-      
-      if (!projectId) return [];
-      
-      const key = `project_documents_${projectId}`;
-      const stored = localStorage.getItem(key);
-      
-      return stored ? JSON.parse(stored) : [];
+    function getDocumentStorageKey(projectId) {
+      return `project_documents_${projectId}`;
     }
 
-    // Guardar documentos del proyecto
-    function saveProjectDocuments(documents) {
-      const urlParams = new URLSearchParams(window.location.search);
-      const projectId = urlParams.get('id');
-      
-      if (!projectId) return;
-      
-      const key = `project_documents_${projectId}`;
-      localStorage.setItem(key, JSON.stringify(documents));
-      
+    function loadProjectDocuments(projectId = resolveDefaultProjectId()) {
+      const targetId = projectId || resolveDefaultProjectId();
+      if (!targetId) return [];
+      const stored = localStorage.getItem(getDocumentStorageKey(targetId));
+      if (!stored) return [];
+      try {
+        return JSON.parse(stored) || [];
+      } catch (err) {
+        console.warn('Documentos corruptos, regenerando', err);
+        return [];
+      }
+    }
+
+    function saveProjectDocuments(documents, projectId = resolveDefaultProjectId(), options = {}) {
+      const targetId = projectId || resolveDefaultProjectId();
+      if (!targetId) return;
+      localStorage.setItem(getDocumentStorageKey(targetId), JSON.stringify(documents));
+      if (!options.silent) {
+        renderDocumentsList();
+      }
+    }
+
+    function appendProjectDocument(doc, projectId = resolveDefaultProjectId(), options = {}) {
+      const docs = loadProjectDocuments(projectId);
+      docs.push(doc);
+      saveProjectDocuments(docs, projectId, options);
+    }
+
+    function createDocumentFromLog(log) {
+      return {
+        id: `FS-DOC-${log.id || Date.now()}`,
+        category: 'daily',
+        description: log.work || 'Actividad registrada en FormSync',
+        fileName: `FormSync_${formatDate(log.date || new Date().toISOString())}.pdf`,
+        fileSize: 180000,
+        fileType: 'application/pdf',
+        url: '#',
+        uploadDate: log.createdAt || new Date().toISOString(),
+        uploadedBy: (log.crew && log.crew[0]) || 'Equipo Operativo',
+        origin: 'formsync',
+        linkedLogId: log.id
+      };
+    }
+
+    function registerFormSyncDocument(logEntry) {
+      const projectId = resolveDefaultProjectId();
+      if (!projectId || !logEntry) return;
+      const documents = loadProjectDocuments(projectId);
+      if (documents.some(doc => doc.origin === 'formsync' && doc.linkedLogId === logEntry.id)) {
+        return;
+      }
+      documents.push(createDocumentFromLog(logEntry));
+      saveProjectDocuments(documents, projectId, { silent: true });
       renderDocumentsList();
+    }
+
+    function ensureFormSyncDocuments() {
+      const projectId = resolveDefaultProjectId();
+      if (!projectId) return;
+      const documents = loadProjectDocuments(projectId);
+      const linked = new Set(
+        documents
+          .filter(doc => doc.origin === 'formsync' && doc.linkedLogId)
+          .map(doc => doc.linkedLogId)
+      );
+      const logsKey = `daily_logs_${projectId}`;
+      let logs = [];
+      try {
+        logs = JSON.parse(localStorage.getItem(logsKey) || '[]');
+      } catch (err) {
+        logs = [];
+      }
+      let updatedLogs = false;
+      let updatedDocs = false;
+      logs.forEach((log, idx) => {
+        if (!log.id) {
+          log.id = `LOG-${Date.now()}-${idx}`;
+          updatedLogs = true;
+        }
+        if (linked.has(log.id)) return;
+        documents.push(createDocumentFromLog(log));
+        linked.add(log.id);
+        updatedDocs = true;
+      });
+      if (updatedLogs) {
+        localStorage.setItem(logsKey, JSON.stringify(logs));
+      }
+      if (updatedDocs) {
+        saveProjectDocuments(documents, projectId, { silent: true });
+      }
     }
 
     // Renderizar lista de documentos con secciones
     function renderDocumentsList() {
-      const projectDocs = loadProjectDocuments();
-      const generatedDocs = getGeneratedDocsFromDailyLogs();
-      const allDocs = [...projectDocs, ...generatedDocs];
+      ensureFormSyncDocuments();
+      const allDocs = loadProjectDocuments();
+      const manualDocs = allDocs.filter(doc => doc.origin !== 'formsync');
+      const generatedDocs = allDocs.filter(doc => doc.origin === 'formsync');
       const listEl = document.getElementById('documents-list');
       if (!listEl) return;
 
@@ -5401,7 +6406,8 @@
         factura: allDocs.filter(d => d.category === 'factura').length,
         plano: allDocs.filter(d => d.category === 'plano').length,
         manual: allDocs.filter(d => d.category === 'manual').length,
-        otro: allDocs.filter(d => d.category === 'otro').length
+        otro: allDocs.filter(d => d.category === 'otro').length,
+        daily: allDocs.filter(d => d.category === 'daily').length
       };
       Object.keys(counts).forEach(cat => {
         const counter = document.getElementById(`doc-count-${cat}`);
@@ -5409,7 +6415,7 @@
       });
 
       const applyFilter = docs => currentDocFilter === 'all' ? docs : docs.filter(d => d.category === currentDocFilter);
-      const filteredProjectDocs = applyFilter(projectDocs);
+      const filteredProjectDocs = applyFilter(manualDocs);
       const filteredGeneratedDocs = applyFilter(generatedDocs);
 
       const renderCards = docs => {
@@ -5419,6 +6425,9 @@
         return docs.map(doc => {
           const fileIcon = getFileIcon(doc.fileName);
           const fileSize = doc.fileSize ? formatFileSize(doc.fileSize) : '';
+          const sourceBadge = doc.origin === 'formsync'
+            ? `<span style="background:#0ea5e9; color:white; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:700;">FormSync</span>`
+            : `<span style="background:#e2e8f0; color:#475569; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:700;">Manual</span>`;
           return `
             <div class="doc-item" style="padding: 16px; background: white; border: 2px solid #e5e7eb; border-radius: 12px; display: flex; align-items: center; gap: 16px; transition: all 0.2s; cursor: pointer;" onmouseover="this.style.borderColor='#cbd5e1'" onmouseout="this.style.borderColor='#e5e7eb'" onclick="viewDocument('${doc.id}')">
               <div style="font-size: 32px;">${fileIcon}</div>
@@ -5428,6 +6437,7 @@
                   <span style="background: ${categoryColor[doc.category] || '#02735E'}; color: white; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">
                     ${categoryEmoji[doc.category] || '📎'} ${categoryName[doc.category] || 'Documento'}
                   </span>
+                  ${sourceBadge}
                 </div>
                 ${doc.description ? `<div style="font-size: 12px; color: #64748b; margin-bottom: 6px;">${doc.description}</div>` : ''}
                 <div style="font-size: 11px; color: #94a3b8;">
@@ -5483,42 +6493,6 @@
           </div>
         </div>
       `;
-    }
-
-    function getGeneratedDocsFromDailyLogs() {
-      if (!currentProject) return [];
-      const key = `daily_logs_${currentProject.idSync || currentProject.id}`;
-      let logs = [];
-      try {
-        logs = JSON.parse(localStorage.getItem(key) || '[]');
-      } catch (e) {
-        logs = [];
-      }
-      if (!logs.length) {
-        return [{
-          id: 'DAILY-DEMO',
-          category: 'daily',
-          description: 'Ejemplo de reporte diario',
-          fileName: 'Reporte_Diario.pdf',
-          fileSize: 220000,
-          fileType: 'application/pdf',
-          url: '#',
-          uploadDate: new Date().toISOString(),
-          uploadedBy: 'Opsis Suite',
-          origin: 'generated'
-        }];
-      }
-      return logs.map((log, idx) => ({
-        id: `DAILY-${idx}`,
-        category: 'daily',
-        description: log.work || 'Actividad diaria',
-        fileName: `Diario_${formatDate(log.date)}.pdf`,
-        fileSize: 150000,
-        fileType: 'application/pdf',
-        url: '#',
-        uploadDate: log.createdAt || log.date,
-        uploadedBy: (log.crew && log.crew[0]) || 'Equipo'
-      }));
     }
 
     // Filtrar documentos
@@ -5647,7 +6621,8 @@
           fileType: file.type,
           url: e.target.result, // Base64 data URL
           uploadDate: new Date().toISOString(),
-          uploadedBy: 'Usuario Actual'
+          uploadedBy: 'Usuario Actual',
+          origin: 'manual'
         };
         
         documents.push(newDoc);
@@ -5755,7 +6730,8 @@
         factura: 'Factura',
         plano: 'Plano',
         manual: 'Manual',
-        otro: 'Otro'
+        otro: 'Otro',
+        daily: 'FormSync'
       };
       return names[category] || category;
     }
@@ -6322,29 +7298,59 @@
       if (!container || !currentProject) return;
 
       const timelineKey = `project_timeline_${currentProject.idSync || currentProject.id}`;
-      let timeline = JSON.parse(localStorage.getItem(timelineKey) || 'null');
+      let timeline = loadTimelineSnapshot(currentProject);
+      let shouldPersist = false;
+
+      if (timeline && (!timeline.phases || !timeline.phases.length) && Array.isArray(timeline.tasks)) {
+        const baseStart = timeline.startDate || currentProject.startDate || toInputDate(new Date());
+        const baseDate = baseStart ? new Date(baseStart) : new Date();
+        const phasesFromTasks = timeline.tasks.map((task, idx) => {
+          const offset = Number(task.startOffset) || 0;
+          const duration = Math.max(1, Number(task.duration) || 1);
+          const startDate = addDays(baseDate, offset) || baseDate;
+          const endDate = addDays(startDate, duration - 1) || startDate;
+          return {
+            id: idx + 1,
+            name: task.label || `Fase ${idx + 1}`,
+            start: toInputDate(startDate),
+            end: toInputDate(endDate),
+            status: task.status || 'pending',
+            progress: task.status === 'completed' ? 100 : task.status === 'in-progress' ? 60 : 0
+          };
+        });
+        timeline.phases = phasesFromTasks;
+        timeline.startDate = timeline.startDate || phasesFromTasks[0]?.start;
+        timeline.endDate = timeline.endDate || phasesFromTasks[phasesFromTasks.length - 1]?.end;
+        shouldPersist = true;
+      }
 
       // Si no existe timeline, crear uno de ejemplo o construir desde programación
-      if (!timeline) {
+      if (!timeline || !timeline.phases || !timeline.phases.length) {
         const scheduleKey = `project_schedule_${currentProject.idSync || currentProject.id}`;
         const phasesSched = JSON.parse(localStorage.getItem(scheduleKey) || '[]');
         if (phasesSched.length) {
           const startDates = phasesSched.map(p => new Date(p.start)).filter(d => !isNaN(d));
           const endDates = phasesSched.map(p => new Date(p.end)).filter(d => !isNaN(d));
           const minStart = startDates.length ? new Date(Math.min(...startDates)) : new Date();
-          const maxEnd = endDates.length ? new Date(Math.max(...endDates)) : new Date(minStart.getTime() + 7 * 86400000);
+          const maxEnd = endDates.length ? new Date(Math.max(...endDates)) : new Date(minStart.getTime() + 7 * DAY_IN_MS);
           timeline = {
-            startDate: minStart.toISOString().slice(0, 10),
-            endDate: maxEnd.toISOString().slice(0, 10),
+            startDate: toInputDate(minStart),
+            endDate: toInputDate(maxEnd),
             phases: phasesSched.map((p, idx) => ({
               id: idx + 1,
               name: p.title || 'Etapa',
               start: p.start,
-              end: p.end,
+              end: p.end || p.start,
               status: p.status || 'pending',
               progress: p.status === 'completed' ? 100 : p.status === 'in-progress' ? 60 : 0
             })),
-            milestones: []
+            milestones: [],
+            tasks: phasesSched.map((p, idx) => ({
+              label: p.title || `Etapa ${idx + 1}`,
+              startOffset: Math.max(0, diffInDays(minStart, p.start)),
+              duration: Math.max(1, diffInDays(p.start, p.end || p.start) + 1),
+              status: p.status || 'pending'
+            }))
           };
         } else {
           timeline = {
@@ -6361,33 +7367,67 @@
               { id: 2, name: 'Inspección OK', date: '2024-11-11' },
               { id: 3, name: 'Sistema Instalado', date: '2024-11-14' },
               { id: 4, name: 'Entrega', date: '2024-11-19' }
+            ],
+            tasks: [
+              { label: 'Inspección Inicial', startOffset: 0, duration: 2, status: 'completed' },
+              { label: 'Instalación Sistema', startOffset: 2, duration: 3, status: 'completed' },
+              { label: 'Pruebas y Ajustes', startOffset: 5, duration: 3, status: 'in-progress' },
+              { label: 'Verificación Final', startOffset: 8, duration: 2, status: 'pending' }
             ]
           };
         }
+        shouldPersist = true;
+      }
+
+      if (shouldPersist && timeline) {
         localStorage.setItem(timelineKey, JSON.stringify(timeline));
       }
 
-      // Calcular duración total del proyecto en días
-      const startDate = new Date(timeline.startDate);
-      const endDate = new Date(timeline.endDate);
-      const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+      const timelineStartDate = new Date(timeline.startDate);
+      const timelineEndDate = new Date(timeline.endDate);
+      const timelineTotalDays = Math.max(1, Math.ceil((timelineEndDate - timelineStartDate) / DAY_IN_MS) + 1);
 
-      // Función para calcular posición y ancho de barra
+      const spanConfig = {
+        phase: timelineTotalDays,
+        month: Math.min(30, timelineTotalDays),
+        week: Math.min(7, timelineTotalDays),
+        day: Math.min(3, timelineTotalDays)
+      };
+
+      let viewSpanDays = spanConfig[timelineView] || timelineTotalDays;
+      let viewStartDate = new Date(timelineStartDate);
+      let viewEndDate = new Date(viewStartDate);
+      viewEndDate.setDate(viewStartDate.getDate() + viewSpanDays - 1);
+
+      const visiblePhases = timeline.phases.filter((phase) => {
+        const start = new Date(phase.start);
+        const end = new Date(phase.end);
+        return end >= viewStartDate && start <= viewEndDate;
+      });
+
+      if (!visiblePhases.length) {
+        container.innerHTML = `
+          <div style="padding:32px; text-align:center; border:1px dashed var(--border-color); border-radius:12px;">
+            <p style="margin-bottom:12px; font-weight:600; color:var(--text-primary);">No hay fases dentro de esta vista.</p>
+            <p style="color:var(--text-secondary); font-size:14px;">Ajusta el rango del timeline o agrega nuevas fases para este periodo.</p>
+          </div>
+        `;
+        return;
+      }
+
       function calculateBarPosition(phaseStart, phaseEnd) {
         const phaseStartDate = new Date(phaseStart);
         const phaseEndDate = new Date(phaseEnd);
-        
-        const daysFromStart = Math.ceil((phaseStartDate - startDate) / (1000 * 60 * 60 * 24));
-        const phaseDuration = Math.ceil((phaseEndDate - phaseStartDate) / (1000 * 60 * 60 * 24)) + 1;
-        
-        const left = (daysFromStart / totalDays) * 100;
-        const width = (phaseDuration / totalDays) * 100;
-        
+        const clampedStart = phaseStartDate < viewStartDate ? new Date(viewStartDate) : phaseStartDate;
+        const clampedEnd = phaseEndDate > viewEndDate ? new Date(viewEndDate) : phaseEndDate;
+        const daysFromStart = Math.max(0, Math.round((clampedStart - viewStartDate) / DAY_IN_MS));
+        const phaseDuration = Math.max(1, Math.round((clampedEnd - clampedStart) / DAY_IN_MS) + 1);
+        const left = (daysFromStart / viewSpanDays) * 100;
+        const width = Math.min(100, (phaseDuration / viewSpanDays) * 100);
         return { left: `${left}%`, width: `${width}%` };
       }
 
-      // Renderizar grid del timeline
-      const tasksHTML = timeline.phases.map(phase => {
+      const tasksHTML = visiblePhases.map(phase => {
         const formatDate = (dateStr) => {
           const date = new Date(dateStr);
           return date.toLocaleDateString('es-MX', { month: 'short', day: 'numeric' });
@@ -6401,9 +7441,9 @@
         `;
       }).join('');
 
-      const barsHTML = timeline.phases.map(phase => {
+      const barsHTML = visiblePhases.map(phase => {
         const position = calculateBarPosition(phase.start, phase.end);
-        const statusClass = phase.status; // 'completed', 'in-progress', 'pending', 'cancelled'
+        const statusClass = phase.status;
         
         return `
           <div class="timeline-bar-container">
@@ -6414,27 +7454,33 @@
         `;
       }).join('');
 
-      // Generar labels de fecha para el eje X según vista
       const dateLabels = [];
-      if (timelineView === 'month') {
-        ['Sem 1','Sem 2','Sem 3','Sem 4'].forEach(l => dateLabels.push(l));
-      } else if (timelineView === 'week') {
-        for (let i = 0; i < Math.min(totalDays, 7); i++) {
-          const labelDate = new Date(startDate);
-          labelDate.setDate(startDate.getDate() + i);
-          dateLabels.push(labelDate.toLocaleDateString('es-MX', { weekday: 'short' }));
-        }
-      } else if (timelineView === 'day') {
-        for (let i = 0; i < Math.min(totalDays, 3); i++) {
-          const labelDate = new Date(startDate);
-          labelDate.setDate(startDate.getDate() + i);
+      const labelFormatter = new Intl.DateTimeFormat('es-MX', { month: 'short', day: 'numeric' });
+      if (timelineView === 'day') {
+        for (let i = 0; i < viewSpanDays; i++) {
+          const labelDate = new Date(viewStartDate);
+          labelDate.setDate(viewStartDate.getDate() + i);
           dateLabels.push(labelDate.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric' }));
         }
-      } else { // fases (por defecto)
-        for (let i = 0; i < totalDays; i += Math.ceil(totalDays / 7)) {
-          const labelDate = new Date(startDate);
-          labelDate.setDate(startDate.getDate() + i);
-          dateLabels.push(labelDate.toLocaleDateString('es-MX', { month: 'short', day: 'numeric' }));
+      } else if (timelineView === 'week') {
+        for (let i = 0; i < viewSpanDays; i++) {
+          const labelDate = new Date(viewStartDate);
+          labelDate.setDate(viewStartDate.getDate() + i);
+          dateLabels.push(labelDate.toLocaleDateString('es-MX', { weekday: 'short' }));
+        }
+      } else if (timelineView === 'month') {
+        const bucketSize = Math.max(1, Math.round(viewSpanDays / 4));
+        for (let i = 0; i < viewSpanDays; i += bucketSize) {
+          const labelDate = new Date(viewStartDate);
+          labelDate.setDate(viewStartDate.getDate() + i);
+          dateLabels.push(labelFormatter.format(labelDate));
+        }
+      } else {
+        const bucketSize = Math.max(1, Math.round(viewSpanDays / 6));
+        for (let i = 0; i < viewSpanDays; i += bucketSize) {
+          const labelDate = new Date(viewStartDate);
+          labelDate.setDate(viewStartDate.getDate() + i);
+          dateLabels.push(labelFormatter.format(labelDate));
         }
       }
 
@@ -6465,18 +7511,7 @@
     function renderScheduleBlocks() {
       const container = document.getElementById('schedule-blocks');
       if (!container) return;
-      const scheduleKey = `project_schedule_${currentProject.idSync || currentProject.id}`;
-      let phases = JSON.parse(localStorage.getItem(scheduleKey) || '[]');
-      if (!phases.length) {
-        phases = [
-          { title: 'Día 1-2: Inspección e Instalación Inicial', start: '2024-11-10', end: '2024-11-11', status: 'completed', notes: 'Inspección del sitio y mediciones' },
-          { title: 'Día 3-5: Instalación de Sistema', start: '2024-11-12', end: '2024-11-14', status: 'completed', notes: 'Montaje de unidades, conexiones eléctricas' },
-          { title: 'Día 6-8: Pruebas y Ajustes', start: '2024-11-15', end: '2024-11-17', status: 'in-progress', notes: 'Pruebas de presión y calibración' },
-          { title: 'Día 9-10: Verificación Final', start: '2024-11-18', end: '2024-11-19', status: 'pending', notes: 'Inspección final y entrega' }
-        ];
-        localStorage.setItem(scheduleKey, JSON.stringify(phases));
-        syncScheduleToTimeline(phases);
-      }
+      const phases = ensureProjectSchedule(currentProject);
       const statusColor = {
         'completed': { bg: '#f0fdf4', border: '#10b981', label: 'COMPLETADO', text: '#065f46' },
         'in-progress': { bg: '#fef3c7', border: '#f59e0b', label: 'EN PROGRESO', text: '#92400e' },
@@ -6500,21 +7535,137 @@
       }).join('');
     }
 
-    // Editar timeline (modal con filas simples)
-    function editTimeline() {
+    function syncScheduleToTimeline(phases) {
+      if (!currentProject || !Array.isArray(phases) || !phases.length) return;
       const timelineKey = `project_timeline_${currentProject.idSync || currentProject.id}`;
-      const existing = JSON.parse(localStorage.getItem(timelineKey) || 'null');
-      const startVal = existing?.startDate || currentProject.startDate || '';
-      const endVal = existing?.endDate || currentProject.endDate || '';
-      const tasks = existing?.tasks || [
-        { label: 'Inspección', startOffset: 0, duration: 2, status: 'completed' },
-        { label: 'Instalación', startOffset: 2, duration: 3, status: 'completed' },
-        { label: 'Pruebas', startOffset: 5, duration: 3, status: 'in-progress' }
-      ];
+      const existing = loadTimelineSnapshot(currentProject) || {};
+      const startCandidate = phases.find(p => p.start)?.start || existing.startDate || currentProject.startDate || toInputDate(new Date());
+      const endCandidate = [...phases].reverse().find(p => p.end)?.end || existing.endDate || currentProject.endDate || startCandidate;
+      const normalizedPhases = phases.map((phase, idx) => {
+        const start = phase.start || startCandidate;
+        const end = phase.end && phase.end >= start ? phase.end : start;
+        return {
+          id: idx + 1,
+          name: phase.title || `Fase ${idx + 1}`,
+          start,
+          end,
+          status: phase.status || 'pending',
+          progress: phase.status === 'completed' ? 100 : phase.status === 'in-progress' ? 60 : 0
+        };
+      });
+      const anchorStart = normalizedPhases[0]?.start || startCandidate;
+      const anchorEnd = normalizedPhases[normalizedPhases.length - 1]?.end || endCandidate;
+      const tasks = normalizedPhases.map((phase) => ({
+        label: phase.name,
+        startOffset: Math.max(0, diffInDays(anchorStart, phase.start)),
+        duration: Math.max(1, diffInDays(phase.start, phase.end) + 1),
+        status: phase.status || 'pending'
+      }));
+      const payload = {
+        ...existing,
+        startDate: anchorStart,
+        endDate: anchorEnd,
+        phases: normalizedPhases,
+        notes: existing.notes || '',
+        tasks
+      };
+      localStorage.setItem(timelineKey, JSON.stringify(payload));
+      renderProjectTimeline();
+    }
+
+    function syncTimelineToSchedule(phases) {
+      if (!currentProject || !Array.isArray(phases) || !phases.length) return;
+      const scheduleKey = `project_schedule_${currentProject.idSync || currentProject.id}`;
+      const normalized = phases.map((phase, idx) => ({
+        title: phase.name || phase.title || `Fase ${idx + 1}`,
+        start: phase.start,
+        end: phase.end || phase.start,
+        status: phase.status || 'pending',
+        notes: phase.notes || ''
+      }));
+      localStorage.setItem(scheduleKey, JSON.stringify(normalized));
+      cachedSchedulePhases = normalized;
+      renderScheduleBlocks();
+    }
+
+    function timelineRowTemplate(data, idx) {
+      const status = data.status || 'pending';
+      const statusOptions = ['pending', 'in-progress', 'completed'];
+      return `
+        <div class="timeline-row" data-idx="${idx}" style="display:grid; grid-template-columns:1.6fr repeat(2,0.8fr) repeat(2,1fr) auto; gap:6px; align-items:center;">
+          <input class="form-input" data-field="label" value="${data.label || ''}" placeholder="Nombre de la fase">
+          <input class="form-input" data-field="startOffset" type="number" min="0" value="${Number.isFinite(data.startOffset) ? data.startOffset : 0}">
+          <input class="form-input" data-field="duration" type="number" min="1" value="${data.duration || 1}">
+          <input class="form-input" data-field="startDate" type="date" value="${data.startDate || ''}">
+          <input class="form-input" data-field="endDate" type="date" value="${data.endDate || ''}">
+          <div style="display:flex; gap:6px; align-items:center;">
+            <select class="form-select" data-field="status">
+              ${statusOptions.map(opt => `<option value="${opt}" ${opt === status ? 'selected' : ''}>${opt === 'pending' ? 'Pendiente' : opt === 'in-progress' ? 'En Proceso' : 'Completado'}</option>`).join('')}
+            </select>
+            <button type="button" onclick="removeTimelineRow(${idx})" title="Eliminar fase" style="background:none;border:none;color:#94a3b8;font-size:18px;line-height:1;padding:4px 8px;cursor:pointer;">&times;</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function quickAddTimelinePhase() {
+      const existingModal = document.getElementById('timelineEditorModal');
+      if (existingModal) {
+        addTimelineRow();
+        const rows = existingModal.querySelectorAll('.timeline-row');
+        const lastRow = rows[rows.length - 1];
+        if (lastRow) {
+          lastRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          const input = lastRow.querySelector('[data-field="label"]');
+          if (input) input.focus();
+        }
+        return;
+      }
+      editTimeline({ prefillBlankPhase: true });
+    }
+
+    function editTimeline(options = {}) {
+      const opts = options || {};
+      const timeline = loadTimelineSnapshot(currentProject) || {};
+      const startVal = timeline.startDate || currentProject.startDate || toInputDate(new Date());
+      const endVal = timeline.endDate || currentProject.endDate || startVal;
+      let basePhases = (timeline.phases && timeline.phases.length) ? timeline.phases : [];
+      if (!basePhases.length && Array.isArray(timeline.tasks) && timeline.tasks.length) {
+        basePhases = timeline.tasks.map((task, idx) => {
+          const startDate = toInputDate(addDays(startVal, task.startOffset || 0)) || startVal;
+          const endDate = toInputDate(addDays(startDate, Math.max(1, (task.duration || 1)) - 1)) || startDate;
+          return {
+            id: idx + 1,
+            name: task.label || `Fase ${idx + 1}`,
+            start: startDate,
+            end: endDate,
+            status: task.status
+          };
+        });
+      }
+      if (!basePhases.length) {
+        basePhases = [
+          { name: 'Inspección', start: startVal, end: toInputDate(addDays(startVal, 1)), status: 'completed' },
+          { name: 'Instalación', start: toInputDate(addDays(startVal, 2)), end: toInputDate(addDays(startVal, 4)), status: 'in-progress' }
+        ];
+      }
+      const normalizedRows = basePhases.map((phase, idx) => {
+        const start = phase.start || startVal;
+        const end = phase.end || start;
+        return {
+          label: phase.name || `Fase ${idx + 1}`,
+          startOffset: Math.max(0, diffInDays(startVal, start)),
+          duration: Math.max(1, diffInDays(start, end) + 1),
+          startDate: start,
+          endDate: end,
+          status: phase.status || 'pending'
+        };
+      });
       const modal = document.createElement('div');
-      modal.className = 'modal-overlay';
+      modal.className = 'modal-overlay timeline-editor';
+      modal.id = 'timelineEditorModal';
       modal.innerHTML = `
-        <div class="modal" style="max-width: 720px;">
+        <div class="modal" style="max-width: 860px;">
           <div class="modal-header">
             <div class="modal-title" style="gap:10px;">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
@@ -6522,7 +7673,7 @@
             </div>
             <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
           </div>
-          <div class="modal-body" style="display:grid; gap:12px;">
+          <div class="modal-body" style="display:grid; gap:16px;">
             <div class="form-group">
               <label class="form-label">Rango de fechas</label>
               <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
@@ -6532,25 +7683,15 @@
             </div>
             <div class="form-group">
               <label class="form-label">Fases principales</label>
-              <div id="tl-rows" style="display:grid; gap:8px;">
-                ${tasks.map((t, idx) => `
-                  <div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:6px; align-items:center;">
-                    <input class="form-input" data-idx="${idx}" data-field="label" value="${t.label}">
-                    <input class="form-input" data-idx="${idx}" data-field="startOffset" type="number" min="0" value="${t.startOffset}">
-                    <input class="form-input" data-idx="${idx}" data-field="duration" type="number" min="1" value="${t.duration}">
-                    <select class="form-select" data-idx="${idx}" data-field="status">
-                      <option value="pending" ${t.status === 'pending' ? 'selected' : ''}>Pendiente</option>
-                      <option value="in-progress" ${t.status === 'in-progress' ? 'selected' : ''}>En Proceso</option>
-                      <option value="completed" ${t.status === 'completed' ? 'selected' : ''}>Completado</option>
-                    </select>
-                  </div>
-                `).join('')}
+              <div style="font-size:12px; color:#94a3b8; margin-bottom:6px;">Puedes usar offsets o definir fechas exactas. Las fechas tienen prioridad.</div>
+              <div id="tl-rows" style="display:grid; gap:8px;" data-next-idx="${normalizedRows.length}">
+                ${normalizedRows.map((phase, idx) => timelineRowTemplate(phase, idx)).join('')}
               </div>
               <button class="btn btn-white" style="margin-top:8px;" onclick="addTimelineRow()">+ Agregar fase</button>
             </div>
             <div class="form-group">
               <label class="form-label">Notas</label>
-              <input class="form-input" id="tl-notes" placeholder="Dependencias o comentarios" value="${existing?.notes || ''}">
+              <input class="form-input" id="tl-notes" placeholder="Dependencias o comentarios" value="${timeline.notes || ''}">
             </div>
           </div>
           <div class="modal-footer">
@@ -6566,68 +7707,85 @@
     function addTimelineRow() {
       const rows = document.getElementById('tl-rows');
       if (!rows) return;
-      const idx = rows.children.length;
-      rows.insertAdjacentHTML('beforeend', `
-        <div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:6px; align-items:center;">
-          <input class="form-input" data-idx="${idx}" data-field="label" placeholder="Fase">
-          <input class="form-input" data-idx="${idx}" data-field="startOffset" type="number" min="0" value="0">
-          <input class="form-input" data-idx="${idx}" data-field="duration" type="number" min="1" value="1">
-          <select class="form-select" data-idx="${idx}" data-field="status">
-            <option value="pending">Pendiente</option>
-            <option value="in-progress">En Proceso</option>
-            <option value="completed">Completado</option>
-          </select>
-        </div>
-      `);
+      const idx = Number(rows.dataset.nextIdx || rows.children.length);
+      rows.dataset.nextIdx = idx + 1;
+      rows.insertAdjacentHTML('beforeend', timelineRowTemplate({
+        label: '',
+        startOffset: 0,
+        duration: 1,
+        startDate: '',
+        endDate: '',
+        status: 'pending'
+      }, idx));
+    }
+
+    function removeTimelineRow(idx) {
+      const row = document.querySelector(`.timeline-row[data-idx="${idx}"]`);
+      if (row) row.remove();
     }
 
     function saveTimelineModal(btn, applyTimeline = false) {
       const modal = btn.closest('.modal-overlay');
-      const start = modal.querySelector('#tl-start')?.value || currentProject.startDate;
-      const end = modal.querySelector('#tl-end')?.value || currentProject.endDate;
-      const rows = modal.querySelectorAll('#tl-rows [data-idx]');
-      const tasksMap = {};
-      rows.forEach(input => {
-        const idx = input.dataset.idx;
-        tasksMap[idx] = tasksMap[idx] || { label: 'Fase', startOffset: 0, duration: 1, status: 'pending' };
-        tasksMap[idx][input.dataset.field] = input.type === 'number' ? Number(input.value || 0) : (input.value || 'pending');
-      });
-      const tasks = Object.values(tasksMap).filter(t => t.label || t.duration);
-      // Calcular fechas absolutas desde start + offset
-      const baseDate = new Date(start || new Date());
-      const phases = (tasks.length ? tasks : [
-        { label: 'Inspección', startOffset: 0, duration: 2, status: 'completed' },
-        { label: 'Instalación', startOffset: 2, duration: 3, status: 'in-progress' }
-      ]).map((t, idx) => {
-        const s = new Date(baseDate);
-        s.setDate(s.getDate() + (t.startOffset || 0));
-        const e = new Date(s);
-        e.setDate(e.getDate() + Math.max(0, (t.duration || 1) - 1));
-        return {
-          id: idx + 1,
-          name: t.label || 'Etapa',
-          start: s.toISOString().slice(0, 10),
-          end: e.toISOString().slice(0, 10),
-          status: t.status || 'pending',
-          progress: t.status === 'completed' ? 100 : t.status === 'in-progress' ? 60 : 0
-        };
-      });
-      const data = {
-        startDate: phases[0]?.start || start,
-        endDate: phases[phases.length - 1]?.end || end,
-        phases,
-        notes: modal.querySelector('#tl-notes')?.value || '',
-        milestones: []
-      };
+      if (!modal) return;
       const timelineKey = `project_timeline_${currentProject.idSync || currentProject.id}`;
-      localStorage.setItem(timelineKey, JSON.stringify(data));
-      modal.remove();
-      renderProjectTimeline();
-      if (applyTimeline) {
-        uiToast('success', 'Fases aplicadas al Timeline');
-      } else {
-        uiToast('success', 'Timeline guardado');
+      const existing = loadTimelineSnapshot(currentProject) || {};
+      const startInput = modal.querySelector('#tl-start');
+      const endInput = modal.querySelector('#tl-end');
+      const baseStart = startInput?.value || currentProject.startDate || toInputDate(new Date());
+      const rows = modal.querySelectorAll('.timeline-row');
+      if (!rows.length) {
+        uiToast('error', 'Agrega al menos una fase para guardar el timeline');
+        return;
       }
+      const phases = [];
+      const tasks = [];
+      for (const row of rows) {
+        const label = row.querySelector('[data-field="label"]')?.value.trim();
+        if (!label) {
+          uiToast('error', 'Todas las fases necesitan un nombre');
+          return;
+        }
+        const offset = Math.max(0, Number(row.querySelector('[data-field="startOffset"]')?.value || 0));
+        const duration = Math.max(1, Number(row.querySelector('[data-field="duration"]')?.value || 1));
+        const manualStart = row.querySelector('[data-field="startDate"]')?.value;
+        const manualEnd = row.querySelector('[data-field="endDate"]')?.value;
+        const startDate = manualStart || toInputDate(addDays(baseStart, offset)) || baseStart;
+        const endDate = manualEnd || toInputDate(addDays(startDate, duration - 1)) || startDate;
+        if (new Date(endDate) < new Date(startDate)) {
+          uiToast('error', `La fase "${label}" tiene una fecha final anterior a la inicial`);
+          return;
+        }
+        const status = row.querySelector('[data-field="status"]')?.value || 'pending';
+        phases.push({
+          id: phases.length + 1,
+          name: label,
+          start: startDate,
+          end: endDate,
+          status,
+          progress: status === 'completed' ? 100 : status === 'in-progress' ? 60 : 0
+        });
+        tasks.push({
+          label,
+          startOffset: Math.max(0, diffInDays(baseStart, startDate)),
+          duration: Math.max(1, diffInDays(startDate, endDate) + 1),
+          status
+        });
+      }
+      const timelineData = {
+        startDate: startInput?.value || phases[0].start,
+        endDate: endInput?.value || phases[phases.length - 1].end,
+        phases,
+        tasks,
+        notes: modal.querySelector('#tl-notes')?.value || '',
+        milestones: existing.milestones || []
+      };
+      localStorage.setItem(timelineKey, JSON.stringify(timelineData));
+      modal.remove();
+      if (applyTimeline) {
+        syncTimelineToSchedule(phases);
+      }
+      renderProjectTimeline();
+      uiToast('success', applyTimeline ? 'Fases aplicadas y sincronizadas' : 'Timeline guardado');
     }
 
   </script>

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cómo funciona IDSync - Opsis Suite</title>
+  <script src="js/back-link.js?v=verdi2"></script>
   <style>
     :root {
       --verdi-dark: #022326;
@@ -259,12 +260,12 @@
 <body>
   <div class="app-shell">
     <header>
-      <a href="motorsync.html" id="backButton" class="back-button">
+      <a href="motorsync.html" class="back-button" data-return-target="motorsync">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="19" y1="12" x2="5" y2="12"></line>
           <polyline points="12 19 5 12 12 5"></polyline>
         </svg>
-        <span id="backButtonText">Volver a MotorSync</span>
+        <span>Volver a MotorSync</span>
       </a>
       <div class="header-title">🔗 HowSync — Conexión Inteligente de Módulos</div>
     </header>
@@ -576,54 +577,5 @@
     });
   </script>
 
-  <script>
-    // Smart back button - detecta desde dónde vino el usuario
-    document.addEventListener('DOMContentLoaded', () => {
-      const backButton = document.getElementById('backButton');
-      const backButtonText = document.getElementById('backButtonText');
-      const referrer = document.referrer || '';
-      const storedRef = sessionStorage.getItem('lastHowSyncReferrer');
-
-      console.log('Referrer detected:', referrer);
-      console.log('Stored HowSync referrer:', storedRef);
-
-      // Detectar desde dónde vino el usuario (formularios mantienen prioridad)
-      if (referrer.includes('project-form.html') || referrer.includes('thread-form.html')) {
-        backButton.href = referrer;
-        backButtonText.textContent = 'Volver al Formulario';
-        sessionStorage.removeItem('lastHowSyncReferrer');
-        return;
-      }
-
-      // Si viene de motorsync.html, SIEMPRE regresar al dashboard principal
-      if (referrer.includes('motorsync.html') || (storedRef && storedRef.includes('motorsync.html'))) {
-        backButton.href = 'motorsync.html';
-        backButtonText.textContent = 'Volver a MotorSync';
-        sessionStorage.removeItem('lastHowSyncReferrer');
-        return;
-      }
-
-      // Si viene de projectsync, regresar ahí
-      if (referrer.includes('projectsync.html') || (storedRef && storedRef.includes('projectsync.html'))) {
-        backButton.href = 'projectsync.html';
-        backButtonText.textContent = 'Volver a ProjectSync';
-        sessionStorage.removeItem('lastHowSyncReferrer');
-        return;
-      }
-
-      // Si viene de threadsync-list.html, regresar ahí
-      if (referrer.includes('threadsync-list.html') || (storedRef && storedRef.includes('threadsync-list.html'))) {
-        backButton.href = 'threadsync-list.html';
-        backButtonText.textContent = 'Volver a ThreadSync';
-        sessionStorage.removeItem('lastHowSyncReferrer');
-        return;
-      }
-
-      // Fallback: dashboard principal de MotorSync
-      backButton.href = 'motorsync.html';
-      backButtonText.textContent = 'Volver a MotorSync';
-      sessionStorage.removeItem('lastHowSyncReferrer');
-    });
-  </script>
 </body>
 </html>

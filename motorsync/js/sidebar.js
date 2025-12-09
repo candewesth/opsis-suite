@@ -21,7 +21,7 @@
     {
       id: 'threadsync',
       label: 'ThreadSync',
-      href: 'threadsync-list.html',
+      href: 'threadview.html',
       icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>',
     },
     {
@@ -62,6 +62,89 @@
     },
   ];
 
+  const SIDEBAR_STYLES = `
+    #sidebar.ops-sidebar {
+      width: 260px;
+      background: #ffffff;
+      border-right: 1px solid #e2e8f0;
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 12px 0 16px;
+      position: sticky;
+      top: 0;
+    }
+    #sidebar.ops-sidebar nav {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 0 12px;
+      flex: 1;
+    }
+    #sidebar.ops-sidebar .sidebar-item {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #475569;
+      font-weight: 600;
+      font-size: 14px;
+      border-radius: 12px;
+      transition: all 0.2s ease;
+      border-radius: 10px;
+    }
+    #sidebar.ops-sidebar .sidebar-item svg {
+      color: #64748b;
+    }
+    #sidebar.ops-sidebar .sidebar-item:hover {
+      background: rgba(2, 115, 94, 0.08);
+      color: #02735E;
+    }
+    #sidebar.ops-sidebar .sidebar-item.active {
+      background: transparent;
+      color: #02735E;
+      font-weight: 700;
+      box-shadow: none;
+    }
+    #sidebar.ops-sidebar .sidebar-footer {
+      padding: 16px 24px 0;
+      border-top: 1px solid #e2e8f0;
+      margin-top: 16px;
+    }
+    #sidebar.ops-sidebar .sidebar-footer button {
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 16px;
+      font-weight: 600;
+      font-size: 13px;
+      background: #eef2ff;
+      color: #312e81;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    @media (max-width: 1024px) {
+      #sidebar.ops-sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        z-index: 40;
+      }
+    }
+  `;
+
+  function ensureStyles() {
+    if (document.getElementById('ops-sidebar-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'ops-sidebar-styles';
+    style.textContent = SIDEBAR_STYLES;
+    document.head.appendChild(style);
+  }
+
   function detectActive() {
     const manual = document.body.dataset.sidebarActive || '';
     if (manual) return manual.toLowerCase();
@@ -72,16 +155,58 @@
     return (match && match.id) || 'dashboard';
   }
 
+  function normalizeReturnDestination(value) {
+    if (!value) return 'motorsync.html';
+    const trimmed = value.trim();
+    if (/^https?:\/\//i.test(trimmed) || trimmed.startsWith('file://')) {
+      return trimmed;
+    }
+    const basePath = trimmed.split(/[?#]/)[0];
+    if (/\.html?$/i.test(basePath)) return trimmed;
+    return `${trimmed}.html`;
+  }
+
+  function setupReturnBreadcrumbs() {
+    const params = new URLSearchParams(window.location.search);
+    const queryTarget = params.get('returnTo');
+    document.querySelectorAll('.back-button[data-return-target]').forEach((button) => {
+      if (button.dataset.returnBound === 'true') return;
+      const fallback = button.dataset.returnTarget || 'motorsync';
+      const destination = normalizeReturnDestination(queryTarget || fallback);
+      button.dataset.returnBound = 'true';
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        window.location.href = destination;
+      });
+      button.setAttribute('data-return-href', destination);
+    });
+  }
+
   function renderSidebar() {
     const sidebar = document.getElementById('sidebar');
     if (!sidebar) return;
+    ensureStyles();
     const activeId = detectActive();
-    sidebar.innerHTML = MENU.map((item) => {
-      const isActive = item.id === activeId;
-      return `<a href="${item.href}" class="sidebar-item${isActive ? ' active' : ''}">${item.icon}<span>${item.label}</span></a>`;
-    }).join('');
+    sidebar.classList.add('ops-sidebar');
+    sidebar.innerHTML = `
+      <nav aria-label="Navegación principal">
+        ${MENU.map((item) => {
+          const isActive = item.id === activeId;
+          return `<a href="${item.href}" data-page="${item.id}" class="sidebar-item${isActive ? ' active' : ''}">${item.icon}<span>${item.label}</span></a>`;
+        }).join('')}
+      </nav>
+      <div class="sidebar-footer">
+        <button type="button" onclick="window.open('../INTEGRATION_FLOW.md', '_blank')" aria-label="Ver documentación del sistema">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><circle cx="12" cy="16" r="1"></circle></svg>
+          Guía rápida
+        </button>
+      </div>
+    `;
   }
 
-  document.addEventListener('DOMContentLoaded', renderSidebar);
+  document.addEventListener('DOMContentLoaded', () => {
+    renderSidebar();
+    setupReturnBreadcrumbs();
+  });
   window.refreshSidebar = renderSidebar;
 })();

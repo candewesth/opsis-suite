@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ThreadSync - Lista de Threads | Opsis Suite</title>
+  <title>ThreadSync - ThreadView | Opsis Suite</title>
   <link rel="stylesheet" href="styles.css?v=verdi2">
   <link rel="stylesheet" href="css/verdi-overrides.css?v=verdi2">
   <link rel="preconnect" href="https://fonts.googleapis.com/">
@@ -88,9 +88,15 @@
 
     .app-content {
       display: grid;
-      grid-template-columns: 70px 1fr;
+      grid-template-columns: 260px 1fr;
       flex: 1;
       transition: grid-template-columns 0.3s ease;
+    }
+
+    @media (max-width: 1024px) {
+      .app-content {
+        grid-template-columns: 1fr;
+      }
     }
 
     header {
@@ -152,18 +158,26 @@
 
 
     main {
-      padding: 16px 24px;
+      padding: 32px;
+      background: var(--bg-body);
+      width: 100%;
+    }
+
+    @media (max-width: 640px) {
+      main {
+        padding: 20px;
+      }
     }
 
     .page {
       display: flex;
       flex-direction: column;
-      gap: 20px;
-      background: var(--surface-page-a);
-      border-radius: 20px;
-      padding: 20px;
-      border: 1px solid rgba(28, 37, 54, 0.08);
-      box-shadow: 0 30px 50px rgba(15, 23, 42, 0.08);
+      gap: 24px;
+      background: transparent;
+      border-radius: 0;
+      padding: 0;
+      border: none;
+      box-shadow: none;
     }
 
     .btn {
@@ -394,8 +408,8 @@
     }
 
     .threads-list {
-      max-width: 1200px;
-      margin: 0 auto;
+      width: 100%;
+      margin: 0;
     }
 
     .thread-project-group {
@@ -404,7 +418,7 @@
 
     .threads-container {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 24px;
       align-items: stretch;
       grid-auto-rows: 1fr;
@@ -563,6 +577,22 @@
       display: inline-flex;
       align-items: center;
     }
+
+    .thread-project-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      background: rgba(2, 115, 94, 0.08);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #02735E;
+    }
+
+    .thread-project-icon svg {
+      width: 18px;
+      height: 18px;
+    }
   </style>
 </head>
 <body data-sidebar-active="threadsync">
@@ -711,7 +741,14 @@
                 <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
                   <div style="flex: 1;">
                     <h4 style="font-size: 16px; font-weight: 700; color: #0f172a; line-height: 1.3; margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
-                      <span style="font-size: 20px;">🏗️</span>
+                      <span class="thread-project-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                          <path d="M3 9h18"></path>
+                          <path d="M7 9v12"></path>
+                          <path d="M12 9v12"></path>
+                        </svg>
+                      </span>
                       Instalación HVAC - Edificio Corporativo Guadalajara
                     </h4>
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
@@ -1162,7 +1199,10 @@
     // Thread navigation
     function openThread(threadId) {
       // Redirigir a la vista de conversación del thread (threadsync.html)
-      window.location.href = `threadsync.html?id=${threadId}`;
+      const params = new URLSearchParams();
+      params.set('id', threadId);
+      params.set('returnTo', 'threadview.html');
+      window.location.href = `threadsync.html?${params.toString()}`;
     }
 
     // Create new thread
@@ -1216,14 +1256,14 @@
         console.error('Error al cargar threads:', e);
       }
 
-      console.log('🔍 Proyectos ya conectados:', Array.from(threadsWithProjects));
+      console.log('Proyectos ya conectados:', Array.from(threadsWithProjects));
 
       // Filtrar proyectos disponibles
       const availableProjects = allProjects.filter(project => {
         return !threadsWithProjects.has(project.id);
       });
 
-      console.log('✅ Proyectos disponibles para nuevo thread:', availableProjects.length);
+      console.log('Proyectos disponibles para nuevo thread:', availableProjects.length);
 
       // Actualizar el select
       const projectSelect = document.getElementById('threadProject');
@@ -1313,11 +1353,11 @@
         subject: subject
       };
       
-      // 💾 GUARDAR EN LOCALSTORAGE
+      // Guardar en localStorage
       saveThreadsToStorage(threadsData);
       
-      console.log('✅ Nuevo thread creado:', newThreadId, threadsData[newThreadId]);
-      console.log('💾 Thread guardado en localStorage');
+      console.log('Nuevo thread creado:', newThreadId, threadsData[newThreadId]);
+      console.log('Thread guardado en localStorage');
       
       // Simular guardado (en producción sería llamada a API)
       setTimeout(() => {
@@ -1358,22 +1398,22 @@
     // Usuario actual (simulado - en producción vendría de sesión)
     const currentUser = 'Ana Martínez';
     
-    // 🔥 SISTEMA DE PERSISTENCIA CON LOCALSTORAGE
+    // Sistema de persistencia con localStorage
     // Cargar threads desde localStorage o usar datos por defecto
     function loadThreadsFromStorage() {
       const stored = localStorage.getItem('threadsync_threads');
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
-          console.log('✅ Threads cargados desde localStorage:', Object.keys(parsed).length, 'threads');
+          console.log('Threads cargados desde localStorage:', Object.keys(parsed).length, 'threads');
           return parsed;
         } catch (e) {
-          console.error('❌ Error al parsear localStorage, usando datos por defecto');
+          console.error('Error al parsear localStorage, usando datos por defecto');
         }
       }
       
       // Si no hay datos en localStorage, usar datos por defecto
-      console.log('📦 Inicializando threads con datos por defecto');
+      console.log('Inicializando threads con datos por defecto');
       const defaultData = getDefaultThreadsData();
       saveThreadsToStorage(defaultData);
       return defaultData;
@@ -1383,9 +1423,9 @@
     function saveThreadsToStorage(data) {
       try {
         localStorage.setItem('threadsync_threads', JSON.stringify(data));
-        console.log('💾 Threads guardados en localStorage:', Object.keys(data).length, 'threads');
+        console.log('Threads guardados en localStorage:', Object.keys(data).length, 'threads');
       } catch (e) {
-        console.error('❌ Error al guardar en localStorage:', e);
+        console.error('Error al guardar en localStorage:', e);
       }
     }
     
@@ -1720,8 +1760,8 @@
     
     // Filtrar threads según criterio
     function filterThreads(filterType) {
-      console.log('🔍 Aplicando filtro:', filterType);
-      console.log('👤 Usuario actual:', currentUser);
+      console.log('Aplicando filtro:', filterType);
+      console.log('Usuario actual:', currentUser);
       
       // Clear search if applying a new filter
       const searchInput = document.getElementById('threadSearchInput');
@@ -1744,7 +1784,7 @@
       
       // Obtener todos los thread cards
       const allThreadCards = document.querySelectorAll('.thread-card');
-      console.log('📋 Total de cards encontrados:', allThreadCards.length);
+      console.log('Total de cards encontrados:', allThreadCards.length);
       
       let matchCount = 0;
       
@@ -1781,25 +1821,25 @@
           case 'my-threads':
             // Threads donde el usuario actual es owner/creador
             shouldShow = !thread.isArchived && (thread.owner === currentUser || thread.createdBy === currentUser);
-            if (shouldShow) console.log('✅ Mi thread:', threadId, '- Owner:', thread.owner);
+            if (shouldShow) console.log('Mi thread:', threadId, '- Owner:', thread.owner);
             break;
             
           case 'mentions':
             // Threads donde el usuario actual está mencionado
             shouldShow = !thread.isArchived && thread.mentions && thread.mentions.includes(currentUser);
-            if (shouldShow) console.log('✅ Mencionado en:', threadId, '- Mentions:', thread.mentions);
+            if (shouldShow) console.log('Mencionado en:', threadId, '- Mentions:', thread.mentions);
             break;
             
           case 'unread':
             // Threads no leídos
             shouldShow = !thread.isArchived && thread.isRead === false;
-            if (shouldShow) console.log('✅ No leído:', threadId, '- isRead:', thread.isRead);
+            if (shouldShow) console.log('No leído:', threadId, '- isRead:', thread.isRead);
             break;
             
           case 'archived':
             // Solo threads archivados
             shouldShow = thread.isArchived === true;
-            if (shouldShow) console.log('✅ Archivado:', threadId);
+            if (shouldShow) console.log('Archivado:', threadId);
             break;
             
           default:
@@ -1811,7 +1851,7 @@
         if (shouldShow) matchCount++;
       });
       
-      console.log('✨ Threads mostrados:', matchCount);
+      console.log('Threads mostrados:', matchCount);
       
       // Mostrar mensaje si no hay resultados
       const visibleCards = Array.from(allThreadCards).filter(card => card.style.display !== 'none');
@@ -1831,19 +1871,19 @@
         let messageText = '';
         switch(filterType) {
           case 'my-threads':
-            messageText = '📭 No tienes threads creados';
+            messageText = 'No tienes threads creados';
             break;
           case 'mentions':
-            messageText = '🔔 No tienes menciones en ningún thread';
+            messageText = 'No tienes menciones en ningún thread';
             break;
           case 'unread':
-            messageText = '✅ ¡Todo leído! No hay threads pendientes';
+            messageText = '¡Todo leído! No hay threads pendientes';
             break;
           case 'archived':
-            messageText = '📦 No hay threads archivados';
+            messageText = 'No hay threads archivados';
             break;
           default:
-            messageText = '📭 No hay threads para mostrar';
+            messageText = 'No hay threads para mostrar';
         }
         
         message.innerHTML = `
@@ -1963,7 +2003,7 @@
         container.appendChild(message);
       }
       
-      console.log(`🔍 Search results: ${matchCount}/${totalThreads} threads match "${query}"`);
+      console.log(`Search results: ${matchCount}/${totalThreads} threads match "${query}"`);
     }
 
     // Archive thread (no borra, solo marca como archivado)
@@ -1984,7 +2024,7 @@
 
         thread.isArchived = false;
         
-        // 💾 GUARDAR EN LOCALSTORAGE
+        // Guardar en localStorage
         saveThreadsToStorage(threadsData);
         
         uiToast('success', 'Thread restaurado correctamente.');
@@ -2007,7 +2047,7 @@
 
         thread.isArchived = true;
         
-        // 💾 GUARDAR EN LOCALSTORAGE
+        // Guardar en localStorage
         saveThreadsToStorage(threadsData);
         
         uiToast('success', 'Thread archivado. Puedes recuperarlo desde "Archivados".');
@@ -2142,11 +2182,11 @@
           const filterType = activeFilter.getAttribute('data-thread-filter');
           filterThreads(filterType);
         }
-        console.log('✅ Threads actualizados');
+        console.log('Threads actualizados');
       }, 600);
     }
 
-    // 🔄 RESET LOCALSTORAGE - Útil para pruebas
+    // Reset localStorage - útil para pruebas
     function resetLocalStorage() {
       threadConfirm('¿Resetear todos los threads de prueba y restaurar los datos por defecto?', { confirmText: 'Resetear threads' })
         .then((confirmed) => {
@@ -2154,7 +2194,7 @@
           localStorage.removeItem('threadsync_threads');
           threadsData = getDefaultThreadsData();
           saveThreadsToStorage(threadsData);
-          console.log('🔄 LocalStorage reseteado, datos por defecto cargados');
+          console.log('LocalStorage reseteado, datos por defecto cargados');
           showThreadToast('info', 'Threads reseteados. Recargando...');
           setTimeout(() => {
             window.location.reload();

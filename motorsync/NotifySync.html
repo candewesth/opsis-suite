@@ -792,6 +792,20 @@
       }
     };
 
+    const NOTIFY_RETURN_PAGE = 'NotifySync.html';
+
+    function buildReturnLink(base, extras = {}) {
+      const params = new URLSearchParams();
+      Object.entries(extras).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && `${value}`.length) {
+          params.set(key, value);
+        }
+      });
+      params.set('returnTo', NOTIFY_RETURN_PAGE);
+      const query = params.toString();
+      return query ? `${base}?${query}` : base;
+    }
+
     // Initialize
     function init() {
       // Use NotifyManager instead of direct localStorage
@@ -847,17 +861,19 @@
       const threadId = meta.threadId || meta.thread_id;
 
       if (notification.module === 'projectsync' || projectId) {
-        return projectId ? `viewsync.html?projectId=${encodeURIComponent(projectId)}` : 'viewsync.html';
+        return buildReturnLink('viewsync.html', projectId ? { id: projectId } : {});
       }
 
       if (notification.module === 'threadsync' || threadId) {
-        return threadId ? `threadsync-list.html?threadId=${encodeURIComponent(threadId)}` : 'threadsync-list.html';
+        return threadId
+          ? buildReturnLink('threadsync.html', { id: threadId })
+          : buildReturnLink('threadview.html');
       }
 
-      if (notification.module === 'plansync') return 'plansync.html';
-      if (notification.module === 'howsync') return 'howsync.html';
-      if (notification.module === 'clientsync') return 'clientsync.html';
-      if (notification.module === 'analytics') return 'analytics.html';
+      if (notification.module === 'plansync') return buildReturnLink('plansync.html');
+      if (notification.module === 'howsync') return buildReturnLink('howsync.html');
+      if (notification.module === 'clientsync') return buildReturnLink('clientsync.html');
+      if (notification.module === 'analytics') return buildReturnLink('analytics.html');
 
       return null;
     }
