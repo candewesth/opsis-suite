@@ -234,3 +234,141 @@
 
   window.addEventListener('focus', highlightSidebar);
 })();
+
+/**
+ * Modal standardizer (Verdi + Aire)
+ * - Aplica estilo único, ARIA y foco inicial
+ * - Fuerza type="button" para evitar envíos accidentales
+ * - Cierra con ESC o clic fuera (si no se deshabilita)
+ */
+(function standardizeModals() {
+  if (typeof document === 'undefined') return;
+
+  const OVERLAY_SELECTORS = ['.invite-overlay', '.modal-overlay', '.ops-modal-overlay', '.modal-backdrop', '[data-modal-overlay]'];
+
+  function isCandidateOverlay(node) {
+    if (!(node instanceof HTMLElement)) return false;
+    if (OVERLAY_SELECTORS.some((selector) => node.matches?.(selector))) return true;
+    const cls = node.className || '';
+    const id = node.id || '';
+    return /modal|overlay/i.test(cls) || /modal|overlay/i.test(id);
+  }
+
+  function ensureButtonTypes(root) {
+    root.querySelectorAll('button:not([type])').forEach((btn) => {
+      btn.setAttribute('type', 'button');
+    });
+  }
+
+  function focusInitial(dialog) {
+    if (!dialog) return;
+    const target = dialog.querySelector('[autofocus], input, select, textarea, button');
+    (target || dialog).focus({ preventScroll: true });
+  }
+
+  function closeOverlay(overlay) {
+    if (!overlay) return;
+    overlay.classList.remove('active', 'open');
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.dataset.open = 'false';
+  }
+
+  function isOpen(overlay) {
+    if (!overlay) return false;
+    const aria = overlay.getAttribute('aria-hidden') === 'false';
+    const data = overlay.dataset.open === 'true';
+    const classes = overlay.classList.contains('active') || overlay.classList.contains('open');
+    const visible = overlay.style.display === 'flex' || overlay.style.display === 'block';
+    return aria || data || classes || visible;
+  }
+
+  function upgradeOverlay(overlay) {
+    if (!overlay || overlay.dataset.opsModalBound === 'true') return;
+    overlay.dataset.opsModalBound = 'true';
+    overlay.classList.add('ops-modal-overlay');
+    if (!overlay.hasAttribute('aria-hidden')) overlay.setAttribute('aria-hidden', 'true');
+
+    const dialog = overlay.querySelector('[role="dialog"]') ||
+      overlay.querySelector('.invite-card') ||
+      overlay.querySelector('.modal-card') ||
+      overlay.querySelector('.modal-content') ||
+      overlay.firstElementChild;
+
+    if (dialog) {
+      dialog.classList.add('ops-modal');
+      if (!dialog.hasAttribute('role')) dialog.setAttribute('role', 'dialog');
+      dialog.setAttribute('aria-modal', 'true');
+      if (!dialog.hasAttribute('tabindex')) dialog.tabIndex = -1;
+      const heading = dialog.querySelector('h1, h2, h3');
+      if (heading && !dialog.getAttribute('aria-labelledby')) {
+        if (!heading.id) heading.id = `modal-title-${Date.now()}`;
+        dialog.setAttribute('aria-labelledby', heading.id);
+      }
+    }
+
+    ensureButtonTypes(overlay);
+
+    const allowBackdrop = overlay.dataset.closeOnBackdrop !== 'false';
+    if (allowBackdrop) {
+      overlay.addEventListener('click', (ev) => {
+        if (ev.target === overlay) {
+          closeOverlay(overlay);
+        }
+      });
+    }
+
+    document.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Escape' && isOpen(overlay)) {
+        closeOverlay(overlay);
+      }
+    });
+
+    let openState = isOpen(overlay);
+    if (openState && dialog) {
+      overlay.setAttribute('aria-hidden', 'false');
+      focusInitial(dialog);
+    }
+
+    const observer = new MutationObserver(() => {
+      const nowOpen = isOpen(overlay);
+      if (nowOpen && !openState) {
+        overlay.setAttribute('aria-hidden', 'false');
+        focusInitial(dialog);
+      } else if (!nowOpen && openState) {
+        overlay.setAttribute('aria-hidden', 'true');
+      }
+      openState = nowOpen;
+    });
+
+    observer.observe(overlay, { attributes: true, attributeFilter: ['class', 'style', 'aria-hidden', 'data-open'] });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    OVERLAY_SELECTORS.forEach((selector) => {
+      document.querySelectorAll(selector).forEach(upgradeOverlay);
+    });
+    document.querySelectorAll('[class*="modal"], [id*="Modal"], [id*="modal"]').forEach((node) => {
+      if (isCandidateOverlay(node)) upgradeOverlay(node);
+    });
+
+    const domObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (!(node instanceof HTMLElement)) return;
+          if (isCandidateOverlay(node)) {
+            upgradeOverlay(node);
+          }
+          OVERLAY_SELECTORS.forEach((selector) => {
+            node.querySelectorAll?.(selector).forEach(upgradeOverlay);
+          });
+          node.querySelectorAll?.('[class*="modal"], [id*="Modal"], [id*="modal"]').forEach((candidate) => {
+            if (isCandidateOverlay(candidate)) upgradeOverlay(candidate);
+          });
+        });
+      });
+    });
+    if (document.body) {
+      domObserver.observe(document.body, { childList: true, subtree: true });
+    }
+  });
+})();
