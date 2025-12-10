@@ -212,13 +212,9 @@
 
     .app-content {
       display: grid;
-      grid-template-columns: 70px 1fr;
+      grid-template-columns: 260px 1fr;
       flex: 1;
       transition: grid-template-columns 0.3s ease;
-    }
-
-    .app-shell.sidebar-collapsed .app-content {
-      grid-template-columns: 70px 1fr;
     }
 
     header {
@@ -1409,26 +1405,9 @@
       line-height: 1.5;
     }
 
-    @media (max-width: 768px) {
-      .app-shell {
-        display: block;
-      }
-      aside {
-        position: static;
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid var(--border-color);
-        height: auto;
-      }
-      .sidebar-item {
-        justify-content: center;
-      }
-      main {
-        margin-left: 0;
-        padding: 16px;
-      }
-      header {
-        position: relative;
+    @media (max-width: 1024px) {
+      .app-content {
+        grid-template-columns: 1fr;
       }
     }
 
@@ -4639,7 +4618,7 @@
     .toast-notification.info::before { background: #3b82f6; }
   </style>
 </head>
-<body>
+<body data-sidebar-active="dashboard">
   <a href="#main" class="skip-link">Ir al contenido principal</a>
   <!-- MotorSync - Sistema Operacional Base | Opsis Suite -->
   <div class="app-shell" data-theme="light" data-accent="#02735E">
@@ -10590,75 +10569,36 @@
       },
 
       bindUI() {
-        const sidebar = document.getElementById('sidebar');
-        const appShell = document.querySelector('.app-shell');
-        
-        // Expandir sidebar temporalmente al hacer hover cuando está colapsado
-        let hoverTimeout;
-        sidebar.addEventListener('mouseenter', () => {
-          if (sidebar.classList.contains('collapsed')) {
-            clearTimeout(hoverTimeout);
-            sidebar.classList.add('hover-expanded');
-          }
-        });
-        
-        sidebar.addEventListener('mouseleave', () => {
-          if (sidebar.classList.contains('collapsed')) {
-            hoverTimeout = setTimeout(() => {
-              sidebar.classList.remove('hover-expanded');
-            }, 300);
-          }
-        });
-        
-        document.querySelectorAll('.sidebar-item').forEach((item) => {
-          // Skip navigation links - they handle their own navigation
-          if (item.hasAttribute('data-nav') || item.tagName === 'A') {
-            console.log('✓ Skipping navigation link:', item.textContent.trim());
-            return;
-          }
-          
-          if (item.dataset.external) {
-            item.addEventListener('click', () => {
-              window.location.href = item.dataset.external;
-            });
-          } else if (item.dataset.page) {
-            item.addEventListener('click', () => {
-              console.log('Navegando a:', item.dataset.page);
-              
-              // Remover hover-expanded inmediatamente
-              sidebar.classList.remove('hover-expanded');
-              
-              // Colapsar sidebar para todas las páginas excepto Dashboard
-              if (item.dataset.page === 'dashboard') {
-                sidebar.classList.remove('collapsed');
-                appShell.classList.remove('sidebar-collapsed');
-              } else {
-                sidebar.classList.add('collapsed');
-                appShell.classList.add('sidebar-collapsed');
-              }
-              
-              this.showPage(item.dataset.page);
-            });
-          }
-        });
-        document.getElementById('language-select').addEventListener('change', (e) => {
-          this.currentLanguage = e.target.value;
-          this.settings.language = this.currentLanguage;
-          this.saveSettings();
-          this.translatePage();
-        });
-        document.getElementById('theme-select').addEventListener('change', (e) => {
-          const theme = e.target.value;
-          this.applyTheme(theme);
-          this.settings.theme = theme;
-          this.saveSettings();
-        });
-        document.getElementById('accent-picker').addEventListener('input', (e) => {
-          const color = e.target.value;
-          this.applyAccent(color);
-          this.settings.accent = color;
-          this.saveSettings();
-        });
+        const languageSelect = document.getElementById('language-select');
+        const themeSelect = document.getElementById('theme-select');
+        const accentPicker = document.getElementById('accent-picker');
+        if (languageSelect && !languageSelect.dataset.bound) {
+          languageSelect.addEventListener('change', (e) => {
+            this.currentLanguage = e.target.value;
+            this.settings.language = this.currentLanguage;
+            this.saveSettings();
+            this.translatePage();
+          });
+          languageSelect.dataset.bound = 'true';
+        }
+        if (themeSelect && !themeSelect.dataset.bound) {
+          themeSelect.addEventListener('change', (e) => {
+            const theme = e.target.value;
+            this.applyTheme(theme);
+            this.settings.theme = theme;
+            this.saveSettings();
+          });
+          themeSelect.dataset.bound = 'true';
+        }
+        if (accentPicker && !accentPicker.dataset.bound) {
+          accentPicker.addEventListener('input', (e) => {
+            const color = e.target.value;
+            this.applyAccent(color);
+            this.settings.accent = color;
+            this.saveSettings();
+          });
+          accentPicker.dataset.bound = 'true';
+        }
         document.querySelectorAll('[data-schedule-range]').forEach((btn) => {
           btn.addEventListener('click', () => {
             const range = btn.dataset.scheduleRange;
@@ -16760,13 +16700,9 @@
 
       enforceRoleAccess() {
         const allowed = this.getAccessiblePages();
-        document.querySelectorAll('.sidebar-item').forEach((item) => {
-          const page = item.dataset.page;
-          // Only apply display logic to items with data-page (not navigation links)
-          if (page) {
-            item.style.display = allowed.includes(page) ? 'flex' : 'none';
-          }
-        });
+        if (window.SidebarBridge && typeof window.SidebarBridge.setVisibility === 'function') {
+          window.SidebarBridge.setVisibility(allowed);
+        }
         if (!allowed.includes(this.currentPage)) {
           const fallback = this.getRoleDefaultPage();
           if (fallback && fallback !== this.currentPage) {
@@ -17097,9 +17033,6 @@
           }
           return;
         }
-        document.querySelectorAll('.sidebar-item').forEach((item) => item.classList.remove('active'));
-        const navItem = document.querySelector(`.sidebar-item[data-page="${page}"]`);
-        if (navItem) navItem.classList.add('active');
         document.querySelectorAll('.page').forEach((section) => {
           section.classList.remove('active');
           section.hidden = true;

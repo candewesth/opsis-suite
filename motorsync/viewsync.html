@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="styles.css?v=verdi2">
   <link rel="stylesheet" href="css/verdi-overrides.css?v=verdi2">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="js/seeds.js?v=verdi2"></script>
   <script src="js/modules.js?v=verdi2"></script>
   <script src="js/sidebar.js?v=verdi2"></script>
   <script src="js/back-link.js?v=verdi2"></script>
@@ -73,6 +74,16 @@
       localStorage.setItem(CLIENTS_DATA_KEY, JSON.stringify(clients));
     }
 
+    function navigateWithReturn(base, extras = {}, options = {}) {
+      if (window.ReturnNav && typeof window.ReturnNav.navigate === 'function') {
+        window.ReturnNav.navigate(base, extras, options);
+      } else {
+        const params = new URLSearchParams(extras || {});
+        const query = params.toString();
+        window.location.href = `${base}${query ? `?${query}` : ''}`;
+      }
+    }
+
     const FORMSYNC_FIELDS = [
       { key: 'crew', label: 'Equipo / Crew', selector: '[data-formsync-field=\"crew\"]' },
       { key: 'hours', label: 'Horas totales', selector: '[data-formsync-field=\"hours\"]' },
@@ -113,14 +124,21 @@
     };
 
     let currentFormTemplate = null;
+    let currentFormTemplateKey = null;
+
+    function resolveCompanyKey(project = currentProject) {
+      if (project && (project.companyId || project.company || project.clientCompany)) {
+        return String(project.companyId || project.company || project.clientCompany);
+      }
+      return 'default';
+    }
 
     function cloneTemplate(obj) {
       return JSON.parse(JSON.stringify(obj));
     }
 
-    function getFormTemplateStorageKey() {
-      const companyId = (currentProject && (currentProject.companyId || currentProject.company || currentProject.clientCompany)) || 'default';
-      return `formsync_template_${companyId}`;
+    function getFormTemplateStorageKey(project = currentProject) {
+      return `formsync_template_${resolveCompanyKey(project)}`;
     }
 
     function ensureTemplateStructure(template) {
@@ -151,9 +169,8 @@
       return projects.find((p) => p.id === projectId || p.idSync === projectId) || null;
     }
 
-    function loadFormTemplate() {
-      if (currentFormTemplate) return currentFormTemplate;
-      const key = getFormTemplateStorageKey();
+    function fetchTemplateForProject(project = currentProject) {
+      const key = getFormTemplateStorageKey(project);
       let template = null;
       try {
         template = JSON.parse(localStorage.getItem(key) || 'null');
@@ -164,14 +181,26 @@
         template = cloneTemplate(FORMSYNC_TEMPLATE_DEFAULT);
         localStorage.setItem(key, JSON.stringify(template));
       }
-      currentFormTemplate = ensureTemplateStructure(template);
+      return ensureTemplateStructure(template);
+    }
+
+    function loadFormTemplate() {
+      const key = getFormTemplateStorageKey();
+      if (currentFormTemplateKey !== key) {
+        currentFormTemplateKey = key;
+        currentFormTemplate = null;
+      }
+      if (currentFormTemplate) return currentFormTemplate;
+      currentFormTemplate = fetchTemplateForProject(currentProject);
       return currentFormTemplate;
     }
 
     function saveFormTemplateConfig(template) {
       const sanitized = ensureTemplateStructure(template || {});
       currentFormTemplate = sanitized;
-      localStorage.setItem(getFormTemplateStorageKey(), JSON.stringify(sanitized));
+      const key = getFormTemplateStorageKey();
+      currentFormTemplateKey = key;
+      localStorage.setItem(key, JSON.stringify(sanitized));
     }
 
     function applyFormTemplateToForm() {
@@ -1482,6 +1511,59 @@
       border-radius: 3px;
     }
 
+    .timeline-phase-summary {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .timeline-phase-chip {
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 150px;
+    }
+
+    .timeline-phase-chip strong {
+      font-size: 13px;
+      color: #0f172a;
+    }
+
+    .timeline-phase-chip span {
+      color: #64748b;
+    }
+
+    .timeline-drag-handle {
+      background: none;
+      border: none;
+      cursor: grab;
+      padding: 4px 6px;
+      color: #94a3b8;
+      align-self: flex-start;
+    }
+
+    .timeline-drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .timeline-row.dragging {
+      opacity: 0.7;
+      border-style: dashed;
+    }
+
+    .timeline-view-btn.active {
+      background: #02735E !important;
+      color: #fff !important;
+      border-color: #02735E !important;
+      box-shadow: 0 6px 20px rgba(2, 115, 94, 0.22);
+    }
+
     .milestone {
       position: absolute;
       width: 0;
@@ -1823,7 +1905,7 @@
           <div class="hero-grid">
             <div class="hero-primary" style="display:flex; flex-direction:column; gap:10px;">
               <div class="meta-row" style="gap:10px;">
-                <button class="back-button" data-return-target="motorsync" style="background: rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.3); color:#fff; padding:8px 12px; border-radius:8px; display:inline-flex; align-items:center; gap:6px; font-weight:600; cursor:pointer;">
+                <button class="back-button" data-return-target="motorsync.html" style="background: rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.3); color:#fff; padding:8px 12px; border-radius:8px; display:inline-flex; align-items:center; gap:6px; font-weight:600; cursor:pointer;">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                   Volver a MotorSync
                 </button>
@@ -2205,10 +2287,10 @@
           </div>
           <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
-              <button type="button" class="btn btn-white" onclick="setTimelineView('phase')" style="padding:8px 10px;">Fases</button>
-              <button type="button" class="btn btn-white" onclick="setTimelineView('week')" style="padding:8px 10px;">Semanal</button>
-              <button type="button" class="btn btn-white" onclick="setTimelineView('day')" style="padding:8px 10px;">Diario</button>
-              <button type="button" class="btn btn-white" onclick="setTimelineView('month')" style="padding:8px 10px;">Mensual</button>
+              <button type="button" class="btn btn-white timeline-view-btn" data-timeline-view="phase" onclick="setTimelineView('phase')" style="padding:8px 10px;">Fases</button>
+              <button type="button" class="btn btn-white timeline-view-btn" data-timeline-view="week" onclick="setTimelineView('week')" style="padding:8px 10px;">Semanal</button>
+              <button type="button" class="btn btn-white timeline-view-btn" data-timeline-view="day" onclick="setTimelineView('day')" style="padding:8px 10px;">Diario</button>
+              <button type="button" class="btn btn-white timeline-view-btn" data-timeline-view="month" onclick="setTimelineView('month')" style="padding:8px 10px;">Mensual</button>
             </div>
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
               <button type="button" class="btn btn-primary" onclick="quickAddTimelinePhase()" style="display:flex; align-items:center; gap:8px; background:#02735E; border-color:#02735E;">
@@ -2232,6 +2314,7 @@
         <div id="timelineChart">
           <!-- Timeline se renderiza dinámicamente -->
         </div>
+        <div id="timelinePhaseSummary" class="timeline-phase-summary" aria-live="polite"></div>
 
         <div class="timeline-legend">
           <div class="legend-item">
@@ -2538,6 +2621,33 @@
       return Math.round((endDate - startDate) / DAY_IN_MS);
     }
 
+    function formatTimelineChipDate(value, viewMode) {
+      const date = parseInputDate(value);
+      if (!date) return '—';
+      const options = { day: 'numeric', month: 'short' };
+      if (viewMode === 'day' || viewMode === 'week') {
+        options.weekday = 'short';
+      }
+      return date.toLocaleDateString('es-MX', options);
+    }
+
+    function buildPhaseSummaryChips(phases, viewMode) {
+      if (!phases.length) {
+        return '<div style="font-size:12px; color:#94a3b8;">No hay fases visibles en esta vista.</div>';
+      }
+      return phases.map((phase) => {
+        const range = `${formatTimelineChipDate(phase.start, viewMode)} - ${formatTimelineChipDate(phase.end, viewMode)}`;
+        const duration = Math.max(1, diffInDays(phase.start, phase.end) + 1);
+        return `
+          <div class="timeline-phase-chip">
+            <strong>${phase.name}</strong>
+            <span>${range}</span>
+            <span style="font-size:11px; color:#0f172a;">${duration} día${duration === 1 ? '' : 's'}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
     function formatShortDate(value) {
       const date = parseInputDate(value);
       if (!date) return '—';
@@ -2585,6 +2695,7 @@
     }
 
     const scheduleDragState = { dragged: null };
+    const timelineDragState = { dragged: null };
     const photoFilters = { projectId: null, category: 'all', phase: 'all', date: 'all' };
     const selectedPhotoIds = new Set();
     const HERO_TITLE_SIZE_KEY = 'viewsync_hero_title_size';
@@ -2613,6 +2724,50 @@
     function initHeroTitleSize() {
       const saved = localStorage.getItem(HERO_TITLE_SIZE_KEY) || 'md';
       applyHeroTitleSize(saved);
+    }
+
+    function refreshTimelineViewButtons() {
+      document.querySelectorAll('.timeline-view-btn').forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.timelineView === timelineView);
+      });
+    }
+
+    function refreshProjectMetrics() {
+      if (!currentProject) return;
+      updateProgressBar(currentProject);
+      updateKpis(currentProject);
+    }
+
+    function updateProjectDateRange(startDate, endDate) {
+      if (!currentProject) return;
+      const projectsRaw = localStorage.getItem('projectsync_projects') || '[]';
+      let projects = [];
+      try {
+        projects = JSON.parse(projectsRaw);
+      } catch (err) {
+        projects = [];
+      }
+      let changed = false;
+      const projectId = currentProject.id || currentProject.idSync;
+      const record = Array.isArray(projects)
+        ? projects.find((p) => (p.id && projectId && p.id === projectId) || (p.idSync && (currentProject.idSync || projectId) && (p.idSync === currentProject.idSync || p.idSync === projectId)))
+        : null;
+      if (record) {
+        if (startDate && record.startDate !== startDate) {
+          record.startDate = startDate;
+          changed = true;
+        }
+        if (endDate && record.endDate !== endDate) {
+          record.endDate = endDate;
+          changed = true;
+        }
+        if (changed) {
+          localStorage.setItem('projectsync_projects', JSON.stringify(projects));
+        }
+      }
+      if (startDate) currentProject.startDate = startDate;
+      if (endDate) currentProject.endDate = endDate;
+      refreshProjectMetrics();
     }
     let cachedSchedulePhases = [];
     let cachedProjectOptions = [];
@@ -2748,6 +2903,74 @@
         reindexScheduleRows(container);
       }
       scheduleDragState.dragged = null;
+    }
+
+    function attachTimelineRowInteractions(row) {
+      if (!row) return;
+      row.addEventListener('dragover', timelineDragOver);
+      row.addEventListener('drop', timelineDragDrop);
+      const handle = row.querySelector('.timeline-drag-handle');
+      if (handle) {
+        handle.addEventListener('dragstart', timelineDragStart);
+        handle.addEventListener('dragend', timelineDragEnd);
+      }
+    }
+
+    function initTimelineDrag(container) {
+      if (!container) return;
+      container.querySelectorAll('.timeline-row').forEach(attachTimelineRowInteractions);
+    }
+
+    function reindexTimelineRows(container) {
+      if (!container) return;
+      container.querySelectorAll('.timeline-row').forEach((row, idx) => {
+        row.dataset.idx = idx;
+        const startEl = row.querySelector('[data-computed-start]');
+        const endEl = row.querySelector('[data-computed-end]');
+        if (startEl) startEl.setAttribute('data-computed-start', idx);
+        if (endEl) endEl.setAttribute('data-computed-end', idx);
+      });
+      const modal = container.closest('.modal-overlay');
+      if (modal) {
+        refreshTimelineComputed(modal);
+      }
+    }
+
+    function timelineDragStart(event) {
+      const row = event.currentTarget.closest('.timeline-row');
+      if (!row) return;
+      timelineDragState.dragged = row;
+      row.classList.add('dragging');
+      if (event.dataTransfer) {
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', '');
+      }
+    }
+
+    function timelineDragOver(event) {
+      event.preventDefault();
+      const target = event.currentTarget;
+      const dragged = timelineDragState.dragged;
+      if (!dragged || target === dragged) return;
+      const container = target.parentElement;
+      const rect = target.getBoundingClientRect();
+      const shouldPlaceAfter = (event.clientY - rect.top) > rect.height / 2;
+      container.insertBefore(dragged, shouldPlaceAfter ? target.nextSibling : target);
+    }
+
+    function timelineDragDrop(event) {
+      event.preventDefault();
+    }
+
+    function timelineDragEnd() {
+      if (timelineDragState.dragged) {
+        timelineDragState.dragged.classList.remove('dragging');
+      }
+      const container = document.querySelector('#timelineEditorModal #tl-rows');
+      if (container) {
+        reindexTimelineRows(container);
+      }
+      timelineDragState.dragged = null;
     }
 
     function updateKpis(project) {
@@ -3034,7 +3257,7 @@
     function openLinkedThread() {
       if (window.linkedThreadId) {
         console.log('🔗 Abriendo thread vinculado:', window.linkedThreadId);
-        window.location.href = `threadsync.html?id=${window.linkedThreadId}`;
+        navigateWithReturn('threadsync.html', { id: window.linkedThreadId });
       } else {
         alert('⚠️ No se encontró el thread vinculado');
       }
@@ -3067,7 +3290,7 @@
           console.log('🔄 No active projects, loading first available:', projectId);
         } else {
           alert('⚠️ No hay proyectos disponibles. Redirigiendo a ProjectSync...');
-          window.location.href = 'projectsync.html';
+          navigateWithReturn('projectsync.html');
           return null;
         }
       }
@@ -3076,7 +3299,7 @@
       
       if (!project) {
         alert('⚠️ Proyecto no encontrado. Redirigiendo a ProjectSync...');
-        window.location.href = 'projectsync.html';
+        navigateWithReturn('projectsync.html');
         return null;
       }
       
@@ -3086,6 +3309,10 @@
     
     function renderProjectData(project) {
       if (!project) return;
+      currentFormTemplateKey = null;
+      currentFormTemplate = null;
+      loadFormTemplate();
+      applyFormTemplateToForm();
 
       const clientRecord = getClientRecord(project.clientId);
       const displayClient = project.client || project.clientName || clientRecord?.name || 'Cliente';
@@ -3340,7 +3567,7 @@
       };
       logs.unshift(logEntry);
       localStorage.setItem(key, JSON.stringify(logs));
-      registerFormSyncDocument(logEntry);
+      registerFormSyncDocument(logEntry, template, currentProject);
 
       renderDailyLogs(currentProject);
       showToast('success', 'Reporte diario guardado.');
@@ -3503,13 +3730,9 @@
 
     function seedDocumentData() {
       const docs = loadProjectDocuments();
-      if (docs.length) return;
-      const demoDocs = [
-        { id: 'DOC-1', category: 'contrato', description: 'Contrato firmado', fileName: 'Contrato_Cliente.pdf', fileSize: 560000, fileType: 'application/pdf', url: '#', uploadDate: new Date().toISOString(), uploadedBy: 'Opsis Suite', origin: 'manual' },
-        { id: 'DOC-2', category: 'permiso', description: 'Permiso municipal', fileName: 'Permiso_Municipal.pdf', fileSize: 230000, fileType: 'application/pdf', url: '#', uploadDate: new Date().toISOString(), uploadedBy: 'Opsis Suite', origin: 'manual' },
-        { id: 'DOC-3', category: 'plano', description: 'Plano HVAC', fileName: 'Plano_HVAC.dwg', fileSize: 1200000, fileType: 'application/octet-stream', url: '#', uploadDate: new Date().toISOString(), uploadedBy: 'Opsis Suite', origin: 'manual' }
-      ];
-      saveProjectDocuments(demoDocs);
+      if (!Array.isArray(docs)) {
+        saveProjectDocuments([], resolveDefaultProjectId(), { silent: true });
+      }
     }
 
     function renderDocsSection(project) {
@@ -3610,7 +3833,7 @@
       if (linkedThreadId) {
         // Has linked thread - open it directly
         console.log('✅ Thread vinculado encontrado:', linkedThreadId);
-        window.location.href = `threadsync.html?id=${linkedThreadId}&returnTo=viewsync&projectId=${projectId}`;
+        navigateWithReturn('threadsync.html', { id: linkedThreadId, projectId });
       } else {
         // No linked thread - show creation modal
         console.log('ℹ️ No hay thread vinculado, mostrando modal de creación');
@@ -3710,7 +3933,7 @@
       setTimeout(() => {
         alert('✓ ThreadSync creado exitosamente\n\nSe ha creado una nueva conversación vinculada al proyecto ' + projectId + '\n\nAbriendo ThreadSync...');
         // Navegar en la misma ventana con parámetro de retorno
-        window.location.href = 'threadsync-detail.html?project=' + projectId + '&new=true&returnTo=viewsync';
+        navigateWithReturn('threadsync-detail.html', { project: projectId, new: 'true' });
       }, 300);
     }
 
@@ -5140,7 +5363,7 @@
       console.log('Cerrando proyecto...');
       uiToast('success', 'Proyecto CERRADO. Se archiva y solo permite Change Orders.');
       setTimeout(() => {
-        window.location.href = 'motorsync.html';
+        navigateWithReturn('motorsync.html', {}, { overrideReturn: 'motorsync.html' });
       }, 2000);
     }
 
@@ -5459,7 +5682,7 @@
       console.log('Cancelando proyecto...');
       uiToast('warning', 'Proyecto CANCELADO. Redirigiendo a MotorSync...');
       setTimeout(() => {
-        window.location.href = 'motorsync.html';
+        navigateWithReturn('motorsync.html', {}, { overrideReturn: 'motorsync.html' });
       }, 1500);
     }
 
@@ -6418,30 +6641,165 @@
       saveProjectDocuments(docs, projectId, options);
     }
 
-    function createDocumentFromLog(log) {
+    function getProjectContext(projectId) {
+      if (!projectId) return currentProject || null;
+      if (currentProject && (currentProject.id === projectId || currentProject.idSync === projectId)) {
+        return currentProject;
+      }
+      return getProjectMeta(projectId);
+    }
+
+    function ensurePdfSpace(doc, currentY, pageHeight, margin, blockHeight = 24) {
+      if (currentY + blockHeight >= pageHeight - margin) {
+        doc.addPage();
+        return margin;
+      }
+      return currentY;
+    }
+
+    function writePdfRow(doc, label, value, margin, y, pageWidth, pageHeight) {
+      const text = value || 'N/A';
+      y = ensurePdfSpace(doc, y, pageHeight, margin, 20);
+      doc.setFont(undefined, 'bold');
+      doc.text(`${label}:`, margin, y);
+      doc.setFont(undefined, 'normal');
+      const lines = doc.splitTextToSize(text, pageWidth - margin * 2 - 120);
+      doc.text(lines, margin + 120, y);
+      return y + Math.max(18, lines.length * 12 + 4);
+    }
+
+    function writePdfParagraph(doc, label, value, margin, y, pageWidth, pageHeight) {
+      y = ensurePdfSpace(doc, y, pageHeight, margin, 28);
+      doc.setFont(undefined, 'bold');
+      doc.text(label, margin, y);
+      doc.setFont(undefined, 'normal');
+      const lines = doc.splitTextToSize(value || 'N/A', pageWidth - margin * 2);
+      y += 14;
+      lines.forEach((line) => {
+        y = ensurePdfSpace(doc, y, pageHeight, margin, 14);
+        doc.text(line, margin, y);
+        y += 14;
+      });
+      return y + 6;
+    }
+
+    function generateFormSyncPdf(logEntry, template, project) {
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        console.warn('jsPDF library not available.');
+        return null;
+      }
+      const doc = new window.jspdf.jsPDF({ unit: 'pt', format: 'letter' });
+      const margin = 48;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      let y = margin;
+
+      doc.setFont('Helvetica', 'bold');
+      doc.setFontSize(18);
+      doc.text('Reporte FormSync', margin, y);
+      y += 20;
+
+      doc.setFontSize(11);
+      doc.setFont('Helvetica', 'normal');
+      const generalRows = [
+        ['Proyecto', project?.name || project?.projectName || project?.idSync || 'Proyecto'],
+        ['Cliente', project?.client || project?.clientName || 'N/A'],
+        ['Fecha', formatDate(logEntry.date || new Date().toISOString())],
+        ['Generado por', (logEntry.crew && logEntry.crew.join(', ')) || 'Equipo operativo'],
+        ['Clima', logEntry.weather || 'N/A']
+      ];
+      generalRows.forEach((row) => {
+        y = writePdfRow(doc, row[0], row[1], margin, y, pageWidth, pageHeight);
+      });
+
+      doc.setFont('Helvetica', 'bold');
+      doc.text('Detalle de Actividades', margin, y + 10);
+      y += 24;
+      doc.setFont('Helvetica', 'normal');
+
+      const formValues = {
+        crew: (logEntry.crew && logEntry.crew.join(', ')) || '',
+        hours: logEntry.hours || '',
+        weather: logEntry.weather || '',
+        start: logEntry.start || '',
+        end: logEntry.end || '',
+        crewCount: logEntry.crewCount ? `${logEntry.crewCount}` : '',
+        photo: (logEntry.photos && logEntry.photos.join(', ')) || '',
+        work: logEntry.work || '',
+        materials: logEntry.materials || '',
+        safety: logEntry.safety || '',
+        notes: logEntry.notes || ''
+      };
+
+      FORMSYNC_FIELDS.forEach((field) => {
+        if ((template.fields?.[field.key] || 'optional') === 'hidden') return;
+        const label = field.label;
+        const value = formValues[field.key] || 'N/A';
+        y = writePdfParagraph(doc, label, value, margin, y, pageWidth, pageHeight);
+      });
+
+      if (template.signatures?.supervisor || template.signatures?.client) {
+        y = ensurePdfSpace(doc, y, pageHeight, margin, 60);
+        doc.setFont('Helvetica', 'bold');
+        doc.text('Firmas', margin, y + 10);
+        y += 24;
+        doc.setFont('Helvetica', 'normal');
+        if (template.signatures?.supervisor) {
+          doc.text('Supervisor:', margin, y);
+          doc.line(margin + 80, y + 2, pageWidth - margin, y + 2);
+          y += 24;
+        }
+        if (template.signatures?.client) {
+          doc.text('Cliente:', margin, y);
+          doc.line(margin + 80, y + 2, pageWidth - margin, y + 2);
+          y += 24;
+        }
+      }
+
+      doc.setFontSize(9);
+      doc.setFont('Helvetica', 'italic');
+      doc.text(`Generado automáticamente por Opsis • ${new Date().toLocaleString('es-MX')}`, pageWidth / 2, pageHeight - margin / 2, { align: 'center' });
+
+      const dataUri = doc.output('datauristring');
+      const base64 = dataUri.split(',')[1] || '';
+      const size = Math.ceil((base64.length * 3) / 4);
+      return { dataUrl: dataUri, size };
+    }
+
+    function createDocumentFromLog(log, project, template) {
+      const pdfPayload = generateFormSyncPdf(log, template, project);
       return {
         id: `FS-DOC-${log.id || Date.now()}`,
         category: 'daily',
         description: log.work || 'Actividad registrada en FormSync',
         fileName: `FormSync_${formatDate(log.date || new Date().toISOString())}.pdf`,
-        fileSize: 180000,
+        fileSize: pdfPayload?.size || 0,
         fileType: 'application/pdf',
-        url: '#',
+        url: pdfPayload?.dataUrl || '#',
         uploadDate: log.createdAt || new Date().toISOString(),
         uploadedBy: (log.crew && log.crew[0]) || 'Equipo Operativo',
         origin: 'formsync',
-        linkedLogId: log.id
+        linkedLogId: log.id,
+        metadata: {
+          type: 'formsync',
+          date: log.date,
+          crew: log.crew,
+          hours: log.hours
+        }
       };
     }
 
-    function registerFormSyncDocument(logEntry) {
+    function registerFormSyncDocument(logEntry, templateOverride = null, projectOverride = null) {
       const projectId = resolveDefaultProjectId();
       if (!projectId || !logEntry) return;
+      const projectContext = projectOverride || getProjectContext(projectId);
+      const template = templateOverride || fetchTemplateForProject(projectContext);
       const documents = loadProjectDocuments(projectId);
-      if (documents.some(doc => doc.origin === 'formsync' && doc.linkedLogId === logEntry.id)) {
+      if (documents.some((doc) => doc.origin === 'formsync' && doc.linkedLogId === logEntry.id)) {
         return;
       }
-      documents.push(createDocumentFromLog(logEntry));
+      const newDoc = createDocumentFromLog(logEntry, projectContext, template);
+      documents.push(newDoc);
       saveProjectDocuments(documents, projectId, { silent: true });
       renderDocumentsList();
     }
@@ -6449,6 +6807,8 @@
     function ensureFormSyncDocuments() {
       const projectId = resolveDefaultProjectId();
       if (!projectId) return;
+      const projectContext = getProjectContext(projectId);
+      const template = fetchTemplateForProject(projectContext);
       const documents = loadProjectDocuments(projectId);
       const linked = new Set(
         documents
@@ -6470,7 +6830,7 @@
           updatedLogs = true;
         }
         if (linked.has(log.id)) return;
-        documents.push(createDocumentFromLog(log));
+        documents.push(createDocumentFromLog(log, projectContext, template));
         linked.add(log.id);
         updatedDocs = true;
       });
@@ -7392,6 +7752,7 @@
     function renderProjectTimeline() {
       const container = document.getElementById('timelineChart');
       if (!container || !currentProject) return;
+      refreshTimelineViewButtons();
 
       const timelineKey = `project_timeline_${currentProject.idSync || currentProject.id}`;
       let timeline = loadTimelineSnapshot(currentProject);
@@ -7523,6 +7884,7 @@
         return { left: `${left}%`, width: `${width}%` };
       }
 
+      const summaryHTML = buildPhaseSummaryChips(visiblePhases, timelineView);
       const tasksHTML = visiblePhases.map(phase => {
         const formatDate = (dateStr) => {
           const date = new Date(dateStr);
@@ -7594,10 +7956,14 @@
         <div class="timeline-labels">
           ${labelsHTML}
         </div>
+        <div class="timeline-phase-summary">
+          ${summaryHTML}
+        </div>
       `;
     }
 
     function setTimelineView(mode) {
+      if (timelineView === mode) return;
       timelineView = mode;
       renderProjectTimeline();
       uiToast('info', `Vista de timeline: ${mode}`);
@@ -7667,9 +8033,10 @@
       };
       localStorage.setItem(timelineKey, JSON.stringify(payload));
       renderProjectTimeline();
+      updateProjectDateRange(anchorStart, anchorEnd);
     }
 
-    function syncTimelineToSchedule(phases) {
+    function syncTimelineToSchedule(phases, options = {}) {
       if (!currentProject || !Array.isArray(phases) || !phases.length) return;
       const scheduleKey = `project_schedule_${currentProject.idSync || currentProject.id}`;
       const normalized = phases.map((phase, idx) => ({
@@ -7682,6 +8049,12 @@
       localStorage.setItem(scheduleKey, JSON.stringify(normalized));
       cachedSchedulePhases = normalized;
       renderScheduleBlocks();
+      if (!options.skipTimelineRender) {
+        renderProjectTimeline();
+      }
+      const start = normalized[0]?.start || currentProject.startDate;
+      const end = normalized[normalized.length - 1]?.end || currentProject.endDate;
+      updateProjectDateRange(start, end);
     }
 
     function timelineRowTemplate(data, idx) {
@@ -7692,6 +8065,16 @@
       return `
         <div class="timeline-row" data-idx="${idx}" style="display:flex; flex-direction:column; gap:10px; padding:12px; border:1px solid #e2e8f0; border-radius:12px; background:#fff;">
           <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <button type="button" class="timeline-drag-handle" aria-label="Reordenar fase" draggable="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="7" cy="5" r="1"></circle>
+                <circle cx="7" cy="12" r="1"></circle>
+                <circle cx="7" cy="19" r="1"></circle>
+                <circle cx="17" cy="5" r="1"></circle>
+                <circle cx="17" cy="12" r="1"></circle>
+                <circle cx="17" cy="19" r="1"></circle>
+              </svg>
+            </button>
             <input class="form-input" data-field="label" value="${data.label || ''}" placeholder="Nombre de la fase" style="flex:1; min-width:220px;">
             <select class="form-select" data-field="status" style="min-width:160px;">
               ${statusOptions.map(opt => `<option value="${opt}" ${opt === status ? 'selected' : ''}>${opt === 'pending' ? 'Pendiente' : opt === 'in-progress' ? 'En Proceso' : 'Completado'}</option>`).join('')}
@@ -7824,6 +8207,8 @@
       `;
       document.body.appendChild(modal);
       refreshTimelineComputed(modal);
+      initTimelineDrag(modal.querySelector('#tl-rows'));
+      reindexTimelineRows(modal.querySelector('#tl-rows'));
       modal.addEventListener('input', (event) => {
         if (event.target.matches('#tl-start')) {
           refreshTimelineComputed(modal);
@@ -7852,6 +8237,8 @@
       const modal = document.getElementById('timelineEditorModal');
       const newRow = rows.querySelector(`.timeline-row[data-idx="${idx}"]`);
       if (modal && newRow) {
+        attachTimelineRowInteractions(newRow);
+        reindexTimelineRows(rows);
         updateTimelineComputedRow(newRow, modal);
       }
     }
@@ -7861,7 +8248,11 @@
       if (row) {
         const modal = row.closest('.modal-overlay');
         row.remove();
-        if (modal) refreshTimelineComputed(modal);
+        if (modal) {
+          const container = modal.querySelector('#tl-rows');
+          if (container) reindexTimelineRows(container);
+          refreshTimelineComputed(modal);
+        }
       }
     }
 
@@ -7873,6 +8264,10 @@
       const startInput = modal.querySelector('#tl-start');
       const endInput = modal.querySelector('#tl-end');
       const baseStart = startInput?.value || currentProject.startDate || toInputDate(new Date());
+      if (startInput?.value && endInput?.value && new Date(endInput.value) < new Date(startInput.value)) {
+        uiToast('error', 'La fecha final del timeline no puede ser anterior al inicio');
+        return;
+      }
       const rows = modal.querySelectorAll('.timeline-row');
       if (!rows.length) {
         uiToast('error', 'Agrega al menos una fase para guardar el timeline');
@@ -7922,11 +8317,10 @@
       };
       localStorage.setItem(timelineKey, JSON.stringify(timelineData));
       modal.remove();
-      if (applyTimeline) {
-        syncTimelineToSchedule(phases);
-      }
       renderProjectTimeline();
-      uiToast('success', applyTimeline ? 'Fases aplicadas y sincronizadas' : 'Timeline guardado');
+      syncTimelineToSchedule(phases, { skipTimelineRender: true });
+      updateProjectDateRange(timelineData.startDate, timelineData.endDate);
+      uiToast('success', applyTimeline ? 'Timeline guardado y sincronizado' : 'Timeline actualizado');
     }
 
   </script>

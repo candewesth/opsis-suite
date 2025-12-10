@@ -13,9 +13,11 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="js/seeds.js?v=verdi2"></script>
   <script src="js/data-projects.js?v=verdi2"></script>
   <script src="js/modules.js?v=verdi2"></script>
   <script src="js/sidebar.js?v=verdi2"></script>
+  <script src="js/back-link.js?v=verdi2"></script>
   <script src="./js/ui-feedback.js"></script>
   <style>
     .btn {
@@ -735,7 +737,7 @@
               <h2 style="font-size: 28px; font-weight: 800; color: #065f46; margin: 0;">ProjectSync</h2>
             </div>
             <div style="display: flex; gap: 12px;">
-              <button type="button" class="btn btn-secondary" id="btnDrafts" onclick="window.location.href='drafts.html'" style="border: 1px solid #f59e0b; color: #f59e0b; display: none; position: relative;">
+              <button type="button" class="btn btn-secondary" id="btnDrafts" onclick="navigateWithReturn('drafts.html')" style="border: 1px solid #f59e0b; color: #f59e0b; display: none; position: relative;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                   <polyline points="14 2 14 8 20 8"></polyline>
@@ -974,10 +976,20 @@
   </div>
 
   <script>
+    function navigateWithReturn(base, extras = {}, options = {}) {
+      if (window.ReturnNav && typeof window.ReturnNav.navigate === 'function') {
+        window.ReturnNav.navigate(base, extras, options);
+      } else {
+        const params = new URLSearchParams(extras || {});
+        const query = params.toString();
+        window.location.href = `${base}${query ? `?${query}` : ''}`;
+      }
+    }
+
     // View Project Function
     function viewProject(projectId) {
       // Redirect to ViewSync with project ID
-      window.location.href = `viewsync.html?id=${projectId}`;
+      navigateWithReturn('viewsync.html', { id: projectId });
     }
     
     // Show success message
@@ -1641,19 +1653,6 @@
         });
       });
 
-      // Sidebar collapse functionality
-      const sidebar = document.getElementById('sidebar');
-      const sidebarItems = document.querySelectorAll('.sidebar-item');
-      
-      sidebarItems.forEach(item => {
-        item.addEventListener('click', () => {
-          sidebar.classList.add('collapsed');
-        });
-      });
-
-      sidebar.addEventListener('mouseenter', () => {
-        sidebar.classList.remove('collapsed');
-      });
     });
 
     // New Project Modal Functions
@@ -1673,12 +1672,12 @@
         openCreateProjectForm();
       } else if (option === 'new-thread') {
         // Redirigir a ThreadSync para crear nuevo thread
-        window.location.href = 'thread-form.html';
+        navigateWithReturn('thread-form.html');
       }
     }
 
     function openCreateProjectForm() {
-      window.location.href = 'project-form.html';
+      navigateWithReturn('project-form.html');
     }
 
     function openConnectThreadForm() {
@@ -1829,7 +1828,7 @@
       localStorage.setItem('temp_appointment_data', JSON.stringify(appointmentData));
       
       // Redirect to PlanSync with new appointment modal
-      window.location.href = `plansync.html?action=new&source=project&id=${projectId}`;
+      navigateWithReturn('plansync.html', { action: 'new', source: 'project', id: projectId });
     }
   </script>
 

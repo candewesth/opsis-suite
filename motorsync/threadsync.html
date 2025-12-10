@@ -8,6 +8,7 @@
   <script src="js/seeds.js?v=verdi2"></script>
   <script src="js/modules.js"></script>
   <script src="js/sidebar.js?v=verdi2"></script>
+  <script src="js/back-link.js?v=verdi2"></script>
   <style>
     :root {
       --verdi-dark: #022326;
@@ -1042,7 +1043,7 @@
 
     <main id="main" style="padding: 32px; background: #f8fafc;">
       <div class="thread-header">
-        <button class="back-button" data-return-target="threadview.html" style="background: white; color: #64748b; border: 1px solid #e2e8f0; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); align-self: flex-start;">
+        <button class="back-button" data-return-target="motorsync.html" style="background: white; color: #64748b; border: 1px solid #e2e8f0; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); align-self: flex-start;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
           </svg>
@@ -2624,20 +2625,22 @@
       }
     }
 
+    function navigateWithReturn(base, extras = {}, options = {}) {
+      if (window.ReturnNav && typeof window.ReturnNav.navigate === 'function') {
+        window.ReturnNav.navigate(base, extras, options);
+      } else {
+        const params = new URLSearchParams(extras || {});
+        const query = params.toString();
+        window.location.href = `${base}${query ? `?${query}` : ''}`;
+      }
+    }
+
     function goToProject() {
       if (!threadState.projectId) {
         showThreadToast('warning', 'Este thread aún no tiene proyecto asignado.');
         return;
       }
-      const currentSearch = window.location.search || '';
-      const currentFile = window.location.pathname.split('/').pop() || 'threadsync.html';
-      const returnParams = new URLSearchParams(currentSearch);
-      const explicitReturn = returnParams.get('returnTo');
-      const fallbackReturn = `${currentFile}${currentSearch}`;
-      const destinationParams = new URLSearchParams();
-      destinationParams.set('id', threadState.projectId);
-      destinationParams.set('returnTo', explicitReturn || fallbackReturn);
-      window.location.href = `viewsync.html?${destinationParams.toString()}`;
+      navigateWithReturn('viewsync.html', { id: threadState.projectId });
     }
 
     function showThreadToast(type, message) {
@@ -2814,7 +2817,7 @@
       closeModal('convertModal');
       showThreadToast('success', `Proyecto ${projectData.name} creado. Abriendo ViewSync...`);
       setTimeout(() => {
-        window.location.href = `viewsync.html?id=${newProjectId}`;
+        navigateWithReturn('viewsync.html', { id: newProjectId });
       }, 1200);
     }
 
@@ -3311,7 +3314,7 @@
       localStorage.setItem('temp_appointment_data', JSON.stringify(appointmentData));
       
       // Redirect to PlanSync with new appointment modal
-      window.location.href = `plansync.html?action=new&source=thread&id=${threadId}`;
+      navigateWithReturn('plansync.html', { action: 'new', source: 'thread', id: threadId });
     }
   </script>
 

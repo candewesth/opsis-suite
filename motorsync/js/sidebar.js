@@ -62,6 +62,8 @@
     },
   ];
 
+  let visibilityFilter = null;
+
   const SIDEBAR_STYLES = `
     #sidebar.ops-sidebar {
       width: 260px;
@@ -146,13 +148,57 @@
   }
 
   function detectActive() {
-    const manual = document.body.dataset.sidebarActive || '';
+    const manual = document.body ? document.body.dataset.sidebarActive || '' : '';
     if (manual) return manual.toLowerCase();
     const sidebar = document.getElementById('sidebar');
     if (sidebar && sidebar.dataset.active) return sidebar.dataset.active.toLowerCase();
     const path = (window.location && window.location.pathname) || '';
     const match = MENU.find((item) => path.endsWith(`/${item.href}`) || path.endsWith(item.href));
     return (match && match.id) || 'dashboard';
+  }
+
+  function highlightActiveLink() {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+    const activeId = detectActive();
+    sidebar.querySelectorAll('.sidebar-item').forEach((link) => {
+      const id = (link.dataset.page || '').toLowerCase();
+      link.classList.toggle('active', id === activeId);
+    });
+  }
+
+  function applyVisibilityFilter() {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+    const filter = visibilityFilter;
+    sidebar.querySelectorAll('.sidebar-item').forEach((link) => {
+      if (!filter) {
+        link.style.display = '';
+        return;
+      }
+      const id = (link.dataset.page || '').toLowerCase();
+      link.style.display = filter.includes(id) ? '' : 'none';
+    });
+  }
+
+  function setVisibilityFilter(allowedIds) {
+    if (Array.isArray(allowedIds) && allowedIds.length) {
+      visibilityFilter = allowedIds.map((id) => String(id || '').toLowerCase());
+    } else {
+      visibilityFilter = null;
+    }
+    applyVisibilityFilter();
+  }
+
+  function setActiveOverride(id) {
+    if (document.body) {
+      if (id) {
+        document.body.dataset.sidebarActive = id;
+      } else {
+        delete document.body.dataset.sidebarActive;
+      }
+    }
+    highlightActiveLink();
   }
 
   function normalizeReturnDestination(value) {
@@ -186,13 +232,11 @@
     const sidebar = document.getElementById('sidebar');
     if (!sidebar) return;
     ensureStyles();
-    const activeId = detectActive();
     sidebar.classList.add('ops-sidebar');
     sidebar.innerHTML = `
       <nav aria-label="Navegación principal">
         ${MENU.map((item) => {
-          const isActive = item.id === activeId;
-          return `<a href="${item.href}" data-page="${item.id}" class="sidebar-item${isActive ? ' active' : ''}">${item.icon}<span>${item.label}</span></a>`;
+          return `<a href="${item.href}" data-page="${item.id}" class="sidebar-item">${item.icon}<span>${item.label}</span></a>`;
         }).join('')}
       </nav>
       <div class="sidebar-footer">
@@ -202,11 +246,20 @@
         </button>
       </div>
     `;
+    highlightActiveLink();
+    applyVisibilityFilter();
+    document.dispatchEvent(new CustomEvent('sidebar:rendered'));
   }
 
   document.addEventListener('DOMContentLoaded', () => {
     renderSidebar();
     setupReturnBreadcrumbs();
   });
+  window.SidebarBridge = {
+    refresh: renderSidebar,
+    setVisibility: setVisibilityFilter,
+    setActive: setActiveOverride,
+    highlight: highlightActiveLink,
+  };
   window.refreshSidebar = renderSidebar;
 })();

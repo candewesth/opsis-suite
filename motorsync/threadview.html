@@ -12,6 +12,7 @@
   <script src="js/seeds.js?v=verdi2"></script>
   <script src="js/modules.js?v=verdi2"></script>
   <script src="js/sidebar.js?v=verdi2"></script>
+  <script src="js/back-link.js?v=verdi2"></script>
   <script src="./js/ui-feedback.js"></script>
   <style>
     :root {
@@ -1196,14 +1197,20 @@
   </div>
 
   <script>
+    function navigateWithReturn(base, extras = {}, options = {}) {
+      if (window.ReturnNav && typeof window.ReturnNav.navigate === 'function') {
+        window.ReturnNav.navigate(base, extras, options);
+      } else {
+        const params = new URLSearchParams(extras || {});
+        const query = params.toString();
+        window.location.href = `${base}${query ? `?${query}` : ''}`;
+      }
+    }
+
     // Filter functionality
     // Thread navigation
     function openThread(threadId) {
-      // Redirigir a la vista de conversación del thread (threadsync.html)
-      const params = new URLSearchParams();
-      params.set('id', threadId);
-      params.set('returnTo', 'threadview.html');
-      window.location.href = `threadsync.html?${params.toString()}`;
+      navigateWithReturn('threadsync.html', { id: threadId });
     }
 
     // Create new thread
@@ -1366,32 +1373,32 @@
         const summaryMessage = `${clientName} · ${subject}${projectName ? ' · ' + projectName : ''}`;
         showThreadToast('success', `Thread creado exitosamente. ${summaryMessage}`);
         setTimeout(() => {
-          window.location.href = `threadsync.html?id=${newThreadId}`;
+          navigateWithReturn('threadsync.html', { id: newThreadId });
         }, 700);
       }, 800);
     }
 
     function selectProjectForThread(projectId, projectName) {
       // Esta función ya no se usa, pero la mantenemos por compatibilidad
-      window.location.href = `thread-form.html?project=${projectId}&projectName=${encodeURIComponent(projectName)}`;
+      navigateWithReturn('thread-form.html', { project: projectId, projectName });
     }
 
     // Create thread for specific project
     function createThreadForProject(projectId) {
-      window.location.href = `thread-form.html?project=${projectId}`;
+      navigateWithReturn('thread-form.html', { project: projectId });
     }
 
     // Go to project
     function goToProject(projectId, isActive) {
       if (isActive) {
-        window.location.href = `motorsync.html?project=${projectId}&tab=project`;
+        navigateWithReturn('motorsync.html', { project: projectId, tab: 'project' });
         return;
       }
       threadConfirm('¿Activar este proyecto y abrirlo en ProjectSync?', { confirmText: 'Activar proyecto' })
         .then((confirmed) => {
           if (!confirmed) return;
           showThreadToast('success', 'Proyecto activado. Redirigiendo a ProjectSync...');
-          window.location.href = `motorsync.html?project=${projectId}&tab=project&action=activate`;
+          navigateWithReturn('motorsync.html', { project: projectId, tab: 'project', action: 'activate' });
         });
     }
 
