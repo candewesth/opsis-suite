@@ -62,7 +62,8 @@ const NotifyManager = {
       localStorage.setItem(this.STORAGE_KEYS.SETTINGS, JSON.stringify(defaultSettings));
     }
 
-    // Limpiar notificaciones antiguas
+    // Normalizar y limpiar
+    this._normalizeStoredNotifications();
     this.cleanOldNotifications();
   },
 
@@ -105,10 +106,12 @@ const NotifyManager = {
     }
 
     // Crear notificación
-    const normalizedMetadata = { ...metadata };
-    if (projectId && !normalizedMetadata.projectId) normalizedMetadata.projectId = projectId;
-    if (threadId && !normalizedMetadata.threadId) normalizedMetadata.threadId = threadId;
-    if (clientId && !normalizedMetadata.clientId) normalizedMetadata.clientId = clientId;
+    const normalizedMetadata = this._normalizeMetadata({
+      ...metadata,
+      projectId,
+      threadId,
+      clientId
+    }, link, module);
 
     if (!link && module === 'projectsync' && !normalizedMetadata.projectId) {
       console.warn('⚠️ Notificación de proyectos sin projectId. Provide metadata.projectId para enlazar con ViewSync.');
@@ -162,7 +165,8 @@ const NotifyManager = {
    */
   getAll() {
     const data = localStorage.getItem(this.STORAGE_KEYS.NOTIFICATIONS);
-    return data ? JSON.parse(data) : [];
+    const list = data ? JSON.parse(data) : [];
+    return list.map((n) => this._normalizeNotification(n));
   },
 
   /**
@@ -189,6 +193,51 @@ const NotifyManager = {
    */
   getByType(type) {
     return this.getAll().filter(n => n.type === type);
+  },
+
+  _parseIdsFromLink(link) {
+    if (!link) return {};
+    try {
+      const url = new URL(link, window.location.href);
+      const params = url.searchParams;
+      const projectId = params.get('projectId') || params.get('id') || params.get('project') || null;
+      const threadId = params.get('threadId') || params.get('thread') || params.get('id') || null;
+      return { projectId, threadId };
+    } catch (err) {
+      return {};
+    }
+  },
+
+  _normalizeMetadata(rawMetadata = {}, link = null, module = '') {
+    const meta = { ...rawMetadata };
+    const parsed = this._parseIdsFromLink(link);
+    meta.projectId = meta.projectId || parsed.projectId || null;
+    meta.threadId = meta.threadId || parsed.threadId || null;
+    meta.clientId = meta.clientId || null;
+
+    // Asegurar que los módulos de proyecto/hilo tengan un ID, aunque sea "unassigned"
+    if (module === 'projectsync' && !meta.projectId) meta.projectId = 'unassigned-project';
+    if (module === 'threadsync' && !meta.threadId) meta.threadId = 'unassigned-thread';
+
+    return meta;
+  },
+
+  _normalizeNotification(notification = {}) {
+    if (!notification) return notification;
+    notification.metadata = this._normalizeMetadata(notification.metadata || {}, notification.link, notification.module);
+    return notification;
+  },
+
+  _normalizeStoredNotifications() {
+    const data = localStorage.getItem(this.STORAGE_KEYS.NOTIFICATIONS);
+    if (!data) return;
+    try {
+      const list = JSON.parse(data) || [];
+      const normalized = list.map((n) => this._normalizeNotification(n));
+      localStorage.setItem(this.STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(normalized));
+    } catch (err) {
+      console.warn('No se pudieron normalizar las notificaciones existentes', err);
+    }
   },
 
   /**

@@ -11,6 +11,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="js/seeds.js?v=verdi2"></script>
   <script src="js/modules.js?v=verdi2"></script>
+  <script src="js/kpi-engine.js?v=verdi2"></script>
   <script src="js/sidebar.js?v=verdi2"></script>
   <script src="js/back-link.js?v=verdi2"></script>
   <script src="./js/ui-feedback.js"></script>
@@ -2493,6 +2494,14 @@
             <label style="display:block; font-size:12px; font-weight:600; color:#64748b; margin-bottom:6px;">Fecha de captura</label>
             <input type="date" id="photoDateFilter" onchange="handlePhotoDateChange(this)" style="width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:14px;">
           </div>
+          <div style="min-width:180px;">
+            <label style="display:block; font-size:12px; font-weight:600; color:#64748b; margin-bottom:6px;">Origen</label>
+            <select id="photoOriginFilter" onchange="handlePhotoOriginChange(this)" style="width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:14px;">
+              <option value="all">Todos</option>
+              <option value="manual">Manual</option>
+              <option value="formsync">FormSync</option>
+            </select>
+          </div>
           <button type="button" class="btn btn-white" onclick="resetPhotoFilters()" style="height:42px; padding:0 18px; border:1px solid #e5e7eb;">Limpiar filtros</button>
           <button type="button" class="btn btn-secondary" onclick="downloadSelectedPhotos()" style="height:42px; padding:0 22px; display:flex; align-items:center; gap:6px;">
             Descargar selección (<span id="photoSelectionCount">0</span>)
@@ -2565,6 +2574,30 @@
           <button type="button" class="doc-filter" data-category="daily" onclick="filterDocuments('daily')" style="padding: 8px 16px; border: 1px solid #e5e7eb; background: white; color: #64748b; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
             📝 FormSync (<span id="doc-count-daily">0</span>)
           </button>
+        </div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; margin-bottom:16px;">
+          <div style="min-width:180px;">
+            <label style="display:block; font-size:12px; font-weight:600; color:#64748b; margin-bottom:6px;">Origen</label>
+            <select id="doc-origin-filter" onchange="setDocFilter('origin', this.value)" style="width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:14px;">
+              <option value="all">Todos</option>
+              <option value="manual">Manual</option>
+              <option value="formsync">FormSync</option>
+            </select>
+          </div>
+          <div style="min-width:180px;">
+            <label style="display:block; font-size:12px; font-weight:600; color:#64748b; margin-bottom:6px;">Fase</label>
+            <input type="text" id="doc-phase-filter" onblur="setDocFilter('phase', this.value || 'all')" placeholder="Fase o hito" style="width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:14px;">
+          </div>
+          <div style="min-width:180px;">
+            <label style="display:block; font-size:12px; font-weight:600; color:#64748b; margin-bottom:6px;">Fecha</label>
+            <input type="date" id="doc-date-filter" onchange="setDocFilter('date', this.value || 'all')" style="width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:14px;">
+          </div>
+          <div style="min-width:180px;">
+            <label style="display:block; font-size:12px; font-weight:600; color:#64748b; margin-bottom:6px;">Carpeta</label>
+            <input type="text" id="doc-folder-filter" onblur="setDocFilter('folder', this.value || 'all')" placeholder="Ej: contratos" style="width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:14px;">
+          </div>
+          <button type="button" class="btn btn-white" onclick="resetDocFilters()" style="height:42px; padding:0 18px; border:1px solid #e5e7eb;">Limpiar filtros</button>
+          <button type="button" class="btn btn-secondary" onclick="downloadSelectedDocuments()" style="height:42px; padding:0 18px;">Descargar selección (<span id="doc-selection-count">0</span>)</button>
         </div>
 
         <!-- Lista de documentos -->
@@ -2696,8 +2729,11 @@
 
     const scheduleDragState = { dragged: null };
     const timelineDragState = { dragged: null };
-    const photoFilters = { projectId: null, category: 'all', phase: 'all', date: 'all' };
+    const photoFilters = { projectId: null, category: 'all', phase: 'all', date: 'all', origin: 'all' };
     const selectedPhotoIds = new Set();
+    let pendingPhotoFiles = [];
+    const docFilters = { category: 'all', origin: 'all', phase: 'all', date: 'all', folder: 'all' };
+    const selectedDocIds = new Set();
     const HERO_TITLE_SIZE_KEY = 'viewsync_hero_title_size';
 
     function applyHeroTitleSize(mode) {
@@ -4197,8 +4233,10 @@
       const files = event.target.files;
       const fileList = document.getElementById('fileList');
       fileList.innerHTML = '';
+      pendingPhotoFiles = [];
       
       Array.from(files).forEach((file, index) => {
+        pendingPhotoFiles.push(file);
         const fileItem = document.createElement('div');
         fileItem.style.cssText = 'display: flex; align-items: center; gap: 12px; padding: 12px; background: white; border-radius: 8px; margin-bottom: 8px; border: 1px solid #e5e7eb;';
         fileItem.innerHTML = `
@@ -4217,8 +4255,52 @@
     }
 
     function savePhotos() {
-      alert('✓ Fotos subidas exitosamente\n\nLas fotos han sido agregadas a la galería del proyecto.');
-      closeModal('photoModal');
+      if (!pendingPhotoFiles.length) {
+        uiToast('info', 'Selecciona al menos una foto.');
+        return;
+      }
+      const projectId = photoFilters.projectId || resolveDefaultProjectId();
+      const existing = loadProjectPhotos(projectId);
+      const phaseLabel = document.getElementById('photoPhaseSelect')?.value || document.getElementById('photoPhaseFilter')?.value || 'general';
+      const phaseName = phaseLabel === '' || phaseLabel === 'all' ? 'General' : phaseLabel;
+      const categoryInput = document.getElementById('photoCategory');
+      const captionInput = document.getElementById('photoCaption');
+      const chosenCategory = (categoryInput && categoryInput.value) ? categoryInput.value : (photoFilters.category === 'all' ? 'during' : photoFilters.category);
+      const chosenCaption = captionInput ? captionInput.value : '';
+      const dateInput = document.getElementById('photoDateField');
+      const captureDate = dateInput && dateInput.value ? dateInput.value : new Date().toISOString().slice(0, 10);
+
+      const readers = pendingPhotoFiles.map((file, idx) => {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            resolve({
+              id: `PHOTO-${Date.now()}-${idx}`,
+              fileName: file.name,
+              caption: chosenCaption || file.name,
+              url: e.target.result,
+              size: file.size,
+              type: file.type,
+              category: chosenCategory,
+              phaseName,
+              phaseId: phaseLabel === 'all' ? null : phaseLabel,
+              captureDate,
+              uploadDate: new Date().toISOString(),
+              origin: 'manual',
+              projectId
+            });
+          };
+          reader.readAsDataURL(file);
+        });
+      });
+
+      Promise.all(readers).then((photos) => {
+        const merged = [...existing, ...photos];
+        saveProjectPhotos(merged, projectId);
+        pendingPhotoFiles = [];
+        uiToast('success', 'Fotos subidas exitosamente.');
+        closeModal('photoModal');
+      });
     }
 
     // Función para descargar documentos
@@ -6039,8 +6121,8 @@
       const ids = new Set();
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && key.startsWith('photo_gallery_')) {
-          ids.add(key.replace('photo_gallery_', ''));
+        if (key && key.startsWith('project_photos_')) {
+          ids.add(key.replace('project_photos_', ''));
         }
       }
       const fallback = resolveDefaultProjectId();
@@ -6056,14 +6138,16 @@
         captureDate: photo.captureDate || baseDate.slice(0, 10),
         uploadDate: baseDate,
         phaseName: photo.phaseName || photo.phase || 'General',
-        phaseId: photo.phaseId || photo.phase || null
+        phaseId: photo.phaseId || photo.phase || null,
+        origin: photo.origin || 'manual',
+        category: photo.category || 'during'
       };
     }
 
     function loadProjectPhotos(targetProjectId = resolveDefaultProjectId()) {
       const projectId = targetProjectId || resolveDefaultProjectId();
       if (!projectId) return [];
-      const key = `photo_gallery_${projectId}`;
+      const key = `project_photos_${projectId}`;
       const stored = localStorage.getItem(key);
       const parsed = stored ? JSON.parse(stored) : [];
       return parsed.map((photo) => normalizePhotoRecord(photo, projectId));
@@ -6083,7 +6167,7 @@
         console.error('No project ID found');
         return;
       }
-      const key = `photo_gallery_${projectId}`;
+      const key = `project_photos_${projectId}`;
       localStorage.setItem(key, JSON.stringify(photos));
       renderPhotoGallery();
     }
@@ -6097,7 +6181,8 @@
       const scopedPhotos = loadPhotoUniverse().filter((photo) => {
         const matchesPhase = photoFilters.phase === 'all' || photo.phaseId === photoFilters.phase || photo.phaseName === photoFilters.phase;
         const matchesDate = photoFilters.date === 'all' || (photo.captureDate && photo.captureDate === photoFilters.date);
-        return matchesPhase && matchesDate;
+        const matchesOrigin = photoFilters.origin === 'all' || (photo.origin || 'manual') === photoFilters.origin;
+        return matchesPhase && matchesDate && matchesOrigin;
       });
 
       const counts = {
@@ -6255,6 +6340,10 @@
       if (dateInput) {
         dateInput.value = photoFilters.date !== 'all' ? photoFilters.date : '';
       }
+      const originSelect = document.getElementById('photoOriginFilter');
+      if (originSelect) {
+        originSelect.value = photoFilters.origin || 'all';
+      }
     }
 
     function handlePhotoProjectChange(select) {
@@ -6279,9 +6368,17 @@
       renderPhotoGallery();
     }
 
+    function handlePhotoOriginChange(select) {
+      photoFilters.origin = select.value || 'all';
+      selectedPhotoIds.clear();
+      updatePhotoSelectionCount();
+      renderPhotoGallery();
+    }
+
     function resetPhotoFilters() {
       photoFilters.category = 'all';
       photoFilters.phase = 'all';
+      photoFilters.origin = 'all';
       photoFilters.date = 'all';
       photoFilters.projectId = resolveDefaultProjectId();
       selectedPhotoIds.clear();
@@ -6481,10 +6578,11 @@
         const newPhoto = {
           id: 'PHOTO-' + Date.now(),
           category: category,
-          caption: caption || null,
+          caption: caption || file.name,
           url: e.target.result, // Base64 data URL
           uploadDate: new Date().toISOString(),
           uploadedBy: 'Usuario Actual', // TODO: integrar con sistema de auth
+          origin: 'manual',
           fileName: file.name,
           fileSize: file.size,
           projectId,
@@ -6501,7 +6599,7 @@
         // Cambiar a la categoría de la foto subida
         filterPhotos(category);
         
-        alert(`✅ Foto Subida\n\n📁 Archivo: ${file.name}\n📂 Categoría: ${getCategoryName(category)}\n${caption ? '📝 Descripción: ' + caption : ''}\n\nLa foto se ha guardado correctamente.`);
+        uiToast('success', `Foto subida (${getCategoryName(category)}).`);
       };
       
       reader.readAsDataURL(file);
@@ -6619,7 +6717,15 @@
       const stored = localStorage.getItem(getDocumentStorageKey(targetId));
       if (!stored) return [];
       try {
-        return JSON.parse(stored) || [];
+        const docs = JSON.parse(stored) || [];
+        return docs.map((d, idx) => ({
+          ...d,
+          id: d.id || `DOC-${Date.now()}-${idx}`,
+          origin: d.origin || (d.metadata?.linkedLogId ? 'formsync' : 'manual'),
+          uploadDate: d.uploadDate || d.createdAt || new Date().toISOString(),
+          category: d.category || d.type || 'otro',
+          fileName: d.fileName || d.title || 'Documento',
+        }));
       } catch (err) {
         console.warn('Documentos corruptos, regenerando', err);
         return [];
@@ -6633,6 +6739,34 @@
       if (!options.silent) {
         renderDocumentsList();
       }
+    }
+
+    function setDocFilter(key, value) {
+      docFilters[key] = value || 'all';
+      if (key === 'category') currentDocFilter = value || 'all';
+      renderDocumentsList();
+    }
+
+    function resetDocFilters() {
+      docFilters.category = 'all';
+      docFilters.origin = 'all';
+      docFilters.phase = 'all';
+      docFilters.date = 'all';
+      docFilters.folder = 'all';
+      currentDocFilter = 'all';
+      const dateInput = document.getElementById('doc-date-filter');
+      if (dateInput) dateInput.value = '';
+      document.querySelectorAll('.doc-filter').forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.category === 'all');
+        if (btn.dataset.category === 'all') {
+          btn.style.background = 'linear-gradient(135deg, #02735E, #035951)';
+          btn.style.color = 'white';
+        } else {
+          btn.style.background = 'white';
+          btn.style.color = '#64748b';
+        }
+      });
+      renderDocumentsList();
     }
 
     function appendProjectDocument(doc, projectId = resolveDefaultProjectId(), options = {}) {
@@ -6846,8 +6980,6 @@
     function renderDocumentsList() {
       ensureFormSyncDocuments();
       const allDocs = loadProjectDocuments();
-      const manualDocs = allDocs.filter(doc => doc.origin !== 'formsync');
-      const generatedDocs = allDocs.filter(doc => doc.origin === 'formsync');
       const listEl = document.getElementById('documents-list');
       if (!listEl) return;
 
@@ -6870,9 +7002,20 @@
         if (counter) counter.textContent = counts[cat];
       });
 
-      const applyFilter = docs => currentDocFilter === 'all' ? docs : docs.filter(d => d.category === currentDocFilter);
-      const filteredProjectDocs = applyFilter(manualDocs);
-      const filteredGeneratedDocs = applyFilter(generatedDocs);
+      const applyFilter = (doc) => {
+        if (docFilters.category !== 'all' && doc.category !== docFilters.category) return false;
+        if (docFilters.origin !== 'all' && (doc.origin || 'manual') !== docFilters.origin) return false;
+        if (docFilters.phase !== 'all' && (doc.phase || 'general') !== docFilters.phase) return false;
+        if (docFilters.folder !== 'all' && (doc.folder || 'default') !== docFilters.folder) return false;
+        if (docFilters.date !== 'all' && doc.uploadDate) {
+          const d = new Date(doc.uploadDate).toISOString().slice(0, 10);
+          if (d !== docFilters.date) return false;
+        }
+        return true;
+      };
+
+      const filteredProjectDocs = allDocs.filter(d => d.origin !== 'formsync').filter(applyFilter);
+      const filteredGeneratedDocs = allDocs.filter(d => d.origin === 'formsync').filter(applyFilter);
 
       const renderCards = docs => {
         if (docs.length === 0) {
@@ -6885,11 +7028,12 @@
             ? `<span style="background:#0ea5e9; color:white; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:700;">FormSync</span>`
             : `<span style="background:#e2e8f0; color:#475569; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:700;">Manual</span>`;
           return `
-            <div class="doc-item" style="padding: 16px; background: white; border: 2px solid #e5e7eb; border-radius: 12px; display: flex; align-items: center; gap: 16px; transition: all 0.2s; cursor: pointer;" onmouseover="this.style.borderColor='#cbd5e1'" onmouseout="this.style.borderColor='#e5e7eb'" onclick="viewDocument('${doc.id}')">
-              <div style="font-size: 32px;">${fileIcon}</div>
+            <div class="doc-item" style="padding: 16px; background: white; border: 2px solid #e5e7eb; border-radius: 12px; display: flex; align-items: center; gap: 16px; transition: all 0.2s;">
+              <input type="checkbox" aria-label="Seleccionar documento" onclick="event.stopPropagation(); toggleDocSelection('${doc.id}', this.checked)" ${selectedDocIds.has(doc.id) ? 'checked' : ''}>
+              <div style="font-size: 32px; cursor:pointer;" onclick="viewDocument('${doc.id}')">${fileIcon}</div>
               <div style="flex: 1;">
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                  <span style="font-weight: 600; font-size: 14px; color: #1e293b;">${doc.fileName}</span>
+                  <span style="font-weight: 600; font-size: 14px; color: #1e293b;" contenteditable="true" onblur="renameDocument('${doc.id}', this.textContent.trim())" onclick="event.stopPropagation();">${doc.fileName}</span>
                   <span style="background: ${categoryColor[doc.category] || '#02735E'}; color: white; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">
                     ${categoryEmoji[doc.category] || '📎'} ${categoryName[doc.category] || 'Documento'}
                   </span>
@@ -6903,6 +7047,8 @@
                   </svg>
                   ${doc.uploadDate ? new Date(doc.uploadDate).toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Sin fecha'}
                   ${fileSize ? ` • ${fileSize}` : ''}
+                  ${doc.phase ? ` • Fase: ${doc.phase}` : ''}
+                  ${doc.folder ? ` • Carpeta: ${doc.folder}` : ''}
                 </div>
               </div>
               <div style="display: flex; gap: 8px;">
@@ -6930,7 +7076,7 @@
               <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
               <polyline points="13 2 13 9 20 9"/>
             </svg>
-            <p style="font-size: 15px; font-weight: 500; margin-bottom: 8px;">${currentDocFilter === 'all' ? 'No hay documentos en este proyecto' : 'No hay documentos en esta categoría'}</p>
+            <p style="font-size: 15px; font-weight: 500; margin-bottom: 8px;">${docFilters.category === 'all' ? 'No hay documentos en este proyecto' : 'No hay documentos con este filtro'}</p>
             <p style="font-size: 13px; color: #cbd5e1;">Sube documentos para mantener toda la información organizada</p>
           </div>
         `;
@@ -6949,6 +7095,8 @@
           </div>
         </div>
       `;
+      const sel = document.getElementById('doc-selection-count');
+      if (sel) sel.textContent = selectedDocIds.size;
     }
 
     // Filtrar documentos
@@ -6968,6 +7116,41 @@
         }
       });
       
+      setDocFilter('category', category);
+    }
+
+    function toggleDocSelection(id, checked) {
+      if (checked) selectedDocIds.add(id); else selectedDocIds.delete(id);
+      const countEl = document.getElementById('doc-selection-count');
+      if (countEl) countEl.textContent = selectedDocIds.size;
+    }
+
+    function downloadSelectedDocuments() {
+      const docs = loadProjectDocuments();
+      const targets = docs.filter(d => selectedDocIds.has(d.id));
+      if (!targets.length) {
+        uiToast('info', 'Selecciona al menos un documento.');
+        return;
+      }
+      targets.forEach((doc) => {
+        if (!doc.url) return;
+        const link = document.createElement('a');
+        link.href = doc.url;
+        link.download = doc.fileName || 'documento';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+      uiToast('success', `Descargando ${targets.length} documento(s)`);
+    }
+
+    function renameDocument(id, newName) {
+      if (!newName) return;
+      const docs = loadProjectDocuments();
+      const idx = docs.findIndex((d) => d.id === id);
+      if (idx === -1) return;
+      docs[idx].fileName = newName;
+      saveProjectDocuments(docs, resolveDefaultProjectId(), { silent: true });
       renderDocumentsList();
     }
 
@@ -7146,7 +7329,7 @@
       
       const documents = loadProjectDocuments();
       const filtered = documents.filter(d => d.id !== docId);
-      
+      selectedDocIds.delete(docId);
       saveProjectDocuments(filtered);
       
       uiToast('success', 'Documento eliminado correctamente.');
