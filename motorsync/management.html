@@ -378,13 +378,46 @@
   </div>
 
   <script>
-    const inviteRequests = (window.DemoSeeds ? DemoSeeds.getInvites() : []).map((invite) => ({
-      ...invite
-    }));
+    const INVITES_KEY = 'management_invites';
+    let inviteRequests = [];
+
+    function loadInvites() {
+      try {
+        const stored = localStorage.getItem(INVITES_KEY);
+        if (stored) {
+          inviteRequests = JSON.parse(stored) || [];
+          return;
+        }
+      } catch (err) {
+        console.warn('No se pudieron leer invitaciones', err);
+      }
+      // Seed desde DemoSeeds si demoMode está activo
+      if (window.DemoMode && window.DemoMode.isEnabled && window.DemoMode.isEnabled() && window.DemoSeeds && typeof DemoSeeds.getInvites === 'function') {
+        inviteRequests = DemoSeeds.getInvites().map((invite) => ({ ...invite }));
+      } else {
+        inviteRequests = [];
+      }
+      saveInvites(true);
+    }
+
+    function saveInvites(silent = false) {
+      try {
+        localStorage.setItem(INVITES_KEY, JSON.stringify(inviteRequests));
+      } catch (err) {
+        console.warn('No se pudieron guardar invitaciones', err);
+      }
+      if (!silent) renderInvites();
+    }
 
     function renderInvites() {
       const tbody = document.getElementById('pending-invitations');
       if (!tbody) return;
+      // Normalizar daysAgo en render
+      inviteRequests = inviteRequests.map((inv) => ({
+        ...inv,
+        daysAgo: inv.daysAgo != null ? inv.daysAgo : 0,
+        status: inv.status || 'Pendiente'
+      }));
       if (!inviteRequests.length) {
         tbody.innerHTML = `<tr><td colspan="5" class="empty-row">Sin invitaciones activas.</td></tr>`;
       } else {
@@ -446,10 +479,11 @@
         role,
         invitedBy,
         daysAgo: 0,
-        status: 'Pendiente'
+        status: 'Pendiente',
+        invitedAt: new Date().toISOString()
       });
-      
-      renderInvites();
+
+      saveInvites();
       closeInviteModal();
       showToast('success', `Invitación enviada a ${name}.`);
     }
@@ -467,7 +501,7 @@
         const index = inviteRequests.findIndex(invite => invite.email === email);
         if (index !== -1) {
           inviteRequests.splice(index, 1);
-          renderInvites();
+          saveInvites();
           showToast('warning', `Se canceló la invitación de ${email}.`);
         }
       });
@@ -549,6 +583,7 @@
       }
     });
 
+    loadInvites();
     renderInvites();
   </script>
 </body>

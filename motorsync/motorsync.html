@@ -213,7 +213,7 @@
 
     .app-content {
       display: grid;
-      grid-template-columns: 260px 1fr;
+      grid-template-columns: 70px 1fr;
       flex: 1;
       transition: grid-template-columns 0.3s ease;
     }
@@ -4660,7 +4660,7 @@
     <aside id="sidebar"></aside>
 
     <main id="main">
-      <section id="page-dashboard" class="page" aria-labelledby="dashboard-title">
+      <section id="page-dashboard" class="page active" aria-labelledby="dashboard-title">
         <div class="page-header dashboard-hero">
           <div>
             <p class="dashboard-kicker" id="dashboard-kicker" data-i18n="dashboardKicker">Operación en vivo</p>
@@ -4731,8 +4731,7 @@
           <div id="dashboard-notifications-list" class="dashboard-notifications-grid" style="display:none;"></div>
         </div>
 
-  </section>
-  </section>
+      </section>
 
       <!-- MOTORSYNC HUB - PROJECTSYNC + THREADSYNC -->
       <section id="page-motorsync" class="page" aria-labelledby="motorsync-title" hidden>
@@ -10616,8 +10615,17 @@
             this.renderSchedule();
           });
         });
-        document.getElementById('btn-new-customer').addEventListener('click', () => this.openCustomerModal());
-        document.getElementById('btn-new-quote').addEventListener('click', () => this.openQuoteModal());
+        const newCustomerBtn = document.getElementById('btn-new-customer');
+        if (newCustomerBtn && !newCustomerBtn.dataset.bound) {
+          newCustomerBtn.addEventListener('click', () => this.openCustomerModal());
+          newCustomerBtn.dataset.bound = 'true';
+        }
+
+        const newQuoteBtn = document.getElementById('btn-new-quote');
+        if (newQuoteBtn && !newQuoteBtn.dataset.bound) {
+          newQuoteBtn.addEventListener('click', () => this.openQuoteModal());
+          newQuoteBtn.dataset.bound = 'true';
+        }
         const addItemBtn = document.getElementById('btn-add-item');
         if (addItemBtn) {
           addItemBtn.addEventListener('click', () => this.openInventoryModal());
@@ -10626,12 +10634,31 @@
         if (newManagerBtn) {
           newManagerBtn.addEventListener('click', () => this.openAdminModal('add'));
         }
-        document.getElementById('schedule-prev').addEventListener('click', () => this.navigateSchedule(-1));
-        document.getElementById('schedule-next').addEventListener('click', () => this.navigateSchedule(1));
-        document.getElementById('modal-close').addEventListener('click', () => this.closeModal());
-        document.getElementById('modal-form').addEventListener('click', (e) => {
-          if (e.target.id === 'modal-form') this.closeModal();
-        });
+        const schedulePrev = document.getElementById('schedule-prev');
+        if (schedulePrev && !schedulePrev.dataset.bound) {
+          schedulePrev.addEventListener('click', () => this.navigateSchedule(-1));
+          schedulePrev.dataset.bound = 'true';
+        }
+
+        const scheduleNext = document.getElementById('schedule-next');
+        if (scheduleNext && !scheduleNext.dataset.bound) {
+          scheduleNext.addEventListener('click', () => this.navigateSchedule(1));
+          scheduleNext.dataset.bound = 'true';
+        }
+
+        const modalClose = document.getElementById('modal-close');
+        if (modalClose && !modalClose.dataset.bound) {
+          modalClose.addEventListener('click', () => this.closeModal());
+          modalClose.dataset.bound = 'true';
+        }
+
+        const modalForm = document.getElementById('modal-form');
+        if (modalForm && !modalForm.dataset.bound) {
+          modalForm.addEventListener('click', (e) => {
+            if (e.target.id === 'modal-form') this.closeModal();
+          });
+          modalForm.dataset.bound = 'true';
+        }
         const searchOrders = document.getElementById('search-orders');
         if (searchOrders) {
           searchOrders.addEventListener('input', (e) => {

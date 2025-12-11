@@ -51,7 +51,7 @@
 
     .app-content {
       display: grid;
-      grid-template-columns: 260px 1fr;
+      grid-template-columns: 70px 1fr;
       flex: 1;
       transition: grid-template-columns 0.3s ease;
     }
@@ -132,7 +132,7 @@
 
     .app-content {
       display: grid;
-      grid-template-columns: 260px 1fr;
+      grid-template-columns: 70px 1fr;
       flex: 1;
     }
 
@@ -1346,8 +1346,8 @@
     };
 
     const threadState = {
-      title: 'Instalación HVAC - Edificio Corporativo Guadalajara',
-      address: 'Av. Empresarial 345, Guadalajara, Jal.',
+      title: '',
+      address: '',
       createdBy: '',
       createdDate: '',
       createdTime: '',
@@ -1359,6 +1359,19 @@
 
     function getCurrentThreadId() {
       return new URLSearchParams(window.location.search).get('id');
+    }
+
+    function pickDemoThread() {
+      try {
+        if (window.DemoSeeds && typeof DemoSeeds.getThreadDetailMap === 'function') {
+          const map = DemoSeeds.getThreadDetailMap();
+          const firstKey = Object.keys(map || {})[0];
+          return (map && map[firstKey]) || null;
+        }
+      } catch (err) {
+        console.warn('No se pudo leer DemoSeeds threads', err);
+      }
+      return null;
     }
 
     function hydrateThreadDefaults() {
@@ -1431,17 +1444,21 @@
           console.warn('Thread no encontrado:', threadId);
         }
       } else {
-        // Valores por defecto si no hay ID
-        if (!threadState.createdBy) {
-          threadState.createdBy = detectCurrentUser();
-        }
-
-        if (!threadState.createdDate) {
-          threadState.createdDate = getCurrentDateISO();
-        }
-
-        if (!threadState.createdTime) {
-          threadState.createdTime = getCurrentTimeHHMM();
+        // Valores por defecto si no hay ID (intenta tomar uno de DemoSeeds)
+        const demoThread = pickDemoThread();
+        if (demoThread) {
+          threadState.title = demoThread.title || demoThread.subject || 'Thread Demo';
+          threadState.address = demoThread.address || '';
+          threadState.createdBy = demoThread.createdBy || detectCurrentUser();
+          threadState.createdDate = demoThread.createdDate || getCurrentDateISO();
+          threadState.createdTime = demoThread.createdTime || getCurrentTimeHHMM();
+          threadState.projectId = demoThread.projectId || null;
+          threadState.projectName = demoThread.projectName || demoThread.clientName || null;
+          threadState.iconKey = demoThread.icon || threadState.iconKey;
+        } else {
+          if (!threadState.createdBy) threadState.createdBy = detectCurrentUser();
+          if (!threadState.createdDate) threadState.createdDate = getCurrentDateISO();
+          if (!threadState.createdTime) threadState.createdTime = getCurrentTimeHHMM();
         }
       }
     }
