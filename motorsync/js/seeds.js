@@ -23,6 +23,16 @@
     }
   }
 
+  function isoDaysFromNow(daysOffset) {
+    const msPerDay = 24 * 60 * 60 * 1000;
+    return new Date(Date.now() + daysOffset * msPerDay).toISOString();
+  }
+
+  function addDays(isoDate, daysToAdd) {
+    const base = new Date(isoDate || Date.now());
+    return new Date(base.getTime() + daysToAdd * 24 * 60 * 60 * 1000).toISOString();
+  }
+
   function deepClone(value) {
     return value === undefined ? undefined : JSON.parse(JSON.stringify(value));
   }
@@ -245,9 +255,39 @@
   };
 
   const INVITES = [
-    { email: 'pedro.garcia@email.com', name: 'Pedro García', role: 'Técnico', invitedBy: 'Candelario Delgado', daysAgo: 2, status: 'Pendiente' },
-    { email: 'sofia.ramirez@email.com', name: 'Sofía Ramírez', role: 'Admin', invitedBy: 'Candelario Delgado', daysAgo: 5, status: 'Pendiente' },
-    { email: 'miguel.torres@email.com', name: 'Miguel Torres', role: 'Técnico', invitedBy: 'María González', daysAgo: 7, status: 'Venciendo' }
+    {
+      id: 'INV-DEMO-001',
+      name: 'Pedro García',
+      email: 'pedro.garcia@email.com',
+      role: 'tech',
+      invitedBy: 'Candelario Delgado',
+      tempPassword: 'OPS-472A',
+      status: 'pending',
+      sentAt: isoDaysFromNow(-2),
+      expiresAt: addDays(isoDaysFromNow(-2), 7),
+    },
+    {
+      id: 'INV-DEMO-002',
+      name: 'Sofía Ramírez',
+      email: 'sofia.ramirez@email.com',
+      role: 'admin',
+      invitedBy: 'Candelario Delgado',
+      tempPassword: 'OPS-814B',
+      status: 'pending',
+      sentAt: isoDaysFromNow(-5),
+      expiresAt: addDays(isoDaysFromNow(-5), 7),
+    },
+    {
+      id: 'INV-DEMO-003',
+      name: 'Miguel Torres',
+      email: 'miguel.torres@email.com',
+      role: 'tech',
+      invitedBy: 'María González',
+      tempPassword: 'OPS-639C',
+      status: 'pending',
+      sentAt: isoDaysFromNow(-7),
+      expiresAt: addDays(isoDaysFromNow(-7), 3),
+    },
   ];
 
   const PROJECTS = [

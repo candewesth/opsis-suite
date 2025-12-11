@@ -34,6 +34,26 @@
         ? window.DemoSeeds.getProjects()
         : []) || []);
     },
+    opsis_admin_invites() {
+      const seeds = (window.DemoSeeds && typeof window.DemoSeeds.getInvites === 'function'
+        ? window.DemoSeeds.getInvites()
+        : []) || [];
+      const normalized = seeds.map((invite, index) => {
+        const sentAt = invite.sentAt || invite.date || new Date(Date.now() - (invite.daysAgo || 0) * 86400000).toISOString();
+        const expiresAt = invite.expiresAt || new Date(new Date(sentAt).getTime() + 86400000 * 7).toISOString();
+        return {
+          ...invite,
+          id: invite.id || `INV-DEMO-${String(index + 1).padStart(3, '0')}`,
+          name: invite.name || invite.email || 'Invitado Opsis',
+          role: (invite.role || 'tech').toLowerCase(),
+          status: (invite.status || 'pending').toLowerCase(),
+          tempPassword: invite.tempPassword || invite.password || 'OPS-DEMO',
+          sentAt,
+          expiresAt,
+        };
+      });
+      return JSON.stringify(normalized);
+    },
     threadsync_threads() {
       return JSON.stringify((window.DemoSeeds && typeof window.DemoSeeds.getThreadListMap === 'function'
         ? window.DemoSeeds.getThreadListMap()

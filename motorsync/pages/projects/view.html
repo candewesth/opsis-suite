@@ -6132,15 +6132,21 @@
 
     function normalizePhotoRecord(photo, projectId) {
       const baseDate = photo.uploadDate || new Date().toISOString();
+      const metadata = photo.metadata || {};
+      const origin = photo.origin || photo.source || (metadata.linkedLogId || photo.linkedLogId || photo.formLogId ? 'formsync' : 'manual');
       return {
         ...photo,
+        metadata,
         projectId: photo.projectId || projectId || resolveDefaultProjectId(),
         captureDate: photo.captureDate || baseDate.slice(0, 10),
         uploadDate: baseDate,
-        phaseName: photo.phaseName || photo.phase || 'General',
-        phaseId: photo.phaseId || photo.phase || null,
-        origin: photo.origin || 'manual',
-        category: photo.category || 'during'
+        phaseName: photo.phaseName || photo.phase || metadata.phaseName || 'General',
+        phaseId: photo.phaseId || photo.phase || metadata.phaseId || null,
+        origin,
+        category: photo.category || metadata.category || 'during',
+        linkedLogId: photo.linkedLogId || metadata.linkedLogId || photo.formLogId || null,
+        templateId: photo.templateId || metadata.templateId || null,
+        uploadedBy: photo.uploadedBy || metadata.submittedBy || photo.uploader || 'Equipo'
       };
     }
 
@@ -6170,6 +6176,35 @@
       const key = `project_photos_${projectId}`;
       localStorage.setItem(key, JSON.stringify(photos));
       renderPhotoGallery();
+    }
+
+    function togglePhotoSelection(photoId, checked) {
+      if (checked) selectedPhotoIds.add(photoId); else selectedPhotoIds.delete(photoId);
+      updatePhotoSelectionCount();
+    }
+
+    function updatePhotoSelectionCount() {
+      const el = document.getElementById('photo-selection-count');
+      if (el) el.textContent = selectedPhotoIds.size;
+    }
+
+    function downloadSelectedPhotos() {
+      const scoped = loadPhotoUniverse();
+      const targets = scoped.filter((p) => selectedPhotoIds.has(p.id));
+      if (!targets.length) {
+        uiToast('info', 'Selecciona al menos una foto');
+        return;
+      }
+      targets.forEach((photo) => {
+        if (!photo.url) return;
+        const link = document.createElement('a');
+        link.href = photo.url;
+        link.download = photo.caption || `foto-${photo.id}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+      uiToast('success', `Descargando ${targets.length} foto(s)`);
     }
 
     // Renderizar galería de fotos con filtros avanzados
@@ -6718,14 +6753,23 @@
       if (!stored) return [];
       try {
         const docs = JSON.parse(stored) || [];
-        return docs.map((d, idx) => ({
-          ...d,
-          id: d.id || `DOC-${Date.now()}-${idx}`,
-          origin: d.origin || (d.metadata?.linkedLogId ? 'formsync' : 'manual'),
-          uploadDate: d.uploadDate || d.createdAt || new Date().toISOString(),
-          category: d.category || d.type || 'otro',
-          fileName: d.fileName || d.title || 'Documento',
-        }));
+        return docs.map((d, idx) => {
+          const metadata = d.metadata || {};
+          const origin = d.origin || (metadata.linkedLogId || d.formLogId ? 'formsync' : 'manual');
+          return {
+            ...d,
+            metadata,
+            id: d.id || `DOC-${Date.now()}-${idx}`,
+            origin,
+            uploadDate: d.uploadDate || d.createdAt || new Date().toISOString(),
+            category: d.category || d.type || 'otro',
+            fileName: d.fileName || d.title || 'Documento',
+            phase: d.phase || metadata.phase || 'general',
+            folder: d.folder || metadata.folder || 'default',
+            linkedLogId: d.linkedLogId || metadata.linkedLogId || d.formLogId || null,
+            templateId: d.templateId || metadata.templateId || null,
+          };
+        });
       } catch (err) {
         console.warn('Documentos corruptos, regenerando', err);
         return [];
