@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Borradores de Proyectos - Opsis Suite</title>
+  <link rel="stylesheet" href="styles.css">
   <style>
     :root {
       --verdi-dark: #022326;
@@ -378,17 +379,34 @@
     </main>
   </div>
 
-  <!-- Modal de confirmación -->
-  <div class="modal-overlay" id="deleteModal">
-    <div class="modal">
-      <h3>⚠️ Confirmar Eliminación</h3>
-      <p>¿Estás seguro de que deseas eliminar este borrador? Esta acción no se puede deshacer.</p>
-      <p style="font-size: 13px; color: #dc2626; font-weight: 600;">
-        El IDSync asociado (<span id="modalIDSync"></span>) se marcará como CANCELADO en el historial.
-      </p>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-cancel" onclick="closeDeleteModal()">Cancelar</button>
-        <button type="button" class="btn btn-danger" onclick="confirmDelete()">Eliminar Borrador</button>
+  <!-- Modal de confirmación (ops-modal pattern) -->
+  <div class="ops-modal-overlay" id="deleteModal" aria-hidden="true">
+    <div class="ops-modal" role="dialog" aria-labelledby="deleteModalTitle">
+      <button type="button" class="ops-modal-close" onclick="closeDeleteModal()" aria-label="Cerrar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+      <div class="ops-modal-header">
+        <div class="ops-modal-icon" style="background: rgba(220, 38, 38, 0.12); color: #dc2626;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="ops-modal-title" id="deleteModalTitle">Confirmar Eliminación</h3>
+          <p class="ops-modal-subtitle">Esta acción no se puede deshacer.</p>
+        </div>
+      </div>
+      <div class="ops-modal-body">
+        <p style="color: var(--text-secondary);">¿Estás seguro de que deseas eliminar este borrador?</p>
+        <p style="font-size: 13px; color: #dc2626; font-weight: 600; background: rgba(220, 38, 38, 0.08); padding: 12px; border-radius: 8px;">
+          El IDSync asociado (<span id="modalIDSync"></span>) se marcará como CANCELADO en el historial.
+        </p>
+      </div>
+      <div class="ops-modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Cancelar</button>
+        <button type="button" class="btn" style="background: #dc2626; color: white;" onclick="confirmDelete()">Eliminar Borrador</button>
       </div>
     </div>
   </div>
@@ -506,12 +524,16 @@
     function showDeleteModal(idSync) {
       draftToDelete = idSync;
       document.getElementById('modalIDSync').textContent = idSync;
-      document.getElementById('deleteModal').classList.add('show');
+      const modal = document.getElementById('deleteModal');
+      modal.setAttribute('aria-hidden', 'false');
+      modal.classList.add('active');
     }
 
     function closeDeleteModal() {
       draftToDelete = null;
-      document.getElementById('deleteModal').classList.remove('show');
+      const modal = document.getElementById('deleteModal');
+      modal.setAttribute('aria-hidden', 'true');
+      modal.classList.remove('active');
     }
 
     function confirmDelete() {
