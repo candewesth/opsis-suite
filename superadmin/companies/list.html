@@ -4,107 +4,133 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compañías - SuperAdmin | Opsis Suite</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/superadmin.css">
 </head>
 <body>
-    <div class="app-layout">
+    <div class="app-shell">
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar"></aside>
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Page Header -->
-            <div class="page-header">
-                <div>
-                    <h1 class="page-title">🏢 Gestión de Compañías</h1>
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h1 class="page-title">Gestión de Compañías</h1>
                     <p class="page-subtitle">Administra todas las compañías clientes de Opsis Suite</p>
                 </div>
                 <div class="header-actions">
                     <button class="btn btn-secondary" onclick="exportCompanies()">
-                        📥 Exportar
+                        <i class="fas fa-download"></i> Exportar
                     </button>
                     <button class="btn btn-primary" onclick="location.href='onboarding.html'">
-                        ➕ Nueva Compañía
+                        <i class="fas fa-plus"></i> Nueva Compañía
                     </button>
                 </div>
-            </div>
+            </header>
+
+            <div class="page-content">
 
             <!-- Stats Summary -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <span class="stat-icon">🏢</span>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="totalCompanies">0</div>
+                            <div class="stat-label">Total Compañías</div>
+                        </div>
                     </div>
-                    <div class="stat-value" id="totalCompanies">0</div>
-                    <div class="stat-label">Total Compañías</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <span class="stat-icon">✅</span>
+                    <div class="stat-card">
+                        <div class="stat-icon success">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="activeCompanies">0</div>
+                            <div class="stat-label">Activas</div>
+                        </div>
                     </div>
-                    <div class="stat-value" id="activeCompanies">0</div>
-                    <div class="stat-label">Activas</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <span class="stat-icon">🧪</span>
+                    <div class="stat-card">
+                        <div class="stat-icon warning">
+                            <i class="fas fa-flask"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="trialCompanies">0</div>
+                            <div class="stat-label">En Prueba</div>
+                        </div>
                     </div>
-                    <div class="stat-value" id="trialCompanies">0</div>
-                    <div class="stat-label">En Prueba</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <span class="stat-icon">👥</span>
+                    <div class="stat-card">
+                        <div class="stat-icon info">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="totalUsers">0</div>
+                            <div class="stat-label">Usuarios Totales</div>
+                        </div>
                     </div>
-                    <div class="stat-value" id="totalUsers">0</div>
-                    <div class="stat-label">Usuarios Totales</div>
                 </div>
-            </div>
 
             <!-- Filters -->
-            <div class="card" style="margin-bottom: 1.5rem;">
-                <div class="filters-bar">
-                    <div class="search-box">
-                        <input type="text" placeholder="Buscar compañía..." id="searchInput" oninput="filterCompanies()">
+                <div class="card">
+                    <div class="filters-bar">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="Buscar compañía..." id="searchInput" oninput="filterCompanies()">
+                        </div>
+                        <div class="filter-tags">
+                            <button class="filter-tag active" data-filter="all" onclick="setFilter('all', this)">Todas</button>
+                            <button class="filter-tag" data-filter="active" onclick="setFilter('active', this)">Activas</button>
+                            <button class="filter-tag" data-filter="trial" onclick="setFilter('trial', this)">En Prueba</button>
+                            <button class="filter-tag" data-filter="inactive" onclick="setFilter('inactive', this)">Inactivas</button>
+                        </div>
                     </div>
-                    <div class="filter-tags">
-                        <button class="filter-tag active" data-filter="all" onclick="setFilter('all', this)">Todas</button>
-                        <button class="filter-tag" data-filter="active" onclick="setFilter('active', this)">Activas</button>
-                        <button class="filter-tag" data-filter="trial" onclick="setFilter('trial', this)">En Prueba</button>
-                        <button class="filter-tag" data-filter="inactive" onclick="setFilter('inactive', this)">Inactivas</button>
+                    <div class="filter-tags" style="margin-top: 1rem;">
+                        <span class="filter-label">Por industria:</span>
+                        <button class="filter-tag active" data-industry="all" onclick="setIndustryFilter('all', this)">
+                            <i class="fas fa-globe"></i> Todas
+                        </button>
+                        <button class="filter-tag" data-industry="construccion" onclick="setIndustryFilter('construccion', this)">
+                            <i class="fas fa-hard-hat"></i> Construcción
+                        </button>
+                        <button class="filter-tag" data-industry="medica" onclick="setIndustryFilter('medica', this)">
+                            <i class="fas fa-hospital"></i> Médica
+                        </button>
+                        <button class="filter-tag" data-industry="transporte" onclick="setIndustryFilter('transporte', this)">
+                            <i class="fas fa-truck"></i> Transporte
+                        </button>
+                        <button class="filter-tag" data-industry="retail" onclick="setIndustryFilter('retail', this)">
+                            <i class="fas fa-shopping-cart"></i> Retail
+                        </button>
+                        <button class="filter-tag" data-industry="jardineria" onclick="setIndustryFilter('jardineria', this)">
+                            <i class="fas fa-leaf"></i> Jardinería
+                        </button>
                     </div>
                 </div>
-                <div class="filter-tags" style="margin-top: 1rem;">
-                    <span style="color: var(--text-secondary); font-size: 0.8rem; margin-right: 0.5rem;">Por industria:</span>
-                    <button class="filter-tag active" data-industry="all" onclick="setIndustryFilter('all', this)">🌐 Todas</button>
-                    <button class="filter-tag" data-industry="construccion" onclick="setIndustryFilter('construccion', this)">🏗️ Construcción</button>
-                    <button class="filter-tag" data-industry="medica" onclick="setIndustryFilter('medica', this)">🏥 Médica</button>
-                    <button class="filter-tag" data-industry="transporte" onclick="setIndustryFilter('transporte', this)">🚛 Transporte</button>
-                    <button class="filter-tag" data-industry="retail" onclick="setIndustryFilter('retail', this)">🛒 Retail</button>
-                    <button class="filter-tag" data-industry="jardineria" onclick="setIndustryFilter('jardineria', this)">🌱 Jardinería</button>
-                </div>
-            </div>
 
             <!-- Companies Table -->
-            <div class="card">
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Compañía</th>
-                                <th>Industria</th>
-                                <th>Plan</th>
-                                <th>Productos</th>
-                                <th>Estado</th>
-                                <th>Usuarios</th>
-                                <th>MRR</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="companiesTable">
-                            <!-- Populated by JS -->
-                        </tbody>
-                    </table>
+                <div class="card">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Compañía</th>
+                                    <th>Industria</th>
+                                    <th>Plan</th>
+                                    <th>Productos</th>
+                                    <th>Estado</th>
+                                    <th>Usuarios</th>
+                                    <th>MRR</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="companiesTable">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </main>
@@ -112,7 +138,7 @@
 
     <!-- View Company Modal -->
     <div class="modal" id="viewCompanyModal">
-        <div class="modal-content" style="max-width: 700px;">
+        <div class="modal-content modal-lg">
             <div class="modal-header">
                 <h3 class="modal-title" id="viewCompanyTitle">Detalles de Compañía</h3>
                 <button class="modal-close" onclick="closeViewModal()">&times;</button>
@@ -122,27 +148,35 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeViewModal()">Cerrar</button>
-                <button class="btn btn-primary" id="editCompanyBtn">✏️ Editar</button>
+                <button class="btn btn-primary" id="editCompanyBtn">
+                    <i class="fas fa-edit"></i> Editar
+                </button>
             </div>
         </div>
     </div>
 
     <!-- Delete Confirmation Modal -->
     <div class="modal" id="deleteModal">
-        <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-content modal-sm">
             <div class="modal-header">
-                <h3 class="modal-title">⚠️ Confirmar Eliminación</h3>
+                <h3 class="modal-title">
+                    <i class="fas fa-exclamation-triangle" style="color: var(--danger-red);"></i>
+                    Confirmar Eliminación
+                </h3>
                 <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
             </div>
             <div class="modal-body">
                 <p>¿Estás seguro de que deseas eliminar la compañía <strong id="deleteCompanyName"></strong>?</p>
-                <p style="color: var(--danger-red); margin-top: 1rem; font-size: 0.875rem;">
-                    ⚠️ Esta acción no se puede deshacer. Se eliminarán todos los datos asociados.
+                <p class="text-danger" style="margin-top: 1rem;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Esta acción no se puede deshacer. Se eliminarán todos los datos asociados.
                 </p>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancelar</button>
-                <button class="btn btn-danger" id="confirmDeleteBtn">🗑️ Eliminar</button>
+                <button class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash"></i> Eliminar
+                </button>
             </div>
         </div>
     </div>
@@ -196,7 +230,7 @@
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="8" class="empty-state">
-                            <div class="icon">🔍</div>
+                            <div class="icon"><i class="fas fa-search"></i></div>
                             <h3>No se encontraron compañías</h3>
                             <p>Intenta ajustar los filtros o crear una nueva compañía</p>
                         </td>
@@ -234,15 +268,15 @@
                     <td><strong>${company.users}</strong></td>
                     <td><strong style="color: var(--primary-green);">$${company.mrr}</strong></td>
                     <td>
-                        <div style="display: flex; gap: 0.25rem;">
-                            <button class="btn btn-sm btn-secondary btn-icon" onclick="viewCompany(${company.id})" title="Ver detalles">
-                                👁️
+                        <div class="action-buttons">
+                            <button class="btn-icon" onclick="viewCompany(${company.id})" title="Ver detalles">
+                                <i class="fas fa-eye"></i>
                             </button>
-                            <button class="btn btn-sm btn-secondary btn-icon" onclick="editCompany(${company.id})" title="Editar">
-                                ✏️
+                            <button class="btn-icon" onclick="editCompany(${company.id})" title="Editar">
+                                <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-sm btn-danger btn-icon" onclick="confirmDeleteCompany(${company.id})" title="Eliminar">
-                                🗑️
+                            <button class="btn-icon danger" onclick="confirmDeleteCompany(${company.id})" title="Eliminar">
+                                <i class="fas fa-trash"></i>
                             </button>
                         </div>
                     </td>
@@ -274,26 +308,26 @@
             
             document.getElementById('viewCompanyTitle').textContent = company.name;
             document.getElementById('viewCompanyBody').innerHTML = `
-                <div class="grid-2" style="gap: 2rem;">
+                <div class="grid-2">
                     <div>
-                        <h4 style="margin-bottom: 1rem; color: var(--text-secondary);">📋 Información General</h4>
+                        <h4 class="section-title"><i class="fas fa-info-circle"></i> Información General</h4>
                         <p><strong>Dominio:</strong> ${company.domain}.opsis-suite.com</p>
                         <p><strong>Email:</strong> ${company.email}</p>
                         <p><strong>Teléfono:</strong> ${company.phone || 'No registrado'}</p>
-                        <p><strong>Industria:</strong> ${SuperAdminData.getIndustry(company.industry).icon} ${SuperAdminData.getIndustry(company.industry).name}</p>
+                        <p><strong>Industria:</strong> ${SuperAdminData.getIndustry(company.industry).name}</p>
                         <p><strong>Fecha registro:</strong> ${company.createdAt}</p>
                         <p><strong>Última actividad:</strong> ${company.lastActive}</p>
                     </div>
                     <div>
-                        <h4 style="margin-bottom: 1rem; color: var(--text-secondary);">💳 Suscripción</h4>
+                        <h4 class="section-title"><i class="fas fa-credit-card"></i> Suscripción</h4>
                         <p><strong>Plan:</strong> <span class="plan-badge plan-${company.plan.toLowerCase()}">${company.plan}</span></p>
-                        <p><strong>MRR:</strong> <span style="color: var(--primary-green); font-weight: 700;">$${company.mrr}/mes</span></p>
+                        <p><strong>MRR:</strong> <span class="text-success">$${company.mrr}/mes</span></p>
                         <p><strong>Estado:</strong> <span class="status status-${company.status}">${SuperAdminData.getStatusName(company.status)}</span></p>
                         <p><strong>Usuarios:</strong> ${company.users}</p>
                         
-                        <h4 style="margin: 1.5rem 0 1rem; color: var(--text-secondary);">📦 Productos Activos</h4>
-                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-                            ${company.products.map(p => `<span style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(78, 205, 196, 0.1)); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.875rem;">${p}</span>`).join('')}
+                        <h4 class="section-title" style="margin-top: 1.5rem;"><i class="fas fa-box"></i> Productos Activos</h4>
+                        <div class="product-tags">
+                            ${company.products.map(p => `<span class="product-tag">${p}</span>`).join('')}
                         </div>
                     </div>
                 </div>
@@ -344,7 +378,8 @@
         function showToast(message, type = 'success') {
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            toast.innerHTML = `<span>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span> ${message}`;
+            const iconMap = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' };
+            toast.innerHTML = `<i class="fas ${iconMap[type] || iconMap.info}"></i> ${message}`;
             
             let container = document.querySelector('.toast-container');
             if (!container) {

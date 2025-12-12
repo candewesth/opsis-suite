@@ -1,27 +1,36 @@
 // ============================================================================
 // SUPERADMIN SIDEBAR - Opsis Suite
-// Navigation and sidebar management
+// Navigation and sidebar management - Verdi + Aire Design
 // ============================================================================
 
 const SuperAdminSidebar = {
-    // Navigation structure
+    // Navigation structure with Font Awesome icons
     navigation: {
         main: [
-            { id: 'dashboard', label: 'Dashboard', icon: '📊', href: '/superadmin/index.html' }
+            { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-th-large', href: '/superadmin/index.html' }
         ],
-        management: [
-            { id: 'companies', label: 'Compañías', icon: '🏢', href: '/superadmin/companies/list.html', badge: null },
-            { id: 'billing', label: 'Facturación', icon: '💰', href: '/superadmin/billing/overview.html' },
-            { id: 'team', label: 'Mi Equipo', icon: '👥', href: '/superadmin/team/list.html' }
+        clientes: [
+            { id: 'companies', label: 'Compañías', icon: 'fas fa-building', href: '/superadmin/companies/list.html' },
+            { id: 'onboarding', label: 'Onboarding', icon: 'fas fa-user-plus', href: '/superadmin/companies/onboarding.html' }
         ],
-        support: [
-            { id: 'tickets', label: 'Tickets', icon: '🎫', href: '/superadmin/support/tickets.html', badge: '3' },
-            { id: 'analytics', label: 'Analytics', icon: '📈', href: '/superadmin/analytics/usage.html' }
+        finanzas: [
+            { id: 'billing', label: 'Facturación', icon: 'fas fa-file-invoice-dollar', href: '/superadmin/billing/overview.html' },
+            { id: 'pagos', label: 'Pagos', icon: 'fas fa-credit-card', href: '/superadmin/billing/payments.html' },
+            { id: 'planes', label: 'Planes', icon: 'fas fa-tags', href: '/superadmin/billing/plans.html' }
         ],
-        system: [
-            { id: 'settings', label: 'Configuración', icon: '⚙️', href: '/superadmin/settings/general.html' },
-            { id: 'industries', label: 'Industrias', icon: '🏭', href: '/superadmin/settings/industries.html' },
-            { id: 'products', label: 'Productos', icon: '📦', href: '/superadmin/settings/products.html' }
+        equipo: [
+            { id: 'team', label: 'Miembros', icon: 'fas fa-users', href: '/superadmin/team/list.html' },
+            { id: 'roles', label: 'Roles', icon: 'fas fa-user-shield', href: '/superadmin/team/roles.html' }
+        ],
+        soporte: [
+            { id: 'tickets', label: 'Tickets', icon: 'fas fa-headset', href: '/superadmin/support/tickets.html', badge: '3' },
+            { id: 'analytics', label: 'Analytics', icon: 'fas fa-chart-line', href: '/superadmin/analytics/usage.html' }
+        ],
+        configuracion: [
+            { id: 'settings', label: 'General', icon: 'fas fa-cog', href: '/superadmin/settings/general.html' },
+            { id: 'industries', label: 'Industrias', icon: 'fas fa-industry', href: '/superadmin/settings/industries.html' },
+            { id: 'products', label: 'Productos', icon: 'fas fa-box', href: '/superadmin/settings/products.html' },
+            { id: 'integraciones', label: 'Integraciones', icon: 'fas fa-plug', href: '/superadmin/settings/integrations.html' }
         ]
     },
 
@@ -29,27 +38,32 @@ const SuperAdminSidebar = {
     getCurrentPageId() {
         const path = window.location.pathname;
         
+        if (path.includes('/companies/onboarding')) return 'onboarding';
         if (path.includes('/companies/')) return 'companies';
+        if (path.includes('/billing/payments')) return 'pagos';
+        if (path.includes('/billing/plans')) return 'planes';
         if (path.includes('/billing/')) return 'billing';
+        if (path.includes('/team/roles')) return 'roles';
         if (path.includes('/team/')) return 'team';
         if (path.includes('/support/')) return 'tickets';
         if (path.includes('/analytics/')) return 'analytics';
         if (path.includes('/settings/industries')) return 'industries';
         if (path.includes('/settings/products')) return 'products';
+        if (path.includes('/settings/integrations')) return 'integraciones';
         if (path.includes('/settings/')) return 'settings';
         if (path.includes('/index.html') || path.endsWith('/superadmin/')) return 'dashboard';
         
         return 'dashboard';
     },
 
-    // Render sidebar HTML
+    // Render sidebar HTML with Verdi + Aire design
     render() {
         const currentPage = this.getCurrentPageId();
         
         const renderLinks = (links) => {
             return links.map(link => `
                 <a href="${link.href}" class="nav-link ${link.id === currentPage ? 'active' : ''}" data-page="${link.id}">
-                    <span class="icon">${link.icon}</span>
+                    <i class="${link.icon}"></i>
                     <span>${link.label}</span>
                     ${link.badge ? `<span class="badge">${link.badge}</span>` : ''}
                 </a>
@@ -58,10 +72,12 @@ const SuperAdminSidebar = {
 
         return `
             <div class="sidebar-logo">
-                <div class="logo-icon">⚡</div>
+                <div class="logo-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
                 <div class="logo-text">
-                    Opsis Suite
-                    <span>SuperAdmin</span>
+                    <span class="logo-main">Opsis Suite</span>
+                    <span class="logo-sub">SuperAdmin</span>
                 </div>
             </div>
             
@@ -71,29 +87,41 @@ const SuperAdminSidebar = {
                 </div>
                 
                 <div class="nav-section">
-                    <div class="nav-section-title">Gestión</div>
-                    ${renderLinks(this.navigation.management)}
+                    <div class="nav-section-title">Clientes</div>
+                    ${renderLinks(this.navigation.clientes)}
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Finanzas</div>
+                    ${renderLinks(this.navigation.finanzas)}
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Equipo</div>
+                    ${renderLinks(this.navigation.equipo)}
                 </div>
                 
                 <div class="nav-section">
                     <div class="nav-section-title">Soporte</div>
-                    ${renderLinks(this.navigation.support)}
+                    ${renderLinks(this.navigation.soporte)}
                 </div>
                 
                 <div class="nav-section">
-                    <div class="nav-section-title">Sistema</div>
-                    ${renderLinks(this.navigation.system)}
+                    <div class="nav-section-title">Configuración</div>
+                    ${renderLinks(this.navigation.configuracion)}
                 </div>
             </nav>
             
-            <div class="sidebar-footer" style="position: absolute; bottom: 1rem; left: 1rem; right: 1rem;">
-                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: var(--hover-bg); border-radius: var(--border-radius);">
-                    <div style="width: 36px; height: 36px; background: linear-gradient(135deg, var(--primary-green), #4ecdc4); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">A</div>
-                    <div>
-                        <div style="font-weight: 500; font-size: 0.875rem;">Admin</div>
-                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Super Admin</div>
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar">A</div>
+                    <div class="user-info">
+                        <div class="user-name">Admin</div>
+                        <div class="user-role">Super Admin</div>
                     </div>
-                    <button onclick="SuperAdminSidebar.toggleTheme()" style="margin-left: auto; background: none; border: none; cursor: pointer; font-size: 1.25rem;" id="themeToggle">🌙</button>
+                    <button onclick="SuperAdminSidebar.toggleTheme()" class="theme-toggle" id="themeToggle" title="Cambiar tema">
+                        <i class="fas fa-moon"></i>
+                    </button>
                 </div>
             </div>
         `;
@@ -111,7 +139,7 @@ const SuperAdminSidebar = {
         if (savedTheme === 'dark') {
             document.body.setAttribute('data-theme', 'dark');
             const toggle = document.getElementById('themeToggle');
-            if (toggle) toggle.textContent = '☀️';
+            if (toggle) toggle.innerHTML = '<i class="fas fa-sun"></i>';
         }
     },
 
@@ -122,11 +150,11 @@ const SuperAdminSidebar = {
         
         if (isDark) {
             document.body.removeAttribute('data-theme');
-            if (toggle) toggle.textContent = '🌙';
+            if (toggle) toggle.innerHTML = '<i class="fas fa-moon"></i>';
             localStorage.setItem('opsis-theme', 'light');
         } else {
             document.body.setAttribute('data-theme', 'dark');
-            if (toggle) toggle.textContent = '☀️';
+            if (toggle) toggle.innerHTML = '<i class="fas fa-sun"></i>';
             localStorage.setItem('opsis-theme', 'dark');
         }
     }
