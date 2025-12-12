@@ -4,42 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Industrias - SuperAdmin | Opsis Suite</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/superadmin.css">
 </head>
 <body>
-    <div class="app-layout">
+    <div class="app-shell">
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar"></aside>
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Page Header -->
-            <div class="page-header">
-                <div>
-                    <h1 class="page-title">🏭 Catálogo de Industrias</h1>
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h1 class="page-title">Catálogo de Industrias</h1>
                     <p class="page-subtitle">Gestiona las industrias disponibles para tus clientes</p>
                 </div>
                 <div class="header-actions">
                     <button class="btn btn-primary" onclick="openAddIndustryModal()">
-                        ➕ Nueva Industria
+                        <i class="fas fa-plus"></i> Nueva Industria
                     </button>
                 </div>
-            </div>
+            </header>
 
-            <!-- Settings Navigation -->
-            <div class="card" style="margin-bottom: 1.5rem;">
-                <div class="filter-tags">
-                    <a href="general.html" class="filter-tag">⚙️ General</a>
-                    <a href="industries.html" class="filter-tag active">🏭 Industrias</a>
-                    <a href="products.html" class="filter-tag">📦 Productos</a>
-                    <a href="plans.html" class="filter-tag">💳 Planes</a>
-                    <a href="integrations.html" class="filter-tag">🔗 Integraciones</a>
+            <div class="page-content">
+                <!-- Settings Navigation -->
+                <div class="card">
+                    <div class="filter-tags">
+                        <a href="general.html" class="filter-tag"><i class="fas fa-cog"></i> General</a>
+                        <a href="industries.html" class="filter-tag active"><i class="fas fa-industry"></i> Industrias</a>
+                        <a href="products.html" class="filter-tag"><i class="fas fa-box"></i> Productos</a>
+                        <a href="plans.html" class="filter-tag"><i class="fas fa-credit-card"></i> Planes</a>
+                        <a href="integrations.html" class="filter-tag"><i class="fas fa-plug"></i> Integraciones</a>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Industries Grid -->
-            <div class="grid-3" id="industriesGrid">
-                <!-- Populated by JS -->
+                <!-- Industries Grid -->
+                <div class="grid-3" id="industriesGrid">
+                    <!-- Populated by JS -->
+                </div>
             </div>
         </main>
     </div>
@@ -48,7 +52,9 @@
     <div class="modal" id="addIndustryModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">➕ Nueva Industria</h3>
+                <h3 class="modal-title">
+                    <i class="fas fa-plus"></i> Nueva Industria
+                </h3>
                 <button class="modal-close" onclick="closeAddIndustryModal()">&times;</button>
             </div>
             <div class="modal-body">
@@ -57,8 +63,8 @@
                     <input type="text" class="form-input" id="industryName" placeholder="Ej: Tecnología">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Icono (emoji) *</label>
-                    <input type="text" class="form-input" id="industryIcon" placeholder="Ej: 💻" maxlength="2">
+                    <label class="form-label">Icono (Font Awesome class) *</label>
+                    <input type="text" class="form-input" id="industryIcon" placeholder="Ej: fa-laptop-code">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Descripción</label>
@@ -66,12 +72,14 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Color</label>
-                    <input type="color" id="industryColor" value="#22c55e" style="width: 100%; height: 40px; border: none; border-radius: var(--border-radius); cursor: pointer;">
+                    <input type="color" id="industryColor" value="#22c55e" class="color-input">
                 </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeAddIndustryModal()">Cancelar</button>
-                <button class="btn btn-primary" onclick="addIndustry()">➕ Agregar Industria</button>
+                <button class="btn btn-primary" onclick="addIndustry()">
+                    <i class="fas fa-plus"></i> Agregar Industria
+                </button>
             </div>
         </div>
     </div>
@@ -94,8 +102,8 @@
                         ${industry.companies || 0} compañías
                     </p>
                     <div style="display: flex; gap: 0.5rem; justify-content: center;">
-                        <button class="btn btn-sm btn-secondary" onclick="editIndustry('${key}')">✏️ Editar</button>
-                        ${industry.companies === 0 ? `<button class="btn btn-sm btn-danger" onclick="deleteIndustry('${key}')">🗑️</button>` : ''}
+                        <button class="btn btn-sm btn-secondary" onclick="editIndustry('${key}')"><i class="fas fa-edit"></i> Editar</button>
+                        ${industry.companies === 0 ? `<button class="btn btn-sm btn-danger" onclick="deleteIndustry('${key}')"><i class="fas fa-trash"></i></button>` : ''}
                     </div>
                 </div>
             `).join('');
@@ -156,7 +164,8 @@
         function showToast(message, type = 'success') {
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            toast.innerHTML = `<span>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span> ${message}`;
+            const iconClass = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-times-circle' : 'fa-info-circle';
+            toast.innerHTML = `<i class="fas ${iconClass}"></i> ${message}`;
             
             let container = document.querySelector('.toast-container');
             if (!container) {

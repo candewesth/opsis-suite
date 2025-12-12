@@ -135,17 +135,17 @@ const SuperAdminData = {
     // INDUSTRIES CATALOG
     // ========================================================================
     industries: {
-        'construccion': { name: 'Construcción y Obras', icon: '🏗️', companies: 2, color: '#f59e0b' },
-        'medica': { name: 'Médica y Salud', icon: '🏥', companies: 1, color: '#ef4444' },
-        'transporte': { name: 'Transporte y Logística', icon: '🚛', companies: 1, color: '#3b82f6' },
-        'retail': { name: 'Retail y Comercio', icon: '🛒', companies: 1, color: '#8b5cf6' },
-        'jardineria': { name: 'Jardinería y Paisajismo', icon: '🌱', companies: 1, color: '#22c55e' },
-        'tecnologia': { name: 'Tecnología', icon: '💻', companies: 0, color: '#06b6d4' },
-        'educacion': { name: 'Educación', icon: '🎓', companies: 0, color: '#ec4899' },
-        'restaurante': { name: 'Restaurantes y Hoteles', icon: '🍽️', companies: 0, color: '#f97316' },
-        'inmobiliaria': { name: 'Bienes Raíces', icon: '🏠', companies: 0, color: '#14b8a6' },
-        'automotriz': { name: 'Automotriz', icon: '🚗', companies: 0, color: '#6366f1' },
-        'otros': { name: 'Otras Industrias', icon: '⚙️', companies: 0, color: '#64748b' }
+        'construccion': { name: 'Construcción y Obras', icon: 'fas fa-hard-hat', companies: 2, color: '#f59e0b' },
+        'medica': { name: 'Médica y Salud', icon: 'fas fa-hospital', companies: 1, color: '#ef4444' },
+        'transporte': { name: 'Transporte y Logística', icon: 'fas fa-truck', companies: 1, color: '#3b82f6' },
+        'retail': { name: 'Retail y Comercio', icon: 'fas fa-shopping-cart', companies: 1, color: '#8b5cf6' },
+        'jardineria': { name: 'Jardinería y Paisajismo', icon: 'fas fa-leaf', companies: 1, color: '#22c55e' },
+        'tecnologia': { name: 'Tecnología', icon: 'fas fa-laptop-code', companies: 0, color: '#06b6d4' },
+        'educacion': { name: 'Educación', icon: 'fas fa-graduation-cap', companies: 0, color: '#ec4899' },
+        'restaurante': { name: 'Restaurantes y Hoteles', icon: 'fas fa-utensils', companies: 0, color: '#f97316' },
+        'inmobiliaria': { name: 'Bienes Raíces', icon: 'fas fa-home', companies: 0, color: '#14b8a6' },
+        'automotriz': { name: 'Automotriz', icon: 'fas fa-car', companies: 0, color: '#6366f1' },
+        'otros': { name: 'Otras Industrias', icon: 'fas fa-cog', companies: 0, color: '#64748b' }
     },
 
     // ========================================================================
@@ -154,7 +154,7 @@ const SuperAdminData = {
     products: {
         'motorsync': { 
             name: 'MotorSync', 
-            icon: '🔧', 
+            icon: 'fas fa-wrench', 
             description: 'Gestión de proyectos, clientes y operaciones',
             basePrice: 99,
             status: 'active',
@@ -162,7 +162,7 @@ const SuperAdminData = {
         },
         'timesync': { 
             name: 'TimeSync', 
-            icon: '⏱️', 
+            icon: 'fas fa-clock', 
             description: 'Control de tiempo y planificación',
             basePrice: 79,
             status: 'coming-soon',
@@ -170,7 +170,7 @@ const SuperAdminData = {
         },
         'toolsync': { 
             name: 'ToolSync', 
-            icon: '🔨', 
+            icon: 'fas fa-hammer', 
             description: 'Inventario de herramientas y equipos',
             basePrice: 69,
             status: 'coming-soon',
@@ -178,7 +178,7 @@ const SuperAdminData = {
         },
         'humansync': { 
             name: 'HumanSync', 
-            icon: '👥', 
+            icon: 'fas fa-users', 
             description: 'Recursos humanos y nómina',
             basePrice: 129,
             status: 'coming-soon',
@@ -186,7 +186,7 @@ const SuperAdminData = {
         },
         'fleetsync': { 
             name: 'FleetSync', 
-            icon: '🚛', 
+            icon: 'fas fa-truck', 
             description: 'Gestión de flotas y vehículos',
             basePrice: 149,
             status: 'coming-soon',
@@ -229,7 +229,7 @@ const SuperAdminData = {
 
     // Get industry info
     getIndustry(key) {
-        return this.industries[key] || { name: key, icon: '🏢' };
+        return this.industries[key] || { name: key, icon: 'fas fa-building' };
     },
 
     // Calculate totals

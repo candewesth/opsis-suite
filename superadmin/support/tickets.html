@@ -4,105 +4,124 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tickets de Soporte - SuperAdmin | Opsis Suite</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/superadmin.css">
 </head>
 <body>
-    <div class="app-layout">
+    <div class="app-shell">
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar"></aside>
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Page Header -->
-            <div class="page-header">
-                <div>
-                    <h1 class="page-title">🎫 Tickets de Soporte</h1>
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h1 class="page-title">Tickets de Soporte</h1>
                     <p class="page-subtitle">Gestiona las solicitudes de soporte de tus clientes</p>
                 </div>
                 <div class="header-actions">
                     <button class="btn btn-secondary" onclick="location.href='knowledge-base.html'">
-                        📚 Base de Conocimiento
+                        <i class="fas fa-book"></i> Base de Conocimiento
                     </button>
                     <button class="btn btn-primary" onclick="openNewTicketModal()">
-                        ➕ Nuevo Ticket
+                        <i class="fas fa-plus"></i> Nuevo Ticket
                     </button>
                 </div>
-            </div>
+            </header>
 
-            <!-- Stats -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <span class="stat-icon">🎫</span>
+            <div class="page-content">
+                <!-- Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-ticket-alt"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="totalTickets">3</div>
+                            <div class="stat-label">Tickets Totales</div>
+                        </div>
                     </div>
-                    <div class="stat-value" id="totalTickets">3</div>
-                    <div class="stat-label">Tickets Totales</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <span class="stat-icon">🔴</span>
+                    <div class="stat-card">
+                        <div class="stat-icon danger">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="openTickets">2</div>
+                            <div class="stat-label">Abiertos</div>
+                        </div>
                     </div>
-                    <div class="stat-value" id="openTickets">2</div>
-                    <div class="stat-label">Abiertos</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <span class="stat-icon">🟡</span>
+                    <div class="stat-card">
+                        <div class="stat-icon warning">
+                            <i class="fas fa-spinner"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="inProgressTickets">1</div>
+                            <div class="stat-label">En Progreso</div>
+                        </div>
                     </div>
-                    <div class="stat-value" id="inProgressTickets">1</div>
-                    <div class="stat-label">En Progreso</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <span class="stat-icon">⏱️</span>
+                    <div class="stat-card">
+                        <div class="stat-icon info">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value">2.4h</div>
+                            <div class="stat-label">Tiempo Promedio</div>
+                        </div>
                     </div>
-                    <div class="stat-value">2.4h</div>
-                    <div class="stat-label">Tiempo Promedio Respuesta</div>
                 </div>
-            </div>
 
-            <!-- Filters -->
-            <div class="card" style="margin-bottom: 1.5rem;">
-                <div class="filters-bar">
-                    <div class="search-box">
-                        <input type="text" placeholder="Buscar tickets..." id="searchInput" oninput="filterTickets()">
+                <!-- Filters -->
+                <div class="card">
+                    <div class="filters-bar">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="Buscar tickets..." id="searchInput" oninput="filterTickets()">
+                        </div>
+                        <div class="filter-tags">
+                            <button class="filter-tag active" data-filter="all" onclick="setFilter('all', this)">Todos</button>
+                            <button class="filter-tag" data-filter="open" onclick="setFilter('open', this)">Abiertos</button>
+                            <button class="filter-tag" data-filter="in-progress" onclick="setFilter('in-progress', this)">En Progreso</button>
+                            <button class="filter-tag" data-filter="closed" onclick="setFilter('closed', this)">Cerrados</button>
+                        </div>
                     </div>
-                    <div class="filter-tags">
-                        <button class="filter-tag active" data-filter="all" onclick="setFilter('all', this)">Todos</button>
-                        <button class="filter-tag" data-filter="open" onclick="setFilter('open', this)">🔴 Abiertos</button>
-                        <button class="filter-tag" data-filter="in-progress" onclick="setFilter('in-progress', this)">🟡 En Progreso</button>
-                        <button class="filter-tag" data-filter="closed" onclick="setFilter('closed', this)">🟢 Cerrados</button>
+                    <div class="filter-tags" style="margin-top: 1rem;">
+                        <span class="filter-label">Prioridad:</span>
+                        <button class="filter-tag active" data-priority="all" onclick="setPriorityFilter('all', this)">Todas</button>
+                        <button class="filter-tag" data-priority="high" onclick="setPriorityFilter('high', this)">
+                            <i class="fas fa-circle text-danger"></i> Alta
+                        </button>
+                        <button class="filter-tag" data-priority="medium" onclick="setPriorityFilter('medium', this)">
+                            <i class="fas fa-circle text-warning"></i> Media
+                        </button>
+                        <button class="filter-tag" data-priority="low" onclick="setPriorityFilter('low', this)">
+                            <i class="fas fa-circle text-success"></i> Baja
+                        </button>
                     </div>
                 </div>
-                <div class="filter-tags" style="margin-top: 1rem;">
-                    <span style="color: var(--text-secondary); font-size: 0.8rem; margin-right: 0.5rem;">Prioridad:</span>
-                    <button class="filter-tag active" data-priority="all" onclick="setPriorityFilter('all', this)">Todas</button>
-                    <button class="filter-tag" data-priority="high" onclick="setPriorityFilter('high', this)">🔴 Alta</button>
-                    <button class="filter-tag" data-priority="medium" onclick="setPriorityFilter('medium', this)">🟡 Media</button>
-                    <button class="filter-tag" data-priority="low" onclick="setPriorityFilter('low', this)">🟢 Baja</button>
-                </div>
-            </div>
 
-            <!-- Tickets Table -->
-            <div class="card">
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Asunto</th>
-                                <th>Compañía</th>
-                                <th>Prioridad</th>
-                                <th>Estado</th>
-                                <th>Asignado</th>
-                                <th>Creado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ticketsTable">
-                            <!-- Populated by JS -->
-                        </tbody>
-                    </table>
+                <!-- Tickets Table -->
+                <div class="card">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Asunto</th>
+                                    <th>Compañía</th>
+                                    <th>Prioridad</th>
+                                    <th>Estado</th>
+                                    <th>Asignado</th>
+                                    <th>Creado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ticketsTable">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </main>
@@ -110,7 +129,7 @@
 
     <!-- View Ticket Modal -->
     <div class="modal" id="viewTicketModal">
-        <div class="modal-content" style="max-width: 700px;">
+        <div class="modal-content modal-lg">
             <div class="modal-header">
                 <h3 class="modal-title" id="viewTicketTitle">Ticket #1</h3>
                 <button class="modal-close" onclick="closeViewTicketModal()">&times;</button>
@@ -120,7 +139,9 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeViewTicketModal()">Cerrar</button>
-                <button class="btn btn-primary" id="respondTicketBtn">💬 Responder</button>
+                <button class="btn btn-primary" id="respondTicketBtn">
+                    <i class="fas fa-reply"></i> Responder
+                </button>
             </div>
         </div>
     </div>
@@ -129,7 +150,9 @@
     <div class="modal" id="newTicketModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">➕ Nuevo Ticket</h3>
+                <h3 class="modal-title">
+                    <i class="fas fa-plus"></i> Nuevo Ticket
+                </h3>
                 <button class="modal-close" onclick="closeNewTicketModal()">&times;</button>
             </div>
             <div class="modal-body">
@@ -147,9 +170,9 @@
                 <div class="form-group">
                     <label class="form-label">Prioridad *</label>
                     <select class="form-select" id="ticketPriority">
-                        <option value="low">🟢 Baja</option>
-                        <option value="medium" selected>🟡 Media</option>
-                        <option value="high">🔴 Alta</option>
+                        <option value="low">Baja</option>
+                        <option value="medium" selected>Media</option>
+                        <option value="high">Alta</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -166,7 +189,9 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeNewTicketModal()">Cancelar</button>
-                <button class="btn btn-primary" onclick="createTicket()">➕ Crear Ticket</button>
+                <button class="btn btn-primary" onclick="createTicket()">
+                    <i class="fas fa-plus"></i> Crear Ticket
+                </button>
             </div>
         </div>
     </div>
@@ -215,7 +240,7 @@
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="8" class="empty-state">
-                            <div class="icon">🎫</div>
+                            <div class="icon"><i class="fas fa-ticket-alt"></i></div>
                             <h3>No hay tickets</h3>
                             <p>No se encontraron tickets con los filtros seleccionados</p>
                         </td>
@@ -230,8 +255,8 @@
                     <td>${ticket.subject}</td>
                     <td>${ticket.company}</td>
                     <td>
-                        <span style="display: flex; align-items: center; gap: 0.5rem;">
-                            ${ticket.priority === 'high' ? '🔴' : ticket.priority === 'medium' ? '🟡' : '🟢'}
+                        <span class="priority priority-${ticket.priority}">
+                            <i class="fas fa-circle"></i>
                             ${ticket.priority === 'high' ? 'Alta' : ticket.priority === 'medium' ? 'Media' : 'Baja'}
                         </span>
                     </td>
@@ -240,19 +265,19 @@
                             ${ticket.status === 'open' ? 'Abierto' : ticket.status === 'in-progress' ? 'En Progreso' : 'Cerrado'}
                         </span>
                     </td>
-                    <td>${ticket.assignee || '<span style="color: var(--text-tertiary);">Sin asignar</span>'}</td>
+                    <td>${ticket.assignee || '<span class="text-muted">Sin asignar</span>'}</td>
                     <td>${ticket.created}</td>
                     <td>
-                        <div style="display: flex; gap: 0.25rem;">
-                            <button class="btn btn-sm btn-secondary btn-icon" onclick="viewTicket(${ticket.id})" title="Ver detalles">
-                                👁️
+                        <div class="action-buttons">
+                            <button class="btn-icon" onclick="viewTicket(${ticket.id})" title="Ver detalles">
+                                <i class="fas fa-eye"></i>
                             </button>
-                            <button class="btn btn-sm btn-primary btn-icon" onclick="respondTicket(${ticket.id})" title="Responder">
-                                💬
+                            <button class="btn-icon primary" onclick="respondTicket(${ticket.id})" title="Responder">
+                                <i class="fas fa-reply"></i>
                             </button>
                             ${ticket.status !== 'closed' ? `
-                                <button class="btn btn-sm btn-secondary btn-icon" onclick="closeTicket(${ticket.id})" title="Cerrar">
-                                    ✅
+                                <button class="btn-icon success" onclick="closeTicket(${ticket.id})" title="Cerrar">
+                                    <i class="fas fa-check"></i>
                                 </button>
                             ` : ''}
                         </div>
@@ -298,30 +323,30 @@
             
             document.getElementById('viewTicketTitle').textContent = `Ticket #${ticket.id}`;
             document.getElementById('viewTicketBody').innerHTML = `
-                <div style="margin-bottom: 1.5rem;">
-                    <span style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: ${ticket.priority === 'high' ? '#ef444420' : ticket.priority === 'medium' ? '#f59e0b20' : '#22c55e20'}; border-radius: 20px; font-size: 0.875rem;">
-                        ${ticket.priority === 'high' ? '🔴 Alta Prioridad' : ticket.priority === 'medium' ? '🟡 Media Prioridad' : '🟢 Baja Prioridad'}
+                <div class="ticket-meta">
+                    <span class="priority priority-${ticket.priority}">
+                        <i class="fas fa-circle"></i> ${ticket.priority === 'high' ? 'Alta Prioridad' : ticket.priority === 'medium' ? 'Media Prioridad' : 'Baja Prioridad'}
                     </span>
-                    <span class="status status-${ticket.status === 'open' ? 'trial' : ticket.status === 'in-progress' ? 'active' : 'inactive'}" style="margin-left: 0.5rem;">
+                    <span class="status status-${ticket.status === 'open' ? 'trial' : ticket.status === 'in-progress' ? 'active' : 'inactive'}">
                         ${ticket.status === 'open' ? 'Abierto' : ticket.status === 'in-progress' ? 'En Progreso' : 'Cerrado'}
                     </span>
                 </div>
                 
-                <h4 style="margin-bottom: 0.5rem;">${ticket.subject}</h4>
-                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                <h4 class="ticket-subject">${ticket.subject}</h4>
+                <p class="ticket-info">
                     De: <strong>${ticket.company}</strong> • Creado: ${ticket.created}
                 </p>
                 
-                <div style="background: var(--hover-bg); padding: 1.5rem; border-radius: var(--border-radius); margin-bottom: 1.5rem;">
+                <div class="ticket-description">
                     <p>Descripción detallada del ticket...</p>
-                    <p style="margin-top: 1rem; color: var(--text-secondary);">
+                    <p class="text-muted">
                         (En una implementación real, aquí iría la descripción completa del ticket)
                     </p>
                 </div>
                 
-                <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="ticket-actions">
                     <div>
-                        <span style="color: var(--text-secondary);">Asignado a:</span>
+                        <span class="text-muted">Asignado a:</span>
                         <strong>${ticket.assignee || 'Sin asignar'}</strong>
                     </div>
                     <select class="form-select" style="width: auto;" onchange="assignTicket(${ticket.id}, this.value)">
@@ -408,7 +433,8 @@
         function showToast(message, type = 'success') {
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            toast.innerHTML = `<span>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span> ${message}`;
+            const iconMap = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' };
+            toast.innerHTML = `<i class="fas ${iconMap[type] || iconMap.info}"></i> ${message}`;
             
             let container = document.querySelector('.toast-container');
             if (!container) {
