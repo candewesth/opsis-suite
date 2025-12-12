@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SuperAdmin | Opsis Suite</title>
+    <link rel="stylesheet" href="css/superadmin.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Dashboard</h1>
+                    <p class="page-subtitle">Bienvenido al panel de control de Opsis Suite</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="location.href='companies/list.html'">
+                        🏢 Ver Compañías
+                    </button>
+                    <button class="btn btn-primary" onclick="openOnboardingModal()">
+                        ➕ Nueva Compañía
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card" onclick="location.href='companies/list.html'">
+                    <div class="stat-header">
+                        <span class="stat-icon">🏢</span>
+                        <span class="stat-trend up">↗ +24%</span>
+                    </div>
+                    <div class="stat-value" id="totalCompanies">5</div>
+                    <div class="stat-label">Compañías Totales</div>
+                </div>
+                <div class="stat-card" onclick="location.href='team/list.html'">
+                    <div class="stat-header">
+                        <span class="stat-icon">👥</span>
+                        <span class="stat-trend up">↗ +18%</span>
+                    </div>
+                    <div class="stat-value" id="totalUsers">97</div>
+                    <div class="stat-label">Usuarios Activos</div>
+                </div>
+                <div class="stat-card" onclick="location.href='billing/overview.html'">
+                    <div class="stat-header">
+                        <span class="stat-icon">💰</span>
+                        <span class="stat-trend up">↗ +32%</span>
+                    </div>
+                    <div class="stat-value">$<span id="monthlyRevenue">1,546</span></div>
+                    <div class="stat-label">MRR (Ingreso Mensual)</div>
+                </div>
+                <div class="stat-card" onclick="location.href='support/tickets.html'">
+                    <div class="stat-header">
+                        <span class="stat-icon">🎫</span>
+                        <span class="stat-trend down">↘ -5%</span>
+                    </div>
+                    <div class="stat-value" id="openTickets">3</div>
+                    <div class="stat-label">Tickets Abiertos</div>
+                </div>
+            </div>
+
+            <!-- Main Grid -->
+            <div class="grid-2">
+                <!-- Recent Companies -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">🏢 Compañías Recientes</h3>
+                        <a href="companies/list.html" class="btn btn-sm btn-secondary">Ver todas</a>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Compañía</th>
+                                    <th>Plan</th>
+                                    <th>Estado</th>
+                                    <th>MRR</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentCompanies">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">📊 Actividad Reciente</h3>
+                        <button class="btn btn-sm btn-secondary">Actualizar</button>
+                    </div>
+                    <div id="activityList" style="max-height: 300px; overflow-y: auto;">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Second Row -->
+            <div class="grid-2" style="margin-top: 1.5rem;">
+                <!-- Revenue Chart Placeholder -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">💰 Ingresos por Mes</h3>
+                        <select class="form-select" style="width: auto;">
+                            <option>Últimos 6 meses</option>
+                            <option>Este año</option>
+                            <option>Último año</option>
+                        </select>
+                    </div>
+                    <div style="height: 200px; display: flex; align-items: center; justify-content: center; background: var(--hover-bg); border-radius: var(--border-radius);">
+                        <div style="text-align: center; color: var(--text-secondary);">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📈</div>
+                            <p>Gráfico de ingresos</p>
+                            <p style="font-size: 0.8rem;">Conectar con Chart.js</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Open Tickets -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">🎫 Tickets Pendientes</h3>
+                        <a href="support/tickets.html" class="btn btn-sm btn-secondary">Ver todos</a>
+                    </div>
+                    <div id="ticketsList">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card" style="margin-top: 1.5rem;">
+                <div class="card-header">
+                    <h3 class="card-title">⚡ Acciones Rápidas</h3>
+                </div>
+                <div class="grid-4">
+                    <button class="btn btn-secondary" style="justify-content: center; padding: 1.5rem;" onclick="openOnboardingModal()">
+                        <span style="font-size: 1.5rem;">➕</span>
+                        <span>Nueva Compañía</span>
+                    </button>
+                    <button class="btn btn-secondary" style="justify-content: center; padding: 1.5rem;" onclick="location.href='team/list.html'">
+                        <span style="font-size: 1.5rem;">👥</span>
+                        <span>Gestionar Equipo</span>
+                    </button>
+                    <button class="btn btn-secondary" style="justify-content: center; padding: 1.5rem;" onclick="location.href='billing/invoices.html'">
+                        <span style="font-size: 1.5rem;">📄</span>
+                        <span>Ver Facturas</span>
+                    </button>
+                    <button class="btn btn-secondary" style="justify-content: center; padding: 1.5rem;" onclick="location.href='analytics/usage.html'">
+                        <span style="font-size: 1.5rem;">📊</span>
+                        <span>Analytics</span>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Onboarding Modal -->
+    <div class="modal" id="onboardingModal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3 class="modal-title">🚀 Agregar Nueva Compañía</h3>
+                <button class="modal-close" onclick="closeOnboardingModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                    Completa el wizard de onboarding para registrar una nueva compañía en Opsis Suite.
+                </p>
+                <a href="companies/onboarding.html" class="btn btn-primary" style="width: 100%; justify-content: center;">
+                    Iniciar Wizard de Onboarding →
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/sidebar.js"></script>
+    <script src="js/data.js"></script>
+    <script>
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboardData();
+        });
+
+        function loadDashboardData() {
+            const totals = SuperAdminData.getTotals();
+            
+            // Update stats
+            document.getElementById('totalCompanies').textContent = totals.companies;
+            document.getElementById('totalUsers').textContent = totals.totalUsers;
+            document.getElementById('monthlyRevenue').textContent = totals.mrr.toLocaleString();
+            document.getElementById('openTickets').textContent = totals.openTickets;
+            
+            // Load recent companies
+            const recentCompanies = SuperAdminData.companies.slice(0, 5);
+            document.getElementById('recentCompanies').innerHTML = recentCompanies.map(company => `
+                <tr>
+                    <td>
+                        <strong>${company.name}</strong>
+                        <br><small style="color: var(--text-secondary);">${SuperAdminData.getIndustry(company.industry).icon} ${SuperAdminData.getIndustry(company.industry).name}</small>
+                    </td>
+                    <td><span class="plan-badge plan-${company.plan.toLowerCase()}">${company.plan}</span></td>
+                    <td><span class="status status-${company.status}">${SuperAdminData.getStatusName(company.status)}</span></td>
+                    <td><strong style="color: var(--primary-green);">$${company.mrr}</strong></td>
+                </tr>
+            `).join('');
+            
+            // Load activity
+            const activities = [
+                { icon: '🏢', text: 'Jardines Verdes actualizó su plan a Professional', time: 'Hace 2 horas' },
+                { icon: '👤', text: 'Nuevo usuario registrado en Clínica San José', time: 'Hace 4 horas' },
+                { icon: '💳', text: 'Pago recibido de Constructora ABC - $299', time: 'Hace 6 horas' },
+                { icon: '🎫', text: 'Ticket #3 creado por Jardines Verdes', time: 'Hace 8 horas' },
+                { icon: '📊', text: 'Reporte mensual generado automáticamente', time: 'Ayer' }
+            ];
+            
+            document.getElementById('activityList').innerHTML = activities.map(activity => `
+                <div style="display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.75rem; border-bottom: 1px solid var(--border-color);">
+                    <span style="font-size: 1.25rem;">${activity.icon}</span>
+                    <div style="flex: 1;">
+                        <p style="font-size: 0.875rem;">${activity.text}</p>
+                        <small style="color: var(--text-secondary);">${activity.time}</small>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Load tickets
+            const openTickets = SuperAdminData.tickets.filter(t => t.status !== 'closed').slice(0, 3);
+            document.getElementById('ticketsList').innerHTML = openTickets.map(ticket => `
+                <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; border-bottom: 1px solid var(--border-color);">
+                    <span style="font-size: 1.25rem;">${ticket.priority === 'high' ? '🔴' : ticket.priority === 'medium' ? '🟡' : '🟢'}</span>
+                    <div style="flex: 1;">
+                        <p style="font-size: 0.875rem; font-weight: 500;">${ticket.subject}</p>
+                        <small style="color: var(--text-secondary);">${ticket.company} • ${ticket.created}</small>
+                    </div>
+                    <span class="status status-${ticket.status === 'open' ? 'trial' : 'active'}">${ticket.status === 'open' ? 'Abierto' : 'En progreso'}</span>
+                </div>
+            `).join('');
+        }
+
+        function openOnboardingModal() {
+            document.getElementById('onboardingModal').classList.add('show');
+        }
+
+        function closeOnboardingModal() {
+            document.getElementById('onboardingModal').classList.remove('show');
+        }
+
+        // Close modal on backdrop click
+        document.getElementById('onboardingModal').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                closeOnboardingModal();
+            }
+        });
+    </script>
+</body>
+</html>

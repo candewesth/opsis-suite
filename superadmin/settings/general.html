@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración - SuperAdmin | Opsis Suite</title>
+    <link rel="stylesheet" href="../css/superadmin.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">⚙️ Configuración del Sistema</h1>
+                    <p class="page-subtitle">Configura los ajustes generales de Opsis Suite</p>
+                </div>
+            </div>
+
+            <!-- Settings Navigation -->
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="filter-tags">
+                    <a href="general.html" class="filter-tag active">⚙️ General</a>
+                    <a href="industries.html" class="filter-tag">🏭 Industrias</a>
+                    <a href="products.html" class="filter-tag">📦 Productos</a>
+                    <a href="plans.html" class="filter-tag">💳 Planes</a>
+                    <a href="integrations.html" class="filter-tag">🔗 Integraciones</a>
+                </div>
+            </div>
+
+            <!-- General Settings -->
+            <div class="grid-2">
+                <!-- System Info -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">🏢 Información del Sistema</h3>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nombre del Sistema</label>
+                        <input type="text" class="form-input" id="systemName" value="Opsis Suite">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Dominio Principal</label>
+                        <input type="text" class="form-input" value="opsis-suite.com" disabled>
+                        <small style="color: var(--text-secondary);">Contacta soporte para cambiar el dominio</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email de Contacto</label>
+                        <input type="email" class="form-input" id="contactEmail" value="admin@opsis-suite.com">
+                    </div>
+                    <button class="btn btn-primary" onclick="saveSystemInfo()">💾 Guardar Cambios</button>
+                </div>
+
+                <!-- Branding -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">🎨 Branding</h3>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Logo del Sistema</label>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="width: 80px; height: 80px; background: linear-gradient(135deg, var(--primary-green), #4ecdc4); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                                ⚡
+                            </div>
+                            <button class="btn btn-secondary">📤 Cambiar Logo</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Color Principal</label>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <input type="color" value="#22c55e" id="primaryColor" style="width: 50px; height: 40px; border: none; border-radius: 8px; cursor: pointer;">
+                            <span id="colorValue">#22c55e</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tema por Defecto</label>
+                        <select class="form-select" id="defaultTheme">
+                            <option value="light">☀️ Claro</option>
+                            <option value="dark">🌙 Oscuro</option>
+                            <option value="auto">🔄 Automático (según sistema)</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveBranding()">💾 Guardar Cambios</button>
+                </div>
+            </div>
+
+            <!-- Limits & Defaults -->
+            <div class="grid-2" style="margin-top: 1.5rem;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">📊 Límites y Defaults</h3>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Período de Trial (días)</label>
+                        <input type="number" class="form-input" id="trialPeriod" value="14" min="7" max="30">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Límite de Compañías</label>
+                        <select class="form-select" id="companyLimit">
+                            <option value="50">50 compañías</option>
+                            <option value="100">100 compañías</option>
+                            <option value="500" selected>500 compañías</option>
+                            <option value="unlimited">Ilimitado</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Almacenamiento por Compañía</label>
+                        <select class="form-select" id="storageLimit">
+                            <option value="10">10 GB</option>
+                            <option value="50" selected>50 GB</option>
+                            <option value="100">100 GB</option>
+                            <option value="500">500 GB</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveLimits()">💾 Guardar Cambios</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">🔔 Notificaciones</h3>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+                            <input type="checkbox" id="emailNotifications" checked>
+                            <span>Notificaciones por Email</span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+                            <input type="checkbox" id="newCompanyAlert" checked>
+                            <span>Alertar nuevas compañías</span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+                            <input type="checkbox" id="paymentAlert" checked>
+                            <span>Alertar pagos recibidos</span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+                            <input type="checkbox" id="ticketAlert" checked>
+                            <span>Alertar tickets de soporte</span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+                            <input type="checkbox" id="weeklyReport" checked>
+                            <span>Reporte semanal automático</span>
+                        </label>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveNotifications()">💾 Guardar Cambios</button>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="card" style="margin-top: 1.5rem; border-color: var(--danger-red);">
+                <div class="card-header">
+                    <h3 class="card-title" style="color: var(--danger-red);">⚠️ Zona de Peligro</h3>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: rgba(239, 68, 68, 0.05); border-radius: var(--border-radius); margin-bottom: 1rem;">
+                    <div>
+                        <h4>Exportar todos los datos</h4>
+                        <p style="font-size: 0.875rem; color: var(--text-secondary);">Descarga una copia de todos los datos del sistema</p>
+                    </div>
+                    <button class="btn btn-secondary">📥 Exportar</button>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: rgba(239, 68, 68, 0.05); border-radius: var(--border-radius); margin-bottom: 1rem;">
+                    <div>
+                        <h4>Limpiar datos de prueba</h4>
+                        <p style="font-size: 0.875rem; color: var(--text-secondary);">Elimina todos los datos de demostración</p>
+                    </div>
+                    <button class="btn btn-danger" onclick="clearTestData()">🗑️ Limpiar</button>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: rgba(239, 68, 68, 0.1); border-radius: var(--border-radius);">
+                    <div>
+                        <h4 style="color: var(--danger-red);">Reiniciar sistema</h4>
+                        <p style="font-size: 0.875rem; color: var(--text-secondary);">Elimina TODOS los datos. Esta acción es irreversible.</p>
+                    </div>
+                    <button class="btn btn-danger" onclick="resetSystem()">☢️ Reiniciar</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/data.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+            
+            // Color picker preview
+            document.getElementById('primaryColor').addEventListener('input', (e) => {
+                document.getElementById('colorValue').textContent = e.target.value;
+            });
+        });
+
+        function loadSettings() {
+            // Load saved settings from localStorage
+            const systemName = localStorage.getItem('opsis-system-name');
+            if (systemName) document.getElementById('systemName').value = systemName;
+            
+            const theme = localStorage.getItem('opsis-default-theme');
+            if (theme) document.getElementById('defaultTheme').value = theme;
+            
+            const trialPeriod = localStorage.getItem('opsis-trial-period');
+            if (trialPeriod) document.getElementById('trialPeriod').value = trialPeriod;
+        }
+
+        function saveSystemInfo() {
+            const name = document.getElementById('systemName').value;
+            const email = document.getElementById('contactEmail').value;
+            
+            localStorage.setItem('opsis-system-name', name);
+            localStorage.setItem('opsis-contact-email', email);
+            
+            showToast('Información del sistema guardada', 'success');
+        }
+
+        function saveBranding() {
+            const color = document.getElementById('primaryColor').value;
+            const theme = document.getElementById('defaultTheme').value;
+            
+            localStorage.setItem('opsis-primary-color', color);
+            localStorage.setItem('opsis-default-theme', theme);
+            
+            showToast('Configuración de branding guardada', 'success');
+        }
+
+        function saveLimits() {
+            const trial = document.getElementById('trialPeriod').value;
+            const companies = document.getElementById('companyLimit').value;
+            const storage = document.getElementById('storageLimit').value;
+            
+            localStorage.setItem('opsis-trial-period', trial);
+            localStorage.setItem('opsis-company-limit', companies);
+            localStorage.setItem('opsis-storage-limit', storage);
+            
+            showToast('Límites guardados', 'success');
+        }
+
+        function saveNotifications() {
+            const settings = {
+                email: document.getElementById('emailNotifications').checked,
+                newCompany: document.getElementById('newCompanyAlert').checked,
+                payment: document.getElementById('paymentAlert').checked,
+                ticket: document.getElementById('ticketAlert').checked,
+                weeklyReport: document.getElementById('weeklyReport').checked
+            };
+            
+            localStorage.setItem('opsis-notifications', JSON.stringify(settings));
+            showToast('Configuración de notificaciones guardada', 'success');
+        }
+
+        function clearTestData() {
+            if (confirm('¿Estás seguro de limpiar todos los datos de prueba?')) {
+                showToast('Datos de prueba eliminados', 'success');
+            }
+        }
+
+        function resetSystem() {
+            if (confirm('⚠️ ADVERTENCIA: Esta acción eliminará TODOS los datos del sistema. ¿Estás seguro?')) {
+                if (confirm('Esta es tu última oportunidad. ¿Realmente deseas continuar?')) {
+                    localStorage.clear();
+                    showToast('Sistema reiniciado', 'warning');
+                    setTimeout(() => location.reload(), 1500);
+                }
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<span>${type === 'success' ? '✅' : type === 'warning' ? '⚠️' : '❌'}</span> ${message}`;
+            
+            let container = document.querySelector('.toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'toast-container';
+                document.body.appendChild(container);
+            }
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</body>
+</html>

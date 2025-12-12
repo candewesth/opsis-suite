@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facturación - SuperAdmin | Opsis Suite</title>
+    <link rel="stylesheet" href="../css/superadmin.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">💰 Facturación y Revenue</h1>
+                    <p class="page-subtitle">Métricas de ingresos y gestión de facturación</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="location.href='invoices.html'">
+                        📄 Ver Facturas
+                    </button>
+                    <button class="btn btn-primary">
+                        📊 Generar Reporte
+                    </button>
+                </div>
+            </div>
+
+            <!-- Revenue Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-icon">💰</span>
+                        <span class="stat-trend up">↗ +32%</span>
+                    </div>
+                    <div class="stat-value">$<span id="mrr">1,546</span></div>
+                    <div class="stat-label">MRR (Ingreso Mensual Recurrente)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-icon">📈</span>
+                        <span class="stat-trend up">↗ +28%</span>
+                    </div>
+                    <div class="stat-value">$<span id="arr">18,552</span></div>
+                    <div class="stat-label">ARR (Ingreso Anual Recurrente)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-icon">🎯</span>
+                    </div>
+                    <div class="stat-value">$<span id="arpu">309</span></div>
+                    <div class="stat-label">ARPU (Ingreso Promedio por Usuario)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-icon">📊</span>
+                        <span class="stat-trend down">↘ -2%</span>
+                    </div>
+                    <div class="stat-value"><span id="churn">2.1</span>%</div>
+                    <div class="stat-label">Churn Rate (Tasa de Cancelación)</div>
+                </div>
+            </div>
+
+            <!-- Revenue by Plan -->
+            <div class="grid-2" style="margin-bottom: 1.5rem;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">📊 Revenue por Plan</h3>
+                    </div>
+                    <div id="planBreakdown">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">📈 Tendencia Mensual</h3>
+                    </div>
+                    <div style="height: 200px; display: flex; align-items: center; justify-content: center; background: var(--hover-bg); border-radius: var(--border-radius);">
+                        <div style="text-align: center; color: var(--text-secondary);">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📈</div>
+                            <p>Gráfico de tendencia</p>
+                            <p style="font-size: 0.8rem;">Conectar con Chart.js</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">💳 Transacciones Recientes</h3>
+                    <button class="btn btn-sm btn-secondary" onclick="location.href='invoices.html'">Ver todas</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Compañía</th>
+                                <th>Concepto</th>
+                                <th>Monto</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsTable">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Revenue Breakdown by Industry -->
+            <div class="card" style="margin-top: 1.5rem;">
+                <div class="card-header">
+                    <h3 class="card-title">🏭 Revenue por Industria</h3>
+                </div>
+                <div id="industryRevenue" class="grid-3" style="gap: 1rem;">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/data.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadBillingData();
+        });
+
+        function loadBillingData() {
+            const totals = SuperAdminData.getTotals();
+            
+            // Update stats
+            document.getElementById('mrr').textContent = totals.mrr.toLocaleString();
+            document.getElementById('arr').textContent = (totals.mrr * 12).toLocaleString();
+            document.getElementById('arpu').textContent = Math.round(totals.mrr / totals.companies).toLocaleString();
+            
+            // Plan breakdown
+            const planCounts = {};
+            const planRevenue = {};
+            SuperAdminData.companies.forEach(company => {
+                const plan = company.plan.toLowerCase();
+                planCounts[plan] = (planCounts[plan] || 0) + 1;
+                planRevenue[plan] = (planRevenue[plan] || 0) + company.mrr;
+            });
+            
+            document.getElementById('planBreakdown').innerHTML = Object.entries(SuperAdminData.plans).map(([key, plan]) => {
+                const count = planCounts[key] || 0;
+                const revenue = planRevenue[key] || 0;
+                const percentage = totals.mrr > 0 ? Math.round((revenue / totals.mrr) * 100) : 0;
+                
+                return `
+                    <div style="display: flex; align-items: center; padding: 1rem; border-bottom: 1px solid var(--border-color);">
+                        <div style="width: 40px; height: 40px; border-radius: 10px; background: ${plan.color}20; display: flex; align-items: center; justify-content: center; margin-right: 1rem;">
+                            <span style="color: ${plan.color}; font-weight: 600;">${key.charAt(0).toUpperCase()}</span>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 500;">${plan.name}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary);">${count} compañías</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-weight: 600; color: var(--primary-green);">$${revenue.toLocaleString()}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary);">${percentage}%</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Recent transactions (mock data)
+            const transactions = [
+                { date: '2024-12-11', company: 'Jardines Verdes', concept: 'Pago mensual - Professional', amount: 399, status: 'completed' },
+                { date: '2024-12-10', company: 'Constructora ABC', concept: 'Pago mensual - Professional', amount: 299, status: 'completed' },
+                { date: '2024-12-10', company: 'Clínica San José', concept: 'Pago mensual - Enterprise', amount: 499, status: 'completed' },
+                { date: '2024-12-09', company: 'Transportes del Norte', concept: 'Pago mensual - Professional', amount: 349, status: 'completed' },
+                { date: '2024-12-01', company: 'Supermercados La Familia', concept: 'Inicio Trial', amount: 0, status: 'trial' }
+            ];
+            
+            document.getElementById('transactionsTable').innerHTML = transactions.map(tx => `
+                <tr>
+                    <td>${tx.date}</td>
+                    <td><strong>${tx.company}</strong></td>
+                    <td>${tx.concept}</td>
+                    <td><strong style="color: var(--primary-green);">$${tx.amount}</strong></td>
+                    <td><span class="status status-${tx.status === 'completed' ? 'active' : 'trial'}">${tx.status === 'completed' ? 'Completado' : 'Trial'}</span></td>
+                </tr>
+            `).join('');
+            
+            // Industry revenue
+            const industryRevenue = {};
+            SuperAdminData.companies.forEach(company => {
+                industryRevenue[company.industry] = (industryRevenue[company.industry] || 0) + company.mrr;
+            });
+            
+            document.getElementById('industryRevenue').innerHTML = Object.entries(SuperAdminData.industries)
+                .filter(([key]) => industryRevenue[key] > 0)
+                .map(([key, industry]) => `
+                    <div style="padding: 1.5rem; background: var(--hover-bg); border-radius: var(--border-radius); text-align: center;">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">${industry.icon}</div>
+                        <div style="font-weight: 500;">${industry.name}</div>
+                        <div style="font-size: 1.25rem; font-weight: 700; color: var(--primary-green); margin-top: 0.5rem;">$${industryRevenue[key].toLocaleString()}</div>
+                    </div>
+                `).join('');
+        }
+    </script>
+</body>
+</html>

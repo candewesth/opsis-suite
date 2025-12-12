@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tickets de Soporte - SuperAdmin | Opsis Suite</title>
+    <link rel="stylesheet" href="../css/superadmin.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">🎫 Tickets de Soporte</h1>
+                    <p class="page-subtitle">Gestiona las solicitudes de soporte de tus clientes</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="location.href='knowledge-base.html'">
+                        📚 Base de Conocimiento
+                    </button>
+                    <button class="btn btn-primary" onclick="openNewTicketModal()">
+                        ➕ Nuevo Ticket
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-icon">🎫</span>
+                    </div>
+                    <div class="stat-value" id="totalTickets">3</div>
+                    <div class="stat-label">Tickets Totales</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-icon">🔴</span>
+                    </div>
+                    <div class="stat-value" id="openTickets">2</div>
+                    <div class="stat-label">Abiertos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-icon">🟡</span>
+                    </div>
+                    <div class="stat-value" id="inProgressTickets">1</div>
+                    <div class="stat-label">En Progreso</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-icon">⏱️</span>
+                    </div>
+                    <div class="stat-value">2.4h</div>
+                    <div class="stat-label">Tiempo Promedio Respuesta</div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="filters-bar">
+                    <div class="search-box">
+                        <input type="text" placeholder="Buscar tickets..." id="searchInput" oninput="filterTickets()">
+                    </div>
+                    <div class="filter-tags">
+                        <button class="filter-tag active" data-filter="all" onclick="setFilter('all', this)">Todos</button>
+                        <button class="filter-tag" data-filter="open" onclick="setFilter('open', this)">🔴 Abiertos</button>
+                        <button class="filter-tag" data-filter="in-progress" onclick="setFilter('in-progress', this)">🟡 En Progreso</button>
+                        <button class="filter-tag" data-filter="closed" onclick="setFilter('closed', this)">🟢 Cerrados</button>
+                    </div>
+                </div>
+                <div class="filter-tags" style="margin-top: 1rem;">
+                    <span style="color: var(--text-secondary); font-size: 0.8rem; margin-right: 0.5rem;">Prioridad:</span>
+                    <button class="filter-tag active" data-priority="all" onclick="setPriorityFilter('all', this)">Todas</button>
+                    <button class="filter-tag" data-priority="high" onclick="setPriorityFilter('high', this)">🔴 Alta</button>
+                    <button class="filter-tag" data-priority="medium" onclick="setPriorityFilter('medium', this)">🟡 Media</button>
+                    <button class="filter-tag" data-priority="low" onclick="setPriorityFilter('low', this)">🟢 Baja</button>
+                </div>
+            </div>
+
+            <!-- Tickets Table -->
+            <div class="card">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Asunto</th>
+                                <th>Compañía</th>
+                                <th>Prioridad</th>
+                                <th>Estado</th>
+                                <th>Asignado</th>
+                                <th>Creado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ticketsTable">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- View Ticket Modal -->
+    <div class="modal" id="viewTicketModal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="viewTicketTitle">Ticket #1</h3>
+                <button class="modal-close" onclick="closeViewTicketModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="viewTicketBody">
+                <!-- Populated by JS -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeViewTicketModal()">Cerrar</button>
+                <button class="btn btn-primary" id="respondTicketBtn">💬 Responder</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Ticket Modal -->
+    <div class="modal" id="newTicketModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">➕ Nuevo Ticket</h3>
+                <button class="modal-close" onclick="closeNewTicketModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Compañía *</label>
+                    <select class="form-select" id="ticketCompany">
+                        <option value="">Seleccionar compañía...</option>
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Asunto *</label>
+                    <input type="text" class="form-input" id="ticketSubject" placeholder="Descripción breve del problema">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Prioridad *</label>
+                    <select class="form-select" id="ticketPriority">
+                        <option value="low">🟢 Baja</option>
+                        <option value="medium" selected>🟡 Media</option>
+                        <option value="high">🔴 Alta</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descripción</label>
+                    <textarea class="form-textarea" id="ticketDescription" rows="4" placeholder="Detalles del problema..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Asignar a</label>
+                    <select class="form-select" id="ticketAssignee">
+                        <option value="">Sin asignar</option>
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeNewTicketModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="createTicket()">➕ Crear Ticket</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/data.js"></script>
+    <script>
+        let currentFilter = 'all';
+        let currentPriorityFilter = 'all';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStats();
+            loadTicketsTable();
+            loadCompanyOptions();
+            loadAssigneeOptions();
+        });
+
+        function loadStats() {
+            const tickets = SuperAdminData.tickets;
+            document.getElementById('totalTickets').textContent = tickets.length;
+            document.getElementById('openTickets').textContent = tickets.filter(t => t.status === 'open').length;
+            document.getElementById('inProgressTickets').textContent = tickets.filter(t => t.status === 'in-progress').length;
+        }
+
+        function loadTicketsTable() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            let tickets = [...SuperAdminData.tickets];
+            
+            // Apply filters
+            if (currentFilter !== 'all') {
+                tickets = tickets.filter(t => t.status === currentFilter);
+            }
+            if (currentPriorityFilter !== 'all') {
+                tickets = tickets.filter(t => t.priority === currentPriorityFilter);
+            }
+            if (searchTerm) {
+                tickets = tickets.filter(t => 
+                    t.subject.toLowerCase().includes(searchTerm) ||
+                    t.company.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            const tbody = document.getElementById('ticketsTable');
+            
+            if (tickets.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="empty-state">
+                            <div class="icon">🎫</div>
+                            <h3>No hay tickets</h3>
+                            <p>No se encontraron tickets con los filtros seleccionados</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = tickets.map(ticket => `
+                <tr data-id="${ticket.id}">
+                    <td><strong>#${ticket.id}</strong></td>
+                    <td>${ticket.subject}</td>
+                    <td>${ticket.company}</td>
+                    <td>
+                        <span style="display: flex; align-items: center; gap: 0.5rem;">
+                            ${ticket.priority === 'high' ? '🔴' : ticket.priority === 'medium' ? '🟡' : '🟢'}
+                            ${ticket.priority === 'high' ? 'Alta' : ticket.priority === 'medium' ? 'Media' : 'Baja'}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status status-${ticket.status === 'open' ? 'trial' : ticket.status === 'in-progress' ? 'active' : 'inactive'}">
+                            ${ticket.status === 'open' ? 'Abierto' : ticket.status === 'in-progress' ? 'En Progreso' : 'Cerrado'}
+                        </span>
+                    </td>
+                    <td>${ticket.assignee || '<span style="color: var(--text-tertiary);">Sin asignar</span>'}</td>
+                    <td>${ticket.created}</td>
+                    <td>
+                        <div style="display: flex; gap: 0.25rem;">
+                            <button class="btn btn-sm btn-secondary btn-icon" onclick="viewTicket(${ticket.id})" title="Ver detalles">
+                                👁️
+                            </button>
+                            <button class="btn btn-sm btn-primary btn-icon" onclick="respondTicket(${ticket.id})" title="Responder">
+                                💬
+                            </button>
+                            ${ticket.status !== 'closed' ? `
+                                <button class="btn btn-sm btn-secondary btn-icon" onclick="closeTicket(${ticket.id})" title="Cerrar">
+                                    ✅
+                                </button>
+                            ` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function loadCompanyOptions() {
+            const select = document.getElementById('ticketCompany');
+            select.innerHTML = '<option value="">Seleccionar compañía...</option>' + 
+                SuperAdminData.companies.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+        }
+
+        function loadAssigneeOptions() {
+            const select = document.getElementById('ticketAssignee');
+            const supportTeam = SuperAdminData.team.filter(m => m.role === 'support_admin' || m.role === 'super_admin');
+            select.innerHTML = '<option value="">Sin asignar</option>' + 
+                supportTeam.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
+        }
+
+        function setFilter(filter, element) {
+            currentFilter = filter;
+            document.querySelectorAll('[data-filter]').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+            loadTicketsTable();
+        }
+
+        function setPriorityFilter(priority, element) {
+            currentPriorityFilter = priority;
+            document.querySelectorAll('[data-priority]').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+            loadTicketsTable();
+        }
+
+        function filterTickets() {
+            loadTicketsTable();
+        }
+
+        function viewTicket(id) {
+            const ticket = SuperAdminData.tickets.find(t => t.id === id);
+            if (!ticket) return;
+            
+            document.getElementById('viewTicketTitle').textContent = `Ticket #${ticket.id}`;
+            document.getElementById('viewTicketBody').innerHTML = `
+                <div style="margin-bottom: 1.5rem;">
+                    <span style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: ${ticket.priority === 'high' ? '#ef444420' : ticket.priority === 'medium' ? '#f59e0b20' : '#22c55e20'}; border-radius: 20px; font-size: 0.875rem;">
+                        ${ticket.priority === 'high' ? '🔴 Alta Prioridad' : ticket.priority === 'medium' ? '🟡 Media Prioridad' : '🟢 Baja Prioridad'}
+                    </span>
+                    <span class="status status-${ticket.status === 'open' ? 'trial' : ticket.status === 'in-progress' ? 'active' : 'inactive'}" style="margin-left: 0.5rem;">
+                        ${ticket.status === 'open' ? 'Abierto' : ticket.status === 'in-progress' ? 'En Progreso' : 'Cerrado'}
+                    </span>
+                </div>
+                
+                <h4 style="margin-bottom: 0.5rem;">${ticket.subject}</h4>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                    De: <strong>${ticket.company}</strong> • Creado: ${ticket.created}
+                </p>
+                
+                <div style="background: var(--hover-bg); padding: 1.5rem; border-radius: var(--border-radius); margin-bottom: 1.5rem;">
+                    <p>Descripción detallada del ticket...</p>
+                    <p style="margin-top: 1rem; color: var(--text-secondary);">
+                        (En una implementación real, aquí iría la descripción completa del ticket)
+                    </p>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span style="color: var(--text-secondary);">Asignado a:</span>
+                        <strong>${ticket.assignee || 'Sin asignar'}</strong>
+                    </div>
+                    <select class="form-select" style="width: auto;" onchange="assignTicket(${ticket.id}, this.value)">
+                        <option value="">Reasignar...</option>
+                        ${SuperAdminData.team.filter(m => m.role === 'support_admin' || m.role === 'super_admin').map(m => `
+                            <option value="${m.name}" ${m.name === ticket.assignee ? 'selected' : ''}>${m.name}</option>
+                        `).join('')}
+                    </select>
+                </div>
+            `;
+            document.getElementById('viewTicketModal').classList.add('show');
+        }
+
+        function closeViewTicketModal() {
+            document.getElementById('viewTicketModal').classList.remove('show');
+        }
+
+        function openNewTicketModal() {
+            document.getElementById('newTicketModal').classList.add('show');
+        }
+
+        function closeNewTicketModal() {
+            document.getElementById('newTicketModal').classList.remove('show');
+        }
+
+        function createTicket() {
+            const company = document.getElementById('ticketCompany').value;
+            const subject = document.getElementById('ticketSubject').value;
+            const priority = document.getElementById('ticketPriority').value;
+            const assignee = document.getElementById('ticketAssignee').value;
+            
+            if (!company || !subject) {
+                showToast('Por favor completa los campos requeridos', 'error');
+                return;
+            }
+            
+            const newTicket = {
+                id: SuperAdminData.tickets.length + 1,
+                company: company,
+                subject: subject,
+                priority: priority,
+                status: 'open',
+                created: new Date().toISOString().split('T')[0],
+                assignee: assignee || null
+            };
+            
+            SuperAdminData.tickets.push(newTicket);
+            
+            closeNewTicketModal();
+            loadStats();
+            loadTicketsTable();
+            showToast('Ticket creado exitosamente', 'success');
+            
+            // Clear form
+            document.getElementById('ticketCompany').value = '';
+            document.getElementById('ticketSubject').value = '';
+            document.getElementById('ticketDescription').value = '';
+        }
+
+        function respondTicket(id) {
+            showToast('Abriendo panel de respuesta...', 'info');
+            // TODO: Implement response panel
+        }
+
+        function closeTicket(id) {
+            const ticket = SuperAdminData.tickets.find(t => t.id === id);
+            if (ticket && confirm(`¿Cerrar el ticket "${ticket.subject}"?`)) {
+                ticket.status = 'closed';
+                loadStats();
+                loadTicketsTable();
+                showToast('Ticket cerrado', 'success');
+            }
+        }
+
+        function assignTicket(id, assignee) {
+            const ticket = SuperAdminData.tickets.find(t => t.id === id);
+            if (ticket) {
+                ticket.assignee = assignee;
+                loadTicketsTable();
+                showToast(`Ticket asignado a ${assignee}`, 'success');
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<span>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span> ${message}`;
+            
+            let container = document.querySelector('.toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'toast-container';
+                document.body.appendChild(container);
+            }
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Close modals on backdrop click
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal')) {
+                    modal.classList.remove('show');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

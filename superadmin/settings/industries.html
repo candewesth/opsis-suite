@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Industrias - SuperAdmin | Opsis Suite</title>
+    <link rel="stylesheet" href="../css/superadmin.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">🏭 Catálogo de Industrias</h1>
+                    <p class="page-subtitle">Gestiona las industrias disponibles para tus clientes</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="openAddIndustryModal()">
+                        ➕ Nueva Industria
+                    </button>
+                </div>
+            </div>
+
+            <!-- Settings Navigation -->
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="filter-tags">
+                    <a href="general.html" class="filter-tag">⚙️ General</a>
+                    <a href="industries.html" class="filter-tag active">🏭 Industrias</a>
+                    <a href="products.html" class="filter-tag">📦 Productos</a>
+                    <a href="plans.html" class="filter-tag">💳 Planes</a>
+                    <a href="integrations.html" class="filter-tag">🔗 Integraciones</a>
+                </div>
+            </div>
+
+            <!-- Industries Grid -->
+            <div class="grid-3" id="industriesGrid">
+                <!-- Populated by JS -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Industry Modal -->
+    <div class="modal" id="addIndustryModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">➕ Nueva Industria</h3>
+                <button class="modal-close" onclick="closeAddIndustryModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Nombre de la Industria *</label>
+                    <input type="text" class="form-input" id="industryName" placeholder="Ej: Tecnología">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Icono (emoji) *</label>
+                    <input type="text" class="form-input" id="industryIcon" placeholder="Ej: 💻" maxlength="2">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descripción</label>
+                    <input type="text" class="form-input" id="industryDescription" placeholder="Breve descripción...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Color</label>
+                    <input type="color" id="industryColor" value="#22c55e" style="width: 100%; height: 40px; border: none; border-radius: var(--border-radius); cursor: pointer;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeAddIndustryModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="addIndustry()">➕ Agregar Industria</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/data.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadIndustriesGrid();
+        });
+
+        function loadIndustriesGrid() {
+            const grid = document.getElementById('industriesGrid');
+            
+            grid.innerHTML = Object.entries(SuperAdminData.industries).map(([key, industry]) => `
+                <div class="card" style="text-align: center; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">${industry.icon}</div>
+                    <h4 style="margin-bottom: 0.5rem;">${industry.name}</h4>
+                    <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                        ${industry.companies || 0} compañías
+                    </p>
+                    <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                        <button class="btn btn-sm btn-secondary" onclick="editIndustry('${key}')">✏️ Editar</button>
+                        ${industry.companies === 0 ? `<button class="btn btn-sm btn-danger" onclick="deleteIndustry('${key}')">🗑️</button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openAddIndustryModal() {
+            document.getElementById('addIndustryModal').classList.add('show');
+        }
+
+        function closeAddIndustryModal() {
+            document.getElementById('addIndustryModal').classList.remove('show');
+        }
+
+        function addIndustry() {
+            const name = document.getElementById('industryName').value;
+            const icon = document.getElementById('industryIcon').value;
+            const description = document.getElementById('industryDescription').value;
+            const color = document.getElementById('industryColor').value;
+            
+            if (!name || !icon) {
+                showToast('Por favor completa los campos requeridos', 'error');
+                return;
+            }
+            
+            const key = name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+            
+            SuperAdminData.industries[key] = {
+                name: name,
+                icon: icon,
+                description: description,
+                companies: 0,
+                color: color
+            };
+            
+            closeAddIndustryModal();
+            loadIndustriesGrid();
+            showToast(`Industria "${name}" agregada`, 'success');
+            
+            // Clear form
+            document.getElementById('industryName').value = '';
+            document.getElementById('industryIcon').value = '';
+            document.getElementById('industryDescription').value = '';
+        }
+
+        function editIndustry(key) {
+            showToast('Función de edición en desarrollo', 'info');
+        }
+
+        function deleteIndustry(key) {
+            const industry = SuperAdminData.industries[key];
+            if (confirm(`¿Eliminar la industria "${industry.name}"?`)) {
+                delete SuperAdminData.industries[key];
+                loadIndustriesGrid();
+                showToast('Industria eliminada', 'success');
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<span>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span> ${message}`;
+            
+            let container = document.querySelector('.toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'toast-container';
+                document.body.appendChild(container);
+            }
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Close modal on backdrop click
+        document.getElementById('addIndustryModal').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                closeAddIndustryModal();
+            }
+        });
+    </script>
+</body>
+</html>
