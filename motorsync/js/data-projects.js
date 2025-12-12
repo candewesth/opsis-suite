@@ -1,6 +1,7 @@
 (function () {
   const PROJECTS_KEY = 'projectsync_projects';
   const APPOINTMENTS_KEY = 'projectsync_appointments';
+  const SETTINGS_KEY = 'opsis_settings';
 
   const statusConfig = {
     lead: { color: '#3b82f6', badge: 'LEAD' },
@@ -25,6 +26,24 @@
   };
 
   const DEFAULT_PROJECTS = (window.DemoSeeds && DemoSeeds.getProjects()) || [];
+
+  function getActiveCompanyId() {
+    try {
+      const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+      const id = settings.companyId || settings.company || settings.companyName;
+      if (id && typeof id === 'string') {
+        return id.trim().toLowerCase().replace(/[^a-z0-9_-]+/gi, '-');
+      }
+    } catch (err) {
+      /* ignore */
+    }
+    return 'default';
+  }
+
+  function scopedKey(base) {
+    const company = getActiveCompanyId();
+    return `${base}_${company}`;
+  }
 
   function extractCounter(idSync) {
     if (!idSync) return 0;
@@ -75,22 +94,27 @@
   }
 
   function loadProjects() {
-    const stored = parseJSON(localStorage.getItem(PROJECTS_KEY), null);
+    const key = scopedKey(PROJECTS_KEY);
+    let stored = parseJSON(localStorage.getItem(key), null);
+
+    // Fallback al key genérico o seeds
     if (!Array.isArray(stored) || stored.length === 0) {
-      const defaults = clone(DEFAULT_PROJECTS);
-      persist(PROJECTS_KEY, defaults);
-      return defaults;
+      stored = parseJSON(localStorage.getItem(PROJECTS_KEY), null);
+    }
+    if (!Array.isArray(stored) || stored.length === 0) {
+      stored = clone(DEFAULT_PROJECTS);
     }
 
     const { list, changed } = normalizeProjects(stored);
-    if (changed) persist(PROJECTS_KEY, list);
+    if (changed || !localStorage.getItem(key)) persist(key, list);
     return list;
   }
 
   function saveProjects(projects) {
     if (!Array.isArray(projects)) return;
     const { list } = normalizeProjects(projects);
-    persist(PROJECTS_KEY, list);
+    const key = scopedKey(PROJECTS_KEY);
+    persist(key, list);
   }
 
   function generateIdSync() {
@@ -160,18 +184,23 @@
   }
 
   function loadAppointments() {
-    const stored = parseJSON(localStorage.getItem(APPOINTMENTS_KEY), null);
+    const key = scopedKey(APPOINTMENTS_KEY);
+    let stored = parseJSON(localStorage.getItem(key), null);
+    if (!Array.isArray(stored) || !stored.length) {
+      stored = parseJSON(localStorage.getItem(APPOINTMENTS_KEY), null);
+    }
     if (Array.isArray(stored) && stored.length) {
+      persist(key, stored);
       return stored;
     }
     const seeds = buildAppointmentSeeds(loadProjects());
-    persist(APPOINTMENTS_KEY, seeds);
+    persist(key, seeds);
     return seeds;
   }
 
   function saveAppointments(appointments) {
     if (!Array.isArray(appointments)) return;
-    persist(APPOINTMENTS_KEY, appointments);
+    persist(scopedKey(APPOINTMENTS_KEY), appointments);
   }
 
   function addAppointment(payload) {
