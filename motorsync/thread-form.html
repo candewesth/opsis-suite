@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="styles.css">
   <script src="js/seeds.js?v=verdi2"></script>
   <script src="js/modules.js"></script>
+  <script src="js/data-projects.js"></script>
+  <script src="js/data-threads.js"></script>
   <style>
     :root {
       --verdi-dark: #022326;
@@ -692,8 +694,12 @@
   <script>
     const fromPage = document.referrer;
 
-    // Cargar proyectos reales del localStorage (los creados en ProjectSync)
+    // Cargar proyectos usando la API centralizada (con company scoping)
     function loadExistingProjects() {
+      if (window.ProjectData) {
+        return ProjectData.loadProjects();
+      }
+      // Fallback si ProjectData no está disponible
       return JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
     }
     
@@ -904,7 +910,17 @@
         });
       }
 
-      console.log('Thread data:', threadData);
+      // Guardar el thread usando la API centralizada
+      if (window.ThreadData) {
+        ThreadData.add(threadData.id, threadData);
+      } else {
+        // Fallback si ThreadData no está disponible
+        const threads = JSON.parse(localStorage.getItem('threadsync_threads') || '{}');
+        threads[threadData.id] = threadData;
+        localStorage.setItem('threadsync_threads', JSON.stringify(threads));
+      }
+
+      console.log('Thread created:', threadData);
 
       setTimeout(() => {
         window.location.href = `threadsync.html?id=${threadData.id}`;

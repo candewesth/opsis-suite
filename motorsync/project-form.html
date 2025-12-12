@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="js/seeds.js?v=verdi2"></script>
   <script src="js/modules.js"></script>
+  <script src="js/data-projects.js"></script>
   <style>
     :root {
       --verdi-dark: #022326;
@@ -1111,10 +1112,10 @@
 
       const idSyncValue = document.getElementById('idSync').value;
 
-      // Generate unique project ID
-      const existingProjects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+      // Use ProjectData API for scoped storage
+      const existingProjects = window.ProjectData ? ProjectData.loadProjects() : JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
       const maxId = existingProjects.reduce((max, p) => {
-        const num = parseInt(p.id.replace('ORD-', ''));
+        const num = parseInt((p.id || '').replace('ORD-', ''));
         return num > max ? num : max;
       }, 200);
       const newProjectId = 'ORD-' + (maxId + 1);
@@ -1140,16 +1141,18 @@
         createdAt: new Date().toISOString()
       };
 
-      // Load existing projects
-      const projects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
-      
-      // Add new project to array
+      // Load existing projects and add new one using ProjectData API
+      const projects = window.ProjectData ? ProjectData.loadProjects() : JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
       projects.push(projectData);
       
-      // Save back to localStorage
-      localStorage.setItem('projectsync_projects', JSON.stringify(projects));
+      // Save using ProjectData API (scoped by company)
+      if (window.ProjectData) {
+        ProjectData.saveProjects(projects);
+      } else {
+        localStorage.setItem('projectsync_projects', JSON.stringify(projects));
+      }
       
-      console.log('✅ Project saved to localStorage:', projectData);
+      console.log('✅ Project saved:', projectData);
       console.log('📊 Total projects now:', projects.length);
 
       // Actualizar lastIDSync solo al guardar exitosamente
