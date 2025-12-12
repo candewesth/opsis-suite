@@ -1384,18 +1384,15 @@
       if (threadId) {
         let threadData = null;
         
-        // 1. Intentar cargar desde localStorage primero
+        // 1. Intentar cargar desde API centralizada (con company scoping)
         try {
-          const storedThreads = localStorage.getItem('threadsync_threads');
-          if (storedThreads) {
-            const threadsData = JSON.parse(storedThreads);
-            if (threadsData[threadId]) {
-              threadData = threadsData[threadId];
-              console.log('Thread cargado desde localStorage:', threadId);
-            }
+          const threadsData = window.ThreadData ? ThreadData.load() : JSON.parse(localStorage.getItem('threadsync_threads') || '{}');
+          if (threadsData[threadId]) {
+            threadData = threadsData[threadId];
+            console.log('Thread cargado:', threadId);
           }
         } catch (e) {
-          console.error('Error al cargar desde localStorage:', e);
+          console.error('Error al cargar thread:', e);
         }
         
         // 2. Si no está en localStorage, buscar en threadsDatabase (datos de ejemplo)
@@ -1603,8 +1600,9 @@
 
     // Función para obtener proyectos disponibles (sin threads conectados)
     function getAvailableProjectsOptions() {
-      // Cargar proyectos reales desde localStorage
-      const allProjects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]').map(p => ({
+      // Cargar proyectos usando API centralizada (con company scoping)
+      const rawProjects = window.ProjectData ? ProjectData.loadProjects() : JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+      const allProjects = rawProjects.map(p => ({
         id: p.id,
         name: p.name,
         status: p.status || 'active'
@@ -1614,16 +1612,13 @@
       let threadsWithProjects = new Set();
       
       try {
-        const storedThreads = localStorage.getItem('threadsync_threads');
-        if (storedThreads) {
-          const threadsData = JSON.parse(storedThreads);
-          Object.values(threadsData).forEach(thread => {
-            if (thread.projectId && thread.projectId !== threadState.projectId) {
-              // Solo excluir si el proyecto está asignado a OTRO thread (no al actual)
-              threadsWithProjects.add(thread.projectId);
-            }
-          });
-        }
+        const threadsData = window.ThreadData ? ThreadData.load() : JSON.parse(localStorage.getItem('threadsync_threads') || '{}');
+        Object.values(threadsData).forEach(thread => {
+          if (thread.projectId && thread.projectId !== threadState.projectId) {
+            // Solo excluir si el proyecto está asignado a OTRO thread (no al actual)
+            threadsWithProjects.add(thread.projectId);
+          }
+        });
       } catch (e) {
         console.error('Error al cargar threads:', e);
       }
@@ -1715,7 +1710,7 @@
       const threadId = getCurrentThreadId();
       let storedThreads = {};
       try {
-        storedThreads = JSON.parse(localStorage.getItem('threadsync_threads') || '{}');
+        storedThreads = window.ThreadData ? ThreadData.load() : JSON.parse(localStorage.getItem('threadsync_threads') || '{}');
       } catch (e) {
         console.error('Error al cargar threads para vincular:', e);
       }
@@ -1724,7 +1719,11 @@
       }
       storedThreads[threadId].projectId = projectId;
       storedThreads[threadId].projectName = projectName;
-      localStorage.setItem('threadsync_threads', JSON.stringify(storedThreads));
+      if (window.ThreadData) {
+        ThreadData.save(storedThreads);
+      } else {
+        localStorage.setItem('threadsync_threads', JSON.stringify(storedThreads));
+      }
       
       threadState.projectId = projectId;
       threadState.projectName = projectName;
@@ -1889,27 +1888,28 @@
         threadState.projectName = null;
       }
 
-      // Actualizar en localStorage
+      // Actualizar usando API centralizada
       const threadId = getCurrentThreadId();
       
       if (threadId) {
         try {
-          const storedThreads = localStorage.getItem('threadsync_threads');
-          if (storedThreads) {
-            const threadsData = JSON.parse(storedThreads);
-            if (threadsData[threadId]) {
-              threadsData[threadId].clientName = newClientName;
-              threadsData[threadId].subject = newSubject;
-              threadsData[threadId].contactInfo = newContactInfo || '-';
-              threadsData[threadId].projectId = newProjectId;
-              threadsData[threadId].projectName = threadState.projectName;
-              
+          const threadsData = window.ThreadData ? ThreadData.load() : JSON.parse(localStorage.getItem('threadsync_threads') || '{}');
+          if (threadsData[threadId]) {
+            threadsData[threadId].clientName = newClientName;
+            threadsData[threadId].subject = newSubject;
+            threadsData[threadId].contactInfo = newContactInfo || '-';
+            threadsData[threadId].projectId = newProjectId;
+            threadsData[threadId].projectName = threadState.projectName;
+            
+            if (window.ThreadData) {
+              ThreadData.save(threadsData);
+            } else {
               localStorage.setItem('threadsync_threads', JSON.stringify(threadsData));
-              console.log('Thread actualizado en localStorage:', threadsData[threadId]);
             }
+            console.log('Thread actualizado:', threadsData[threadId]);
           }
         } catch (e) {
-          console.error('Error al guardar en localStorage:', e);
+          console.error('Error al guardar thread:', e);
         }
       }
 
@@ -2475,10 +2475,9 @@
       
       let threadData = null;
       try {
-        const storedThreads = localStorage.getItem('threadsync_threads');
-        if (storedThreads) {
-          const threadsData = JSON.parse(storedThreads);
-          threadData = threadsData[threadId];
+        const threadsData = window.ThreadData ? ThreadData.load() : JSON.parse(localStorage.getItem('threadsync_threads') || '{}');
+        threadData = threadsData[threadId];
+        if (threadData) {
           console.log('Datos del thread encontrados:', threadData);
         }
       } catch (e) {
@@ -2744,22 +2743,25 @@
       
       let threadData = null;
       try {
-        const storedThreads = localStorage.getItem('threadsync_threads');
-        if (storedThreads) {
-          const threadsData = JSON.parse(storedThreads);
-          threadData = threadsData[threadId];
-        }
+        const threadsData = window.ThreadData ? ThreadData.load() : JSON.parse(localStorage.getItem('threadsync_threads') || '{}');
+        threadData = threadsData[threadId];
       } catch (e) {
         console.error('Error al cargar thread:', e);
       }
       
-      // Generar IDSync automático
-      const lastID = parseInt(localStorage.getItem('lastIDSync') || '1000');
-      const nextID = lastID + 1;
-      const idSyncValue = `IDSYNC-${nextID}`;
+      // Generar IDSync usando API centralizada si está disponible
+      let idSyncValue, nextID;
+      if (window.ProjectData && ProjectData.generateIdSync) {
+        idSyncValue = ProjectData.generateIdSync();
+        nextID = parseInt(idSyncValue.replace('IDSYNC-', ''));
+      } else {
+        const lastID = parseInt(localStorage.getItem('lastIDSync') || '1000');
+        nextID = lastID + 1;
+        idSyncValue = `IDSYNC-${nextID}`;
+      }
       
       // Generar ID de proyecto
-      const existingProjects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+      const existingProjects = window.ProjectData ? ProjectData.loadProjects() : JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
       const maxId = existingProjects.reduce((max, p) => {
         const num = parseInt(p.id.replace('ORD-', ''));
         return num > max ? num : max;
@@ -2789,35 +2791,42 @@
       };
       
       // Guardar proyecto en localStorage
-      const projects = JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
+      // Guardar proyecto usando API centralizada
+      const projects = window.ProjectData ? ProjectData.loadProjects() : JSON.parse(localStorage.getItem('projectsync_projects') || '[]');
       projects.push(projectData);
-      localStorage.setItem('projectsync_projects', JSON.stringify(projects));
+      if (window.ProjectData) {
+        ProjectData.saveProjects(projects);
+      } else {
+        localStorage.setItem('projectsync_projects', JSON.stringify(projects));
+        // Actualizar lastIDSync solo si no usamos la API
+        localStorage.setItem('lastIDSync', nextID.toString());
+      }
       
-      // Actualizar lastIDSync
-      localStorage.setItem('lastIDSync', nextID.toString());
-      
-      // Registrar IDSync como usado
-      const usedIDs = JSON.parse(localStorage.getItem('usedIDSyncs') || '[]');
-      usedIDs.push({
-        idSync: idSyncValue,
-        projectId: newProjectId,
-        projectName: projectData.name,
-        status: 'completed',
-        createdAt: new Date().toISOString(),
-        convertedFromThread: true
-      });
-      localStorage.setItem('usedIDSyncs', JSON.stringify(usedIDs));
+      // Registrar IDSync como usado (esto se maneja dentro de generateIdSync si usamos API)
+      if (!window.ProjectData) {
+        const usedIDs = JSON.parse(localStorage.getItem('usedIDSyncs') || '[]');
+        usedIDs.push({
+          idSync: idSyncValue,
+          projectId: newProjectId,
+          projectName: projectData.name,
+          status: 'completed',
+          createdAt: new Date().toISOString(),
+          convertedFromThread: true
+        });
+        localStorage.setItem('usedIDSyncs', JSON.stringify(usedIDs));
+      }
       
       // Actualizar thread con vinculación al proyecto
       if (threadData && threadId) {
         try {
-          const storedThreads = localStorage.getItem('threadsync_threads');
-          if (storedThreads) {
-            const threadsData = JSON.parse(storedThreads);
-            if (threadsData[threadId]) {
-              threadsData[threadId].projectId = newProjectId;
-              threadsData[threadId].projectName = projectData.name;
-              threadsData[threadId].isConverted = true;
+          const threadsData = window.ThreadData ? ThreadData.load() : JSON.parse(localStorage.getItem('threadsync_threads') || '{}');
+          if (threadsData[threadId]) {
+            threadsData[threadId].projectId = newProjectId;
+            threadsData[threadId].projectName = projectData.name;
+            threadsData[threadId].isConverted = true;
+            if (window.ThreadData) {
+              ThreadData.save(threadsData);
+            } else {
               localStorage.setItem('threadsync_threads', JSON.stringify(threadsData));
             }
           }
@@ -3190,14 +3199,11 @@
         return;
       }
       
-      // Cargar thread desde localStorage
+      // Cargar thread usando API centralizada
       let threadData = null;
       try {
-        const storedThreads = localStorage.getItem('threadsync_threads');
-        if (storedThreads) {
-          const threadsData = JSON.parse(storedThreads);
-          threadData = threadsData[threadId];
-        }
+        const threadsData = window.ThreadData ? ThreadData.load() : JSON.parse(localStorage.getItem('threadsync_threads') || '{}');
+        threadData = threadsData[threadId];
       } catch (e) {
         console.error('Error al cargar comentarios:', e);
       }
@@ -3306,14 +3312,11 @@
       const urlParams = new URLSearchParams(window.location.search);
       const threadId = urlParams.get('id');
       
-      // Get thread data
+      // Get thread data using centralized API
       let threadData = null;
       try {
-        const storedThreads = localStorage.getItem('threadsync_threads');
-        if (storedThreads) {
-          const threadsData = JSON.parse(storedThreads);
-          threadData = threadsData[threadId];
-        }
+        const threadsData = window.ThreadData ? ThreadData.load() : JSON.parse(localStorage.getItem('threadsync_threads') || '{}');
+        threadData = threadsData[threadId];
       } catch (e) {
         console.error('Error loading thread:', e);
       }
