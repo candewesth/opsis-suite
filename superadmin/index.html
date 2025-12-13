@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - SuperAdmin | Opsis Suite</title>
     <base href="/superadmin/">
-    <link rel="stylesheet" href="css/superadmin.css">
+    <link rel="stylesheet" href="css/superadmin.css?v=7">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="app-shell">
@@ -136,10 +137,20 @@
                         <input type="text" placeholder="Buscar compañías, usuarios...">
                     </div>
                     <div class="header-actions">
-                        <button class="header-action-btn">
-                            <i class="fas fa-bell"></i>
-                            <span class="notification-dot"></span>
-                        </button>
+                        <div style="position: relative;">
+                            <button class="header-action-btn" onclick="toggleNotifications()">
+                                <i class="fas fa-bell"></i>
+                                <span class="notification-dot" id="notificationsBadge"></span>
+                            </button>
+                            <!-- Notifications Panel -->
+                            <div id="notificationsPanel" class="notifications-panel" style="position: absolute; top: 100%; right: 0; width: 360px; background: white; border: 1px solid var(--border-color); border-radius: 12px; box-shadow: var(--shadow-lg); display: none; margin-top: 8px; z-index: 1000;">
+                                <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                                    <h4 style="margin: 0; font-size: 14px;">Notificaciones</h4>
+                                    <button onclick="markAllRead()" style="background: none; border: none; color: var(--primary-color); font-size: 12px; cursor: pointer;">Marcar todas como leídas</button>
+                                </div>
+                                <div id="notificationsList" style="max-height: 300px; overflow-y: auto;"></div>
+                            </div>
+                        </div>
                         <button class="btn btn-primary" onclick="openOnboardingModal()">
                             <i class="fas fa-plus"></i>
                             Nueva Compañía
@@ -239,7 +250,7 @@
                                 <i class="fas fa-chart-line"></i>
                                 Actividad Reciente
                             </h3>
-                            <button class="btn btn-sm btn-ghost">
+                            <button class="btn btn-sm btn-ghost" onclick="refreshActivity()">
                                 <i class="fas fa-sync-alt"></i>
                             </button>
                         </div>
@@ -253,26 +264,22 @@
 
                 <!-- Second Row -->
                 <div class="grid" style="grid-template-columns: 1fr 1fr;">
-                    <!-- Revenue Chart Placeholder -->
+                    <!-- Revenue Chart -->
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title">
                                 <i class="fas fa-chart-bar"></i>
                                 Ingresos por Mes
                             </h3>
-                            <select class="filter-select">
+                            <select class="filter-select" onchange="changeChartPeriod(this)">
                                 <option>Últimos 6 meses</option>
                                 <option>Este año</option>
                                 <option>Último año</option>
                             </select>
                         </div>
                         <div class="card-body">
-                            <div style="height: 140px; display: flex; align-items: center; justify-content: center; background: var(--bg-tertiary); border-radius: 8px;">
-                                <div style="text-align: center; color: var(--text-secondary);">
-                                    <i class="fas fa-chart-area" style="font-size: 32px; color: var(--primary-color); margin-bottom: 8px;"></i>
-                                    <p style="font-weight: 600; font-size: 12px;">Gráfico de ingresos</p>
-                                    <p style="font-size: 10px;">Conectar con Chart.js</p>
-                                </div>
+                            <div style="height: 200px; position: relative;">
+                                <canvas id="revenueChart"></canvas>
                             </div>
                         </div>
                     </div>
@@ -363,26 +370,85 @@
         </div>
     </div>
 
+    <!-- Company Detail Modal -->
+    <div class="modal-overlay" id="companyModal">
+        <div class="modal" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-building" style="color: var(--primary-color); margin-right: 8px;"></i>
+                    Detalle de Compañía
+                </h3>
+                <button class="modal-close" onclick="closeCompanyModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="companyModalContent">
+                <!-- Populated by JS -->
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 12px; justify-content: flex-end; padding: 16px 24px; border-top: 1px solid var(--border-color);">
+                <button class="btn btn-secondary" onclick="closeCompanyModal()">Cerrar</button>
+                <button class="btn btn-primary" onclick="location.href='companies/list.html'">
+                    <i class="fas fa-external-link-alt"></i> Ver en Lista
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/data.js"></script>
     <script>
+        let revenueChart = null;
+        let notifications = [
+            { id: 1, type: 'info', title: 'Nuevo ticket', message: 'Jardines Verdes creó un ticket de soporte', time: 'Hace 5 min', read: false },
+            { id: 2, type: 'success', title: 'Pago recibido', message: 'Constructora ABC realizó pago de $299', time: 'Hace 2 horas', read: false },
+            { id: 3, type: 'warning', title: 'Trial por expirar', message: 'Supermercados La Familia - 3 días restantes', time: 'Hace 4 horas', read: true }
+        ];
+
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', () => {
             loadDashboardData();
+            initSearch();
+            initChart('6months');
         });
 
         function loadDashboardData() {
             const totals = SuperAdminData.getTotals();
             
-            // Update stats
-            document.getElementById('totalCompanies').textContent = totals.companies;
-            document.getElementById('totalUsers').textContent = totals.totalUsers;
-            document.getElementById('monthlyRevenue').textContent = totals.mrr.toLocaleString();
-            document.getElementById('openTickets').textContent = totals.openTickets;
+            // Update stats with animation
+            animateNumber('totalCompanies', totals.companies);
+            animateNumber('totalUsers', totals.totalUsers);
+            animateNumber('monthlyRevenue', totals.mrr);
+            animateNumber('openTickets', totals.openTickets);
             
             // Load recent companies
+            loadRecentCompanies();
+            
+            // Load activity
+            loadActivityFeed();
+            
+            // Load tickets
+            loadTickets();
+        }
+
+        function animateNumber(elementId, target) {
+            const el = document.getElementById(elementId);
+            const duration = 1000;
+            const start = 0;
+            const startTime = performance.now();
+            
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const current = Math.floor(start + (target - start) * progress);
+                el.textContent = current.toLocaleString();
+                if (progress < 1) requestAnimationFrame(update);
+            }
+            requestAnimationFrame(update);
+        }
+
+        function loadRecentCompanies() {
             const recentCompanies = SuperAdminData.companies.slice(0, 5);
             document.getElementById('recentCompanies').innerHTML = recentCompanies.map(company => `
-                <tr>
+                <tr onclick="viewCompany(${company.id})" style="cursor: pointer;" class="table-row-clickable">
                     <td>
                         <div class="cell-user">
                             <div class="cell-user-avatar">${company.name.charAt(0)}</div>
@@ -402,18 +468,19 @@
                     <td style="font-weight: 600; color: var(--primary-color);">$${company.mrr}</td>
                 </tr>
             `).join('');
-            
-            // Load activity
+        }
+
+        function loadActivityFeed() {
             const activities = [
-                { icon: 'fa-building', type: 'primary', text: '<strong>Jardines Verdes</strong> actualizó su plan a Professional', time: 'Hace 2 horas' },
-                { icon: 'fa-user-plus', type: 'success', text: 'Nuevo usuario registrado en <strong>Clínica San José</strong>', time: 'Hace 4 horas' },
-                { icon: 'fa-credit-card', type: 'info', text: 'Pago recibido de <strong>Constructora ABC</strong> - $299', time: 'Hace 6 horas' },
-                { icon: 'fa-ticket-alt', type: 'warning', text: 'Ticket #3 creado por <strong>Jardines Verdes</strong>', time: 'Hace 8 horas' },
-                { icon: 'fa-file-alt', type: 'primary', text: 'Reporte mensual generado automáticamente', time: 'Ayer' }
+                { icon: 'fa-building', type: 'primary', text: '<strong>Jardines Verdes</strong> actualizó su plan a Professional', time: 'Hace 2 horas', action: () => viewCompany(5) },
+                { icon: 'fa-user-plus', type: 'success', text: 'Nuevo usuario registrado en <strong>Clínica San José</strong>', time: 'Hace 4 horas', action: () => viewCompany(2) },
+                { icon: 'fa-credit-card', type: 'info', text: 'Pago recibido de <strong>Constructora ABC</strong> - $299', time: 'Hace 6 horas', action: () => location.href='billing/overview.html' },
+                { icon: 'fa-ticket-alt', type: 'warning', text: 'Ticket #3 creado por <strong>Jardines Verdes</strong>', time: 'Hace 8 horas', action: () => location.href='support/tickets.html' },
+                { icon: 'fa-file-alt', type: 'primary', text: 'Reporte mensual generado automáticamente', time: 'Ayer', action: () => showToast('Descargando reporte...', 'info') }
             ];
             
-            document.getElementById('activityList').innerHTML = activities.map(activity => `
-                <li class="activity-item">
+            document.getElementById('activityList').innerHTML = activities.map((activity, i) => `
+                <li class="activity-item" onclick="activityActions[${i}]()" style="cursor: pointer;">
                     <div class="activity-icon ${activity.type}">
                         <i class="fas ${activity.icon}"></i>
                     </div>
@@ -424,10 +491,14 @@
                 </li>
             `).join('');
             
-            // Load tickets
+            // Store actions globally
+            window.activityActions = activities.map(a => a.action);
+        }
+
+        function loadTickets() {
             const openTickets = SuperAdminData.tickets.filter(t => t.status !== 'closed').slice(0, 3);
             document.getElementById('ticketsList').innerHTML = openTickets.map(ticket => `
-                <div class="activity-item" style="padding: 16px;">
+                <div class="activity-item" style="padding: 16px; cursor: pointer;" onclick="viewTicket(${ticket.id})">
                     <div class="activity-icon ${ticket.priority === 'high' ? 'danger' : ticket.priority === 'medium' ? 'warning' : 'success'}">
                         <i class="fas fa-ticket-alt"></i>
                     </div>
@@ -440,6 +511,271 @@
             `).join('');
         }
 
+        // Search functionality
+        function initSearch() {
+            const searchInput = document.querySelector('.search-box input');
+            const searchResults = document.createElement('div');
+            searchResults.className = 'search-results';
+            searchResults.style.cssText = 'position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--border-color); border-radius: 8px; box-shadow: var(--shadow-lg); max-height: 300px; overflow-y: auto; z-index: 1000; display: none;';
+            searchInput.parentElement.style.position = 'relative';
+            searchInput.parentElement.appendChild(searchResults);
+            
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase().trim();
+                if (query.length < 2) {
+                    searchResults.style.display = 'none';
+                    return;
+                }
+                
+                const companyResults = SuperAdminData.companies.filter(c => 
+                    c.name.toLowerCase().includes(query) || 
+                    c.email.toLowerCase().includes(query)
+                );
+                
+                const teamResults = SuperAdminData.team.filter(t => 
+                    t.name.toLowerCase().includes(query) || 
+                    t.email.toLowerCase().includes(query)
+                );
+                
+                if (companyResults.length === 0 && teamResults.length === 0) {
+                    searchResults.innerHTML = '<div style="padding: 16px; text-align: center; color: var(--text-muted);">No se encontraron resultados</div>';
+                } else {
+                    let html = '';
+                    if (companyResults.length > 0) {
+                        html += '<div style="padding: 8px 12px; font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Compañías</div>';
+                        html += companyResults.slice(0, 3).map(c => `
+                            <div class="search-result-item" onclick="viewCompany(${c.id})" style="padding: 12px; display: flex; align-items: center; gap: 12px; cursor: pointer; border-bottom: 1px solid var(--border-color);">
+                                <div style="width: 36px; height: 36px; border-radius: 8px; background: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600;">${c.name.charAt(0)}</div>
+                                <div>
+                                    <div style="font-weight: 600; font-size: 13px;">${c.name}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">${c.email}</div>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                    if (teamResults.length > 0) {
+                        html += '<div style="padding: 8px 12px; font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Equipo</div>';
+                        html += teamResults.slice(0, 3).map(t => `
+                            <div class="search-result-item" onclick="location.href='team/list.html'" style="padding: 12px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                                <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-weight: 600;">${t.avatar}</div>
+                                <div>
+                                    <div style="font-weight: 600; font-size: 13px;">${t.name}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">${t.email}</div>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                    searchResults.innerHTML = html;
+                }
+                searchResults.style.display = 'block';
+            });
+            
+            // Close on click outside
+            document.addEventListener('click', (e) => {
+                if (!searchInput.parentElement.contains(e.target)) {
+                    searchResults.style.display = 'none';
+                }
+            });
+        }
+
+        // Chart initialization
+        function initChart(period) {
+            const ctx = document.getElementById('revenueChart');
+            if (!ctx) return;
+            
+            const data = {
+                '6months': {
+                    labels: ['Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+                    values: [980, 1120, 1250, 1380, 1450, 1546]
+                },
+                'year': {
+                    labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+                    values: [650, 720, 780, 850, 890, 920, 980, 1120, 1250, 1380, 1450, 1546]
+                },
+                'lastyear': {
+                    labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+                    values: [420, 480, 520, 580, 610, 650, 680, 720, 750, 780, 820, 890]
+                }
+            };
+            
+            const chartData = data[period] || data['6months'];
+            
+            if (revenueChart) revenueChart.destroy();
+            
+            revenueChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: 'MRR',
+                        data: chartData.values,
+                        borderColor: '#02735E',
+                        backgroundColor: 'rgba(2, 115, 94, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#02735E'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#022326',
+                            titleFont: { size: 12 },
+                            bodyFont: { size: 14 },
+                            callbacks: {
+                                label: (ctx) => `$${ctx.raw.toLocaleString()}`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { 
+                            beginAtZero: false,
+                            ticks: { callback: (v) => '$' + v }
+                        }
+                    }
+                }
+            });
+        }
+
+        function changeChartPeriod(select) {
+            const periodMap = {
+                'Últimos 6 meses': '6months',
+                'Este año': 'year',
+                'Último año': 'lastyear'
+            };
+            initChart(periodMap[select.value] || '6months');
+        }
+
+        // View company modal
+        function viewCompany(id) {
+            const company = SuperAdminData.getCompany(id);
+            if (!company) return;
+            
+            document.getElementById('companyModalContent').innerHTML = `
+                <div style="display: flex; gap: 24px; margin-bottom: 24px;">
+                    <div style="width: 80px; height: 80px; border-radius: 16px; background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700;">${company.name.charAt(0)}</div>
+                    <div>
+                        <h2 style="margin: 0; font-size: 20px;">${company.name}</h2>
+                        <p style="color: var(--text-secondary); margin: 4px 0;">${SuperAdminData.getIndustry(company.industry).name}</p>
+                        <span class="status status-${company.status}"><span class="status-dot"></span>${SuperAdminData.getStatusName(company.status)}</span>
+                    </div>
+                </div>
+                <div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
+                    <div class="stat-card">
+                        <div class="stat-icon primary"><i class="fas fa-users"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-label">Usuarios</div>
+                            <div class="stat-value">${company.users}</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon success"><i class="fas fa-dollar-sign"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-label">MRR</div>
+                            <div class="stat-value">$${company.mrr}</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon info"><i class="fas fa-box"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-label">Productos</div>
+                            <div class="stat-value">${company.products.length}</div>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div><strong>Plan:</strong> <span class="badge badge-primary">${company.plan}</span></div>
+                    <div><strong>Dominio:</strong> ${company.domain}</div>
+                    <div><strong>Email:</strong> ${company.email}</div>
+                    <div><strong>Teléfono:</strong> ${company.phone}</div>
+                    <div><strong>Creado:</strong> ${company.createdAt}</div>
+                    <div><strong>Último acceso:</strong> ${company.lastActive}</div>
+                </div>
+                <div style="margin-top: 16px;"><strong>Productos:</strong> ${company.products.map(p => `<span class="badge badge-neutral" style="margin-left: 4px;">${p}</span>`).join('')}</div>
+            `;
+            document.getElementById('companyModal').classList.add('active');
+        }
+
+        function closeCompanyModal() {
+            document.getElementById('companyModal').classList.remove('active');
+        }
+
+        // View ticket
+        function viewTicket(id) {
+            const ticket = SuperAdminData.tickets.find(t => t.id === id);
+            if (!ticket) return;
+            showToast(`Abriendo ticket #${id}: ${ticket.subject}`, 'info');
+            setTimeout(() => location.href = 'support/tickets.html', 500);
+        }
+
+        // Notifications
+        function toggleNotifications() {
+            const panel = document.getElementById('notificationsPanel');
+            panel.classList.toggle('active');
+            
+            if (panel.classList.contains('active')) {
+                renderNotifications();
+            }
+        }
+
+        function renderNotifications() {
+            const unread = notifications.filter(n => !n.read).length;
+            document.getElementById('notificationsBadge').style.display = unread > 0 ? 'block' : 'none';
+            
+            document.getElementById('notificationsList').innerHTML = notifications.length === 0 
+                ? '<div style="padding: 24px; text-align: center; color: var(--text-muted);"><i class="fas fa-bell-slash" style="font-size: 24px; margin-bottom: 8px;"></i><p>No hay notificaciones</p></div>'
+                : notifications.map(n => `
+                    <div class="notification-item ${n.read ? 'read' : ''}" onclick="markAsRead(${n.id})" style="padding: 12px 16px; border-bottom: 1px solid var(--border-color); cursor: pointer; background: ${n.read ? 'white' : 'rgba(2, 115, 94, 0.05)'};">
+                        <div style="display: flex; align-items: flex-start; gap: 12px;">
+                            <div style="width: 8px; height: 8px; border-radius: 50%; background: ${n.read ? 'transparent' : 'var(--primary-color)'}; margin-top: 6px;"></div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; font-size: 13px;">${n.title}</div>
+                                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">${n.message}</div>
+                                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">${n.time}</div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        function markAsRead(id) {
+            const notif = notifications.find(n => n.id === id);
+            if (notif) notif.read = true;
+            renderNotifications();
+        }
+
+        function markAllRead() {
+            notifications.forEach(n => n.read = true);
+            renderNotifications();
+            showToast('Todas las notificaciones marcadas como leídas', 'success');
+        }
+
+        // Refresh activity
+        function refreshActivity() {
+            showToast('Actualizando actividad...', 'info');
+            setTimeout(() => {
+                loadActivityFeed();
+                showToast('Actividad actualizada', 'success');
+            }, 800);
+        }
+
+        // Toast notifications
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.style.cssText = 'position: fixed; bottom: 24px; right: 24px; padding: 16px 24px; border-radius: 12px; color: white; font-size: 14px; font-weight: 500; z-index: 10000; animation: slideIn 0.3s ease;';
+            toast.style.background = type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : '#3b82f6';
+            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-times-circle' : type === 'warning' ? 'fa-exclamation-circle' : 'fa-info-circle'}" style="margin-right: 8px;"></i>${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Onboarding modal functions
         function openOnboardingModal() {
             document.getElementById('onboardingModal').classList.add('active');
         }
@@ -448,12 +784,39 @@
             document.getElementById('onboardingModal').classList.remove('active');
         }
 
-        // Close modal on backdrop click
-        document.getElementById('onboardingModal').addEventListener('click', (e) => {
+        // Close modals on backdrop click
+        document.addEventListener('click', (e) => {
             if (e.target.classList.contains('modal-overlay')) {
                 closeOnboardingModal();
+                closeCompanyModal();
+            }
+            // Close notifications if clicking outside
+            const notifPanel = document.getElementById('notificationsPanel');
+            const notifBtn = document.querySelector('.header-action-btn');
+            if (notifPanel && !notifPanel.contains(e.target) && !notifBtn.contains(e.target)) {
+                notifPanel.classList.remove('active');
             }
         });
+
+        // Add CSS for animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+            .search-result-item:hover { background: var(--bg-tertiary); }
+            .table-row-clickable:hover { background: var(--bg-tertiary); }
+            .notification-item:hover { background: var(--bg-tertiary) !important; }
+            .notifications-panel { display: none !important; }
+            .notifications-panel.active { display: block !important; }
+            .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+            .modal-overlay.active { display: flex; }
+            .modal { background: white; border-radius: 16px; max-width: 500px; width: 90%; max-height: 90vh; overflow: auto; }
+            .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+            .modal-title { margin: 0; font-size: 18px; display: flex; align-items: center; }
+            .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); padding: 4px; }
+            .modal-close:hover { color: var(--text-primary); }
+            .modal-body { padding: 24px; }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>

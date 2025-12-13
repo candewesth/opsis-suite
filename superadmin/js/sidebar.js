@@ -7,30 +7,30 @@ const SuperAdminSidebar = {
     // Navigation structure with Font Awesome icons
     navigation: {
         main: [
-            { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-th-large', href: '/superadmin/index.html' }
+            { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-home', href: '/superadmin/index.html' }
         ],
         clientes: [
-            { id: 'companies', label: 'Compañías', icon: 'fas fa-building', href: '/superadmin/companies/list.html' },
-            { id: 'onboarding', label: 'Onboarding', icon: 'fas fa-user-plus', href: '/superadmin/companies/onboarding.html' }
+            { id: 'companies', label: 'Compañías', icon: 'fas fa-building', href: '/superadmin/companies/list.html', badge: '5' },
+            { id: 'onboarding', label: 'Onboarding', icon: 'fas fa-rocket', href: '/superadmin/companies/onboarding.html' }
         ],
         finanzas: [
-            { id: 'billing', label: 'Facturación', icon: 'fas fa-file-invoice-dollar', href: '/superadmin/billing/overview.html' },
-            { id: 'pagos', label: 'Pagos', icon: 'fas fa-credit-card', href: '/superadmin/billing/payments.html' },
-            { id: 'planes', label: 'Planes', icon: 'fas fa-tags', href: '/superadmin/billing/plans.html' }
+            { id: 'billing', label: 'Ingresos', icon: 'fas fa-chart-pie', href: '/superadmin/billing/overview.html' },
+            { id: 'invoices', label: 'Facturas', icon: 'fas fa-file-invoice-dollar', href: '/superadmin/billing/invoices.html' },
+            { id: 'subscriptions', label: 'Suscripciones', icon: 'fas fa-sync-alt', href: '/superadmin/billing/subscriptions.html' }
         ],
         equipo: [
             { id: 'team', label: 'Miembros', icon: 'fas fa-users', href: '/superadmin/team/list.html' },
             { id: 'roles', label: 'Roles', icon: 'fas fa-user-shield', href: '/superadmin/team/roles.html' }
         ],
         soporte: [
-            { id: 'tickets', label: 'Tickets', icon: 'fas fa-headset', href: '/superadmin/support/tickets.html', badge: '3' },
-            { id: 'analytics', label: 'Analytics', icon: 'fas fa-chart-line', href: '/superadmin/analytics/usage.html' }
+            { id: 'tickets', label: 'Tickets', icon: 'fas fa-ticket-alt', href: '/superadmin/support/tickets.html', badge: '3' },
+            { id: 'knowledge', label: 'Base de Conocimiento', icon: 'fas fa-book', href: '/superadmin/support/knowledge.html' }
         ],
         configuracion: [
             { id: 'settings', label: 'General', icon: 'fas fa-cog', href: '/superadmin/settings/general.html' },
             { id: 'industries', label: 'Industrias', icon: 'fas fa-industry', href: '/superadmin/settings/industries.html' },
             { id: 'products', label: 'Productos', icon: 'fas fa-box', href: '/superadmin/settings/products.html' },
-            { id: 'integraciones', label: 'Integraciones', icon: 'fas fa-plug', href: '/superadmin/settings/integrations.html' }
+            { id: 'plans', label: 'Planes', icon: 'fas fa-tags', href: '/superadmin/settings/plans.html' }
         ]
     },
 
@@ -40,18 +40,18 @@ const SuperAdminSidebar = {
         
         if (path.includes('/companies/onboarding')) return 'onboarding';
         if (path.includes('/companies/')) return 'companies';
-        if (path.includes('/billing/payments')) return 'pagos';
-        if (path.includes('/billing/plans')) return 'planes';
+        if (path.includes('/billing/invoices')) return 'invoices';
+        if (path.includes('/billing/subscriptions')) return 'subscriptions';
         if (path.includes('/billing/')) return 'billing';
         if (path.includes('/team/roles')) return 'roles';
         if (path.includes('/team/')) return 'team';
+        if (path.includes('/support/knowledge')) return 'knowledge';
         if (path.includes('/support/')) return 'tickets';
-        if (path.includes('/analytics/')) return 'analytics';
         if (path.includes('/settings/industries')) return 'industries';
         if (path.includes('/settings/products')) return 'products';
-        if (path.includes('/settings/integrations')) return 'integraciones';
+        if (path.includes('/settings/plans')) return 'plans';
         if (path.includes('/settings/')) return 'settings';
-        if (path.includes('/index.html') || path.endsWith('/superadmin/')) return 'dashboard';
+        if (path.includes('/index.html') || path.endsWith('/superadmin/') || path.endsWith('/superadmin')) return 'dashboard';
         
         return 'dashboard';
     },
@@ -62,7 +62,7 @@ const SuperAdminSidebar = {
         
         const renderLinks = (links) => {
             return links.map(link => `
-                <a href="${link.href}" class="nav-link ${link.id === currentPage ? 'active' : ''}" data-page="${link.id}">
+                <a href="${link.href}" class="nav-item ${link.id === currentPage ? 'active' : ''}" data-page="${link.id}">
                     <i class="${link.icon}"></i>
                     <span>${link.label}</span>
                     ${link.badge ? `<span class="badge">${link.badge}</span>` : ''}
@@ -71,57 +71,57 @@ const SuperAdminSidebar = {
         };
 
         return `
-            <div class="sidebar-logo">
-                <div class="logo-icon">
-                    <i class="fas fa-bolt"></i>
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-cube"></i>
                 </div>
-                <div class="logo-text">
-                    <span class="logo-main">Opsis Suite</span>
-                    <span class="logo-sub">SuperAdmin</span>
+                <div class="sidebar-brand">
+                    <h1>Opsis Suite</h1>
+                    <span>SuperAdmin</span>
                 </div>
             </div>
             
             <nav class="sidebar-nav">
                 <div class="nav-section">
+                    <span class="nav-section-title">Principal</span>
                     ${renderLinks(this.navigation.main)}
                 </div>
                 
                 <div class="nav-section">
-                    <div class="nav-section-title">Clientes</div>
+                    <span class="nav-section-title">Clientes</span>
                     ${renderLinks(this.navigation.clientes)}
                 </div>
                 
                 <div class="nav-section">
-                    <div class="nav-section-title">Finanzas</div>
+                    <span class="nav-section-title">Finanzas</span>
                     ${renderLinks(this.navigation.finanzas)}
                 </div>
                 
                 <div class="nav-section">
-                    <div class="nav-section-title">Equipo</div>
+                    <span class="nav-section-title">Equipo</span>
                     ${renderLinks(this.navigation.equipo)}
                 </div>
                 
                 <div class="nav-section">
-                    <div class="nav-section-title">Soporte</div>
+                    <span class="nav-section-title">Soporte</span>
                     ${renderLinks(this.navigation.soporte)}
                 </div>
                 
                 <div class="nav-section">
-                    <div class="nav-section-title">Configuración</div>
+                    <span class="nav-section-title">Configuración</span>
                     ${renderLinks(this.navigation.configuracion)}
                 </div>
             </nav>
             
             <div class="sidebar-footer">
-                <div class="user-profile">
-                    <div class="user-avatar">A</div>
-                    <div class="user-info">
-                        <div class="user-name">Admin</div>
-                        <div class="user-role">Super Admin</div>
+                <div class="sidebar-user">
+                    <div class="sidebar-user-avatar">
+                        <i class="fas fa-user"></i>
                     </div>
-                    <button onclick="SuperAdminSidebar.toggleTheme()" class="theme-toggle" id="themeToggle" title="Cambiar tema">
-                        <i class="fas fa-moon"></i>
-                    </button>
+                    <div class="sidebar-user-info">
+                        <span class="sidebar-user-name">Admin</span>
+                        <span class="sidebar-user-role">Super Administrador</span>
+                    </div>
                 </div>
             </div>
         `;
