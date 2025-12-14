@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Compañía - SuperAdmin | Opsis Suite</title>
+    <!-- Critical CSS for preventing flash -->
+    <style>
+        :root {
+            --verdi-dark: #022326;
+            --verdi-mid: #034040;
+            --verdi-accent: #035951;
+            --verdi-light: #02735E;
+            --aire-white: #ffffff;
+            --aire-cloud: #f8fafc;
+            --aire-mist: #f1f5f9;
+            --aire-fog: #e2e8f0;
+            --aire-slate: #94a3b8;
+            --aire-storm: #64748b;
+            --aire-night: #1e293b;
+            --danger-red: #ef4444;
+            --warning-orange: #f59e0b;
+            --success-green: #22c55e;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+            background: var(--aire-cloud); 
+            color: var(--aire-night);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        body.loaded { opacity: 1; }
+        .app-shell { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: var(--verdi-dark); }
+        .main-content { flex: 1; padding: 24px 32px; margin-left: 260px; }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/superadmin.css?v=7">
+    <style>
+        /* Page specific styles */
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--aire-white);
+            border: 1px solid var(--aire-fog);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--aire-storm);
+        }
+        .back-btn:hover {
+            background: var(--verdi-light);
+            border-color: var(--verdi-light);
+            color: white;
+        }
+        .page-title-section {
+            flex: 1;
+        }
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--aire-night);
+            margin-bottom: 4px;
+        }
+        .page-subtitle {
+            color: var(--aire-storm);
+            font-size: 14px;
+        }
+        .company-status-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .company-status-badge.active { background: rgba(2, 115, 94, 0.1); color: var(--verdi-light); }
+        .company-status-badge.trial { background: rgba(245, 158, 11, 0.1); color: var(--warning-orange); }
+        .company-status-badge.inactive { background: rgba(148, 163, 184, 0.1); color: var(--aire-slate); }
+
+        /* Form Layout */
+        .form-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+        .form-main {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        .form-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Cards */
+        .form-card {
+            background: var(--aire-white);
+            border-radius: 16px;
+            border: 1px solid var(--aire-fog);
+            overflow: hidden;
+        }
+        .form-card-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--aire-fog);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .form-card-header i {
+            color: var(--verdi-light);
+            font-size: 18px;
+        }
+        .form-card-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--aire-night);
+        }
+        .form-card-body {
+            padding: 24px;
+        }
+
+        /* Form Elements */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .form-grid.cols-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        .form-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--aire-night);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .form-label .required {
+            color: var(--danger-red);
+        }
+        .form-input, .form-select, .form-textarea {
+            padding: 12px 16px;
+            border: 1px solid var(--aire-fog);
+            border-radius: 10px;
+            font-size: 14px;
+            color: var(--aire-night);
+            background: var(--aire-white);
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--verdi-light);
+            box-shadow: 0 0 0 3px rgba(2, 115, 94, 0.1);
+        }
+        .form-input:disabled {
+            background: var(--aire-mist);
+            color: var(--aire-slate);
+            cursor: not-allowed;
+        }
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .form-hint {
+            font-size: 12px;
+            color: var(--aire-slate);
+        }
+        .input-with-addon {
+            display: flex;
+            align-items: stretch;
+        }
+        .input-addon {
+            padding: 12px 16px;
+            background: var(--aire-mist);
+            border: 1px solid var(--aire-fog);
+            border-right: none;
+            border-radius: 10px 0 0 10px;
+            font-size: 14px;
+            color: var(--aire-storm);
+            white-space: nowrap;
+        }
+        .input-with-addon .form-input {
+            border-radius: 0 10px 10px 0;
+            flex: 1;
+        }
+
+        /* Products Selection */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .product-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            border: 2px solid var(--aire-fog);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .product-checkbox:hover {
+            border-color: var(--aire-slate);
+        }
+        .product-checkbox.checked {
+            border-color: var(--verdi-light);
+            background: rgba(2, 115, 94, 0.05);
+        }
+        .product-checkbox input {
+            display: none;
+        }
+        .product-checkbox .checkbox-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--aire-mist);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--aire-storm);
+            transition: all 0.2s;
+        }
+        .product-checkbox.checked .checkbox-icon {
+            background: var(--verdi-light);
+            color: white;
+        }
+        .product-checkbox .product-info {
+            flex: 1;
+        }
+        .product-checkbox .product-name {
+            font-weight: 600;
+            color: var(--aire-night);
+            font-size: 14px;
+        }
+        .product-checkbox .product-price {
+            font-size: 12px;
+            color: var(--aire-slate);
+        }
+        .product-checkbox .check-indicator {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--aire-fog);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: transparent;
+            transition: all 0.2s;
+        }
+        .product-checkbox.checked .check-indicator {
+            background: var(--verdi-light);
+            border-color: var(--verdi-light);
+            color: white;
+        }
+
+        /* Status Card */
+        .status-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .status-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border: 2px solid var(--aire-fog);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .status-option:hover {
+            border-color: var(--aire-slate);
+        }
+        .status-option.selected {
+            border-color: var(--verdi-light);
+            background: rgba(2, 115, 94, 0.05);
+        }
+        .status-option input {
+            display: none;
+        }
+        .status-option .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .status-option .status-dot.active { background: var(--verdi-light); }
+        .status-option .status-dot.trial { background: var(--warning-orange); }
+        .status-option .status-dot.inactive { background: var(--aire-slate); }
+        .status-option .status-dot.suspended { background: var(--danger-red); }
+        .status-option .status-label {
+            flex: 1;
+            font-weight: 500;
+            color: var(--aire-night);
+        }
+        .status-option .radio-indicator {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--aire-fog);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .status-option.selected .radio-indicator {
+            border-color: var(--verdi-light);
+        }
+        .status-option.selected .radio-indicator::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background: var(--verdi-light);
+            border-radius: 50%;
+        }
+
+        /* Quick Stats */
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        .quick-stat {
+            text-align: center;
+            padding: 16px;
+            background: var(--aire-mist);
+            border-radius: 10px;
+        }
+        .quick-stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--verdi-dark);
+        }
+        .quick-stat-label {
+            font-size: 12px;
+            color: var(--aire-storm);
+            margin-top: 4px;
+        }
+
+        /* Actions */
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            padding: 20px 24px;
+            background: var(--aire-mist);
+            border-top: 1px solid var(--aire-fog);
+        }
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+        }
+        .btn-primary {
+            background: var(--verdi-light);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--verdi-accent);
+        }
+        .btn-secondary {
+            background: var(--aire-white);
+            color: var(--aire-night);
+            border: 1px solid var(--aire-fog);
+        }
+        .btn-secondary:hover {
+            background: var(--aire-mist);
+        }
+        .btn-danger {
+            background: var(--danger-red);
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        .btn-ghost {
+            background: transparent;
+            color: var(--aire-storm);
+        }
+        .btn-ghost:hover {
+            background: var(--aire-mist);
+            color: var(--aire-night);
+        }
+        .ml-auto { margin-left: auto; }
+
+        /* Danger Zone */
+        .danger-zone {
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        .danger-zone .form-card-header {
+            background: rgba(239, 68, 68, 0.05);
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+        .danger-zone .form-card-header i {
+            color: var(--danger-red);
+        }
+        .danger-zone .form-card-header h3 {
+            color: var(--danger-red);
+        }
+        .danger-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .danger-action {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: rgba(239, 68, 68, 0.05);
+            border-radius: 10px;
+            flex: 1;
+            min-width: 200px;
+        }
+        .danger-action-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--danger-red);
+        }
+        .danger-action-info {
+            flex: 1;
+        }
+        .danger-action-info strong {
+            display: block;
+            color: var(--aire-night);
+            margin-bottom: 2px;
+        }
+        .danger-action-info small {
+            color: var(--aire-storm);
+            font-size: 12px;
+        }
+
+        /* Activity Timeline */
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+        }
+        .activity-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--aire-fog);
+        }
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--aire-mist);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--aire-slate);
+            font-size: 12px;
+        }
+        .activity-content {
+            flex: 1;
+        }
+        .activity-content p {
+            font-size: 13px;
+            color: var(--aire-night);
+        }
+        .activity-content small {
+            font-size: 11px;
+            color: var(--aire-slate);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 16px 24px;
+            background: var(--verdi-dark);
+            color: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 9999;
+        }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .toast.success { background: var(--verdi-light); }
+        .toast.error { background: var(--danger-red); }
+        .toast.warning { background: var(--warning-orange); }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .form-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 16px;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <div class="page-header">
+                <button class="back-btn" onclick="goBack()">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="page-title-section">
+                    <h1 class="page-title" id="pageTitle">Editar Compañía</h1>
+                    <p class="page-subtitle" id="pageSubtitle">Modificar información de la compañía</p>
+                </div>
+                <span class="company-status-badge active" id="statusBadge">Activo</span>
+            </div>
+
+            <!-- Form -->
+            <form id="companyForm" onsubmit="saveCompany(event)">
+                <div class="form-container">
+                    <!-- Main Column -->
+                    <div class="form-main">
+                        <!-- Basic Info -->
+                        <div class="form-card">
+                            <div class="form-card-header">
+                                <i class="fas fa-building"></i>
+                                <h3>Información General</h3>
+                            </div>
+                            <div class="form-card-body">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            Nombre de la Compañía <span class="required">*</span>
+                                        </label>
+                                        <input type="text" class="form-input" id="companyName" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Industria</label>
+                                        <select class="form-select" id="companyIndustry">
+                                            <option value="construccion">🏗️ Construcción y Obras</option>
+                                            <option value="medica">🏥 Médica y Salud</option>
+                                            <option value="transporte">🚚 Transporte y Logística</option>
+                                            <option value="retail">🛒 Retail y Comercio</option>
+                                            <option value="jardineria">🌿 Jardinería y Paisajismo</option>
+                                            <option value="tecnologia">💻 Tecnología</option>
+                                            <option value="educacion">🎓 Educación</option>
+                                            <option value="restaurante">🍽️ Restaurantes y Hoteles</option>
+                                            <option value="inmobiliaria">🏠 Bienes Raíces</option>
+                                            <option value="automotriz">🚗 Automotriz</option>
+                                            <option value="otros">⚙️ Otras Industrias</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label class="form-label">Portal de Acceso</label>
+                                        <div class="input-with-addon">
+                                            <span class="input-addon">opsis-suite.com/portal/</span>
+                                            <input type="text" class="form-input" id="companyDomain" placeholder="mi-empresa">
+                                        </div>
+                                        <span class="form-hint">URL de acceso: opsis-suite.com/portal/<span id="domainPreview">mi-empresa</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contact Info -->
+                        <div class="form-card">
+                            <div class="form-card-header">
+                                <i class="fas fa-address-book"></i>
+                                <h3>Información de Contacto</h3>
+                            </div>
+                            <div class="form-card-body">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            Email Principal <span class="required">*</span>
+                                        </label>
+                                        <input type="email" class="form-input" id="companyEmail" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Teléfono</label>
+                                        <input type="tel" class="form-input" id="companyPhone" placeholder="+1 555-0000">
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label class="form-label">Notas Internas</label>
+                                        <textarea class="form-textarea" id="companyNotes" placeholder="Notas visibles solo para el equipo de Opsis..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Products -->
+                        <div class="form-card">
+                            <div class="form-card-header">
+                                <i class="fas fa-box"></i>
+                                <h3>Productos Activos</h3>
+                            </div>
+                            <div class="form-card-body">
+                                <div class="products-grid" id="productsGrid">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Danger Zone -->
+                        <div class="form-card danger-zone">
+                            <div class="form-card-header">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <h3>Zona de Peligro</h3>
+                            </div>
+                            <div class="form-card-body">
+                                <div class="danger-actions">
+                                    <div class="danger-action">
+                                        <div class="danger-action-icon">
+                                            <i class="fas fa-pause"></i>
+                                        </div>
+                                        <div class="danger-action-info">
+                                            <strong>Suspender Compañía</strong>
+                                            <small>Deshabilita el acceso temporalmente</small>
+                                        </div>
+                                        <button type="button" class="btn btn-secondary" onclick="suspendCompany()">
+                                            Suspender
+                                        </button>
+                                    </div>
+                                    <div class="danger-action">
+                                        <div class="danger-action-icon">
+                                            <i class="fas fa-trash"></i>
+                                        </div>
+                                        <div class="danger-action-info">
+                                            <strong>Eliminar Compañía</strong>
+                                            <small>Esta acción no se puede deshacer</small>
+                                        </div>
+                                        <button type="button" class="btn btn-danger" onclick="deleteCompany()">
+                                            Eliminar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar Column -->
+                    <div class="form-sidebar">
+                        <!-- Status -->
+                        <div class="form-card">
+                            <div class="form-card-header">
+                                <i class="fas fa-toggle-on"></i>
+                                <h3>Estado</h3>
+                            </div>
+                            <div class="form-card-body">
+                                <div class="status-options" id="statusOptions">
+                                    <label class="status-option selected" data-status="active">
+                                        <input type="radio" name="status" value="active" checked>
+                                        <span class="status-dot active"></span>
+                                        <span class="status-label">Activo</span>
+                                        <span class="radio-indicator"></span>
+                                    </label>
+                                    <label class="status-option" data-status="trial">
+                                        <input type="radio" name="status" value="trial">
+                                        <span class="status-dot trial"></span>
+                                        <span class="status-label">Prueba</span>
+                                        <span class="radio-indicator"></span>
+                                    </label>
+                                    <label class="status-option" data-status="inactive">
+                                        <input type="radio" name="status" value="inactive">
+                                        <span class="status-dot inactive"></span>
+                                        <span class="status-label">Inactivo</span>
+                                        <span class="radio-indicator"></span>
+                                    </label>
+                                    <label class="status-option" data-status="suspended">
+                                        <input type="radio" name="status" value="suspended">
+                                        <span class="status-dot suspended"></span>
+                                        <span class="status-label">Suspendido</span>
+                                        <span class="radio-indicator"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Plan -->
+                        <div class="form-card">
+                            <div class="form-card-header">
+                                <i class="fas fa-crown"></i>
+                                <h3>Plan de Suscripción</h3>
+                            </div>
+                            <div class="form-card-body">
+                                <div class="form-group">
+                                    <select class="form-select" id="companyPlan">
+                                        <option value="trial">Trial - $0/mes</option>
+                                        <option value="starter">Starter - $49/mes</option>
+                                        <option value="professional">Professional - $99/mes</option>
+                                        <option value="enterprise">Enterprise - $249/mes</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin-top: 16px;">
+                                    <label class="form-label">Usuarios Permitidos</label>
+                                    <input type="number" class="form-input" id="companyUsers" value="10" min="1">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Stats -->
+                        <div class="form-card">
+                            <div class="form-card-header">
+                                <i class="fas fa-chart-bar"></i>
+                                <h3>Estadísticas</h3>
+                            </div>
+                            <div class="form-card-body">
+                                <div class="quick-stats">
+                                    <div class="quick-stat">
+                                        <div class="quick-stat-value" id="statUsers">24</div>
+                                        <div class="quick-stat-label">Usuarios</div>
+                                    </div>
+                                    <div class="quick-stat">
+                                        <div class="quick-stat-value" id="statMRR">$299</div>
+                                        <div class="quick-stat-label">MRR</div>
+                                    </div>
+                                    <div class="quick-stat">
+                                        <div class="quick-stat-value" id="statProducts">2</div>
+                                        <div class="quick-stat-label">Productos</div>
+                                    </div>
+                                    <div class="quick-stat">
+                                        <div class="quick-stat-value" id="statDays">334</div>
+                                        <div class="quick-stat-label">Días activo</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Activity -->
+                        <div class="form-card">
+                            <div class="form-card-header">
+                                <i class="fas fa-history"></i>
+                                <h3>Actividad Reciente</h3>
+                            </div>
+                            <div class="form-card-body">
+                                <div class="activity-list" id="activityList">
+                                    <div class="activity-item">
+                                        <div class="activity-icon"><i class="fas fa-sign-in-alt"></i></div>
+                                        <div class="activity-content">
+                                            <p>Último inicio de sesión</p>
+                                            <small>Hace 2 horas</small>
+                                        </div>
+                                    </div>
+                                    <div class="activity-item">
+                                        <div class="activity-icon"><i class="fas fa-user-plus"></i></div>
+                                        <div class="activity-content">
+                                            <p>Nuevo usuario agregado</p>
+                                            <small>Hace 3 días</small>
+                                        </div>
+                                    </div>
+                                    <div class="activity-item">
+                                        <div class="activity-icon"><i class="fas fa-credit-card"></i></div>
+                                        <div class="activity-content">
+                                            <p>Pago procesado - $299</p>
+                                            <small>5 Dic 2024</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions (Fixed at bottom) -->
+                <div class="form-card" style="margin-top: 24px;">
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-ghost" onclick="goBack()">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                            <i class="fas fa-undo"></i> Restablecer
+                        </button>
+                        <button type="submit" class="btn btn-primary ml-auto">
+                            <i class="fas fa-save"></i> Guardar Cambios
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </main>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">Cambios guardados</span>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/data.js"></script>
+    <script>
+        let companyId = null;
+        let originalData = null;
+
+        // Wait for everything to load
+        window.addEventListener('load', () => {
+            document.body.classList.add('loaded');
+            
+            // Get company ID from URL
+            const params = new URLSearchParams(window.location.search);
+            const idParam = params.get('id');
+            companyId = parseInt(idParam);
+            
+            console.log('URL params:', window.location.search);
+            console.log('ID param:', idParam);
+            console.log('Parsed companyId:', companyId);
+            console.log('SuperAdminData available:', typeof SuperAdminData !== 'undefined');
+            
+            // Load products first
+            loadProducts();
+            initStatusOptions();
+            initDomainPreview();
+            
+            if (companyId && !isNaN(companyId)) {
+                console.log('Loading company data for ID:', companyId);
+                loadCompanyData(companyId);
+            } else {
+                console.log('New company mode - no valid ID');
+                // New company mode
+                document.getElementById('pageTitle').textContent = 'Nueva Compañía';
+                document.getElementById('pageSubtitle').textContent = 'Crear una nueva compañía en el sistema';
+                document.getElementById('statusBadge').style.display = 'none';
+            }
+        });
+        
+        function initDomainPreview() {
+            const domainInput = document.getElementById('companyDomain');
+            const preview = document.getElementById('domainPreview');
+            
+            domainInput.addEventListener('input', (e) => {
+                const value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') || 'mi-empresa';
+                preview.textContent = value;
+            });
+        }
+
+        function loadCompanyData(id) {
+            console.log('loadCompanyData called with:', id, typeof id);
+            
+            // Ensure id is a number
+            id = parseInt(id);
+            
+            if (!SuperAdminData || !SuperAdminData.companies) {
+                console.error('SuperAdminData not loaded!');
+                showToast('Error cargando datos', 'error');
+                return;
+            }
+            
+            console.log('Looking in companies:', SuperAdminData.companies.map(c => c.id));
+            
+            const company = SuperAdminData.companies.find(c => c.id === id);
+            console.log('Found company:', company);
+            
+            if (!company) {
+                showToast('Compañía no encontrada', 'error');
+                setTimeout(() => goBack(), 1500);
+                return;
+            }
+
+            originalData = { ...company };
+
+            // Update header
+            document.getElementById('pageTitle').textContent = `Editando: ${company.name}`;
+            document.getElementById('pageSubtitle').textContent = `ID: ${company.id} • opsis-suite.com/portal/${company.domain}`;
+            
+            // Update status badge
+            const badge = document.getElementById('statusBadge');
+            badge.className = `company-status-badge ${company.status}`;
+            badge.textContent = SuperAdminData.getStatusName(company.status);
+
+            // Fill form
+            document.getElementById('companyName').value = company.name;
+            document.getElementById('companyIndustry').value = company.industry;
+            document.getElementById('companyDomain').value = company.domain;
+            document.getElementById('domainPreview').textContent = company.domain;
+            document.getElementById('companyEmail').value = company.email;
+            document.getElementById('companyPhone').value = company.phone || '';
+            document.getElementById('companyPlan').value = company.plan.toLowerCase();
+            document.getElementById('companyUsers').value = company.users;
+
+            // Set status
+            document.querySelectorAll('.status-option').forEach(opt => {
+                opt.classList.remove('selected');
+                if (opt.dataset.status === company.status) {
+                    opt.classList.add('selected');
+                    opt.querySelector('input').checked = true;
+                }
+            });
+
+            // Update stats
+            document.getElementById('statUsers').textContent = company.users;
+            document.getElementById('statMRR').textContent = `$${company.mrr}`;
+            document.getElementById('statProducts').textContent = company.products.length;
+            
+            // Calculate days active
+            const created = new Date(company.createdAt);
+            const now = new Date();
+            const days = Math.floor((now - created) / (1000 * 60 * 60 * 24));
+            document.getElementById('statDays').textContent = days;
+
+            // Check products
+            setTimeout(() => {
+                company.products.forEach(product => {
+                    const checkbox = document.querySelector(`.product-checkbox[data-product="${product}"]`);
+                    if (checkbox) {
+                        checkbox.classList.add('checked');
+                        checkbox.querySelector('input').checked = true;
+                    }
+                });
+            }, 100);
+        }
+
+        function loadProducts() {
+            const grid = document.getElementById('productsGrid');
+            const products = SuperAdminData.products;
+            
+            grid.innerHTML = Object.entries(products).map(([key, product]) => `
+                <label class="product-checkbox" data-product="${product.name}" onclick="toggleProduct(this)">
+                    <input type="checkbox" name="products" value="${product.name}">
+                    <div class="checkbox-icon">
+                        <i class="${product.icon}"></i>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-price">$${product.basePrice}/mes</div>
+                    </div>
+                    <span class="check-indicator">
+                        <i class="fas fa-check"></i>
+                    </span>
+                </label>
+            `).join('');
+        }
+
+        function toggleProduct(el) {
+            el.classList.toggle('checked');
+            el.querySelector('input').checked = el.classList.contains('checked');
+        }
+
+        function initStatusOptions() {
+            document.querySelectorAll('.status-option').forEach(opt => {
+                opt.addEventListener('click', () => {
+                    document.querySelectorAll('.status-option').forEach(o => o.classList.remove('selected'));
+                    opt.classList.add('selected');
+                    opt.querySelector('input').checked = true;
+                    
+                    // Update badge
+                    const status = opt.dataset.status;
+                    const badge = document.getElementById('statusBadge');
+                    badge.className = `company-status-badge ${status}`;
+                    badge.textContent = SuperAdminData.getStatusName(status);
+                });
+            });
+        }
+
+        function saveCompany(event) {
+            event.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('companyName').value,
+                industry: document.getElementById('companyIndustry').value,
+                domain: document.getElementById('companyDomain').value,
+                email: document.getElementById('companyEmail').value,
+                phone: document.getElementById('companyPhone').value,
+                plan: document.getElementById('companyPlan').value,
+                users: parseInt(document.getElementById('companyUsers').value),
+                status: document.querySelector('.status-option.selected').dataset.status,
+                products: Array.from(document.querySelectorAll('.product-checkbox.checked'))
+                    .map(el => el.dataset.product)
+            };
+
+            console.log('Saving company:', formData);
+            
+            // Simulate save
+            showToast('Cambios guardados correctamente', 'success');
+            
+            // In a real app, this would send to the backend
+            setTimeout(() => {
+                goBack();
+            }, 1500);
+        }
+
+        function resetForm() {
+            if (originalData) {
+                loadCompanyData(companyId);
+                showToast('Formulario restablecido', 'info');
+            }
+        }
+
+        function suspendCompany() {
+            if (confirm('¿Estás seguro de que deseas suspender esta compañía?')) {
+                showToast('Compañía suspendida', 'warning');
+            }
+        }
+
+        function deleteCompany() {
+            if (confirm('⚠️ ADVERTENCIA: Esta acción eliminará permanentemente la compañía y todos sus datos. ¿Continuar?')) {
+                showToast('Compañía eliminada', 'error');
+                setTimeout(() => goBack(), 1500);
+            }
+        }
+
+        function goBack() {
+            window.location.href = 'list.html';
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toast.className = `toast ${type}`;
+            toastMessage.textContent = message;
+            
+            // Update icon based on type
+            const icon = toast.querySelector('i');
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-times-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle'
+            };
+            icon.className = `fas ${icons[type] || icons.success}`;
+            
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

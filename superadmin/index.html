@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - SuperAdmin | Opsis Suite</title>
     <base href="/superadmin/">
+    <style>
+        /* Critical CSS - Previene flash blanco */
+        :root { --verdi-dark: #022326; --sidebar-width: 240px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { background: #f8fafc; }
+        body { opacity: 0; transition: opacity 0.15s ease-in; }
+        body.loaded { opacity: 1; }
+        .app-shell { min-height: 100vh; background: #f8fafc; }
+        .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh; background: var(--verdi-dark); }
+        .main-content { margin-left: var(--sidebar-width); min-height: 100vh; background: #f8fafc; }
+    </style>
     <link rel="stylesheet" href="css/superadmin.css?v=7">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -250,8 +261,9 @@
                                 <i class="fas fa-chart-line"></i>
                                 Actividad Reciente
                             </h3>
-                            <button class="btn btn-sm btn-ghost" onclick="refreshActivity()">
-                                <i class="fas fa-sync-alt"></i>
+                            <button class="btn btn-sm btn-ghost" id="refreshActivityBtn" onclick="refreshActivity()">
+                                <i class="fas fa-sync-alt" id="refreshIcon"></i>
+                                <span id="refreshText" style="margin-left: 6px; display: none;"></span>
                             </button>
                         </div>
                         <div class="card-body" style="padding: 0;">
@@ -757,11 +769,39 @@
 
         // Refresh activity
         function refreshActivity() {
-            showToast('Actualizando actividad...', 'info');
+            const btn = document.getElementById('refreshActivityBtn');
+            const icon = document.getElementById('refreshIcon');
+            const text = document.getElementById('refreshText');
+            
+            // Disable button and start spinning
+            btn.disabled = true;
+            btn.style.opacity = '0.8';
+            icon.style.animation = 'spin 1s linear infinite';
+            text.style.display = 'inline';
+            text.textContent = 'Actualizando...';
+            text.style.color = 'var(--primary)';
+            
+            // Simulate refresh delay
             setTimeout(() => {
                 loadActivityFeed();
-                showToast('Actividad actualizada', 'success');
-            }, 800);
+                
+                // Stop spinning and show success
+                icon.style.animation = 'none';
+                icon.className = 'fas fa-check-circle';
+                icon.style.color = '#10b981';
+                text.textContent = '¡Actualizado!';
+                text.style.color = '#10b981';
+                
+                // Reset after 2 seconds
+                setTimeout(() => {
+                    icon.className = 'fas fa-sync-alt';
+                    icon.style.color = '';
+                    text.style.display = 'none';
+                    text.textContent = '';
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                }, 2000);
+            }, 1200);
         }
 
         // Toast notifications
@@ -802,6 +842,7 @@
         const style = document.createElement('style');
         style.textContent = `
             @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+            @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
             .search-result-item:hover { background: var(--bg-tertiary); }
             .table-row-clickable:hover { background: var(--bg-tertiary); }
             .notification-item:hover { background: var(--bg-tertiary) !important; }
@@ -818,5 +859,6 @@
         `;
         document.head.appendChild(style);
     </script>
+    <script>document.body.classList.add('loaded');</script>
 </body>
 </html>

@@ -4,6 +4,180 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compañías - SuperAdmin | Opsis Suite</title>
+    <style>
+        /* === Paleta Verdi + Aire === */
+        :root { 
+            --verdi-dark: #022326; 
+            --verdi-mid: #034040;
+            --verdi-accent: #035951;
+            --verdi-light: #02735E;
+            --sidebar-width: 240px;
+            /* Aire - Neutros */
+            --aire-white: #ffffff;
+            --aire-cloud: #f8fafc;
+            --aire-mist: #f1f5f9;
+            --aire-fog: #e2e8f0;
+            --aire-slate: #94a3b8;
+            --aire-storm: #64748b;
+            --aire-night: #1e293b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { background: var(--aire-cloud); }
+        body { opacity: 0; transition: opacity 0.15s ease-in; }
+        body.loaded { opacity: 1; }
+        .app-shell { min-height: 100vh; background: var(--aire-cloud); }
+        .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh; background: var(--verdi-dark); }
+        .main-content { margin-left: var(--sidebar-width); min-height: 100vh; background: var(--aire-cloud); }
+
+        /* Header Search */
+        .header-search { position: relative; display: flex; align-items: center; background: var(--aire-white); border: 1px solid var(--aire-fog); border-radius: 10px; padding: 0 16px; min-width: 280px; }
+        .header-search i { color: var(--aire-slate); margin-right: 10px; }
+        .header-search input { border: none; outline: none; padding: 10px 0; flex: 1; font-size: 14px; background: transparent; }
+        .header-search kbd { background: var(--aire-mist); border: 1px solid var(--aire-fog); border-radius: 4px; padding: 2px 6px; font-size: 11px; color: var(--aire-storm); }
+
+        /* Stats with trends - Verdi palette */
+        .stat-card-animated { cursor: pointer; transition: all 0.3s ease; }
+        .stat-card-animated:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(2, 35, 38, 0.15); }
+        .stat-card-highlight { border: 2px solid var(--verdi-light); }
+        .stat-trend { font-size: 12px; color: var(--aire-storm); margin-top: 4px; display: flex; align-items: center; gap: 4px; }
+        .stat-trend.trend-up { color: var(--verdi-light); }
+        .stat-trend.trend-down { color: var(--verdi-accent); }
+        
+        /* Stat icons con fondo verde = iconos blancos */
+        .stat-icon { color: white !important; }
+        .stat-icon i { color: white !important; }
+
+        /* Quick Filters - Verdi theme */
+        .quick-filters { display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 24px; }
+        .filter-group { display: flex; align-items: center; gap: 12px; }
+        .filter-group-label { font-size: 13px; font-weight: 500; color: var(--aire-storm); }
+        .filter-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+        .filter-pills.scrollable { overflow-x: auto; padding-bottom: 4px; }
+        .filter-pill { display: flex; align-items: center; gap: 6px; padding: 8px 14px; background: var(--aire-white); border: 1px solid var(--aire-fog); border-radius: 20px; font-size: 13px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+        .filter-pill:hover { border-color: var(--verdi-light); background: var(--aire-cloud); }
+        .filter-pill.active { background: var(--verdi-dark); color: var(--aire-white); border-color: var(--verdi-dark); }
+        .filter-pill.active i { color: var(--aire-white); }
+        .pill-count { background: var(--aire-fog); padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+        .filter-pill.active .pill-count { background: rgba(255,255,255,0.2); color: var(--aire-white); }
+        .pill-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .dot-green { background: var(--verdi-light); }
+        .dot-yellow { background: var(--verdi-accent); }
+        .dot-red { background: var(--verdi-mid); }
+
+        /* Card header improvements */
+        .card-header-left { display: flex; align-items: center; gap: 12px; }
+        .results-count { font-size: 13px; color: var(--aire-slate); padding: 4px 12px; background: var(--aire-mist); border-radius: 12px; }
+        .card-header-actions { display: flex; align-items: center; gap: 12px; }
+        .sort-select { padding: 8px 12px; border: 1px solid var(--aire-fog); border-radius: 8px; font-size: 13px; background: var(--aire-white); cursor: pointer; }
+
+        /* Table improvements */
+        .company-cell { display: flex; align-items: center; gap: 12px; }
+        .company-avatar { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--aire-white); font-weight: 600; font-size: 16px; }
+        .company-info { display: flex; flex-direction: column; }
+        .company-info strong { color: var(--aire-night); }
+        .company-info small { color: var(--aire-slate); font-size: 12px; }
+        
+        .industry-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; font-size: 12px; background: var(--aire-mist); }
+        
+        .products-stack { display: flex; gap: 4px; flex-wrap: wrap; }
+        .product-chip { background: var(--aire-mist); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 500; }
+        .product-chip.more { background: var(--aire-fog); color: var(--aire-storm); }
+        
+        /* Status badges - Verdi shades */
+        .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+        .status-badge .status-dot { width: 6px; height: 6px; border-radius: 50%; }
+        .status-badge.status-active { background: rgba(2, 115, 94, 0.15); color: var(--verdi-light); }
+        .status-badge.status-active .status-dot { background: var(--verdi-light); }
+        .status-badge.status-trial { background: rgba(3, 89, 81, 0.15); color: var(--verdi-accent); }
+        .status-badge.status-trial .status-dot { background: var(--verdi-accent); }
+        .status-badge.status-inactive { background: rgba(3, 64, 64, 0.15); color: var(--verdi-mid); }
+        .status-badge.status-inactive .status-dot { background: var(--verdi-mid); }
+
+        .users-cell { display: flex; align-items: center; gap: 6px; color: var(--aire-storm); }
+        .users-cell i { font-size: 12px; }
+        
+        .mrr-value { color: var(--verdi-light); font-weight: 600; }
+        .mrr-period { color: var(--aire-slate); font-size: 11px; }
+
+        /* Action buttons - botones directos */
+        .action-buttons { display: flex; gap: 6px; align-items: center; }
+        .action-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--aire-fog); background: var(--aire-white); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; color: var(--aire-storm); }
+        .action-btn:hover { background: var(--verdi-light); color: white; border-color: var(--verdi-light); transform: translateY(-2px); }
+        .action-btn.primary { background: var(--verdi-light); color: white; border-color: var(--verdi-light); }
+        .action-btn.primary:hover { background: var(--verdi-accent); border-color: var(--verdi-accent); }
+        .action-btn.danger:hover { background: var(--verdi-dark); border-color: var(--verdi-dark); }
+        .action-btn i { font-size: 13px; }
+        
+        /* Tooltip para action buttons */
+        .action-btn { position: relative; }
+        .action-btn::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--verdi-dark); color: white; padding: 6px 10px; border-radius: 6px; font-size: 11px; white-space: nowrap; opacity: 0; visibility: hidden; transition: all 0.2s; pointer-events: none; margin-bottom: 6px; }
+        .action-btn::before { content: ''; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: var(--verdi-dark); opacity: 0; visibility: hidden; transition: all 0.2s; margin-bottom: -4px; }
+        .action-btn:hover::after, .action-btn:hover::before { opacity: 1; visibility: visible; }
+
+        /* Action dropdown (para más opciones) */
+        .action-dropdown { position: relative; }
+        .action-menu { position: absolute; right: 0; top: 100%; background: var(--aire-white); border-radius: 12px; box-shadow: 0 10px 40px rgba(2, 35, 38, 0.2); min-width: 180px; z-index: 100; display: none; overflow: hidden; }
+        .action-menu.show { display: block; animation: fadeInDown 0.2s ease; }
+        .action-menu button { width: 100%; padding: 12px 16px; border: none; background: none; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 13px; transition: background 0.15s; color: var(--aire-night); }
+        .action-menu button:hover { background: var(--aire-cloud); }
+        .action-menu button.danger { color: #dc2626; }
+        .action-menu button.danger:hover { background: #fef2f2; }
+        .action-divider { height: 1px; background: var(--aire-fog); margin: 4px 0; }
+
+        /* Grid View */
+        .companies-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px; }
+        .company-card { background: var(--aire-white); border-radius: 16px; border: 1px solid var(--aire-fog); overflow: hidden; cursor: pointer; transition: all 0.3s ease; animation: fadeInUp 0.4s ease backwards; }
+        .company-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(2, 35, 38, 0.12); border-color: var(--verdi-light); }
+        .company-card-header { padding: 20px; display: flex; justify-content: space-between; align-items: flex-start; background: linear-gradient(135deg, var(--aire-cloud) 0%, var(--aire-mist) 100%); }
+        .company-avatar-lg { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: var(--aire-white); font-weight: 700; font-size: 22px; }
+        .company-card-body { padding: 20px; }
+        .company-card-body h4 { color: var(--aire-night); margin-bottom: 4px; }
+        .company-domain { color: var(--aire-slate); font-size: 13px; margin-bottom: 16px; }
+        .company-meta { display: flex; gap: 16px; color: var(--aire-storm); font-size: 13px; }
+        .company-meta span { display: flex; align-items: center; gap: 6px; }
+        .company-card-footer { padding: 16px 20px; border-top: 1px solid var(--aire-mist); display: flex; justify-content: space-between; align-items: center; }
+        .card-mrr { display: flex; flex-direction: column; }
+        .mrr-label { font-size: 11px; color: var(--aire-slate); text-transform: uppercase; }
+        .mrr-amount { font-size: 18px; font-weight: 700; color: var(--verdi-light); }
+
+        /* Bulk Actions Bar - Verdi dark */
+        .bulk-actions-bar { position: fixed; bottom: -80px; left: 50%; transform: translateX(-50%); background: var(--verdi-dark); color: var(--aire-white); padding: 16px 24px; border-radius: 16px; display: flex; align-items: center; gap: 24px; box-shadow: 0 10px 40px rgba(2, 35, 38, 0.4); transition: bottom 0.3s ease; z-index: 100; }
+        .bulk-actions-bar.show { bottom: 24px; }
+        .bulk-info { font-size: 14px; }
+        .bulk-buttons { display: flex; gap: 8px; }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/superadmin.css?v=7">
+    <style>
+        /* Modals - estilos locales que sobrescriben los globales */
+        .modal { display: none !important; position: fixed !important; top: 0; left: 0; right: 0; bottom: 0; background: rgba(2, 35, 38, 0.6) !important; z-index: 2001 !important; align-items: center; justify-content: center; backdrop-filter: blur(4px); transform: none !important; opacity: 1 !important; visibility: visible !important; max-width: none !important; }
+        .modal.show { display: flex !important; animation: fadeIn 0.2s ease; }
+        .modal-content { background: var(--aire-white); border-radius: 16px; max-width: 500px; width: 90%; max-height: 90vh; overflow: auto; box-shadow: 0 20px 60px rgba(2, 35, 38, 0.3); animation: slideUp 0.3s ease; transform: none !important; }
+        .modal-content.modal-lg { max-width: 700px; }
+        .modal-content.modal-sm { max-width: 400px; }
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--aire-fog); display: flex; justify-content: space-between; align-items: center; }
+        .modal-title { margin: 0; font-size: 18px; font-weight: 600; color: var(--aire-night); display: flex; align-items: center; gap: 10px; }
+        .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--aire-slate); padding: 4px; line-height: 1; transition: color 0.2s; }
+        .modal-close:hover { color: var(--aire-night); }
+        .modal-body { padding: 24px; }
+        .modal-footer { padding: 16px 24px; border-top: 1px solid var(--aire-fog); display: flex; justify-content: flex-end; gap: 12px; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Animations */
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .table-row-animated { animation: fadeInUp 0.4s ease backwards; }
+
+        /* Empty state */
+        .empty-state-content { text-align: center; padding: 60px 20px; }
+        .empty-icon { width: 80px; height: 80px; background: var(--aire-mist); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+        .empty-icon i { font-size: 32px; color: var(--aire-slate); }
+        .empty-state-content h3 { color: var(--aire-night); margin-bottom: 8px; }
+        .empty-state-content p { color: var(--aire-storm); margin-bottom: 20px; }
+    </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/superadmin.css?v=7">
@@ -22,6 +196,14 @@
                     <p class="page-subtitle">Administra todas las compañías clientes de Opsis Suite</p>
                 </div>
                 <div class="header-actions">
+                    <div class="header-search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Buscar compañía..." id="headerSearchInput" oninput="filterCompanies()">
+                        <kbd>⌘K</kbd>
+                    </div>
+                    <button class="btn btn-ghost" onclick="toggleViewMode()" id="viewModeBtn" title="Cambiar vista">
+                        <i class="fas fa-th-large"></i>
+                    </button>
                     <button class="btn btn-secondary" onclick="exportCompanies()">
                         <i class="fas fa-download"></i> Exportar
                     </button>
@@ -32,105 +214,172 @@
             </header>
 
             <div class="page-content">
-                <!-- Stats Summary -->
+                <!-- Stats Summary with animations -->
                 <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon">
+                    <div class="stat-card stat-card-animated" onclick="setFilter('all', document.querySelector('[data-filter=all]'))">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #02735E 0%, #035951 100%);">
                             <i class="fas fa-building"></i>
                         </div>
                         <div class="stat-content">
                             <div class="stat-value" id="totalCompanies">0</div>
                             <div class="stat-label">Total Compañías</div>
+                            <div class="stat-trend trend-up"><i class="fas fa-arrow-up"></i> +12% este mes</div>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon success">
+                    <div class="stat-card stat-card-animated" onclick="setFilter('active', document.querySelector('[data-filter=active]'))">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #02735E 0%, #034040 100%);">
                             <i class="fas fa-check-circle"></i>
                         </div>
                         <div class="stat-content">
                             <div class="stat-value" id="activeCompanies">0</div>
                             <div class="stat-label">Activas</div>
+                            <div class="stat-trend trend-up"><i class="fas fa-arrow-up"></i> 98% retención</div>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon warning">
+                    <div class="stat-card stat-card-animated" onclick="setFilter('trial', document.querySelector('[data-filter=trial]'))">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #035951 0%, #034040 100%);">
                             <i class="fas fa-flask"></i>
                         </div>
                         <div class="stat-content">
                             <div class="stat-value" id="trialCompanies">0</div>
                             <div class="stat-label">En Prueba</div>
+                            <div class="stat-trend"><i class="fas fa-clock"></i> 14 días promedio</div>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon info">
+                    <div class="stat-card stat-card-animated">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #034040 0%, #022326 100%);">
                             <i class="fas fa-users"></i>
                         </div>
                         <div class="stat-content">
                             <div class="stat-value" id="totalUsers">0</div>
                             <div class="stat-label">Usuarios Totales</div>
+                            <div class="stat-trend trend-up"><i class="fas fa-arrow-up"></i> +28 esta semana</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-card-animated stat-card-highlight">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #02735E 0%, #022326 100%);">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="totalMRR">$0</div>
+                            <div class="stat-label">MRR Total</div>
+                            <div class="stat-trend trend-up"><i class="fas fa-arrow-up"></i> +$2,450 este mes</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Filters -->
-                <div class="card">
-                    <div class="card-body">
-                        <div class="filters-bar">
-                            <div class="search-box">
-                                <i class="fas fa-search"></i>
-                                <input type="text" placeholder="Buscar compañía..." id="searchInput" oninput="filterCompanies()">
-                            </div>
-                            <div class="filter-tags">
-                                <button class="filter-tag active" data-filter="all" onclick="setFilter('all', this)">Todas</button>
-                                <button class="filter-tag" data-filter="active" onclick="setFilter('active', this)">Activas</button>
-                                <button class="filter-tag" data-filter="trial" onclick="setFilter('trial', this)">En Prueba</button>
-                                <button class="filter-tag" data-filter="inactive" onclick="setFilter('inactive', this)">Inactivas</button>
-                            </div>
+                <!-- Quick Filters Pills -->
+                <div class="quick-filters">
+                    <div class="filter-group">
+                        <span class="filter-group-label">Estado:</span>
+                        <div class="filter-pills">
+                            <button class="filter-pill active" data-filter="all" onclick="setFilter('all', this)">
+                                <span class="pill-count" id="countAll">0</span> Todas
+                            </button>
+                            <button class="filter-pill" data-filter="active" onclick="setFilter('active', this)">
+                                <span class="pill-dot dot-green"></span> Activas
+                            </button>
+                            <button class="filter-pill" data-filter="trial" onclick="setFilter('trial', this)">
+                                <span class="pill-dot dot-yellow"></span> En Prueba
+                            </button>
+                            <button class="filter-pill" data-filter="inactive" onclick="setFilter('inactive', this)">
+                                <span class="pill-dot dot-red"></span> Inactivas
+                            </button>
                         </div>
-                        <div class="filter-tags" style="margin-top: 16px;">
-                            <span class="filter-label">Por industria:</span>
-                            <button class="filter-tag active" data-industry="all" onclick="setIndustryFilter('all', this)">
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-group-label">Industria:</span>
+                        <div class="filter-pills scrollable">
+                            <button class="filter-pill active" data-industry="all" onclick="setIndustryFilter('all', this)">
                                 <i class="fas fa-globe"></i> Todas
                             </button>
-                            <button class="filter-tag" data-industry="construccion" onclick="setIndustryFilter('construccion', this)">
+                            <button class="filter-pill" data-industry="construccion" onclick="setIndustryFilter('construccion', this)">
                                 <i class="fas fa-hard-hat"></i> Construcción
                             </button>
-                            <button class="filter-tag" data-industry="medica" onclick="setIndustryFilter('medica', this)">
+                            <button class="filter-pill" data-industry="medica" onclick="setIndustryFilter('medica', this)">
                                 <i class="fas fa-hospital"></i> Médica
                             </button>
-                            <button class="filter-tag" data-industry="transporte" onclick="setIndustryFilter('transporte', this)">
+                            <button class="filter-pill" data-industry="transporte" onclick="setIndustryFilter('transporte', this)">
                                 <i class="fas fa-truck"></i> Transporte
                             </button>
-                            <button class="filter-tag" data-industry="retail" onclick="setIndustryFilter('retail', this)">
+                            <button class="filter-pill" data-industry="retail" onclick="setIndustryFilter('retail', this)">
                                 <i class="fas fa-shopping-cart"></i> Retail
                             </button>
-                            <button class="filter-tag" data-industry="jardineria" onclick="setIndustryFilter('jardineria', this)">
+                            <button class="filter-pill" data-industry="jardineria" onclick="setIndustryFilter('jardineria', this)">
                                 <i class="fas fa-leaf"></i> Jardinería
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Companies Table -->
-                <div class="card">
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Compañía</th>
-                                    <th>Industria</th>
-                                    <th>Plan</th>
-                                    <th>Productos</th>
-                                    <th>Estado</th>
-                                    <th>Usuarios</th>
-                                    <th>MRR</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="companiesTable">
-                                <!-- Populated by JS -->
-                            </tbody>
-                        </table>
+                <!-- Companies Grid/Table View -->
+                <div class="card companies-container">
+                    <div class="card-header">
+                        <div class="card-header-left">
+                            <h3 class="card-title"><i class="fas fa-building"></i> Compañías</h3>
+                            <span class="results-count" id="resultsCount">0 resultados</span>
+                        </div>
+                        <div class="card-header-actions">
+                            <select class="sort-select" id="sortSelect" onchange="sortCompanies()">
+                                <option value="name">Ordenar por Nombre</option>
+                                <option value="mrr-desc">Mayor MRR</option>
+                                <option value="mrr-asc">Menor MRR</option>
+                                <option value="users-desc">Más Usuarios</option>
+                                <option value="recent">Más Recientes</option>
+                            </select>
+                            <button class="btn btn-sm btn-ghost" onclick="refreshCompanies()" id="refreshBtn">
+                                <i class="fas fa-sync-alt" id="refreshIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Table View -->
+                    <div class="table-view" id="tableView">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+                                        <th>Compañía</th>
+                                        <th>Industria</th>
+                                        <th>Plan</th>
+                                        <th>Productos</th>
+                                        <th>Estado</th>
+                                        <th>Usuarios</th>
+                                        <th>MRR</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="companiesTable">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Grid View -->
+                    <div class="grid-view" id="gridView" style="display: none;">
+                        <div class="companies-grid" id="companiesGrid">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bulk Actions Bar -->
+                <div class="bulk-actions-bar" id="bulkActionsBar">
+                    <div class="bulk-info">
+                        <span id="selectedCount">0</span> compañías seleccionadas
+                    </div>
+                    <div class="bulk-buttons">
+                        <button class="btn btn-sm btn-secondary" onclick="bulkExport()">
+                            <i class="fas fa-download"></i> Exportar
+                        </button>
+                        <button class="btn btn-sm btn-warning" onclick="bulkSuspend()">
+                            <i class="fas fa-pause"></i> Suspender
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="bulkDelete()">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
                     </div>
                 </div>
             </div>
@@ -188,23 +437,61 @@
         let currentFilter = 'all';
         let currentIndustryFilter = 'all';
         let companyToDelete = null;
+        let selectedCompanies = new Set();
+        let isGridView = false;
 
         document.addEventListener('DOMContentLoaded', () => {
             loadStats();
             loadCompaniesTable();
+            updateCounts();
+            
+            // Keyboard shortcut for search
+            document.addEventListener('keydown', (e) => {
+                if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                    e.preventDefault();
+                    document.getElementById('headerSearchInput').focus();
+                }
+            });
         });
 
         function loadStats() {
             const companies = SuperAdminData.companies;
-            document.getElementById('totalCompanies').textContent = companies.length;
-            document.getElementById('activeCompanies').textContent = companies.filter(c => c.status === 'active').length;
-            document.getElementById('trialCompanies').textContent = companies.filter(c => c.status === 'trial').length;
-            document.getElementById('totalUsers').textContent = companies.reduce((sum, c) => sum + c.users, 0);
+            const totalMRR = companies.reduce((sum, c) => sum + c.mrr, 0);
+            
+            // Animate counters
+            animateCounter('totalCompanies', companies.length);
+            animateCounter('activeCompanies', companies.filter(c => c.status === 'active').length);
+            animateCounter('trialCompanies', companies.filter(c => c.status === 'trial').length);
+            animateCounter('totalUsers', companies.reduce((sum, c) => sum + c.users, 0));
+            document.getElementById('totalMRR').textContent = '$' + totalMRR.toLocaleString();
+        }
+
+        function animateCounter(id, target) {
+            const el = document.getElementById(id);
+            const duration = 1000;
+            const start = 0;
+            const startTime = performance.now();
+            
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                el.textContent = Math.floor(start + (target - start) * easeOut);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            requestAnimationFrame(update);
+        }
+
+        function updateCounts() {
+            document.getElementById('countAll').textContent = SuperAdminData.companies.length;
         }
 
         function loadCompaniesTable() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            let companies = SuperAdminData.companies;
+            const searchTerm = document.getElementById('headerSearchInput')?.value.toLowerCase() || '';
+            let companies = [...SuperAdminData.companies];
             
             // Apply status filter
             if (currentFilter !== 'all') {
@@ -224,34 +511,59 @@
                     c.domain.toLowerCase().includes(searchTerm)
                 );
             }
+
+            // Apply sorting
+            const sortBy = document.getElementById('sortSelect')?.value || 'name';
+            companies = sortCompaniesArray(companies, sortBy);
+            
+            // Update results count
+            document.getElementById('resultsCount').textContent = `${companies.length} resultado${companies.length !== 1 ? 's' : ''}`;
             
             const tbody = document.getElementById('companiesTable');
             
             if (companies.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="8" class="empty-state">
-                            <div class="icon"><i class="fas fa-search"></i></div>
-                            <h3>No se encontraron compañías</h3>
-                            <p>Intenta ajustar los filtros o crear una nueva compañía</p>
+                        <td colspan="9" class="empty-state">
+                            <div class="empty-state-content">
+                                <div class="empty-icon"><i class="fas fa-building"></i></div>
+                                <h3>No se encontraron compañías</h3>
+                                <p>Intenta ajustar los filtros o crea una nueva compañía</p>
+                                <button class="btn btn-primary" onclick="location.href='onboarding.html'">
+                                    <i class="fas fa-plus"></i> Nueva Compañía
+                                </button>
+                            </div>
                         </td>
                     </tr>
+                `;
+                document.getElementById('companiesGrid').innerHTML = `
+                    <div class="empty-state-content" style="grid-column: 1/-1; text-align: center; padding: 60px;">
+                        <div class="empty-icon"><i class="fas fa-building"></i></div>
+                        <h3>No se encontraron compañías</h3>
+                        <p>Intenta ajustar los filtros</p>
+                    </div>
                 `;
                 return;
             }
             
-            tbody.innerHTML = companies.map(company => `
-                <tr data-id="${company.id}">
+            // Table view
+            tbody.innerHTML = companies.map((company, index) => `
+                <tr data-id="${company.id}" class="table-row-animated" style="animation-delay: ${index * 0.03}s">
+                    <td><input type="checkbox" class="company-checkbox" value="${company.id}" onchange="toggleSelect(${company.id})" ${selectedCompanies.has(company.id) ? 'checked' : ''}></td>
                     <td>
-                        <strong style="color: var(--text-primary);">${company.name}</strong>
-                        <br>
-                        <small style="color: var(--text-secondary);">
-                            ${company.domain}.opsis-suite.com
-                        </small>
+                        <div class="company-cell">
+                            <div class="company-avatar" style="background: ${getAvatarColor(company.industry)}">
+                                <i class="${getIndustryIcon(company.industry)}"></i>
+                            </div>
+                            <div class="company-info">
+                                <strong>${company.name}</strong>
+                                <small>${company.domain}.opsis-suite.com</small>
+                            </div>
+                        </div>
                     </td>
                     <td>
-                        <span style="display: flex; align-items: center; gap: 0.5rem;">
-                            ${SuperAdminData.getIndustry(company.industry).icon}
+                        <span class="industry-badge industry-${company.industry}">
+                            <i class="${SuperAdminData.getIndustry(company.industry).icon}"></i>
                             ${SuperAdminData.getIndustry(company.industry).name}
                         </span>
                     </td>
@@ -259,30 +571,221 @@
                         <span class="plan-badge plan-${company.plan.toLowerCase()}">${company.plan}</span>
                     </td>
                     <td>
-                        <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
-                            ${company.products.map(p => `<span style="background: var(--hover-bg); padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.7rem;">${p}</span>`).join('')}
+                        <div class="products-stack">
+                            ${company.products.slice(0, 2).map(p => `<span class="product-chip">${p}</span>`).join('')}
+                            ${company.products.length > 2 ? `<span class="product-chip more">+${company.products.length - 2}</span>` : ''}
                         </div>
                     </td>
                     <td>
-                        <span class="status status-${company.status}">${SuperAdminData.getStatusName(company.status)}</span>
+                        <span class="status-badge status-${company.status}">
+                            <span class="status-dot"></span>
+                            ${SuperAdminData.getStatusName(company.status)}
+                        </span>
                     </td>
-                    <td><strong>${company.users}</strong></td>
-                    <td><strong style="color: var(--primary-green);">$${company.mrr}</strong></td>
+                    <td>
+                        <div class="users-cell">
+                            <i class="fas fa-users"></i> ${company.users}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="mrr-value">$${company.mrr.toLocaleString()}</span>
+                        <small class="mrr-period">/mes</small>
+                    </td>
                     <td>
                         <div class="action-buttons">
-                            <button class="btn-icon" onclick="viewCompany(${company.id})" title="Ver detalles">
+                            <button class="action-btn primary" data-tooltip="Ver detalles" onclick="viewCompany(${company.id})">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            <button class="btn-icon" onclick="editCompany(${company.id})" title="Editar">
+                            <button class="action-btn" data-tooltip="Editar" onclick="editCompany(${company.id})">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn-icon danger" onclick="confirmDeleteCompany(${company.id})" title="Eliminar">
-                                <i class="fas fa-trash"></i>
+                            <button class="action-btn" data-tooltip="Acceder como" onclick="impersonateCompany(${company.id})">
+                                <i class="fas fa-sign-in-alt"></i>
                             </button>
+                            <div class="action-dropdown">
+                                <button class="action-btn" data-tooltip="Más" onclick="toggleActionMenu(${company.id}, event)">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <div class="action-menu" id="actionMenu-${company.id}">
+                                    <button onclick="duplicateCompany(${company.id})"><i class="fas fa-copy"></i> Duplicar</button>
+                                    <button onclick="exportCompanyData(${company.id})"><i class="fas fa-download"></i> Exportar datos</button>
+                                    <div class="action-divider"></div>
+                                    <button onclick="suspendCompany(${company.id})"><i class="fas fa-pause"></i> Suspender</button>
+                                    <button class="danger" onclick="confirmDeleteCompany(${company.id})"><i class="fas fa-trash"></i> Eliminar</button>
+                                </div>
+                            </div>
                         </div>
                     </td>
                 </tr>
             `).join('');
+
+            // Grid view
+            document.getElementById('companiesGrid').innerHTML = companies.map((company, index) => `
+                <div class="company-card" style="animation-delay: ${index * 0.05}s" onclick="viewCompany(${company.id})">
+                    <div class="company-card-header">
+                        <div class="company-avatar-lg" style="background: ${getAvatarColor(company.industry)}">
+                            <i class="${getIndustryIcon(company.industry)}"></i>
+                        </div>
+                        <span class="status-badge status-${company.status}">
+                            <span class="status-dot"></span>
+                            ${SuperAdminData.getStatusName(company.status)}
+                        </span>
+                    </div>
+                    <div class="company-card-body">
+                        <h4>${company.name}</h4>
+                        <p class="company-domain">${company.domain}.opsis-suite.com</p>
+                        <div class="company-meta">
+                            <span><i class="fas fa-users"></i> ${company.users} usuarios</span>
+                            <span><i class="fas fa-box"></i> ${company.products.length} productos</span>
+                        </div>
+                    </div>
+                    <div class="company-card-footer">
+                        <div class="card-mrr">
+                            <span class="mrr-label">MRR</span>
+                            <span class="mrr-amount">$${company.mrr.toLocaleString()}</span>
+                        </div>
+                        <span class="plan-badge plan-${company.plan.toLowerCase()}">${company.plan}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getAvatarColor(industry) {
+            // Paleta Verdi - diferentes tonalidades
+            const colors = {
+                construccion: 'linear-gradient(135deg, #035951 0%, #022326 100%)',
+                medica: 'linear-gradient(135deg, #02735E 0%, #034040 100%)',
+                transporte: 'linear-gradient(135deg, #034040 0%, #022326 100%)',
+                retail: 'linear-gradient(135deg, #035951 0%, #034040 100%)',
+                jardineria: 'linear-gradient(135deg, #02735E 0%, #035951 100%)'
+            };
+            return colors[industry] || 'linear-gradient(135deg, #02735E 0%, #022326 100%)';
+        }
+
+        function getIndustryIcon(industry) {
+            // Iconos por industria
+            const icons = {
+                construccion: 'fas fa-hard-hat',
+                medica: 'fas fa-hospital',
+                transporte: 'fas fa-truck',
+                retail: 'fas fa-shopping-cart',
+                jardineria: 'fas fa-leaf'
+            };
+            return icons[industry] || 'fas fa-building';
+        }
+
+        function sortCompaniesArray(companies, sortBy) {
+            switch(sortBy) {
+                case 'mrr-desc': return companies.sort((a, b) => b.mrr - a.mrr);
+                case 'mrr-asc': return companies.sort((a, b) => a.mrr - b.mrr);
+                case 'users-desc': return companies.sort((a, b) => b.users - a.users);
+                case 'recent': return companies.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                default: return companies.sort((a, b) => a.name.localeCompare(b.name));
+            }
+        }
+
+        function sortCompanies() {
+            loadCompaniesTable();
+        }
+
+        function toggleViewMode() {
+            isGridView = !isGridView;
+            const tableView = document.getElementById('tableView');
+            const gridView = document.getElementById('gridView');
+            const btn = document.getElementById('viewModeBtn');
+            
+            if (isGridView) {
+                tableView.style.display = 'none';
+                gridView.style.display = 'block';
+                btn.innerHTML = '<i class="fas fa-list"></i>';
+            } else {
+                tableView.style.display = 'block';
+                gridView.style.display = 'none';
+                btn.innerHTML = '<i class="fas fa-th-large"></i>';
+            }
+        }
+
+        function toggleActionMenu(id, event) {
+            event.stopPropagation();
+            // Close all other menus
+            document.querySelectorAll('.action-menu.show').forEach(m => m.classList.remove('show'));
+            document.getElementById(`actionMenu-${id}`).classList.toggle('show');
+        }
+
+        // Close menus on click outside
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.action-menu.show').forEach(m => m.classList.remove('show'));
+        });
+
+        function toggleSelect(id) {
+            if (selectedCompanies.has(id)) {
+                selectedCompanies.delete(id);
+            } else {
+                selectedCompanies.add(id);
+            }
+            updateBulkActionsBar();
+        }
+
+        function toggleSelectAll() {
+            const checkboxes = document.querySelectorAll('.company-checkbox');
+            const selectAll = document.getElementById('selectAll').checked;
+            
+            checkboxes.forEach(cb => {
+                cb.checked = selectAll;
+                const id = parseInt(cb.value);
+                if (selectAll) {
+                    selectedCompanies.add(id);
+                } else {
+                    selectedCompanies.delete(id);
+                }
+            });
+            updateBulkActionsBar();
+        }
+
+        function updateBulkActionsBar() {
+            const bar = document.getElementById('bulkActionsBar');
+            const count = selectedCompanies.size;
+            document.getElementById('selectedCount').textContent = count;
+            
+            if (count > 0) {
+                bar.classList.add('show');
+            } else {
+                bar.classList.remove('show');
+            }
+        }
+
+        function refreshCompanies() {
+            const icon = document.getElementById('refreshIcon');
+            icon.style.animation = 'spin 1s linear infinite';
+            
+            setTimeout(() => {
+                loadCompaniesTable();
+                icon.style.animation = 'none';
+                showToast('Datos actualizados', 'success');
+            }, 800);
+        }
+
+        function impersonateCompany(id) {
+            const company = SuperAdminData.getCompany(id);
+            showToast(`Accediendo como ${company.name}...`, 'info');
+            // TODO: Implement actual impersonation
+        }
+
+        function suspendCompany(id) {
+            const company = SuperAdminData.getCompany(id);
+            showToast(`Compañía ${company.name} suspendida`, 'warning');
+        }
+
+        function duplicateCompany(id) {
+            const company = SuperAdminData.getCompany(id);
+            showToast(`Duplicando ${company.name}...`, 'info');
+            // TODO: Implement duplication
+        }
+
+        function exportCompanyData(id) {
+            const company = SuperAdminData.getCompany(id);
+            showToast(`Exportando datos de ${company.name}...`, 'info');
+            // TODO: Implement export
         }
 
         function setFilter(filter, element) {
@@ -342,7 +845,8 @@
         }
 
         function editCompany(id) {
-            location.href = `form.html?id=${id}`;
+            // Navigate without .html extension to avoid serve stripping query params
+            window.location.href = `form?id=${id}`;
         }
 
         function confirmDeleteCompany(id) {

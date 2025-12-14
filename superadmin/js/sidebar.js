@@ -163,4 +163,6 @@ const SuperAdminSidebar = {
 // Auto-initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     SuperAdminSidebar.init();
+    // Reveal page after sidebar is loaded (prevents flash)
+    document.body.classList.add('loaded');
 });
