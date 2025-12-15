@@ -150,10 +150,76 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/superadmin.css?v=7">
     <style>
+        /* Modal Overlay - cubre TODA la pantalla sin bordes - sobrescribe global */
+        .modal-overlay {
+            display: none !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            background: rgba(2, 35, 38, 0.92) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            z-index: 99998 !important;
+            cursor: pointer !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            outline: none !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            transform: none !important;
+            max-width: none !important;
+            overflow: hidden !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        .modal-overlay.show {
+            display: block !important;
+            animation: fadeIn 0.2s ease;
+        }
+        
         /* Modals - estilos locales que sobrescriben los globales */
-        .modal { display: none !important; position: fixed !important; top: 0; left: 0; right: 0; bottom: 0; background: rgba(2, 35, 38, 0.6) !important; z-index: 2001 !important; align-items: center; justify-content: center; backdrop-filter: blur(4px); transform: none !important; opacity: 1 !important; visibility: visible !important; max-width: none !important; }
-        .modal.show { display: flex !important; animation: fadeIn 0.2s ease; }
-        .modal-content { background: var(--aire-white); border-radius: 16px; max-width: 500px; width: 90%; max-height: 90vh; overflow: auto; box-shadow: 0 20px 60px rgba(2, 35, 38, 0.3); animation: slideUp 0.3s ease; transform: none !important; }
+        .modal { 
+            display: none !important; 
+            position: fixed !important; 
+            top: 0 !important; 
+            left: 0 !important; 
+            right: 0 !important; 
+            bottom: 0 !important; 
+            width: 100vw !important;
+            height: 100vh !important;
+            background: transparent !important; 
+            z-index: 99999 !important; 
+            align-items: center; 
+            justify-content: center; 
+            transform: none !important; 
+            opacity: 1 !important; 
+            visibility: visible !important; 
+            max-width: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            pointer-events: none;
+        }
+        .modal.show { display: flex !important; }
+        
+        .modal-content { 
+            background: var(--aire-white); 
+            border-radius: 16px; 
+            max-width: 500px; 
+            width: 90%; 
+            max-height: 90vh; 
+            overflow: auto; 
+            box-shadow: 0 20px 60px rgba(2, 35, 38, 0.3); 
+            animation: slideUp 0.3s ease; 
+            transform: none !important; 
+            position: relative; 
+            z-index: 100000;
+            pointer-events: auto;
+        }
         .modal-content.modal-lg { max-width: 700px; }
         .modal-content.modal-sm { max-width: 400px; }
         .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--aire-fog); display: flex; justify-content: space-between; align-items: center; }
@@ -385,6 +451,9 @@
             </div>
         </main>
     </div>
+
+    <!-- Modal Overlay - cubre toda la pantalla -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeAllModals()"></div>
 
     <!-- View Company Modal -->
     <div class="modal" id="viewCompanyModal">
@@ -837,11 +906,13 @@
                 </div>
             `;
             document.getElementById('editCompanyBtn').onclick = () => editCompany(id);
+            document.getElementById('modalOverlay').classList.add('show');
             document.getElementById('viewCompanyModal').classList.add('show');
         }
 
         function closeViewModal() {
             document.getElementById('viewCompanyModal').classList.remove('show');
+            document.getElementById('modalOverlay').classList.remove('show');
         }
 
         function editCompany(id) {
@@ -856,11 +927,20 @@
             companyToDelete = id;
             document.getElementById('deleteCompanyName').textContent = company.name;
             document.getElementById('confirmDeleteBtn').onclick = () => deleteCompany(id);
+            document.getElementById('modalOverlay').classList.add('show');
             document.getElementById('deleteModal').classList.add('show');
         }
 
         function closeDeleteModal() {
             document.getElementById('deleteModal').classList.remove('show');
+            document.getElementById('modalOverlay').classList.remove('show');
+            companyToDelete = null;
+        }
+        
+        function closeAllModals() {
+            document.getElementById('viewCompanyModal').classList.remove('show');
+            document.getElementById('deleteModal').classList.remove('show');
+            document.getElementById('modalOverlay').classList.remove('show');
             companyToDelete = null;
         }
 

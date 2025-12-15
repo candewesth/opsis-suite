@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Acceso | Opsis Suite</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --verdi-dark: #022326;
+            --verdi-mid: #034040;
+            --verdi-accent: #035951;
+            --verdi-light: #02735E;
+            --aire-white: #ffffff;
+            --aire-cloud: #fafbfc;
+            --aire-mist: #f1f5f9;
+            --aire-fog: #e2e8f0;
+            --aire-slate: #94a3b8;
+            --aire-storm: #64748b;
+            --aire-night: #1e293b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--verdi-dark) 0%, var(--verdi-mid) 50%, var(--verdi-accent) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .portal-container {
+            background: var(--aire-white);
+            border-radius: 24px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .portal-header {
+            background: linear-gradient(135deg, var(--verdi-light) 0%, var(--verdi-accent) 100%);
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
+
+        .portal-logo {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .portal-subtitle {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .portal-body {
+            padding: 40px;
+        }
+
+        .portal-message {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .portal-message h2 {
+            color: var(--aire-night);
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .portal-message p {
+            color: var(--aire-storm);
+            font-size: 14px;
+        }
+
+        .portal-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--aire-night);
+        }
+
+        .form-input {
+            padding: 14px 16px;
+            border: 2px solid var(--aire-fog);
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--verdi-light);
+            box-shadow: 0 0 0 4px rgba(2, 115, 94, 0.1);
+        }
+
+        .btn-access {
+            background: linear-gradient(135deg, var(--verdi-light) 0%, var(--verdi-accent) 100%);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .btn-access:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(2, 115, 94, 0.4);
+        }
+
+        .portal-footer {
+            text-align: center;
+            padding: 20px 40px 30px;
+            border-top: 1px solid var(--aire-fog);
+        }
+
+        .portal-footer p {
+            font-size: 13px;
+            color: var(--aire-slate);
+        }
+
+        .portal-footer a {
+            color: var(--verdi-light);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        /* Loading state */
+        .loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .loading .btn-access::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 2px solid white;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-left: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="portal-container">
+        <div class="portal-header">
+            <div class="portal-logo">Opsis Suite</div>
+            <div class="portal-subtitle">Portal de Acceso Empresarial</div>
+        </div>
+        
+        <div class="portal-body">
+            <div class="portal-message">
+                <h2>Accede a tu Portal</h2>
+                <p>Ingresa el identificador de tu empresa para continuar</p>
+            </div>
+            
+            <form class="portal-form" id="portalForm" onsubmit="accessPortal(event)">
+                <div class="error-message" id="errorMessage">
+                    Empresa no encontrada. Verifica el identificador.
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Identificador de Empresa</label>
+                    <input type="text" class="form-input" id="companySlug" 
+                           placeholder="ej: clinica-sanjose" 
+                           autocomplete="off"
+                           required>
+                </div>
+                
+                <button type="submit" class="btn-access">
+                    <i class="fas fa-arrow-right"></i>
+                    Continuar al Portal
+                </button>
+            </form>
+        </div>
+        
+        <div class="portal-footer">
+            <p>¿No tienes acceso? <a href="/contact.html">Contacta a soporte</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Known companies (in production, this would be an API call)
+        const knownCompanies = [
+            'techbuild',
+            'clinica-sanjose',
+            'constructora-norte',
+            'logistica-express',
+            'jardineria-verde',
+            'demo'
+        ];
+
+        function accessPortal(event) {
+            event.preventDefault();
+            
+            const form = document.getElementById('portalForm');
+            const input = document.getElementById('companySlug');
+            const error = document.getElementById('errorMessage');
+            const slug = input.value.toLowerCase().trim().replace(/\s+/g, '-');
+            
+            // Hide previous error
+            error.classList.remove('show');
+            
+            // Show loading
+            form.classList.add('loading');
+            
+            // Simulate API check (in production, verify against database)
+            setTimeout(() => {
+                // For demo, accept any slug or known companies
+                if (slug.length >= 3) {
+                    // Redirect to company portal
+                    window.location.href = `/portal/${slug}/`;
+                } else {
+                    error.textContent = 'El identificador debe tener al menos 3 caracteres.';
+                    error.classList.add('show');
+                    form.classList.remove('loading');
+                }
+            }, 800);
+        }
+
+        // Auto-focus input
+        document.getElementById('companySlug').focus();
+
+        // Check if we have a company in URL already
+        const pathParts = window.location.pathname.split('/').filter(Boolean);
+        if (pathParts.length > 1 && pathParts[0] === 'portal') {
+            // We have a company slug, redirect to their dashboard
+            const company = pathParts[1];
+            if (company !== 'index.html') {
+                // This is handled by the company router
+            }
+        }
+    </script>
+</body>
+</html>

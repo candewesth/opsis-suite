@@ -4636,6 +4636,65 @@
   </style>
 </head>
 <body data-sidebar-active="dashboard">
+  <!-- Admin Mode Banner -->
+  <div id="adminModeBanner" class="admin-mode-banner" style="display: none;">
+    <div class="admin-mode-content">
+      <span class="admin-mode-icon">🔐</span>
+      <span class="admin-mode-text">
+        <strong>Modo Administrador</strong> — Accediendo como SuperAdmin a: <span id="adminCompanyName">Compañía</span>
+      </span>
+      <span class="admin-mode-timer" id="adminModeTimer">30:00</span>
+      <button class="admin-mode-exit" onclick="exitAdminMode()">Salir</button>
+    </div>
+  </div>
+  <style>
+    .admin-mode-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+      color: white;
+      padding: 10px 20px;
+      z-index: 99999;
+      box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4);
+    }
+    .admin-mode-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .admin-mode-icon { font-size: 20px; }
+    .admin-mode-text { font-size: 14px; }
+    .admin-mode-timer {
+      background: rgba(255,255,255,0.2);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-family: monospace;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .admin-mode-exit {
+      background: white;
+      color: #5b21b6;
+      border: none;
+      padding: 6px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .admin-mode-exit:hover {
+      background: #fef3c7;
+      transform: scale(1.05);
+    }
+    body.admin-mode .app-shell { margin-top: 50px; }
+    body.admin-mode header { top: 50px; }
+  </style>
+  
   <a href="#main" class="skip-link">Ir al contenido principal</a>
   <!-- MotorSync - Sistema Operacional Base | Opsis Suite -->
   <div class="app-shell" data-theme="light" data-accent="#02735E">
@@ -20478,6 +20537,131 @@
       console.log('✅ Sistema de notificaciones integrado activado');
     }); */
 
+  </script>
+
+  <!-- Admin Mode Detection Script -->
+  <script>
+    (function() {
+      // First try localStorage (preferred method - works with serve redirects)
+      let adminSession = null;
+      let companyId, companyName, adminToken;
+      
+      const storedSession = localStorage.getItem('opsis_admin_session');
+      if (storedSession) {
+        try {
+          adminSession = JSON.parse(storedSession);
+          companyId = adminSession.companyId;
+          companyName = adminSession.companyName;
+          adminToken = adminSession.adminToken;
+        } catch (e) {
+          console.warn('Invalid stored session:', e);
+        }
+      }
+      
+      // Fallback to URL parameters
+      if (!adminToken) {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('admin_mode') === 'true') {
+          companyId = params.get('company');
+          companyName = params.get('company_name');
+          adminToken = params.get('admin_token');
+        }
+      }
+      
+      if (adminToken) {
+        console.log('🔐 Admin Mode Activated:', { companyId, companyName });
+        
+        // Validate token (basic check - in production, verify server-side)
+        try {
+          const tokenData = JSON.parse(atob(adminToken));
+          const now = Date.now();
+          
+          if (tokenData.expires && tokenData.expires > now) {
+            // Token is valid - show admin banner
+            document.body.classList.add('admin-mode');
+            document.body.style.paddingTop = '52px'; // Make room for admin banner
+            
+            const banner = document.getElementById('adminModeBanner');
+            const nameSpan = document.getElementById('adminCompanyName');
+            const timerSpan = document.getElementById('adminModeTimer');
+            
+            // Decode company name (only if it's URL encoded from params)
+            const displayName = adminSession ? companyName : decodeURIComponent(companyName || '');
+            
+            if (banner) {
+              banner.style.display = 'block';
+              if (nameSpan && displayName) {
+                nameSpan.textContent = displayName;
+              }
+              
+              // Update company name in header
+              const headerName = document.getElementById('company-name-header');
+              if (headerName && displayName) {
+                headerName.textContent = displayName + ' (Admin)';
+              }
+              
+              // Update page title
+              document.title = displayName + ' | MotorSync - Admin Mode';
+              
+              // Start countdown timer
+              let remainingMs = tokenData.expires - now;
+              
+              const updateTimer = () => {
+                const minutes = Math.floor(remainingMs / 60000);
+                const seconds = Math.floor((remainingMs % 60000) / 1000);
+                timerSpan.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                remainingMs -= 1000;
+                
+                if (remainingMs <= 0) {
+                  alert('⏰ Tu sesión de administrador ha expirado.');
+                  exitAdminMode();
+                } else if (remainingMs <= 300000) { // 5 minutes warning
+                  timerSpan.style.background = 'rgba(239, 68, 68, 0.5)';
+                }
+              };
+              
+              updateTimer();
+              setInterval(updateTimer, 1000);
+            }
+            
+            // Store admin session info
+            window.adminSession = {
+              companyId,
+              companyName: displayName,
+              tokenData,
+              startTime: now
+            };
+            
+          } else {
+            console.warn('Admin token expired');
+            localStorage.removeItem('opsis_admin_session');
+            alert('⚠️ El token de administrador ha expirado. Vuelve a acceder desde SuperAdmin.');
+            window.location.href = '/superadmin/companies/list';
+          }
+        } catch (e) {
+          console.error('Invalid admin token:', e);
+        }
+      }
+    })();
+    
+    function exitAdminMode() {
+      // Log the exit (in production, send to server)
+      if (window.adminSession) {
+        const duration = Math.floor((Date.now() - window.adminSession.startTime) / 1000);
+        console.log('Admin session ended:', {
+          ...window.adminSession,
+          durationSeconds: duration
+        });
+      }
+      
+      // Close the tab or redirect back to SuperAdmin
+      if (window.opener) {
+        window.close();
+      } else {
+        window.location.href = '/superadmin/companies/list';
+      }
+    }
   </script>
 
   </div><!-- /app-content -->

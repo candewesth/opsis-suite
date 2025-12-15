@@ -77,6 +77,32 @@
             color: var(--aire-storm);
             font-size: 14px;
         }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .btn-access {
+            background: linear-gradient(135deg, var(--verdi-light) 0%, var(--verdi-accent) 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(2, 115, 94, 0.3);
+        }
+        .btn-access:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(2, 115, 94, 0.4);
+        }
+        .btn-access i {
+            font-size: 14px;
+        }
         .company-status-badge {
             padding: 6px 16px;
             border-radius: 20px;
@@ -500,6 +526,61 @@
             color: var(--aire-slate);
         }
 
+        /* Admin Access Card */
+        .admin-access-card {
+            border: 1px solid rgba(2, 115, 94, 0.2);
+            background: linear-gradient(135deg, rgba(2, 115, 94, 0.02) 0%, var(--aire-white) 100%);
+        }
+        .admin-access-card .form-card-header {
+            background: rgba(2, 115, 94, 0.05);
+        }
+        .access-description {
+            font-size: 13px;
+            color: var(--aire-storm);
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+        .btn-access.btn-full {
+            width: 100%;
+            justify-content: center;
+            padding: 14px 20px;
+            font-size: 15px;
+        }
+        .access-log {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid var(--aire-fog);
+        }
+        .access-log-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--aire-slate);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+        .access-log-header i {
+            font-size: 11px;
+        }
+        .access-log-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 13px;
+        }
+        .access-log-user {
+            color: var(--aire-night);
+            font-weight: 500;
+        }
+        .access-log-time {
+            color: var(--aire-slate);
+            font-size: 12px;
+        }
+
         /* Toast */
         .toast {
             position: fixed;
@@ -562,7 +643,12 @@
                     <h1 class="page-title" id="pageTitle">Editar Compañía</h1>
                     <p class="page-subtitle" id="pageSubtitle">Modificar información de la compañía</p>
                 </div>
-                <span class="company-status-badge active" id="statusBadge">Activo</span>
+                <div class="header-actions">
+                    <button type="button" class="btn btn-access" id="accessSystemBtn" onclick="accessCompanySystem()">
+                        <i class="fas fa-sign-in-alt"></i> Acceder al Sistema
+                    </button>
+                    <span class="company-status-badge active" id="statusBadge">Activo</span>
+                </div>
             </div>
 
             <!-- Form -->
@@ -808,6 +894,35 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Admin Access -->
+                        <div class="form-card admin-access-card">
+                            <div class="form-card-header">
+                                <i class="fas fa-user-shield"></i>
+                                <h3>Acceso Administrativo</h3>
+                            </div>
+                            <div class="form-card-body">
+                                <p class="access-description">Accede al portal de esta compañía como administrador para soporte o auditoría.</p>
+                                <button type="button" class="btn btn-access btn-full" onclick="accessCompanySystem()">
+                                    <i class="fas fa-external-link-alt"></i>
+                                    Acceder al Sistema
+                                </button>
+                                <div class="access-log" id="accessLog">
+                                    <div class="access-log-header">
+                                        <i class="fas fa-clock"></i>
+                                        <span>Últimos accesos admin</span>
+                                    </div>
+                                    <div class="access-log-item">
+                                        <span class="access-log-user">Carlos M.</span>
+                                        <span class="access-log-time">Hace 5 días</span>
+                                    </div>
+                                    <div class="access-log-item">
+                                        <span class="access-log-user">Ana R.</span>
+                                        <span class="access-log-time">15 Nov 2024</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1025,6 +1140,76 @@
             setTimeout(() => {
                 goBack();
             }, 1500);
+        }
+
+        function accessCompanySystem() {
+            if (!companyId || !originalData) {
+                showToast('Primero guarda la compañía', 'warning');
+                return;
+            }
+            
+            // Get active products from checkboxes
+            const activeProducts = [];
+            document.querySelectorAll('.product-checkbox.checked input').forEach(input => {
+                activeProducts.push(input.value);
+            });
+            
+            // Generate admin access token (in real app, this would be server-side)
+            const accessToken = btoa(JSON.stringify({
+                adminId: 'superadmin',
+                companyId: companyId,
+                timestamp: Date.now(),
+                expires: Date.now() + (30 * 60 * 1000) // 30 minutes
+            }));
+            
+            // Get company domain
+            const domain = originalData.domain || 'unknown';
+            
+            // Show confirmation with products
+            const productsList = activeProducts.length > 0 ? activeProducts.join(', ') : 'Ninguno';
+            const confirmed = confirm(
+                `🔐 Acceso Administrativo\n\n` +
+                `Vas a acceder al portal de "${originalData.name}" como administrador.\n\n` +
+                `• Portal: opsis-suite.com/portal/${domain}\n` +
+                `• Productos activos: ${productsList}\n` +
+                `• Sesión válida por: 30 minutos\n` +
+                `• Esta acción quedará registrada en el log de auditoría.\n\n` +
+                `¿Continuar?`
+            );
+            
+            if (confirmed) {
+                // Log the access (in real app, send to server)
+                console.log('Admin access logged:', {
+                    companyId,
+                    companyName: originalData.name,
+                    domain,
+                    products: activeProducts,
+                    timestamp: new Date().toISOString(),
+                    admin: 'superadmin'
+                });
+                
+                // Store admin session in localStorage for cross-page access
+                const adminSession = {
+                    companyId,
+                    companyName: originalData.name,
+                    domain,
+                    products: activeProducts, // Include active products
+                    adminToken: accessToken,
+                    adminMode: true,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem('opsis_admin_session', JSON.stringify(adminSession));
+                
+                // Open portal dashboard - uses localStorage instead of URL params
+                // This avoids the 'serve' redirect stripping query params issue
+                const portalUrl = `/portal/company/index.html`;
+                
+                // Open in new tab
+                showToast('Abriendo portal de ' + originalData.name + '...', 'info');
+                setTimeout(() => {
+                    window.open(portalUrl, '_blank', 'noopener,noreferrer');
+                }, 500);
+            }
         }
 
         function resetForm() {

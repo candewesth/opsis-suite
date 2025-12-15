@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal | Opsis Suite</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --verdi-dark: #022326;
+            --verdi-mid: #034040;
+            --verdi-accent: #035951;
+            --verdi-light: #02735E;
+            --aire-white: #ffffff;
+            --aire-cloud: #fafbfc;
+            --aire-mist: #f1f5f9;
+            --aire-fog: #e2e8f0;
+            --aire-slate: #94a3b8;
+            --aire-storm: #64748b;
+            --aire-night: #1e293b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--aire-cloud);
+            min-height: 100vh;
+        }
+
+        /* Admin Banner */
+        .admin-banner {
+            background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+            color: white;
+            padding: 12px 24px;
+            display: none;
+        }
+        .admin-banner.show { display: block; }
+        .admin-banner-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+        .admin-banner-timer {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-family: monospace;
+            font-weight: 600;
+        }
+        .admin-banner-exit {
+            background: white;
+            color: #5b21b6;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Header */
+        .portal-header {
+            background: linear-gradient(135deg, var(--verdi-light) 0%, var(--verdi-accent) 100%);
+            padding: 24px 40px;
+            color: white;
+        }
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .company-info h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .company-info p {
+            opacity: 0.85;
+            font-size: 14px;
+        }
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .btn-header {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-header:hover {
+            background: rgba(255,255,255,0.25);
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .portal-main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        .welcome-section {
+            margin-bottom: 40px;
+        }
+        .welcome-section h2 {
+            color: var(--aire-night);
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        .welcome-section p {
+            color: var(--aire-storm);
+        }
+
+        /* Modules Grid */
+        .modules-section h3 {
+            color: var(--aire-night);
+            font-size: 18px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .modules-section h3 i { color: var(--verdi-light); }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .module-card {
+            background: var(--aire-white);
+            border-radius: 16px;
+            padding: 28px;
+            border: 1px solid var(--aire-fog);
+            transition: all 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+        }
+        .module-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+            border-color: var(--verdi-light);
+        }
+        .module-card.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .module-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+        .module-icon.motorsync { background: linear-gradient(135deg, #02735E 0%, #035951 100%); color: white; }
+        .module-icon.timesync { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; }
+        .module-icon.toolsync { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+        .module-icon.projectsync { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; }
+        .module-icon.financesync { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+        .module-icon.humansync { background: linear-gradient(135deg, #ec4899 0%, #be185d 100%); color: white; }
+
+        .module-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--aire-night);
+            margin-bottom: 8px;
+        }
+        .module-description {
+            font-size: 14px;
+            color: var(--aire-storm);
+            line-height: 1.5;
+        }
+        .module-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+        .module-badge.active { background: rgba(2, 115, 94, 0.1); color: var(--verdi-light); }
+        .module-badge.coming { background: var(--aire-mist); color: var(--aire-slate); }
+
+        /* Quick Stats */
+        .stats-section {
+            margin-top: 40px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .stat-card {
+            background: var(--aire-white);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--aire-fog);
+        }
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--verdi-light);
+        }
+        .stat-label {
+            font-size: 13px;
+            color: var(--aire-storm);
+            margin-top: 4px;
+        }
+
+        /* Footer */
+        .portal-footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--aire-slate);
+            font-size: 13px;
+        }
+        .portal-footer a {
+            color: var(--verdi-light);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin Banner (shown when SuperAdmin accesses) -->
+    <div class="admin-banner" id="adminBanner">
+        <div class="admin-banner-content">
+            <span>🔐</span>
+            <span><strong>Modo Administrador</strong> — Accediendo como SuperAdmin</span>
+            <span class="admin-banner-timer" id="adminTimer">30:00</span>
+            <button class="admin-banner-exit" onclick="exitAdminMode()">Salir</button>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="portal-header">
+        <div class="header-content">
+            <div class="company-info">
+                <h1 id="companyName">Cargando...</h1>
+                <p id="companyUrl">opsis-suite.com/portal/...</p>
+            </div>
+            <div class="header-actions">
+                <a href="#" class="btn-header" onclick="openSettings()">
+                    <i class="fas fa-cog"></i> Configuración
+                </a>
+                <a href="/portal/" class="btn-header">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </a>
+                <div class="user-avatar" id="userAvatar">U</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="portal-main">
+        <div class="welcome-section">
+            <h2>¡Bienvenido a tu Portal!</h2>
+            <p>Selecciona un módulo para comenzar a trabajar</p>
+        </div>
+
+        <!-- Modules -->
+        <section class="modules-section">
+            <h3><i class="fas fa-th-large"></i> Tus Módulos</h3>
+            <div class="modules-grid" id="modulesGrid">
+                <!-- Modules loaded dynamically -->
+            </div>
+        </section>
+
+        <!-- Quick Stats -->
+        <section class="stats-section">
+            <h3 style="color: var(--aire-night); font-size: 18px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-chart-line" style="color: var(--verdi-light);"></i> Resumen Rápido
+            </h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="statUsers">--</div>
+                    <div class="stat-label">Usuarios Activos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statProjects">--</div>
+                    <div class="stat-label">Proyectos Activos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statTasks">--</div>
+                    <div class="stat-label">Tareas Hoy</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statAlerts">--</div>
+                    <div class="stat-label">Alertas Pendientes</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="portal-footer">
+        <p>Powered by <a href="/">Opsis Suite</a> • <a href="/support.html">Soporte</a> • <a href="/legal/privacy.html">Privacidad</a></p>
+    </footer>
+
+    <script>
+        // Available modules configuration
+        const MODULES = {
+            motorsync: {
+                name: 'MotorSync',
+                icon: 'fas fa-truck',
+                description: 'Gestión de flota, rutas y operaciones en tiempo real.',
+                enabled: true
+            },
+            timesync: {
+                name: 'TimeSync',
+                icon: 'fas fa-clock',
+                description: 'Control de tiempo, asistencia y hojas de trabajo.',
+                enabled: true
+            },
+            toolsync: {
+                name: 'ToolSync',
+                icon: 'fas fa-tools',
+                description: 'Inventario de herramientas y equipos.',
+                enabled: false
+            },
+            projectsync: {
+                name: 'ProjectSync',
+                icon: 'fas fa-project-diagram',
+                description: 'Gestión de proyectos y tareas.',
+                enabled: false
+            },
+            financesync: {
+                name: 'FinanceSync',
+                icon: 'fas fa-dollar-sign',
+                description: 'Facturación, pagos y reportes financieros.',
+                enabled: false
+            },
+            humansync: {
+                name: 'HumanSync',
+                icon: 'fas fa-users',
+                description: 'Recursos humanos y gestión de personal.',
+                enabled: false
+            }
+        };
+
+        // Get company slug from URL
+        function getCompanySlug() {
+            const pathParts = window.location.pathname.split('/').filter(Boolean);
+            // URL: /portal/company-slug/
+            if (pathParts[0] === 'portal' && pathParts[1]) {
+                return pathParts[1];
+            }
+            return null;
+        }
+
+        // Initialize portal
+        function initPortal() {
+            const slug = getCompanySlug();
+            
+            if (!slug) {
+                window.location.href = '/portal/';
+                return;
+            }
+
+            // Set company info (in production, fetch from API)
+            const companyName = formatCompanyName(slug);
+            document.getElementById('companyName').textContent = companyName;
+            document.getElementById('companyUrl').textContent = `opsis-suite.com/portal/${slug}`;
+            document.getElementById('userAvatar').textContent = companyName.charAt(0).toUpperCase();
+            document.title = `${companyName} | Opsis Suite`;
+
+            // Check for admin mode
+            checkAdminMode();
+
+            // Load modules
+            loadModules(slug);
+
+            // Load demo stats
+            loadStats();
+        }
+
+        function formatCompanyName(slug) {
+            return slug.split('-').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+        }
+
+        function loadModules(companySlug) {
+            const grid = document.getElementById('modulesGrid');
+            
+            grid.innerHTML = Object.entries(MODULES).map(([key, module]) => `
+                <a href="/portal/${companySlug}/${key}/" 
+                   class="module-card ${!module.enabled ? 'disabled' : ''}"
+                   ${!module.enabled ? 'onclick="return false;"' : ''}>
+                    <div class="module-icon ${key}">
+                        <i class="${module.icon}"></i>
+                    </div>
+                    <div class="module-name">${module.name}</div>
+                    <div class="module-description">${module.description}</div>
+                    <span class="module-badge ${module.enabled ? 'active' : 'coming'}">
+                        ${module.enabled ? 'Activo' : 'Próximamente'}
+                    </span>
+                </a>
+            `).join('');
+        }
+
+        function loadStats() {
+            // Demo stats (in production, fetch from API)
+            document.getElementById('statUsers').textContent = Math.floor(Math.random() * 50) + 10;
+            document.getElementById('statProjects').textContent = Math.floor(Math.random() * 20) + 5;
+            document.getElementById('statTasks').textContent = Math.floor(Math.random() * 100) + 20;
+            document.getElementById('statAlerts').textContent = Math.floor(Math.random() * 10);
+        }
+
+        function checkAdminMode() {
+            const params = new URLSearchParams(window.location.search);
+            const adminMode = params.get('admin_mode') === 'true';
+            const adminToken = params.get('admin_token');
+
+            if (adminMode && adminToken) {
+                try {
+                    const tokenData = JSON.parse(atob(adminToken));
+                    if (tokenData.expires > Date.now()) {
+                        document.getElementById('adminBanner').classList.add('show');
+                        
+                        // Start timer
+                        let remaining = tokenData.expires - Date.now();
+                        const timerEl = document.getElementById('adminTimer');
+                        
+                        const updateTimer = () => {
+                            const mins = Math.floor(remaining / 60000);
+                            const secs = Math.floor((remaining % 60000) / 1000);
+                            timerEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                            remaining -= 1000;
+                            
+                            if (remaining <= 0) {
+                                alert('Sesión de administrador expirada');
+                                exitAdminMode();
+                            }
+                        };
+                        
+                        updateTimer();
+                        setInterval(updateTimer, 1000);
+
+                        // Store for module navigation
+                        sessionStorage.setItem('adminToken', adminToken);
+                        sessionStorage.setItem('adminMode', 'true');
+                    }
+                } catch (e) {
+                    console.error('Invalid admin token');
+                }
+            }
+        }
+
+        function exitAdminMode() {
+            sessionStorage.removeItem('adminToken');
+            sessionStorage.removeItem('adminMode');
+            window.location.href = '/superadmin/companies/list';
+        }
+
+        function openSettings() {
+            const slug = getCompanySlug();
+            window.location.href = `/portal/${slug}/settings/`;
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', initPortal);
+    </script>
+</body>
+</html>

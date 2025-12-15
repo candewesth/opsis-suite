@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotorSync | Portal</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui, sans-serif; }
+        
+        .redirect-screen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #022326 0%, #034040 50%, #02735E 100%);
+            color: white;
+            text-align: center;
+        }
+        
+        .redirect-content h1 {
+            font-size: 32px;
+            margin-bottom: 16px;
+        }
+        
+        .redirect-content p {
+            opacity: 0.8;
+            margin-bottom: 24px;
+        }
+        
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="redirect-screen">
+        <div class="redirect-content">
+            <h1>MotorSync</h1>
+            <p>Cargando tu sistema...</p>
+            <div class="loader"></div>
+        </div>
+    </div>
+
+    <script>
+        // Get company from URL path
+        // URL format: /portal/company-slug/motorsync/
+        function getCompanyFromPath() {
+            const pathParts = window.location.pathname.split('/').filter(Boolean);
+            if (pathParts[0] === 'portal' && pathParts[1]) {
+                return pathParts[1];
+            }
+            return null;
+        }
+
+        function redirectToMotorSync() {
+            const company = getCompanyFromPath();
+            
+            if (!company) {
+                window.location.href = '/portal/';
+                return;
+            }
+
+            // Build MotorSync URL with company context
+            let motorsyncUrl = `/motorsync/motorsync.html?company=${company}`;
+            
+            // Check for admin mode
+            const adminToken = sessionStorage.getItem('adminToken');
+            const adminMode = sessionStorage.getItem('adminMode');
+            
+            if (adminMode === 'true' && adminToken) {
+                motorsyncUrl += `&admin_mode=true&admin_token=${adminToken}&company_name=${encodeURIComponent(formatCompanyName(company))}`;
+            }
+
+            // Redirect to actual MotorSync
+            setTimeout(() => {
+                window.location.href = motorsyncUrl;
+            }, 800);
+        }
+
+        function formatCompanyName(slug) {
+            return slug.split('-').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+        }
+
+        // Start redirect
+        redirectToMotorSync();
+    </script>
+</body>
+</html>
