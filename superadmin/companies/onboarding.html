@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Compañía - SuperAdmin | Opsis Suite</title>
+    <style>
+        :root {
+            --verdi-dark: #022326;
+            --verdi-mid: #034040;
+            --verdi-accent: #035951;
+            --verdi-light: #02735E;
+            --aire-white: #ffffff;
+            --aire-cloud: #f8fafc;
+            --aire-mist: #f1f5f9;
+            --aire-fog: #e2e8f0;
+            --aire-slate: #94a3b8;
+            --aire-storm: #64748b;
+            --aire-night: #1e293b;
+            --danger-red: #ef4444;
+            --warning-orange: #f59e0b;
+            --success-green: #22c55e;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+            background: var(--aire-cloud); 
+            color: var(--aire-night);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        body.loaded { opacity: 1; }
+        .app-shell { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: var(--verdi-dark); }
+        .main-content { flex: 1; padding: 24px 32px; margin-left: 260px; min-height: 100vh; }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/superadmin.css?v=8">
+    <style>
+        /* Progress Header */
+        .progress-header {
+            background: linear-gradient(135deg, var(--verdi-dark) 0%, var(--verdi-mid) 100%);
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 32px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        .progress-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .progress-header-content {
+            position: relative;
+            z-index: 1;
+        }
+        .progress-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .progress-header h1 i {
+            font-size: 24px;
+            opacity: 0.8;
+        }
+        .progress-header p {
+            opacity: 0.8;
+            font-size: 15px;
+            margin-bottom: 24px;
+        }
+        .progress-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .progress-bar {
+            flex: 1;
+            height: 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e 0%, #4ade80 100%);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            width: 20%;
+        }
+        .progress-text {
+            font-size: 14px;
+            font-weight: 600;
+            min-width: 50px;
+        }
+
+        /* Steps Indicator */
+        .steps-indicator {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+        }
+        .step-dot {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .step-dot.active {
+            background: rgba(255,255,255,0.25);
+        }
+        .step-dot.completed {
+            background: rgba(34, 197, 94, 0.3);
+        }
+        .step-dot .step-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .step-dot.active .step-num {
+            background: white;
+            color: var(--verdi-dark);
+        }
+        .step-dot.completed .step-num {
+            background: var(--success-green);
+        }
+        .step-dot.completed .step-num::before {
+            content: '✓';
+        }
+        .step-dot.completed .step-num span { display: none; }
+
+        /* Wizard Layout */
+        .wizard-layout {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 24px;
+            align-items: start;
+        }
+
+        /* Cards */
+        .wizard-card {
+            background: white;
+            border-radius: 20px;
+            border: 1px solid var(--aire-fog);
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        }
+        .wizard-card-header {
+            padding: 24px 28px;
+            border-bottom: 1px solid var(--aire-fog);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .wizard-card-header .icon-box {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--verdi-light) 0%, var(--verdi-accent) 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+        .wizard-card-header h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--aire-night);
+        }
+        .wizard-card-header p {
+            font-size: 13px;
+            color: var(--aire-storm);
+            margin-top: 2px;
+        }
+        .wizard-card-body {
+            padding: 28px;
+        }
+
+        /* Step Panels */
+        .step-panel {
+            display: none;
+            animation: fadeSlide 0.4s ease;
+        }
+        .step-panel.active { display: block; }
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Industry Grid */
+        .industry-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        .industry-option {
+            padding: 24px 20px;
+            border: 2px solid var(--aire-fog);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            position: relative;
+        }
+        .industry-option:hover {
+            border-color: var(--aire-slate);
+            transform: translateY(-2px);
+        }
+        .industry-option.selected {
+            border-color: var(--verdi-light);
+            background: linear-gradient(135deg, rgba(2, 115, 94, 0.05) 0%, rgba(2, 115, 94, 0.02) 100%);
+            box-shadow: 0 4px 15px rgba(2, 115, 94, 0.15);
+        }
+        .industry-option input { display: none; }
+        .industry-option .emoji {
+            font-size: 36px;
+            margin-bottom: 12px;
+            display: block;
+        }
+        .industry-option .name {
+            font-weight: 600;
+            color: var(--aire-night);
+            font-size: 14px;
+        }
+        .industry-option .check {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 24px;
+            height: 24px;
+            background: var(--verdi-light);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+        .industry-option.selected .check { display: flex; }
+
+        /* Products Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        .product-option {
+            padding: 20px;
+            border: 2px solid var(--aire-fog);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .product-option:hover {
+            border-color: var(--aire-slate);
+        }
+        .product-option.selected {
+            border-color: var(--verdi-light);
+            background: rgba(2, 115, 94, 0.03);
+        }
+        .product-option input { display: none; }
+        .product-option .product-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--aire-mist);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--aire-storm);
+            font-size: 20px;
+            transition: all 0.3s;
+        }
+        .product-option.selected .product-icon {
+            background: var(--verdi-light);
+            color: white;
+        }
+        .product-option .product-info { flex: 1; }
+        .product-option .product-name {
+            font-weight: 600;
+            color: var(--aire-night);
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+        .product-option .product-price {
+            font-size: 13px;
+            color: var(--aire-slate);
+        }
+        .product-option .product-check {
+            width: 26px;
+            height: 26px;
+            border: 2px solid var(--aire-fog);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: transparent;
+            transition: all 0.3s;
+        }
+        .product-option.selected .product-check {
+            background: var(--verdi-light);
+            border-color: var(--verdi-light);
+            color: white;
+        }
+
+        /* Form Styles */
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .form-row.single { grid-template-columns: 1fr; }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--aire-night);
+            margin-bottom: 8px;
+        }
+        .form-group label .required { color: var(--danger-red); }
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--aire-fog);
+            border-radius: 12px;
+            font-size: 14px;
+            color: var(--aire-night);
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: var(--verdi-light);
+            box-shadow: 0 0 0 4px rgba(2, 115, 94, 0.1);
+        }
+        .form-input::placeholder { color: var(--aire-slate); }
+        .input-with-prefix {
+            display: flex;
+            align-items: stretch;
+        }
+        .input-prefix {
+            padding: 14px 16px;
+            background: var(--aire-mist);
+            border: 2px solid var(--aire-fog);
+            border-right: none;
+            border-radius: 12px 0 0 12px;
+            font-size: 13px;
+            color: var(--aire-storm);
+            white-space: nowrap;
+        }
+        .input-with-prefix .form-input {
+            border-radius: 0 12px 12px 0;
+        }
+
+        /* Plans Grid */
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .plan-option {
+            padding: 28px 24px;
+            border: 2px solid var(--aire-fog);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            position: relative;
+        }
+        .plan-option:hover {
+            border-color: var(--aire-slate);
+            transform: translateY(-2px);
+        }
+        .plan-option.selected {
+            border-color: var(--verdi-light);
+            background: rgba(2, 115, 94, 0.03);
+            box-shadow: 0 8px 30px rgba(2, 115, 94, 0.15);
+        }
+        .plan-option.recommended::before {
+            content: '⭐ Popular';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--warning-orange) 0%, #fbbf24 100%);
+            color: white;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .plan-option input { display: none; }
+        .plan-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--aire-night);
+            margin-bottom: 8px;
+        }
+        .plan-price {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--verdi-dark);
+            margin-bottom: 4px;
+        }
+        .plan-price span {
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--aire-slate);
+        }
+        .plan-desc {
+            font-size: 13px;
+            color: var(--aire-storm);
+            margin-bottom: 20px;
+        }
+        .plan-features {
+            text-align: left;
+            border-top: 1px solid var(--aire-fog);
+            padding-top: 16px;
+        }
+        .plan-feature {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--aire-night);
+            padding: 8px 0;
+        }
+        .plan-feature i {
+            color: var(--verdi-light);
+            font-size: 12px;
+        }
+
+        /* Summary Card */
+        .summary-card {
+            position: sticky;
+            top: 24px;
+        }
+        .summary-section {
+            padding: 16px 0;
+            border-bottom: 1px solid var(--aire-fog);
+        }
+        .summary-section:last-child { border-bottom: none; }
+        .summary-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--aire-slate);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .summary-value {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--aire-night);
+        }
+        .summary-products {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .summary-tag {
+            padding: 6px 12px;
+            background: rgba(2, 115, 94, 0.1);
+            color: var(--verdi-light);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .summary-total {
+            background: linear-gradient(135deg, var(--verdi-dark) 0%, var(--verdi-mid) 100%);
+            margin: 20px -28px -28px;
+            padding: 24px 28px;
+            border-radius: 0 0 20px 20px;
+            color: white;
+        }
+        .summary-total-label {
+            font-size: 12px;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .summary-total-value {
+            font-size: 32px;
+            font-weight: 800;
+            margin-top: 4px;
+        }
+        .summary-total-value span {
+            font-size: 14px;
+            font-weight: 400;
+            opacity: 0.7;
+        }
+
+        /* Actions */
+        .wizard-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 28px;
+            padding-top: 24px;
+            border-top: 1px solid var(--aire-fog);
+        }
+        .btn {
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            border: none;
+            font-family: inherit;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--verdi-light) 0%, var(--verdi-accent) 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(2, 115, 94, 0.3);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(2, 115, 94, 0.4);
+        }
+        .btn-secondary {
+            background: white;
+            color: var(--aire-night);
+            border: 2px solid var(--aire-fog);
+        }
+        .btn-secondary:hover {
+            background: var(--aire-mist);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        .btn-lg {
+            padding: 16px 32px;
+            font-size: 15px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 16px 24px;
+            background: var(--verdi-dark);
+            color: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 9999;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.success { background: var(--success-green); }
+        .toast.error { background: var(--danger-red); }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .wizard-layout { grid-template-columns: 1fr; }
+            .summary-card { position: static; }
+        }
+        @media (max-width: 768px) {
+            .main-content { margin-left: 0; padding: 16px; }
+            .industry-grid { grid-template-columns: repeat(2, 1fr); }
+            .products-grid { grid-template-columns: 1fr; }
+            .plans-grid { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+            .steps-indicator { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar" id="sidebar"></aside>
+
+        <main class="main-content">
+            <!-- Progress Header -->
+            <div class="progress-header">
+                <div class="progress-header-content">
+                    <h1><i class="fas fa-building"></i> Registrar Nueva Compañía</h1>
+                    <p>Completa los siguientes pasos para configurar una nueva cuenta empresarial</p>
+                    
+                    <div class="progress-bar-container">
+                        <div class="progress-bar">
+                            <div class="progress-bar-fill" id="progressFill"></div>
+                        </div>
+                        <span class="progress-text" id="progressText">20%</span>
+                    </div>
+
+                    <div class="steps-indicator">
+                        <div class="step-dot active" data-step="1">
+                            <span class="step-num"><span>1</span></span>
+                            Industria
+                        </div>
+                        <div class="step-dot" data-step="2">
+                            <span class="step-num"><span>2</span></span>
+                            Productos
+                        </div>
+                        <div class="step-dot" data-step="3">
+                            <span class="step-num"><span>3</span></span>
+                            Empresa
+                        </div>
+                        <div class="step-dot" data-step="4">
+                            <span class="step-num"><span>4</span></span>
+                            Plan
+                        </div>
+                        <div class="step-dot" data-step="5">
+                            <span class="step-num"><span>5</span></span>
+                            Confirmar
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wizard Content -->
+            <div class="wizard-layout">
+                <div class="wizard-main">
+                    <!-- Step 1: Industry -->
+                    <div class="step-panel active" id="step1">
+                        <div class="wizard-card">
+                            <div class="wizard-card-header">
+                                <div class="icon-box"><i class="fas fa-industry"></i></div>
+                                <div>
+                                    <h2>Selecciona la Industria</h2>
+                                    <p>¿A qué sector pertenece esta compañía?</p>
+                                </div>
+                            </div>
+                            <div class="wizard-card-body">
+                                <div class="industry-grid" id="industryGrid">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Products -->
+                    <div class="step-panel" id="step2">
+                        <div class="wizard-card">
+                            <div class="wizard-card-header">
+                                <div class="icon-box"><i class="fas fa-cubes"></i></div>
+                                <div>
+                                    <h2>Productos a Activar</h2>
+                                    <p>Selecciona los módulos que usará esta compañía</p>
+                                </div>
+                            </div>
+                            <div class="wizard-card-body">
+                                <div class="products-grid" id="productsGrid">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Company Info -->
+                    <div class="step-panel" id="step3">
+                        <div class="wizard-card">
+                            <div class="wizard-card-header">
+                                <div class="icon-box"><i class="fas fa-address-card"></i></div>
+                                <div>
+                                    <h2>Información de la Empresa</h2>
+                                    <p>Datos básicos de contacto y acceso</p>
+                                </div>
+                            </div>
+                            <div class="wizard-card-body">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Nombre de la Compañía <span class="required">*</span></label>
+                                        <input type="text" class="form-input" id="companyName" placeholder="Ej: Constructora ABC S.A.">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Email Principal <span class="required">*</span></label>
+                                        <input type="email" class="form-input" id="companyEmail" placeholder="admin@empresa.com">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Teléfono</label>
+                                        <input type="tel" class="form-input" id="companyPhone" placeholder="+1 555-0000">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Contacto Principal</label>
+                                        <input type="text" class="form-input" id="companyContact" placeholder="Nombre del administrador">
+                                    </div>
+                                </div>
+                                <div class="form-row single">
+                                    <div class="form-group">
+                                        <label>Portal de Acceso</label>
+                                        <div class="input-with-prefix">
+                                            <span class="input-prefix">opsis-suite.com/portal/</span>
+                                            <input type="text" class="form-input" id="companyDomain" placeholder="mi-empresa">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Plan -->
+                    <div class="step-panel" id="step4">
+                        <div class="wizard-card">
+                            <div class="wizard-card-header">
+                                <div class="icon-box"><i class="fas fa-crown"></i></div>
+                                <div>
+                                    <h2>Selecciona un Plan</h2>
+                                    <p>Elige el plan que mejor se adapte a las necesidades</p>
+                                </div>
+                            </div>
+                            <div class="wizard-card-body">
+                                <div class="plans-grid" id="plansGrid">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 5: Confirm -->
+                    <div class="step-panel" id="step5">
+                        <div class="wizard-card">
+                            <div class="wizard-card-header">
+                                <div class="icon-box"><i class="fas fa-clipboard-check"></i></div>
+                                <div>
+                                    <h2>Confirmar y Crear</h2>
+                                    <p>Revisa la información antes de crear la cuenta</p>
+                                </div>
+                            </div>
+                            <div class="wizard-card-body">
+                                <div class="summary-section">
+                                    <div class="summary-label">Empresa</div>
+                                    <div class="summary-value" id="confirmCompany">-</div>
+                                </div>
+                                <div class="summary-section">
+                                    <div class="summary-label">Industria</div>
+                                    <div class="summary-value" id="confirmIndustry">-</div>
+                                </div>
+                                <div class="summary-section">
+                                    <div class="summary-label">Contacto</div>
+                                    <div class="summary-value" id="confirmContact">-</div>
+                                </div>
+                                <div class="summary-section">
+                                    <div class="summary-label">Portal</div>
+                                    <div class="summary-value" id="confirmDomain">-</div>
+                                </div>
+                                <div class="summary-section">
+                                    <div class="summary-label">Productos</div>
+                                    <div class="summary-products" id="confirmProducts"></div>
+                                </div>
+                                <div class="summary-section">
+                                    <div class="summary-label">Plan</div>
+                                    <div class="summary-value" id="confirmPlan">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="wizard-actions">
+                        <button class="btn btn-secondary" id="btnPrev" onclick="prevStep()" style="visibility: hidden;">
+                            <i class="fas fa-arrow-left"></i> Anterior
+                        </button>
+                        <button class="btn btn-primary btn-lg" id="btnNext" onclick="nextStep()">
+                            Siguiente <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Summary Sidebar -->
+                <div class="wizard-sidebar">
+                    <div class="wizard-card summary-card">
+                        <div class="wizard-card-header">
+                            <div class="icon-box"><i class="fas fa-receipt"></i></div>
+                            <div>
+                                <h2>Resumen</h2>
+                                <p>Detalles de la configuración</p>
+                            </div>
+                        </div>
+                        <div class="wizard-card-body">
+                            <div class="summary-section">
+                                <div class="summary-label">Empresa</div>
+                                <div class="summary-value" id="sideCompany">Sin definir</div>
+                            </div>
+                            <div class="summary-section">
+                                <div class="summary-label">Industria</div>
+                                <div class="summary-value" id="sideIndustry">Sin seleccionar</div>
+                            </div>
+                            <div class="summary-section">
+                                <div class="summary-label">Productos</div>
+                                <div class="summary-products" id="sideProducts">
+                                    <span style="color: var(--aire-slate); font-size: 13px;">Ninguno seleccionado</span>
+                                </div>
+                            </div>
+                            <div class="summary-section">
+                                <div class="summary-label">Plan</div>
+                                <div class="summary-value" id="sidePlan">Sin seleccionar</div>
+                            </div>
+                            <div class="summary-total">
+                                <div class="summary-total-label">Total Mensual Estimado</div>
+                                <div class="summary-total-value" id="sideTotal">$0<span>/mes</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">Mensaje</span>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/data.js"></script>
+    <script>
+        // Data
+        const INDUSTRIES = [
+            { id: 'construccion', name: 'Construcción', emoji: '🏗️' },
+            { id: 'medica', name: 'Médica y Salud', emoji: '🏥' },
+            { id: 'transporte', name: 'Transporte', emoji: '🚚' },
+            { id: 'retail', name: 'Retail', emoji: '🛒' },
+            { id: 'jardineria', name: 'Jardinería', emoji: '🌿' },
+            { id: 'tecnologia', name: 'Tecnología', emoji: '💻' },
+            { id: 'restaurante', name: 'Restaurantes', emoji: '🍽️' },
+            { id: 'inmobiliaria', name: 'Bienes Raíces', emoji: '🏠' },
+            { id: 'otros', name: 'Otras', emoji: '⚙️' }
+        ];
+
+        const PRODUCTS = Object.entries(SuperAdminData.products).map(([id, p]) => ({
+            id, name: p.name, icon: p.icon, price: p.basePrice, desc: p.description
+        }));
+
+        const PLANS = [
+            { id: 'starter', name: 'Starter', price: 49, desc: 'Equipos pequeños', features: ['5 usuarios', '1 producto', 'Soporte email', '10GB'] },
+            { id: 'professional', name: 'Professional', price: 99, desc: 'Empresas en crecimiento', features: ['25 usuarios', '3 productos', 'Soporte prioritario', '50GB', 'API'], recommended: true },
+            { id: 'enterprise', name: 'Enterprise', price: 249, desc: 'Solución completa', features: ['Ilimitados', 'Todos', 'Soporte 24/7', '500GB', 'SLA'] }
+        ];
+
+        let currentStep = 1;
+        const totalSteps = 5;
+        let selectedIndustry = null;
+        let selectedProducts = [];
+        let selectedPlan = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.classList.add('loaded');
+            renderIndustries();
+            renderProducts();
+            renderPlans();
+            setupStepClicks();
+            setupInputListeners();
+        });
+
+        function renderIndustries() {
+            document.getElementById('industryGrid').innerHTML = INDUSTRIES.map(ind => `
+                <label class="industry-option" data-id="${ind.id}">
+                    <input type="radio" name="industry" value="${ind.id}">
+                    <span class="emoji">${ind.emoji}</span>
+                    <span class="name">${ind.name}</span>
+                    <span class="check"><i class="fas fa-check"></i></span>
+                </label>
+            `).join('');
+
+            document.querySelectorAll('.industry-option').forEach(opt => {
+                opt.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.querySelectorAll('.industry-option').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                    selectedIndustry = this.dataset.id;
+                    updateSidebar();
+                });
+            });
+        }
+
+        function renderProducts() {
+            document.getElementById('productsGrid').innerHTML = PRODUCTS.map(prod => `
+                <label class="product-option" data-id="${prod.id}" data-price="${prod.price}" data-name="${prod.name}">
+                    <input type="checkbox" name="products" value="${prod.id}">
+                    <div class="product-icon"><i class="${prod.icon}"></i></div>
+                    <div class="product-info">
+                        <div class="product-name">${prod.name}</div>
+                        <div class="product-price">$${prod.price}/mes</div>
+                    </div>
+                    <div class="product-check"><i class="fas fa-check"></i></div>
+                </label>
+            `).join('');
+
+            document.querySelectorAll('.product-option').forEach(opt => {
+                opt.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    this.classList.toggle('selected');
+                    const id = this.dataset.id;
+                    if (this.classList.contains('selected')) {
+                        selectedProducts.push({ id, name: this.dataset.name, price: parseInt(this.dataset.price) });
+                    } else {
+                        selectedProducts = selectedProducts.filter(p => p.id !== id);
+                    }
+                    updateSidebar();
+                });
+            });
+        }
+
+        function renderPlans() {
+            document.getElementById('plansGrid').innerHTML = PLANS.map(plan => `
+                <label class="plan-option ${plan.recommended ? 'recommended' : ''}" data-id="${plan.id}" data-price="${plan.price}" data-name="${plan.name}">
+                    <input type="radio" name="plan" value="${plan.id}">
+                    <div class="plan-name">${plan.name}</div>
+                    <div class="plan-price">$${plan.price}<span>/mes</span></div>
+                    <div class="plan-desc">${plan.desc}</div>
+                    <div class="plan-features">
+                        ${plan.features.map(f => `<div class="plan-feature"><i class="fas fa-check"></i> ${f}</div>`).join('')}
+                    </div>
+                </label>
+            `).join('');
+
+            document.querySelectorAll('.plan-option').forEach(opt => {
+                opt.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.querySelectorAll('.plan-option').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                    selectedPlan = { id: this.dataset.id, name: this.dataset.name, price: parseInt(this.dataset.price) };
+                    updateSidebar();
+                });
+            });
+        }
+
+        function setupStepClicks() {
+            document.querySelectorAll('.step-dot').forEach(dot => {
+                dot.addEventListener('click', function() {
+                    const step = parseInt(this.dataset.step);
+                    if (step < currentStep) {
+                        currentStep = step;
+                        updateUI();
+                    }
+                });
+            });
+        }
+
+        function setupInputListeners() {
+            document.getElementById('companyName').addEventListener('input', function() {
+                updateSidebar();
+                // Auto-generate domain
+                const domain = this.value.toLowerCase()
+                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                    .replace(/[^a-z0-9\s-]/g, '')
+                    .replace(/\s+/g, '-')
+                    .substring(0, 30);
+                document.getElementById('companyDomain').value = domain;
+            });
+        }
+
+        function updateSidebar() {
+            // Company
+            const name = document.getElementById('companyName').value || 'Sin definir';
+            document.getElementById('sideCompany').textContent = name;
+
+            // Industry
+            const ind = INDUSTRIES.find(i => i.id === selectedIndustry);
+            document.getElementById('sideIndustry').textContent = ind ? ind.name : 'Sin seleccionar';
+
+            // Products
+            const prodContainer = document.getElementById('sideProducts');
+            if (selectedProducts.length === 0) {
+                prodContainer.innerHTML = '<span style="color: var(--aire-slate); font-size: 13px;">Ninguno seleccionado</span>';
+            } else {
+                prodContainer.innerHTML = selectedProducts.map(p => `<span class="summary-tag">${p.name}</span>`).join('');
+            }
+
+            // Plan
+            document.getElementById('sidePlan').textContent = selectedPlan ? selectedPlan.name : 'Sin seleccionar';
+
+            // Total
+            let total = selectedProducts.reduce((sum, p) => sum + p.price, 0);
+            if (selectedPlan) total += selectedPlan.price;
+            document.getElementById('sideTotal').innerHTML = `$${total}<span>/mes</span>`;
+        }
+
+        function updateConfirmation() {
+            document.getElementById('confirmCompany').textContent = document.getElementById('companyName').value || '-';
+            
+            const ind = INDUSTRIES.find(i => i.id === selectedIndustry);
+            document.getElementById('confirmIndustry').textContent = ind ? ind.name : '-';
+
+            const email = document.getElementById('companyEmail').value;
+            const phone = document.getElementById('companyPhone').value;
+            document.getElementById('confirmContact').textContent = phone ? `${email} | ${phone}` : email || '-';
+
+            const domain = document.getElementById('companyDomain').value;
+            document.getElementById('confirmDomain').textContent = domain ? `opsis-suite.com/portal/${domain}` : '-';
+
+            const prodContainer = document.getElementById('confirmProducts');
+            prodContainer.innerHTML = selectedProducts.length ? 
+                selectedProducts.map(p => `<span class="summary-tag">${p.name}</span>`).join('') : 
+                '<span style="color: var(--aire-slate);">-</span>';
+
+            document.getElementById('confirmPlan').textContent = selectedPlan ? `${selectedPlan.name} - $${selectedPlan.price}/mes` : '-';
+        }
+
+        function updateUI() {
+            // Progress
+            const progress = (currentStep / totalSteps) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressText').textContent = Math.round(progress) + '%';
+
+            // Step dots
+            document.querySelectorAll('.step-dot').forEach((dot, i) => {
+                const step = i + 1;
+                dot.classList.remove('active', 'completed');
+                if (step === currentStep) dot.classList.add('active');
+                else if (step < currentStep) dot.classList.add('completed');
+            });
+
+            // Panels
+            document.querySelectorAll('.step-panel').forEach((panel, i) => {
+                panel.classList.toggle('active', i + 1 === currentStep);
+            });
+
+            // Buttons
+            document.getElementById('btnPrev').style.visibility = currentStep === 1 ? 'hidden' : 'visible';
+            const btnNext = document.getElementById('btnNext');
+            if (currentStep === totalSteps) {
+                btnNext.innerHTML = '<i class="fas fa-check"></i> Crear Compañía';
+                btnNext.onclick = createCompany;
+            } else {
+                btnNext.innerHTML = 'Siguiente <i class="fas fa-arrow-right"></i>';
+                btnNext.onclick = nextStep;
+            }
+
+            if (currentStep === 5) updateConfirmation();
+        }
+
+        function validateStep() {
+            switch(currentStep) {
+                case 1:
+                    if (!selectedIndustry) { showToast('Selecciona una industria', 'error'); return false; }
+                    break;
+                case 2:
+                    if (selectedProducts.length === 0) { showToast('Selecciona al menos un producto', 'error'); return false; }
+                    break;
+                case 3:
+                    const name = document.getElementById('companyName').value.trim();
+                    const email = document.getElementById('companyEmail').value.trim();
+                    if (!name) { showToast('Ingresa el nombre de la compañía', 'error'); return false; }
+                    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { 
+                        showToast('Ingresa un email válido', 'error'); return false; 
+                    }
+                    break;
+                case 4:
+                    if (!selectedPlan) { showToast('Selecciona un plan', 'error'); return false; }
+                    break;
+            }
+            return true;
+        }
+
+        function nextStep() {
+            if (!validateStep()) return;
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateUI();
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateUI();
+            }
+        }
+
+        function createCompany() {
+            const btn = document.getElementById('btnNext');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando...';
+
+            const maxId = Math.max(...SuperAdminData.companies.map(c => c.id), 0);
+            const today = new Date().toISOString().split('T')[0];
+
+            const company = {
+                id: maxId + 1,
+                name: document.getElementById('companyName').value.trim(),
+                email: document.getElementById('companyEmail').value.trim(),
+                phone: document.getElementById('companyPhone').value.trim(),
+                domain: document.getElementById('companyDomain').value.trim(),
+                contact: document.getElementById('companyContact').value.trim(),
+                industry: selectedIndustry,
+                products: selectedProducts.map(p => p.name),
+                plan: selectedPlan.name,
+                status: 'active',
+                createdAt: today,
+                lastActive: today,
+                users: 1,
+                mrr: selectedProducts.reduce((s, p) => s + p.price, 0) + selectedPlan.price
+            };
+
+            SuperAdminData.companies.push(company);
+            showToast('¡Compañía creada exitosamente!', 'success');
+
+            setTimeout(() => window.location.href = 'list.html', 1500);
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = toast.querySelector('i');
+            toast.className = 'toast ' + type;
+            icon.className = type === 'error' ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+    </script>
+</body>
+</html>
