@@ -1107,15 +1107,27 @@
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando...';
 
-            const maxId = Math.max(...SuperAdminData.companies.map(c => c.id), 0);
+            // Get existing companies from localStorage or SuperAdminData
+            let storedCompanies = JSON.parse(localStorage.getItem('opsis_companies') || '[]');
+            const allCompanies = [...SuperAdminData.companies, ...storedCompanies];
+            const maxId = Math.max(...allCompanies.map(c => c.id), 0);
             const today = new Date().toISOString().split('T')[0];
+
+            // Generate domain if not provided
+            let domain = document.getElementById('companyDomain').value.trim();
+            if (!domain) {
+                domain = document.getElementById('companyName').value.trim()
+                    .toLowerCase()
+                    .replace(/\s+/g, '-')
+                    .replace(/[^a-z0-9-]/g, '');
+            }
 
             const company = {
                 id: maxId + 1,
                 name: document.getElementById('companyName').value.trim(),
                 email: document.getElementById('companyEmail').value.trim(),
                 phone: document.getElementById('companyPhone').value.trim(),
-                domain: document.getElementById('companyDomain').value.trim(),
+                domain: domain,
                 contact: document.getElementById('companyContact').value.trim(),
                 industry: selectedIndustry,
                 products: selectedProducts.map(p => p.name),
@@ -1127,10 +1139,20 @@
                 mrr: selectedProducts.reduce((s, p) => s + p.price, 0) + selectedPlan.price
             };
 
+            // Save to SuperAdminData (in-memory)
             SuperAdminData.companies.push(company);
+            
+            // Persist to localStorage for multi-tenant system
+            storedCompanies.push(company);
+            localStorage.setItem('opsis_companies', JSON.stringify(storedCompanies));
+            
+            // Store the last created company for the success page
+            localStorage.setItem('opsis_last_created_company', JSON.stringify(company));
+
             showToast('¡Compañía creada exitosamente!', 'success');
 
-            setTimeout(() => window.location.href = 'list.html', 1500);
+            // Redirect to success page with company data
+            setTimeout(() => window.location.href = `success.html?id=${company.id}`, 1500);
         }
 
         function showToast(message, type = 'success') {

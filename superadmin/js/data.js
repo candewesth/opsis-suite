@@ -275,8 +275,65 @@ const SuperAdminData = {
             'suspended': 'Suspendido'
         };
         return names[status] || status;
+    },
+
+    // ========================================================================
+    // MULTI-TENANT PERSISTENCE METHODS
+    // ========================================================================
+    
+    // Load companies from localStorage and merge with defaults
+    loadPersistedCompanies() {
+        try {
+            const stored = localStorage.getItem('opsis_companies');
+            if (stored) {
+                const persistedCompanies = JSON.parse(stored);
+                // Merge persisted companies with existing (avoiding duplicates)
+                persistedCompanies.forEach(company => {
+                    if (!this.companies.find(c => c.id === company.id)) {
+                        this.companies.push(company);
+                    }
+                });
+            }
+        } catch (e) {
+            console.warn('Error loading persisted companies:', e);
+        }
+    },
+
+    // Save all companies to localStorage
+    persistCompanies() {
+        try {
+            // Only save non-default companies (id > 5)
+            const newCompanies = this.companies.filter(c => c.id > 5);
+            localStorage.setItem('opsis_companies', JSON.stringify(newCompanies));
+        } catch (e) {
+            console.warn('Error persisting companies:', e);
+        }
+    },
+
+    // Get company by domain (for multi-tenant access)
+    getCompanyByDomain(domain) {
+        return this.companies.find(c => c.domain === domain);
+    },
+
+    // Get company by ID
+    getCompanyById(id) {
+        return this.companies.find(c => c.id == id);
+    },
+
+    // Get all active companies
+    getActiveCompanies() {
+        return this.companies.filter(c => c.status === 'active' || c.status === 'trial');
+    },
+
+    // Initialize multi-tenant data
+    init() {
+        this.loadPersistedCompanies();
+        console.log('SuperAdminData initialized with', this.companies.length, 'companies');
     }
 };
+
+// Auto-initialize immediately when script loads (synchronous)
+SuperAdminData.init();
 
 // Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {

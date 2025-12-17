@@ -836,8 +836,37 @@
 
         function impersonateCompany(id) {
             const company = SuperAdminData.getCompany(id);
+            if (!company) {
+                showToast('Compañía no encontrada', 'error');
+                return;
+            }
+            
+            // Create admin session with token (compatible with portal)
+            const adminToken = btoa(JSON.stringify({
+                companyId: company.id,
+                role: 'super_admin',
+                created: Date.now(),
+                expires: Date.now() + (30 * 60 * 1000) // 30 minutes
+            }));
+            
+            const adminSession = {
+                companyId: company.id,
+                companyName: company.name,
+                domain: company.domain,
+                adminMode: true,
+                timestamp: Date.now(),
+                adminToken: adminToken,
+                products: company.products || []
+            };
+            
+            localStorage.setItem('opsis_admin_session', JSON.stringify(adminSession));
+            
             showToast(`Accediendo como ${company.name}...`, 'info');
-            // TODO: Implement actual impersonation
+            
+            // Open portal in new tab
+            setTimeout(() => {
+                window.open(`/portal/company/?domain=${company.domain}`, '_blank');
+            }, 500);
         }
 
         function suspendCompany(id) {
