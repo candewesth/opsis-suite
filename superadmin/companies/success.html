@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compañía Creada - SuperAdmin | Opsis Suite</title>
+    <style>
+        /* === Paleta Verdi + Aire === */
+        :root { 
+            --verdi-dark: #022326; 
+            --verdi-mid: #034040;
+            --verdi-accent: #035951;
+            --verdi-light: #02735E;
+            --sidebar-width: 240px;
+            /* Aire - Neutros */
+            --aire-white: #ffffff;
+            --aire-cloud: #f8fafc;
+            --aire-mist: #f1f5f9;
+            --aire-fog: #e2e8f0;
+            --aire-slate: #94a3b8;
+            --aire-storm: #64748b;
+            --aire-night: #1e293b;
+            /* Estados */
+            --success-green: #22c55e;
+            --warning-orange: #f59e0b;
+            --info-blue: #3b82f6;
+            --danger-red: #ef4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { background: var(--aire-cloud); }
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            opacity: 0; 
+            transition: opacity 0.15s ease-in; 
+        }
+        body.loaded { opacity: 1; }
+        .app-shell { min-height: 100vh; background: var(--aire-cloud); }
+        .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh; background: var(--verdi-dark); }
+        .main-content { margin-left: var(--sidebar-width); min-height: 100vh; background: var(--aire-cloud); padding: 24px 32px; }
+
+        /* Success Header - igual que progress-header de onboarding */
+        .success-header {
+            background: linear-gradient(135deg, var(--verdi-dark) 0%, var(--verdi-mid) 100%);
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 32px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        .success-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .success-header-content {
+            position: relative;
+            z-index: 1;
+        }
+        .success-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #86efac;
+        }
+        .success-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .success-header p {
+            opacity: 0.8;
+            font-size: 15px;
+        }
+        .success-header p strong {
+            color: white;
+            opacity: 1;
+        }
+
+        /* Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        .cards-grid.full {
+            grid-template-columns: 1fr;
+        }
+
+        /* Card Base - igual que onboarding */
+        .card {
+            background: var(--aire-white);
+            border-radius: 16px;
+            border: 1px solid var(--aire-fog);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            box-shadow: 0 12px 24px rgba(2, 35, 38, 0.1);
+        }
+        .card-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--aire-fog);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: var(--aire-mist);
+        }
+        .card-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+        }
+        .card-icon.primary { background: linear-gradient(135deg, var(--verdi-light), var(--verdi-accent)); }
+        .card-icon.warning { background: linear-gradient(135deg, var(--warning-orange), #d97706); }
+        .card-icon.info { background: linear-gradient(135deg, var(--info-blue), #1d4ed8); }
+        .card-icon.success { background: linear-gradient(135deg, var(--success-green), #16a34a); }
+        
+        .card-title h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--aire-night);
+            margin-bottom: 2px;
+        }
+        .card-title p {
+            font-size: 13px;
+            color: var(--aire-storm);
+        }
+        .card-body {
+            padding: 24px;
+        }
+
+        /* Detail rows */
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--aire-fog);
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            font-size: 13px;
+            color: var(--aire-storm);
+            font-weight: 500;
+        }
+        .detail-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--aire-night);
+        }
+
+        /* Product chips - igual que list.html */
+        .products-stack {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+        .product-chip {
+            background: rgba(2, 115, 94, 0.1);
+            color: var(--verdi-light);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Status badge - igual que list.html */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-badge .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+        .status-badge.status-active {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--success-green);
+        }
+        .status-badge.status-active .status-dot {
+            background: var(--success-green);
+        }
+
+        /* Credentials Card - Special */
+        .card.credentials {
+            border: 2px solid var(--warning-orange);
+        }
+        .card.credentials .card-header {
+            background: rgba(245, 158, 11, 0.08);
+        }
+
+        .credential-field {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: var(--aire-mist);
+            border-radius: 10px;
+            margin-bottom: 12px;
+        }
+        .credential-field:last-of-type {
+            margin-bottom: 0;
+        }
+        .credential-info .credential-label {
+            font-size: 11px;
+            color: var(--aire-storm);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .credential-info .credential-value {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--aire-night);
+            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+        }
+
+        .btn-copy {
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--aire-fog);
+            background: var(--aire-white);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--aire-storm);
+            transition: all 0.2s;
+        }
+        .btn-copy:hover {
+            background: var(--verdi-light);
+            color: white;
+            border-color: var(--verdi-light);
+        }
+        .btn-copy.copied {
+            background: var(--success-green);
+            color: white;
+            border-color: var(--success-green);
+        }
+
+        .security-notice {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 16px;
+            background: rgba(245, 158, 11, 0.1);
+            border-radius: 10px;
+            margin-top: 16px;
+        }
+        .security-notice i {
+            color: var(--warning-orange);
+            font-size: 16px;
+            margin-top: 2px;
+        }
+        .security-notice p {
+            font-size: 13px;
+            color: var(--aire-night);
+            line-height: 1.5;
+        }
+
+        /* Portal Card - Special */
+        .card.portal {
+            border: 2px solid var(--verdi-light);
+        }
+
+        .portal-url-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: var(--aire-mist);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .portal-url-box i {
+            color: var(--verdi-light);
+            font-size: 18px;
+        }
+        .portal-url-text {
+            flex: 1;
+            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+            color: var(--aire-night);
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        .portal-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* Buttons - igual que onboarding */
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border: none;
+            font-family: inherit;
+            flex: 1;
+            text-decoration: none;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--verdi-light), var(--verdi-accent));
+            color: white;
+            box-shadow: 0 4px 12px rgba(2, 115, 94, 0.25);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(2, 115, 94, 0.35);
+        }
+        .btn-secondary {
+            background: var(--aire-white);
+            color: var(--aire-night);
+            border: 1px solid var(--aire-fog);
+        }
+        .btn-secondary:hover {
+            background: var(--aire-mist);
+            border-color: var(--verdi-light);
+        }
+
+        /* Email Preview */
+        .email-preview {
+            background: var(--aire-mist);
+            border-radius: 10px;
+            padding: 20px;
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--aire-storm);
+            max-height: 260px;
+            overflow-y: auto;
+        }
+        .email-header {
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--aire-fog);
+            margin-bottom: 16px;
+        }
+        .email-field {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .email-field:last-child { margin-bottom: 0; }
+        .email-field-label {
+            color: var(--aire-slate);
+            min-width: 50px;
+            font-weight: 500;
+        }
+        .email-field-value {
+            font-weight: 600;
+            color: var(--aire-night);
+        }
+        .email-body {
+            white-space: pre-line;
+        }
+        .email-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        /* Security Info Box */
+        .security-box {
+            background: var(--aire-white);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 24px;
+        }
+        .security-box-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .security-box-header i {
+            color: var(--info-blue);
+            font-size: 20px;
+        }
+        .security-box-header h4 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--aire-night);
+        }
+        .security-items {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .security-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--aire-storm);
+        }
+        .security-item i {
+            color: var(--success-green);
+            font-size: 14px;
+        }
+
+        /* Quick Actions - igual que onboarding */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 32px;
+        }
+        .quick-action {
+            background: var(--aire-white);
+            border: 1px solid var(--aire-fog);
+            border-radius: 16px;
+            padding: 28px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+        .quick-action:hover {
+            border-color: var(--verdi-light);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(2, 35, 38, 0.12);
+        }
+        .quick-action-icon {
+            width: 52px;
+            height: 52px;
+            background: var(--aire-mist);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 22px;
+            color: var(--aire-storm);
+            transition: all 0.2s;
+        }
+        .quick-action:hover .quick-action-icon {
+            background: var(--verdi-light);
+            color: white;
+        }
+        .quick-action-title {
+            font-weight: 700;
+            color: var(--aire-night);
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+        .quick-action-desc {
+            font-size: 12px;
+            color: var(--aire-storm);
+        }
+
+        /* Toast - igual que otras páginas */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 14px 24px;
+            background: var(--verdi-dark);
+            color: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 40px rgba(2, 35, 38, 0.3);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 9999;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .cards-grid { grid-template-columns: 1fr; }
+            .quick-actions { grid-template-columns: 1fr; }
+            .security-items { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            .main-content { margin-left: 0; padding: 16px; }
+            .success-header { padding: 24px; border-radius: 16px; }
+            .success-header h1 { font-size: 22px; }
+            .portal-actions { flex-direction: column; }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/superadmin.css?v=9">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar" id="sidebar"></aside>
+
+        <main class="main-content">
+            <!-- Success Header -->
+            <div class="success-header">
+                <div class="success-header-content">
+                    <div class="success-badge">
+                        <i class="fas fa-check-circle"></i>
+                        Compañía Creada Exitosamente
+                    </div>
+                    <h1><i class="fas fa-building"></i> ¡Bienvenido a bordo!</h1>
+                    <p>La cuenta de <strong id="heroCompanyName">Nueva Compañía</strong> está lista para usar</p>
+                </div>
+            </div>
+
+            <!-- Cards Grid -->
+            <div class="cards-grid">
+                <!-- Company Details -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon primary">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div class="card-title">
+                            <h3>Detalles de la Compañía</h3>
+                            <p>Información registrada</p>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="detail-row">
+                            <span class="detail-label">Nombre</span>
+                            <span class="detail-value" id="detailName">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Industria</span>
+                            <span class="detail-value" id="detailIndustry">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Email</span>
+                            <span class="detail-value" id="detailEmail">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Plan</span>
+                            <span class="detail-value" id="detailPlan">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Productos</span>
+                            <div class="products-stack" id="detailProducts"></div>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Estado</span>
+                            <span class="status-badge status-active">
+                                <span class="status-dot"></span>
+                                Activo
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Credentials -->
+                <div class="card credentials">
+                    <div class="card-header">
+                        <div class="card-icon warning">
+                            <i class="fas fa-key"></i>
+                        </div>
+                        <div class="card-title">
+                            <h3>Credenciales de Acceso</h3>
+                            <p>Datos para el primer inicio de sesión</p>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="credential-field">
+                            <div class="credential-info">
+                                <div class="credential-label">Usuario</div>
+                                <div class="credential-value" id="credentialUser">admin@empresa.com</div>
+                            </div>
+                            <button class="btn-copy" onclick="copyToClipboard('credentialUser', this)" title="Copiar">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <div class="credential-field">
+                            <div class="credential-info">
+                                <div class="credential-label">Contraseña Temporal</div>
+                                <div class="credential-value" id="credentialPassword">••••••••••</div>
+                            </div>
+                            <button class="btn-copy" onclick="copyToClipboard('credentialPassword', this)" title="Copiar">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <div class="security-notice">
+                            <i class="fas fa-shield-halved"></i>
+                            <p>
+                                <strong>Nota:</strong> Estas son credenciales de demostración. 
+                                En producción se enviará un enlace de activación seguro por email.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Portal Access -->
+            <div class="cards-grid full">
+                <div class="card portal">
+                    <div class="card-header">
+                        <div class="card-icon success">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <div class="card-title">
+                            <h3>Portal de Acceso</h3>
+                            <p>URL única de la compañía</p>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="portal-url-box">
+                            <i class="fas fa-link"></i>
+                            <span class="portal-url-text" id="portalUrl">https://app.opsis-suite.com/portal/mi-empresa</span>
+                            <button class="btn-copy" onclick="copyToClipboard('portalUrl', this)" title="Copiar URL">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <div class="portal-actions">
+                            <button class="btn btn-primary" onclick="accessPortal()">
+                                <i class="fas fa-external-link-alt"></i>
+                                Acceder al Portal
+                            </button>
+                            <button class="btn btn-secondary" onclick="accessAsAdmin()">
+                                <i class="fas fa-user-shield"></i>
+                                Acceder como Admin
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Email Preview -->
+            <div class="cards-grid full">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon info">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="card-title">
+                            <h3>Email de Bienvenida</h3>
+                            <p>Vista previa del correo que se enviará</p>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="email-preview">
+                            <div class="email-header">
+                                <div class="email-field">
+                                    <span class="email-field-label">Para:</span>
+                                    <span class="email-field-value" id="emailTo">admin@empresa.com</span>
+                                </div>
+                                <div class="email-field">
+                                    <span class="email-field-label">Asunto:</span>
+                                    <span class="email-field-value">🎉 Bienvenido a Opsis Suite - Activa tu cuenta</span>
+                                </div>
+                            </div>
+                            <div class="email-body" id="emailBody"></div>
+                        </div>
+                        <div class="email-actions">
+                            <button class="btn btn-primary" onclick="sendEmail()">
+                                <i class="fas fa-paper-plane"></i>
+                                Enviar Email
+                            </button>
+                            <button class="btn btn-secondary" onclick="copyEmail()">
+                                <i class="fas fa-copy"></i>
+                                Copiar Contenido
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Info -->
+            <div class="security-box">
+                <div class="security-box-header">
+                    <i class="fas fa-lock"></i>
+                    <h4>Plan de Seguridad Multi-Tenant (Supabase)</h4>
+                </div>
+                <div class="security-items">
+                    <div class="security-item">
+                        <i class="fas fa-check"></i>
+                        <span>Autenticación con Supabase Auth</span>
+                    </div>
+                    <div class="security-item">
+                        <i class="fas fa-check"></i>
+                        <span>Row Level Security (RLS) por tenant</span>
+                    </div>
+                    <div class="security-item">
+                        <i class="fas fa-check"></i>
+                        <span>Contraseñas hasheadas con bcrypt</span>
+                    </div>
+                    <div class="security-item">
+                        <i class="fas fa-check"></i>
+                        <span>Tokens JWT con expiración corta</span>
+                    </div>
+                    <div class="security-item">
+                        <i class="fas fa-check"></i>
+                        <span>Aislamiento de datos por company_id</span>
+                    </div>
+                    <div class="security-item">
+                        <i class="fas fa-check"></i>
+                        <span>Audit logs de todas las acciones</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <a href="list.html" class="quick-action">
+                    <div class="quick-action-icon">
+                        <i class="fas fa-list"></i>
+                    </div>
+                    <div class="quick-action-title">Ver Compañías</div>
+                    <div class="quick-action-desc">Ir al listado completo</div>
+                </a>
+                <a href="onboarding.html" class="quick-action">
+                    <div class="quick-action-icon">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                    <div class="quick-action-title">Crear Otra</div>
+                    <div class="quick-action-desc">Registrar nueva compañía</div>
+                </a>
+                <a href="../index.html" class="quick-action">
+                    <div class="quick-action-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <div class="quick-action-title">Dashboard</div>
+                    <div class="quick-action-desc">Volver al inicio</div>
+                </a>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">Copiado al portapapeles</span>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/data.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const companyId = urlParams.get('id');
+        let companyData = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.classList.add('loaded');
+            loadCompanyData();
+        });
+
+        function loadCompanyData() {
+            const storedCompany = localStorage.getItem('opsis_last_created_company');
+            
+            if (storedCompany) {
+                companyData = JSON.parse(storedCompany);
+            } else if (companyId && typeof SuperAdminData !== 'undefined') {
+                companyData = SuperAdminData.getCompanyById(companyId);
+            }
+
+            if (companyData) {
+                populateData();
+            } else {
+                window.location.href = 'list.html';
+            }
+        }
+
+        function populateData() {
+            document.getElementById('heroCompanyName').textContent = companyData.name;
+            document.getElementById('detailName').textContent = companyData.name;
+            document.getElementById('detailIndustry').textContent = getIndustryName(companyData.industry);
+            document.getElementById('detailEmail').textContent = companyData.email;
+            document.getElementById('detailPlan').textContent = companyData.plan;
+
+            const productsContainer = document.getElementById('detailProducts');
+            if (companyData.products && companyData.products.length > 0) {
+                productsContainer.innerHTML = companyData.products.map(p => 
+                    `<span class="product-chip">${p}</span>`
+                ).join('');
+            } else {
+                productsContainer.innerHTML = '<span class="product-chip">Sin productos</span>';
+            }
+
+            const tempPassword = generateDemoPassword();
+            document.getElementById('credentialUser').textContent = companyData.email;
+            document.getElementById('credentialPassword').textContent = tempPassword;
+            companyData.tempPassword = tempPassword;
+
+            const domain = companyData.domain || companyData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+            const portalUrl = `${window.location.origin}/portal/company/?domain=${domain}`;
+            document.getElementById('portalUrl').textContent = portalUrl;
+            companyData.portalUrl = portalUrl;
+            companyData.domain = domain;
+
+            document.getElementById('emailTo').textContent = companyData.email;
+            updateEmailBody();
+        }
+
+        function getIndustryName(key) {
+            const industries = {
+                'construccion': 'Construcción',
+                'medica': 'Médica y Salud',
+                'transporte': 'Transporte',
+                'retail': 'Retail',
+                'jardineria': 'Jardinería',
+                'tecnologia': 'Tecnología',
+                'restaurante': 'Restaurantes',
+                'inmobiliaria': 'Bienes Raíces',
+                'otros': 'Otras'
+            };
+            return industries[key] || key || 'No especificada';
+        }
+
+        function generateDemoPassword() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+            let password = 'Opsis_';
+            for (let i = 0; i < 8; i++) {
+                password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return password + '!';
+        }
+
+        function updateEmailBody() {
+            const emailBody = `¡Hola!
+
+Tu cuenta en Opsis Suite ha sido creada exitosamente.
+
+📋 DETALLES DE TU CUENTA:
+• Empresa: ${companyData.name}
+• Plan: ${companyData.plan}
+• Productos activos: ${companyData.products ? companyData.products.join(', ') : 'Ninguno'}
+
+🔐 ACTIVA TU CUENTA:
+Haz clic en el siguiente enlace para activar tu cuenta:
+[ENLACE DE ACTIVACIÓN - Expira en 24 horas]
+
+🌐 TU PORTAL:
+${companyData.portalUrl}
+
+¿Necesitas ayuda? Contáctanos en soporte@opsis-suite.com
+
+¡Bienvenido a bordo!
+El equipo de Opsis Suite`;
+
+            document.getElementById('emailBody').textContent = emailBody;
+        }
+
+        function copyToClipboard(elementId, button) {
+            const text = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                button.classList.add('copied');
+                button.innerHTML = '<i class="fas fa-check"></i>';
+                showToast('Copiado al portapapeles');
+                
+                setTimeout(() => {
+                    button.classList.remove('copied');
+                    button.innerHTML = '<i class="fas fa-copy"></i>';
+                }, 2000);
+            });
+        }
+
+        function accessPortal() {
+            window.open(companyData.portalUrl, '_blank');
+        }
+
+        function accessAsAdmin() {
+            const adminToken = btoa(JSON.stringify({
+                companyId: companyData.id,
+                role: 'super_admin',
+                created: Date.now(),
+                expires: Date.now() + (30 * 60 * 1000)
+            }));
+            
+            const adminSession = {
+                companyId: companyData.id,
+                companyName: companyData.name,
+                domain: companyData.domain,
+                adminMode: true,
+                timestamp: Date.now(),
+                adminToken: adminToken,
+                products: companyData.products || []
+            };
+            
+            localStorage.setItem('opsis_admin_session', JSON.stringify(adminSession));
+            window.open(companyData.portalUrl, '_blank');
+        }
+
+        function sendEmail() {
+            showToast('📧 Email de bienvenida enviado a ' + companyData.email);
+        }
+
+        function copyEmail() {
+            const emailContent = document.getElementById('emailBody').textContent;
+            navigator.clipboard.writeText(emailContent).then(() => {
+                showToast('Contenido del email copiado');
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+    </script>
+</body>
+</html>
