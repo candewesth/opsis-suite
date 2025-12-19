@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/superadmin.css?v=7">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="app-shell">
@@ -78,6 +79,38 @@
                         <div class="stat-content">
                             <div class="stat-value" id="totalOverdue">0</div>
                             <div class="stat-label">Vencidas</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Invoice Charts Row -->
+                <div class="grid-2" style="margin-bottom: 1.5rem; gap: 1.5rem;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-chart-bar"></i> Cobros por Mes</h3>
+                        </div>
+                        <div class="card-body" style="height: 220px;">
+                            <canvas id="invoiceChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-chart-pie"></i> Estado de Facturas</h3>
+                        </div>
+                        <div class="card-body" style="height: 220px;">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aging Report -->
+                <div class="card" style="margin-bottom: 1.5rem;">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-clock"></i> Antigüedad de Cuentas por Cobrar</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="agingReport" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+                            <!-- Populated by JS -->
                         </div>
                     </div>
                 </div>
@@ -200,11 +233,15 @@
         document.body.classList.add('loaded');
         
         let allInvoices = [];
+        let invoiceChart = null;
+        let statusChart = null;
         
         document.addEventListener('DOMContentLoaded', () => {
             loadInvoices();
             populateCompanySelect();
             setDefaultDueDate();
+            initCharts();
+            renderAgingReport();
         });
 
         function loadInvoices() {
@@ -222,6 +259,120 @@
             document.getElementById('totalPaid').textContent = paid.reduce((sum, i) => sum + i.amount, 0).toLocaleString();
             document.getElementById('totalPending').textContent = pending.reduce((sum, i) => sum + i.amount, 0).toLocaleString();
             document.getElementById('totalOverdue').textContent = overdue.length;
+        }
+        
+        function initCharts() {
+            // Invoice amounts by month
+            const ctx1 = document.getElementById('invoiceChart').getContext('2d');
+            const monthlyData = getMonthlyInvoiceData();
+            
+            invoiceChart = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: monthlyData.labels,
+                    datasets: [{
+                        label: 'Cobrado',
+                        data: monthlyData.paid,
+                        backgroundColor: '#22c55e',
+                        borderRadius: 4
+                    }, {
+                        label: 'Pendiente',
+                        data: monthlyData.pending,
+                        backgroundColor: '#f59e0b',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            ticks: { callback: val => '$' + val }
+                        }
+                    }
+                }
+            });
+            
+            // Status pie chart
+            const ctx2 = document.getElementById('statusChart').getContext('2d');
+            const paid = allInvoices.filter(i => i.status === 'paid').reduce((s, i) => s + i.amount, 0);
+            const pending = allInvoices.filter(i => i.status === 'pending' && new Date(i.dueDate) >= new Date()).reduce((s, i) => s + i.amount, 0);
+            const overdue = allInvoices.filter(i => i.status === 'pending' && new Date(i.dueDate) < new Date()).reduce((s, i) => s + i.amount, 0);
+            
+            statusChart = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pagadas', 'Pendientes', 'Vencidas'],
+                    datasets: [{
+                        data: [paid, pending, overdue],
+                        backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => `${ctx.label}: $${ctx.raw.toLocaleString()}`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function getMonthlyInvoiceData() {
+            const now = new Date();
+            const labels = [];
+            const paid = [];
+            const pending = [];
+            
+            for (let i = 5; i >= 0; i--) {
+                const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                labels.push(date.toLocaleDateString('es-ES', { month: 'short' }));
+                
+                const monthInvoices = allInvoices.filter(inv => {
+                    const invDate = new Date(inv.date);
+                    return invDate.getMonth() === date.getMonth() && invDate.getFullYear() === date.getFullYear();
+                });
+                
+                paid.push(monthInvoices.filter(i => i.status === 'paid').reduce((s, i) => s + i.amount, 0));
+                pending.push(monthInvoices.filter(i => i.status === 'pending').reduce((s, i) => s + i.amount, 0));
+            }
+            
+            return { labels, paid, pending };
+        }
+        
+        function renderAgingReport() {
+            const now = new Date();
+            const buckets = [
+                { label: '0-30 días', days: 30, amount: 0, color: '#22c55e' },
+                { label: '31-60 días', days: 60, amount: 0, color: '#f59e0b' },
+                { label: '61-90 días', days: 90, amount: 0, color: '#fb923c' },
+                { label: '90+ días', days: Infinity, amount: 0, color: '#ef4444' }
+            ];
+            
+            allInvoices.filter(i => i.status === 'pending').forEach(inv => {
+                const invDate = new Date(inv.date);
+                const daysOld = Math.floor((now - invDate) / (1000 * 60 * 60 * 24));
+                
+                if (daysOld <= 30) buckets[0].amount += inv.amount;
+                else if (daysOld <= 60) buckets[1].amount += inv.amount;
+                else if (daysOld <= 90) buckets[2].amount += inv.amount;
+                else buckets[3].amount += inv.amount;
+            });
+            
+            document.getElementById('agingReport').innerHTML = buckets.map(b => `
+                <div style="background: ${b.color}10; border: 1px solid ${b.color}30; border-radius: 12px; padding: 1rem; text-align: center;">
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem;">${b.label}</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: ${b.color};">$${b.amount.toLocaleString()}</div>
+                </div>
+            `).join('');
         }
 
         function renderInvoices(invoices) {
