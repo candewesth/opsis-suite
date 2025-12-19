@@ -90,6 +90,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/superadmin.css?v=7">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
     <div class="app-shell">
@@ -418,15 +419,19 @@
             return icons[key] || 'fas fa-building';
         }
 
-        // Generate and download revenue report
+        // Generate and download revenue report as PDF
         function generateReport() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
             const totals = SuperAdminData.getTotals();
             const companies = SuperAdminData.getCompanies();
+            const now = new Date();
+            const reportDate = now.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
             
-            // Calculate plan breakdown
+            // Calculate breakdowns
             const planBreakdown = {};
             const industryBreakdown = {};
-            
             companies.forEach(company => {
                 const plan = company.plan.toLowerCase();
                 planBreakdown[plan] = planBreakdown[plan] || { count: 0, revenue: 0 };
@@ -439,75 +444,178 @@
                 industryBreakdown[industry].revenue += company.mrr;
             });
             
-            // Build report content
-            const now = new Date();
-            const reportDate = now.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+            // Header con gradiente verde
+            doc.setFillColor(2, 115, 94);
+            doc.rect(0, 0, 210, 40, 'F');
             
-            let reportContent = `
-================================================================================
-                        REPORTE DE INGRESOS - OPSIS SUITE
-                            ${reportDate}
-================================================================================
-
-RESUMEN EJECUTIVO
------------------
-MRR (Ingreso Mensual Recurrente): $${totals.mrr.toLocaleString()}
-ARR (Ingreso Anual Proyectado):   $${(totals.mrr * 12).toLocaleString()}
-ARPU (Ingreso Promedio/Cliente):  $${totals.companies > 0 ? Math.round(totals.mrr / totals.companies) : 0}
-Total de Clientes:                ${totals.companies}
-Clientes Activos:                 ${totals.active}
-Clientes en Trial:                ${totals.trial}
-
-DESGLOSE POR PLAN
------------------
-`;
+            // Logo y título
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(22);
+            doc.setFont('helvetica', 'bold');
+            doc.text('OPSIS SUITE', 20, 20);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Reporte de Ingresos y Revenue', 20, 30);
+            
+            // Fecha del reporte
+            doc.setFillColor(255, 255, 255);
+            doc.roundedRect(140, 10, 55, 20, 3, 3, 'F');
+            doc.setTextColor(2, 115, 94);
+            doc.setFontSize(8);
+            doc.text('GENERADO:', 167.5, 17, { align: 'center' });
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text(reportDate, 167.5, 25, { align: 'center' });
+            
+            let yPos = 55;
+            
+            // Sección: Métricas Principales
+            doc.setTextColor(2, 115, 94);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('MÉTRICAS PRINCIPALES', 20, yPos);
+            yPos += 8;
+            
+            // Tarjetas de métricas
+            const metrics = [
+                { label: 'MRR', value: '$' + totals.mrr.toLocaleString(), color: [2, 115, 94] },
+                { label: 'ARR', value: '$' + (totals.mrr * 12).toLocaleString(), color: [59, 130, 246] },
+                { label: 'ARPU', value: '$' + (totals.companies > 0 ? Math.round(totals.mrr / totals.companies) : 0), color: [245, 158, 11] },
+                { label: 'Clientes', value: totals.companies.toString(), color: [139, 92, 246] }
+            ];
+            
+            metrics.forEach((metric, i) => {
+                const xPos = 20 + (i * 47);
+                doc.setFillColor(...metric.color);
+                doc.roundedRect(xPos, yPos, 44, 28, 3, 3, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(8);
+                doc.setFont('helvetica', 'normal');
+                doc.text(metric.label, xPos + 22, yPos + 8, { align: 'center' });
+                doc.setFontSize(14);
+                doc.setFont('helvetica', 'bold');
+                doc.text(metric.value, xPos + 22, yPos + 20, { align: 'center' });
+            });
+            yPos += 40;
+            
+            // Línea separadora
+            doc.setDrawColor(226, 232, 240);
+            doc.setLineWidth(0.5);
+            doc.line(20, yPos, 190, yPos);
+            yPos += 10;
+            
+            // Sección: Desglose por Plan
+            doc.setTextColor(2, 115, 94);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('INGRESOS POR PLAN', 20, yPos);
+            yPos += 8;
+            
+            // Header de tabla
+            doc.setFillColor(248, 250, 252);
+            doc.rect(20, yPos, 170, 8, 'F');
+            doc.setTextColor(100, 100, 100);
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'bold');
+            doc.text('PLAN', 25, yPos + 5.5);
+            doc.text('CLIENTES', 80, yPos + 5.5);
+            doc.text('MRR', 120, yPos + 5.5);
+            doc.text('%', 160, yPos + 5.5);
+            yPos += 8;
+            
+            // Filas de planes
             Object.entries(SuperAdminData.plans).forEach(([key, plan]) => {
                 const data = planBreakdown[key] || { count: 0, revenue: 0 };
                 const percentage = totals.mrr > 0 ? ((data.revenue / totals.mrr) * 100).toFixed(1) : 0;
-                reportContent += `${plan.name.padEnd(15)} | ${String(data.count).padStart(3)} clientes | $${String(data.revenue).padStart(6)} MRR | ${percentage}%\n`;
+                
+                doc.setDrawColor(240, 240, 240);
+                doc.line(20, yPos + 7, 190, yPos + 7);
+                doc.setTextColor(30, 30, 30);
+                doc.setFontSize(9);
+                doc.setFont('helvetica', 'normal');
+                doc.text(plan.name, 25, yPos + 5);
+                doc.text(data.count.toString(), 80, yPos + 5);
+                doc.setFont('helvetica', 'bold');
+                doc.text('$' + data.revenue.toLocaleString(), 120, yPos + 5);
+                doc.setFont('helvetica', 'normal');
+                doc.text(percentage + '%', 160, yPos + 5);
+                yPos += 8;
             });
+            yPos += 5;
             
-            reportContent += `
-DESGLOSE POR INDUSTRIA
-----------------------
-`;
+            // Sección: Desglose por Industria
+            doc.setTextColor(2, 115, 94);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('INGRESOS POR INDUSTRIA', 20, yPos);
+            yPos += 8;
+            
+            // Header de tabla
+            doc.setFillColor(248, 250, 252);
+            doc.rect(20, yPos, 170, 8, 'F');
+            doc.setTextColor(100, 100, 100);
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'bold');
+            doc.text('INDUSTRIA', 25, yPos + 5.5);
+            doc.text('CLIENTES', 100, yPos + 5.5);
+            doc.text('MRR', 140, yPos + 5.5);
+            yPos += 8;
+            
+            // Filas de industrias (top 6)
             Object.entries(industryBreakdown)
                 .sort((a, b) => b[1].revenue - a[1].revenue)
+                .slice(0, 6)
                 .forEach(([key, data]) => {
                     const industryName = SuperAdminData.industries[key]?.name || key;
-                    const percentage = totals.mrr > 0 ? ((data.revenue / totals.mrr) * 100).toFixed(1) : 0;
-                    reportContent += `${industryName.substring(0, 25).padEnd(25)} | ${String(data.count).padStart(3)} clientes | $${String(data.revenue).padStart(6)} MRR | ${percentage}%\n`;
+                    doc.setDrawColor(240, 240, 240);
+                    doc.line(20, yPos + 7, 190, yPos + 7);
+                    doc.setTextColor(30, 30, 30);
+                    doc.setFontSize(9);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(industryName.substring(0, 30), 25, yPos + 5);
+                    doc.text(data.count.toString(), 100, yPos + 5);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setTextColor(2, 115, 94);
+                    doc.text('$' + data.revenue.toLocaleString(), 140, yPos + 5);
+                    yPos += 8;
                 });
+            yPos += 5;
             
-            reportContent += `
-DETALLE DE CLIENTES
--------------------
-`;
+            // Top 5 Clientes
+            doc.setTextColor(2, 115, 94);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('TOP 5 CLIENTES POR INGRESO', 20, yPos);
+            yPos += 8;
+            
             companies
                 .sort((a, b) => b.mrr - a.mrr)
-                .forEach(company => {
-                    reportContent += `${company.name.substring(0, 30).padEnd(30)} | ${company.plan.padEnd(12)} | $${String(company.mrr).padStart(5)} | ${company.status}\n`;
+                .slice(0, 5)
+                .forEach((company, i) => {
+                    doc.setFillColor(i === 0 ? 236 : 248, i === 0 ? 253 : 250, i === 0 ? 245 : 252);
+                    doc.rect(20, yPos, 170, 10, 'F');
+                    doc.setTextColor(30, 30, 30);
+                    doc.setFontSize(9);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(`${i + 1}. ${company.name.substring(0, 35)}`, 25, yPos + 7);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setTextColor(2, 115, 94);
+                    doc.text('$' + company.mrr.toLocaleString() + '/mes', 160, yPos + 7, { align: 'right' });
+                    yPos += 11;
                 });
             
-            reportContent += `
-================================================================================
-                    Generado automáticamente por Opsis Suite
-                         ${now.toISOString()}
-================================================================================
-`;
+            // Footer
+            doc.setDrawColor(226, 232, 240);
+            doc.line(20, 275, 190, 275);
+            doc.setTextColor(150, 150, 150);
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Reporte generado automáticamente por Opsis Suite', 105, 282, { align: 'center' });
+            doc.text(now.toISOString(), 105, 288, { align: 'center' });
             
-            // Download as text file
-            const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `reporte-ingresos-${now.toISOString().split('T')[0]}.txt`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            showNotification('Reporte generado y descargado exitosamente', 'success');
+            // Descargar
+            doc.save(`reporte-ingresos-${now.toISOString().split('T')[0]}.pdf`);
+            showNotification('Reporte PDF generado exitosamente', 'success');
         }
 
         // Show notification toast

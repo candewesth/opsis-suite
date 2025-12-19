@@ -18,6 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/superadmin.css?v=7">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
     <div class="app-shell">
@@ -583,44 +584,133 @@
             const invoice = allInvoices.find(i => i.id === id);
             if (!invoice) return;
             
-            const content = `
-================================================================================
-                         FACTURA - OPSIS SUITE
-================================================================================
-
-Nº Factura: INV-${String(invoice.id).padStart(4, '0')}
-Fecha: ${formatDate(invoice.date)}
-Vencimiento: ${formatDate(invoice.dueDate)}
-
---------------------------------------------------------------------------------
-Cliente: ${invoice.company}
---------------------------------------------------------------------------------
-
-Concepto: ${invoice.concept}
-
---------------------------------------------------------------------------------
-                                          TOTAL: $${invoice.amount.toLocaleString()}
---------------------------------------------------------------------------------
-
-Estado: ${invoice.status === 'paid' ? 'PAGADA' : 'PENDIENTE'}
-
-================================================================================
-                          Gracias por su preferencia
-                             www.opsis-suite.com
-================================================================================
-`;
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
             
-            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `factura-INV-${String(invoice.id).padStart(4, '0')}.txt`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            const invoiceNum = `INV-${String(invoice.id).padStart(4, '0')}`;
+            const isOverdue = invoice.status === 'pending' && new Date(invoice.dueDate) < new Date();
+            const statusText = isOverdue ? 'VENCIDA' : invoice.status === 'paid' ? 'PAGADA' : 'PENDIENTE';
+            const statusColor = isOverdue ? [239, 68, 68] : invoice.status === 'paid' ? [16, 185, 129] : [245, 158, 11];
             
-            showNotification('Factura descargada', 'success');
+            // Header con gradiente verde
+            doc.setFillColor(2, 115, 94);
+            doc.rect(0, 0, 210, 45, 'F');
+            
+            // Logo y nombre de empresa
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(24);
+            doc.setFont('helvetica', 'bold');
+            doc.text('OPSIS SUITE', 20, 22);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Sistema de Gestión Empresarial', 20, 30);
+            
+            // Badge de factura
+            doc.setFillColor(255, 255, 255);
+            doc.roundedRect(140, 12, 55, 22, 3, 3, 'F');
+            doc.setTextColor(2, 115, 94);
+            doc.setFontSize(9);
+            doc.text('FACTURA', 167.5, 20, { align: 'center' });
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text(invoiceNum, 167.5, 29, { align: 'center' });
+            
+            // Estado de la factura
+            doc.setFillColor(...statusColor);
+            doc.roundedRect(140, 50, 55, 10, 2, 2, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text(statusText, 167.5, 57, { align: 'center' });
+            
+            // Información de fechas
+            doc.setTextColor(100, 100, 100);
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Fecha de Emisión:', 20, 55);
+            doc.text('Fecha de Vencimiento:', 20, 62);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(30, 30, 30);
+            doc.text(formatDate(invoice.date), 60, 55);
+            doc.text(formatDate(invoice.dueDate), 68, 62);
+            
+            // Línea separadora
+            doc.setDrawColor(226, 232, 240);
+            doc.setLineWidth(0.5);
+            doc.line(20, 72, 190, 72);
+            
+            // Sección Cliente
+            doc.setFillColor(248, 250, 252);
+            doc.roundedRect(20, 78, 170, 30, 3, 3, 'F');
+            doc.setTextColor(100, 100, 100);
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'normal');
+            doc.text('FACTURAR A:', 25, 86);
+            doc.setTextColor(30, 30, 30);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text(invoice.company, 25, 96);
+            
+            // Tabla de concepto
+            doc.setFillColor(2, 115, 94);
+            doc.rect(20, 118, 170, 10, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'bold');
+            doc.text('CONCEPTO', 25, 125);
+            doc.text('MONTO', 170, 125, { align: 'right' });
+            
+            // Fila de concepto
+            doc.setFillColor(255, 255, 255);
+            doc.rect(20, 128, 170, 15, 'F');
+            doc.setDrawColor(226, 232, 240);
+            doc.rect(20, 128, 170, 15, 'S');
+            doc.setTextColor(30, 30, 30);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.text(invoice.concept, 25, 137);
+            doc.setFont('helvetica', 'bold');
+            doc.text('$' + invoice.amount.toLocaleString(), 170, 137, { align: 'right' });
+            
+            // Total
+            doc.setFillColor(248, 250, 252);
+            doc.rect(20, 148, 170, 18, 'F');
+            doc.setTextColor(100, 100, 100);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.text('TOTAL A PAGAR', 25, 159);
+            doc.setTextColor(2, 115, 94);
+            doc.setFontSize(18);
+            doc.setFont('helvetica', 'bold');
+            doc.text('$' + invoice.amount.toLocaleString(), 185, 160, { align: 'right' });
+            
+            // Información de pago
+            doc.setFillColor(236, 253, 245);
+            doc.roundedRect(20, 175, 170, 35, 3, 3, 'F');
+            doc.setTextColor(5, 150, 105);
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'bold');
+            doc.text('INFORMACIÓN DE PAGO', 25, 185);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8);
+            doc.setTextColor(60, 60, 60);
+            doc.text('Banco: Banco Nacional', 25, 193);
+            doc.text('Cuenta: 1234-5678-9012-3456', 25, 200);
+            doc.text('Referencia: ' + invoiceNum, 110, 193);
+            doc.text('SWIFT: BNATUS33', 110, 200);
+            
+            // Footer
+            doc.setDrawColor(226, 232, 240);
+            doc.line(20, 250, 190, 250);
+            doc.setTextColor(150, 150, 150);
+            doc.setFontSize(8);
+            doc.text('Gracias por su preferencia', 105, 258, { align: 'center' });
+            doc.text('www.opsis-suite.com | soporte@opsis-suite.com', 105, 264, { align: 'center' });
+            doc.text('Documento generado automáticamente - ' + new Date().toLocaleDateString('es-ES'), 105, 270, { align: 'center' });
+            
+            // Descargar
+            doc.save(`factura-${invoiceNum}.pdf`);
+            showNotification('Factura PDF descargada', 'success');
         }
 
         function exportInvoices() {
