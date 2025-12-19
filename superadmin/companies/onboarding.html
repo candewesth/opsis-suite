@@ -675,11 +675,31 @@
                             <div class="wizard-card-header">
                                 <div class="icon-box"><i class="fas fa-cubes"></i></div>
                                 <div>
-                                    <h2>Productos a Activar</h2>
-                                    <p>Selecciona los módulos que usará esta compañía</p>
+                                    <h2>Módulos Adicionales</h2>
+                                    <p>MotorSync está incluido. Selecciona módulos premium opcionales.</p>
                                 </div>
                             </div>
                             <div class="wizard-card-body">
+                                <!-- MotorSync included banner -->
+                                <div style="background: linear-gradient(135deg, rgba(2, 115, 94, 0.1), rgba(2, 115, 94, 0.05)); border: 2px solid var(--verdi-light); border-radius: 12px; padding: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 16px;">
+                                    <div style="width: 50px; height: 50px; border-radius: 12px; background: var(--verdi-light); display: flex; align-items: center; justify-content: center; color: white; font-size: 20px;">
+                                        <i class="fas fa-wrench"></i>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 8px;">
+                                            MotorSync
+                                            <span style="background: var(--verdi-light); color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600;">INCLUIDO</span>
+                                        </div>
+                                        <div style="font-size: 13px; color: var(--aire-storm);">Gestión de proyectos, clientes y operaciones</div>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div style="font-size: 18px; font-weight: 700; color: var(--verdi-light);"><i class="fas fa-check-circle"></i></div>
+                                    </div>
+                                </div>
+                                
+                                <div style="font-size: 13px; color: var(--aire-storm); margin-bottom: 12px; font-weight: 500;">
+                                    <i class="fas fa-plus-circle"></i> Módulos Premium Opcionales:
+                                </div>
                                 <div class="products-grid" id="productsGrid">
                                     <!-- Populated by JS -->
                                 </div>
@@ -860,15 +880,24 @@
             { id: 'otros', name: 'Otras', emoji: '⚙️' }
         ];
 
-        const PRODUCTS = Object.entries(SuperAdminData.products).map(([id, p]) => ({
-            id, name: p.name, icon: p.icon, price: p.basePrice, desc: p.description
-        }));
+        const PRODUCTS = Object.entries(SuperAdminData.products)
+            .filter(([id, p]) => p.type === 'premium' && p.status === 'active')
+            .map(([id, p]) => ({
+                id, name: p.name, icon: p.icon, price: p.price, desc: p.description
+            }));
 
-        const PLANS = [
-            { id: 'starter', name: 'Starter', price: 49, desc: 'Equipos pequeños', features: ['5 usuarios', '1 producto', 'Soporte email', '10GB'] },
-            { id: 'professional', name: 'Professional', price: 99, desc: 'Empresas en crecimiento', features: ['25 usuarios', '3 productos', 'Soporte prioritario', '50GB', 'API'], recommended: true },
-            { id: 'enterprise', name: 'Enterprise', price: 249, desc: 'Solución completa', features: ['Ilimitados', 'Todos', 'Soporte 24/7', '500GB', 'SLA'] }
-        ];
+        // Plans from SuperAdminData (new pricing model)
+        const PLANS = Object.entries(SuperAdminData.plans)
+            .filter(([id]) => id !== 'trial')
+            .map(([id, p]) => ({
+                id, 
+                name: p.name, 
+                price: p.price, 
+                desc: p.description,
+                users: p.users === -1 ? 'Ilimitados' : `${p.users} usuarios`,
+                features: p.features,
+                recommended: id === 'professional'
+            }));
 
         let currentStep = 1;
         const totalSteps = 5;
@@ -993,20 +1022,21 @@
             const ind = INDUSTRIES.find(i => i.id === selectedIndustry);
             document.getElementById('sideIndustry').textContent = ind ? ind.name : 'Sin seleccionar';
 
-            // Products
+            // Products (now called Premium Modules)
             const prodContainer = document.getElementById('sideProducts');
             if (selectedProducts.length === 0) {
-                prodContainer.innerHTML = '<span style="color: var(--aire-slate); font-size: 13px;">Ninguno seleccionado</span>';
+                prodContainer.innerHTML = '<span style="color: var(--aire-slate); font-size: 13px;">Solo MotorSync (incluido)</span>';
             } else {
-                prodContainer.innerHTML = selectedProducts.map(p => `<span class="summary-tag">${p.name}</span>`).join('');
+                prodContainer.innerHTML = '<span class="summary-tag" style="background: var(--verdi-light); color: white;">MotorSync</span>' + 
+                    selectedProducts.map(p => `<span class="summary-tag">${p.name}</span>`).join('');
             }
 
             // Plan
             document.getElementById('sidePlan').textContent = selectedPlan ? selectedPlan.name : 'Sin seleccionar';
 
-            // Total
-            let total = selectedProducts.reduce((sum, p) => sum + p.price, 0);
-            if (selectedPlan) total += selectedPlan.price;
+            // Total = Plan price + Premium modules (MotorSync is included in plan)
+            let total = selectedPlan ? selectedPlan.price : 0;
+            total += selectedProducts.reduce((sum, p) => sum + p.price, 0);
             document.getElementById('sideTotal').innerHTML = `$${total}<span>/mes</span>`;
         }
 
@@ -1024,11 +1054,11 @@
             document.getElementById('confirmDomain').textContent = domain ? `opsis-suite.com/portal/${domain}` : '-';
 
             const prodContainer = document.getElementById('confirmProducts');
-            prodContainer.innerHTML = selectedProducts.length ? 
-                selectedProducts.map(p => `<span class="summary-tag">${p.name}</span>`).join('') : 
-                '<span style="color: var(--aire-slate);">-</span>';
+            prodContainer.innerHTML = '<span class="summary-tag" style="background: var(--verdi-light); color: white;">MotorSync (incluido)</span>' +
+                (selectedProducts.length ? selectedProducts.map(p => `<span class="summary-tag">${p.name} (+$${p.price})</span>`).join('') : '');
 
-            document.getElementById('confirmPlan').textContent = selectedPlan ? `${selectedPlan.name} - $${selectedPlan.price}/mes` : '-';
+            const total = (selectedPlan ? selectedPlan.price : 0) + selectedProducts.reduce((sum, p) => sum + p.price, 0);
+            document.getElementById('confirmPlan').textContent = selectedPlan ? `${selectedPlan.name} - Total: $${total}/mes` : '-';
         }
 
         function updateUI() {
@@ -1116,7 +1146,11 @@
                     .replace(/[^a-z0-9-]/g, '');
             }
 
-            // Use the new API method
+            // Use the new API method with new pricing model
+            // MotorSync is always included, selectedProducts are premium modules
+            const premiumModules = selectedProducts.map(p => p.name);
+            const mrr = SuperAdminData.calculateMRR(selectedPlan.id, selectedProducts.map(p => p.id));
+            
             const company = SuperAdminData.createCompany({
                 name: document.getElementById('companyName').value.trim(),
                 email: document.getElementById('companyEmail').value.trim(),
@@ -1124,11 +1158,12 @@
                 domain: domain,
                 contact: document.getElementById('companyContact').value.trim(),
                 industry: selectedIndustry,
-                products: selectedProducts.map(p => p.name),
+                products: ['MotorSync'], // Base module always included
+                premiumModules: premiumModules, // Premium add-ons
                 plan: selectedPlan.name,
                 status: 'active',
                 users: 1,
-                mrr: selectedProducts.reduce((s, p) => s + p.price, 0) + selectedPlan.price
+                mrr: mrr
             });
             
             // Store the last created company for the success page
