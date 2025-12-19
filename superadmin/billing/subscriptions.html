@@ -36,9 +36,6 @@
                     <button class="btn btn-secondary" onclick="exportToCSV()">
                         <i class="fas fa-file-csv"></i> Exportar
                     </button>
-                    <button class="btn btn-secondary" onclick="showMetrics()">
-                        <i class="fas fa-chart-line"></i> Métricas
-                    </button>
                     <button class="btn btn-primary" onclick="openUpgradeModal()">
                         <i class="fas fa-arrow-up"></i> Cambiar Plan
                     </button>
@@ -178,6 +175,33 @@
                     </div>
                 </div>
 
+                <!-- Revenue Breakdown Section -->
+                <div class="grid-2" style="margin-bottom: 1.5rem; gap: 1.5rem;">
+                    <!-- Revenue by Plan -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-layer-group"></i> Ingresos por Plan
+                            </h3>
+                        </div>
+                        <div class="card-body" id="planRevenueSection">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Revenue by Premium Module -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-puzzle-piece"></i> Ingresos por Módulo Premium
+                            </h3>
+                        </div>
+                        <div class="card-body" id="moduleRevenueSection">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Subscriptions Table -->
                 <div class="card">
                     <div class="card-header">
@@ -311,25 +335,6 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal('calculatorModal')">Cerrar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Metrics Modal -->
-    <div class="modal-overlay" id="metricsModal">
-        <div class="modal" style="max-width: 600px;">
-            <div class="modal-header">
-                <h3><i class="fas fa-chart-line"></i> Métricas de Suscripciones</h3>
-                <button class="modal-close" onclick="closeModal('metricsModal')">&times;</button>
-            </div>
-            <div class="modal-body" id="metricsContent">
-                <!-- Populated by JS -->
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('metricsModal')">Cerrar</button>
-                <button class="btn btn-primary" onclick="exportMetrics()">
-                    <i class="fas fa-download"></i> Exportar
-                </button>
             </div>
         </div>
     </div>
@@ -834,6 +839,98 @@
                     `;
                 }).join('')}
             `;
+            
+            // Also render revenue breakdown sections
+            renderRevenueBreakdown();
+        }
+
+        function renderRevenueBreakdown() {
+            const totals = SuperAdminData.getTotals();
+            const planBreakdown = {};
+            const moduleBreakdown = {};
+            
+            allCompanies.forEach(c => {
+                const plan = c.plan.toLowerCase();
+                planBreakdown[plan] = planBreakdown[plan] || { count: 0, mrr: 0 };
+                planBreakdown[plan].count++;
+                planBreakdown[plan].mrr += c.mrr;
+                
+                (c.premiumModules || []).forEach(m => {
+                    const key = m.toLowerCase().replace(/\s+/g, '');
+                    const mod = SuperAdminData.products[key];
+                    if (mod) {
+                        moduleBreakdown[key] = moduleBreakdown[key] || { name: mod.name, count: 0, revenue: 0 };
+                        moduleBreakdown[key].count++;
+                        moduleBreakdown[key].revenue += mod.price;
+                    }
+                });
+            });
+            
+            // Render Plan Revenue
+            document.getElementById('planRevenueSection').innerHTML = Object.entries(SuperAdminData.plans)
+                .filter(([k]) => k !== 'trial')
+                .map(([key, plan]) => {
+                    const data = planBreakdown[key] || { count: 0, mrr: 0 };
+                    const percentage = totals.mrr > 0 ? Math.round((data.mrr / totals.mrr) * 100) : 0;
+                    
+                    return `
+                        <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color);">
+                            <div style="width: 36px; height: 36px; border-radius: 8px; background: ${plan.color}20; color: ${plan.color}; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                                ${data.count}
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; font-size: 0.875rem;">${plan.name}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">${percentage}% del MRR total</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-weight: 700; color: var(--primary-color);">$${data.mrr.toLocaleString()}</div>
+                                <div style="font-size: 0.7rem; color: var(--text-secondary);">/mes</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('') + `
+                <div style="display: flex; justify-content: space-between; padding: 1rem 0 0 0; margin-top: 0.5rem; border-top: 2px solid var(--border-color);">
+                    <span style="font-weight: 600;">Total MRR</span>
+                    <span style="font-weight: 700; font-size: 1.25rem; color: var(--primary-color);">$${totals.mrr.toLocaleString()}</span>
+                </div>
+            `;
+            
+            // Render Module Revenue
+            const moduleEntries = Object.entries(moduleBreakdown);
+            if (moduleEntries.length === 0) {
+                document.getElementById('moduleRevenueSection').innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                        <i class="fas fa-puzzle-piece" style="font-size: 2rem; opacity: 0.3; margin-bottom: 0.5rem; display: block;"></i>
+                        <p style="margin: 0; font-size: 0.875rem;">Sin módulos premium activos</p>
+                        <p style="margin: 0.25rem 0 0 0; font-size: 0.75rem;">Los ingresos por módulos aparecerán aquí</p>
+                    </div>
+                `;
+            } else {
+                const totalModuleRevenue = moduleEntries.reduce((sum, [, data]) => sum + data.revenue, 0);
+                
+                document.getElementById('moduleRevenueSection').innerHTML = moduleEntries
+                    .sort((a, b) => b[1].revenue - a[1].revenue)
+                    .map(([key, data]) => `
+                        <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color);">
+                            <div style="width: 36px; height: 36px; border-radius: 8px; background: #dbeafe; color: #3b82f6; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                                ${data.count}
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; font-size: 0.875rem;">${data.name}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">${data.count} clientes</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-weight: 700; color: #3b82f6;">$${data.revenue.toLocaleString()}</div>
+                                <div style="font-size: 0.7rem; color: var(--text-secondary);">/mes</div>
+                            </div>
+                        </div>
+                    `).join('') + `
+                    <div style="display: flex; justify-content: space-between; padding: 1rem 0 0 0; margin-top: 0.5rem; border-top: 2px solid var(--border-color);">
+                        <span style="font-weight: 600;">Total Módulos</span>
+                        <span style="font-weight: 700; font-size: 1.25rem; color: #3b82f6;">$${totalModuleRevenue.toLocaleString()}</span>
+                    </div>
+                `;
+            }
         }
 
         function renderSubscriptions(companies) {
@@ -1200,81 +1297,6 @@
                     </div>
                 </div>
             `;
-        }
-
-        function showMetrics() {
-            const totals = SuperAdminData.getTotals();
-            const planBreakdown = {};
-            const moduleBreakdown = {};
-            
-            allCompanies.forEach(c => {
-                const plan = c.plan.toLowerCase();
-                planBreakdown[plan] = planBreakdown[plan] || { count: 0, mrr: 0 };
-                planBreakdown[plan].count++;
-                planBreakdown[plan].mrr += c.mrr;
-                
-                (c.premiumModules || []).forEach(m => {
-                    const key = m.toLowerCase().replace(/\s+/g, '');
-                    const mod = SuperAdminData.products[key];
-                    if (mod) {
-                        moduleBreakdown[key] = moduleBreakdown[key] || { name: mod.name, count: 0, revenue: 0 };
-                        moduleBreakdown[key].count++;
-                        moduleBreakdown[key].revenue += mod.price;
-                    }
-                });
-            });
-            
-            document.getElementById('metricsContent').innerHTML = `
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
-                    <div style="padding: 1rem; background: linear-gradient(135deg, #02735E, #4ecdc4); border-radius: 12px; color: white; text-align: center;">
-                        <div style="font-size: 1.75rem; font-weight: 700;">$${totals.mrr.toLocaleString()}</div>
-                        <div style="opacity: 0.8; font-size: 0.875rem;">MRR Total</div>
-                    </div>
-                    <div style="padding: 1rem; background: linear-gradient(135deg, #3b82f6, #60a5fa); border-radius: 12px; color: white; text-align: center;">
-                        <div style="font-size: 1.75rem; font-weight: 700;">$${(totals.mrr * 12).toLocaleString()}</div>
-                        <div style="opacity: 0.8; font-size: 0.875rem;">ARR Proyectado</div>
-                    </div>
-                </div>
-                
-                <h4 style="margin-bottom: 0.75rem;">Ingresos por Plan</h4>
-                ${Object.entries(SuperAdminData.plans).filter(([k]) => k !== 'trial').map(([key, plan]) => {
-                    const data = planBreakdown[key] || { count: 0, mrr: 0 };
-                    return `
-                        <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; border-bottom: 1px solid var(--border-color);">
-                            <div style="width: 32px; height: 32px; border-radius: 6px; background: ${plan.color}20; color: ${plan.color}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.875rem;">
-                                ${data.count}
-                            </div>
-                            <div style="flex: 1; font-weight: 500;">${plan.name}</div>
-                            <div style="font-weight: 600;">$${data.mrr.toLocaleString()}</div>
-                        </div>
-                    `;
-                }).join('')}
-                
-                <h4 style="margin: 1rem 0 0.75rem 0;">Ingresos por Módulo Premium</h4>
-                ${Object.entries(moduleBreakdown).map(([key, data]) => `
-                    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; border-bottom: 1px solid var(--border-color);">
-                        <div style="width: 32px; height: 32px; border-radius: 6px; background: #dbeafe; color: #3b82f6; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.875rem;">
-                            ${data.count}
-                        </div>
-                        <div style="flex: 1; font-weight: 500;">${data.name}</div>
-                        <div style="font-weight: 600;">$${data.revenue.toLocaleString()}/mes</div>
-                    </div>
-                `).join('') || '<p style="color: var(--text-secondary); font-size: 0.875rem;">Sin módulos premium activos</p>'}
-            `;
-            
-            document.getElementById('metricsModal').classList.add('active');
-        }
-
-        function exportMetrics() {
-            const totals = SuperAdminData.getTotals();
-            const content = `Métricas - ${new Date().toLocaleDateString('es-ES')}\n\nMRR: $${totals.mrr}\nARR: $${totals.mrr * 12}\nClientes: ${totals.companies}`;
-            
-            const blob = new Blob([content], { type: 'text/plain' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `metricas-${new Date().toISOString().split('T')[0]}.txt`;
-            a.click();
-            showNotification('Métricas exportadas', 'success');
         }
 
         function closeModal(modalId) {
