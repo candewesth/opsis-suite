@@ -5,14 +5,86 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Facturación - SuperAdmin | Opsis Suite</title>
     <style>
-        :root { --verdi-dark: #022326; --sidebar-width: 240px; }
+        :root { --verdi-dark: #022326; --sidebar-width: 240px; --primary-green: #02735E; --success: #22c55e; --text-secondary: #64748b; --border-color: #e2e8f0; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { background: #f8fafc; }
-        body { opacity: 0; transition: opacity 0.15s ease-in; }
+        body { opacity: 0; transition: opacity 0.15s ease-in; font-family: 'Inter', -apple-system, sans-serif; }
         body.loaded { opacity: 1; }
         .app-shell { min-height: 100vh; background: #f8fafc; }
         .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh; background: var(--verdi-dark); }
         .main-content { margin-left: var(--sidebar-width); min-height: 100vh; background: #f8fafc; }
+        
+        /* Plan items styling */
+        .plan-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .plan-item:last-child { border-bottom: none; }
+        .plan-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .plan-info { flex: 1; }
+        .plan-name { font-weight: 600; margin-bottom: 2px; }
+        .plan-count { font-size: 0.75rem; color: var(--text-secondary); }
+        .plan-revenue { text-align: right; }
+        .plan-amount { font-weight: 700; color: var(--primary-green); }
+        .plan-percentage { font-size: 0.75rem; color: var(--text-secondary); }
+        
+        /* Chart placeholder */
+        .chart-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 12px;
+            min-height: 200px;
+        }
+        .chart-placeholder i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+        .chart-placeholder p { font-weight: 600; margin-bottom: 0.5rem; }
+        .chart-placeholder small { opacity: 0.7; }
+        
+        /* Industry cards */
+        .industry-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+        .industry-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .industry-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary-green), #4ecdc4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+        .industry-name { font-weight: 600; font-size: 0.875rem; margin-bottom: 0.25rem; }
+        .industry-revenue { color: var(--primary-green); font-weight: 700; }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -35,7 +107,7 @@
                     <button class="btn btn-secondary" onclick="location.href='invoices.html'">
                         <i class="fas fa-file-invoice"></i> Ver Facturas
                     </button>
-                    <button class="btn btn-primary">
+                    <button class="btn btn-primary" onclick="generateReport()">
                         <i class="fas fa-chart-bar"></i> Generar Reporte
                     </button>
                 </div>
@@ -148,6 +220,9 @@
     <script src="../js/sidebar.js"></script>
     <script src="../js/data.js"></script>
     <script>
+        // Ensure page is visible even if there's an error
+        document.body.classList.add('loaded');
+        
         document.addEventListener('DOMContentLoaded', () => {
             loadBillingData();
         });
@@ -239,6 +314,132 @@
                 alimentos: 'fas fa-utensils'
             };
             return icons[key] || 'fas fa-building';
+        }
+
+        // Generate and download revenue report
+        function generateReport() {
+            const totals = SuperAdminData.getTotals();
+            const companies = SuperAdminData.getCompanies();
+            
+            // Calculate plan breakdown
+            const planBreakdown = {};
+            const industryBreakdown = {};
+            
+            companies.forEach(company => {
+                const plan = company.plan.toLowerCase();
+                planBreakdown[plan] = planBreakdown[plan] || { count: 0, revenue: 0 };
+                planBreakdown[plan].count++;
+                planBreakdown[plan].revenue += company.mrr;
+                
+                const industry = company.industry;
+                industryBreakdown[industry] = industryBreakdown[industry] || { count: 0, revenue: 0 };
+                industryBreakdown[industry].count++;
+                industryBreakdown[industry].revenue += company.mrr;
+            });
+            
+            // Build report content
+            const now = new Date();
+            const reportDate = now.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+            
+            let reportContent = `
+================================================================================
+                        REPORTE DE INGRESOS - OPSIS SUITE
+                            ${reportDate}
+================================================================================
+
+RESUMEN EJECUTIVO
+-----------------
+MRR (Ingreso Mensual Recurrente): $${totals.mrr.toLocaleString()}
+ARR (Ingreso Anual Proyectado):   $${(totals.mrr * 12).toLocaleString()}
+ARPU (Ingreso Promedio/Cliente):  $${totals.companies > 0 ? Math.round(totals.mrr / totals.companies) : 0}
+Total de Clientes:                ${totals.companies}
+Clientes Activos:                 ${totals.active}
+Clientes en Trial:                ${totals.trial}
+
+DESGLOSE POR PLAN
+-----------------
+`;
+            Object.entries(SuperAdminData.plans).forEach(([key, plan]) => {
+                const data = planBreakdown[key] || { count: 0, revenue: 0 };
+                const percentage = totals.mrr > 0 ? ((data.revenue / totals.mrr) * 100).toFixed(1) : 0;
+                reportContent += `${plan.name.padEnd(15)} | ${String(data.count).padStart(3)} clientes | $${String(data.revenue).padStart(6)} MRR | ${percentage}%\n`;
+            });
+            
+            reportContent += `
+DESGLOSE POR INDUSTRIA
+----------------------
+`;
+            Object.entries(industryBreakdown)
+                .sort((a, b) => b[1].revenue - a[1].revenue)
+                .forEach(([key, data]) => {
+                    const industryName = SuperAdminData.industries[key]?.name || key;
+                    const percentage = totals.mrr > 0 ? ((data.revenue / totals.mrr) * 100).toFixed(1) : 0;
+                    reportContent += `${industryName.substring(0, 25).padEnd(25)} | ${String(data.count).padStart(3)} clientes | $${String(data.revenue).padStart(6)} MRR | ${percentage}%\n`;
+                });
+            
+            reportContent += `
+DETALLE DE CLIENTES
+-------------------
+`;
+            companies
+                .sort((a, b) => b.mrr - a.mrr)
+                .forEach(company => {
+                    reportContent += `${company.name.substring(0, 30).padEnd(30)} | ${company.plan.padEnd(12)} | $${String(company.mrr).padStart(5)} | ${company.status}\n`;
+                });
+            
+            reportContent += `
+================================================================================
+                    Generado automáticamente por Opsis Suite
+                         ${now.toISOString()}
+================================================================================
+`;
+            
+            // Download as text file
+            const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `reporte-ingresos-${now.toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification('Reporte generado y descargado exitosamente', 'success');
+        }
+
+        // Show notification toast
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            `;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+                color: white;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                font-weight: 500;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 9999;
+                animation: slideIn 0.3s ease;
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100px)';
+                notification.style.transition = 'all 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
         }
     </script>
 </body>

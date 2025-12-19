@@ -32,10 +32,10 @@
                     <p class="page-subtitle">Gestión de facturas y cobros</p>
                 </div>
                 <div class="header-actions">
-                    <button class="btn btn-secondary">
+                    <button class="btn btn-secondary" onclick="exportInvoices()">
                         <i class="fas fa-download"></i> Exportar
                     </button>
-                    <button class="btn btn-primary">
+                    <button class="btn btn-primary" onclick="openNewInvoiceModal()">
                         <i class="fas fa-plus"></i> Nueva Factura
                     </button>
                 </div>
@@ -49,7 +49,7 @@
                             <i class="fas fa-file-invoice-dollar"></i>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-value">24</div>
+                            <div class="stat-value" id="totalInvoices">0</div>
                             <div class="stat-label">Facturas este mes</div>
                         </div>
                     </div>
@@ -58,7 +58,7 @@
                             <i class="fas fa-check-circle"></i>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-value">$4,280</div>
+                            <div class="stat-value">$<span id="totalPaid">0</span></div>
                             <div class="stat-label">Cobrado</div>
                         </div>
                     </div>
@@ -67,7 +67,7 @@
                             <i class="fas fa-clock"></i>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-value">$890</div>
+                            <div class="stat-value">$<span id="totalPending">0</span></div>
                             <div class="stat-label">Pendiente</div>
                         </div>
                     </div>
@@ -76,7 +76,7 @@
                             <i class="fas fa-exclamation-triangle"></i>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-value">2</div>
+                            <div class="stat-value" id="totalOverdue">0</div>
                             <div class="stat-label">Vencidas</div>
                         </div>
                     </div>
@@ -87,18 +87,18 @@
                     <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
                         <div class="search-box" style="flex: 1; min-width: 200px;">
                             <i class="fas fa-search"></i>
-                            <input type="text" placeholder="Buscar factura...">
+                            <input type="text" id="searchInput" placeholder="Buscar factura..." oninput="filterInvoices()">
                         </div>
-                        <select class="filter-select">
-                            <option>Todas las facturas</option>
-                            <option>Pagadas</option>
-                            <option>Pendientes</option>
-                            <option>Vencidas</option>
+                        <select class="filter-select" id="statusFilter" onchange="filterInvoices()">
+                            <option value="">Todas las facturas</option>
+                            <option value="paid">Pagadas</option>
+                            <option value="pending">Pendientes</option>
+                            <option value="overdue">Vencidas</option>
                         </select>
-                        <select class="filter-select">
-                            <option>Este mes</option>
-                            <option>Últimos 3 meses</option>
-                            <option>Este año</option>
+                        <select class="filter-select" id="dateFilter" onchange="filterInvoices()">
+                            <option value="month">Este mes</option>
+                            <option value="quarter">Últimos 3 meses</option>
+                            <option value="year">Este año</option>
                         </select>
                     </div>
                 </div>
@@ -124,79 +124,8 @@
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td><strong>INV-2025-001</strong></td>
-                                    <td>
-                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                            <div class="avatar avatar-sm">C</div>
-                                            <span>Construcciones ABC</span>
-                                        </div>
-                                    </td>
-                                    <td>MotorSync Pro - Diciembre</td>
-                                    <td><strong>$149.00</strong></td>
-                                    <td>01 Dic 2025</td>
-                                    <td>15 Dic 2025</td>
-                                    <td><span class="status status-active">Pagada</span></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-ghost"><i class="fas fa-eye"></i></button>
-                                        <button class="btn btn-sm btn-ghost"><i class="fas fa-download"></i></button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>INV-2025-002</strong></td>
-                                    <td>
-                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                            <div class="avatar avatar-sm">M</div>
-                                            <span>Médica Plus</span>
-                                        </div>
-                                    </td>
-                                    <td>TimeSync Enterprise - Diciembre</td>
-                                    <td><strong>$299.00</strong></td>
-                                    <td>01 Dic 2025</td>
-                                    <td>15 Dic 2025</td>
-                                    <td><span class="status status-trial">Pendiente</span></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-ghost"><i class="fas fa-eye"></i></button>
-                                        <button class="btn btn-sm btn-ghost"><i class="fas fa-paper-plane"></i></button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>INV-2025-003</strong></td>
-                                    <td>
-                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                            <div class="avatar avatar-sm">H</div>
-                                            <span>Home Solutions</span>
-                                        </div>
-                                    </td>
-                                    <td>MotorSync + TimeSync - Noviembre</td>
-                                    <td><strong>$398.00</strong></td>
-                                    <td>01 Nov 2025</td>
-                                    <td>15 Nov 2025</td>
-                                    <td><span class="status status-inactive">Vencida</span></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-ghost"><i class="fas fa-eye"></i></button>
-                                        <button class="btn btn-sm btn-ghost"><i class="fas fa-bell"></i></button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>INV-2025-004</strong></td>
-                                    <td>
-                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                            <div class="avatar avatar-sm">L</div>
-                                            <span>Logística Express</span>
-                                        </div>
-                                    </td>
-                                    <td>FleetSync Pro - Diciembre</td>
-                                    <td><strong>$449.00</strong></td>
-                                    <td>05 Dic 2025</td>
-                                    <td>20 Dic 2025</td>
-                                    <td><span class="status status-active">Pagada</span></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-ghost"><i class="fas fa-eye"></i></button>
-                                        <button class="btn btn-sm btn-ghost"><i class="fas fa-download"></i></button>
-                                    </td>
-                                </tr>
+                            <tbody id="invoicesTable">
+                                <!-- Populated by JS -->
                             </tbody>
                         </table>
                     </div>
@@ -205,7 +134,415 @@
         </main>
     </div>
 
+    <!-- New Invoice Modal -->
+    <div class="modal-overlay" id="newInvoiceModal" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-file-invoice"></i> Nueva Factura</h3>
+                <button class="modal-close" onclick="closeModal('newInvoiceModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="newInvoiceForm">
+                    <div class="form-group">
+                        <label>Cliente</label>
+                        <select id="invoiceCompany" required>
+                            <option value="">Seleccionar cliente...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Concepto</label>
+                        <input type="text" id="invoiceConcept" placeholder="Ej: Suscripción mensual" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Monto ($)</label>
+                            <input type="number" id="invoiceAmount" min="0" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha de Vencimiento</label>
+                            <input type="date" id="invoiceDueDate" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('newInvoiceModal')">Cancelar</button>
+                <button class="btn btn-primary" onclick="createInvoice()">
+                    <i class="fas fa-save"></i> Crear Factura
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoice Detail Modal -->
+    <div class="modal-overlay" id="invoiceDetailModal" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-file-invoice-dollar"></i> Detalle de Factura</h3>
+                <button class="modal-close" onclick="closeModal('invoiceDetailModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="invoiceDetailContent">
+                <!-- Populated by JS -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('invoiceDetailModal')">Cerrar</button>
+                <button class="btn btn-primary" id="invoiceActionBtn">
+                    <i class="fas fa-download"></i> Descargar PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="../js/sidebar.js"></script>
     <script src="../js/data.js"></script>
+    <script>
+        // Ensure page is visible
+        document.body.classList.add('loaded');
+        
+        let allInvoices = [];
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            loadInvoices();
+            populateCompanySelect();
+            setDefaultDueDate();
+        });
+
+        function loadInvoices() {
+            allInvoices = SuperAdminData.getInvoices();
+            updateStats();
+            renderInvoices(allInvoices);
+        }
+
+        function updateStats() {
+            const paid = allInvoices.filter(i => i.status === 'paid');
+            const pending = allInvoices.filter(i => i.status === 'pending');
+            const overdue = allInvoices.filter(i => i.status === 'overdue' || (i.status === 'pending' && new Date(i.dueDate) < new Date()));
+            
+            document.getElementById('totalInvoices').textContent = allInvoices.length;
+            document.getElementById('totalPaid').textContent = paid.reduce((sum, i) => sum + i.amount, 0).toLocaleString();
+            document.getElementById('totalPending').textContent = pending.reduce((sum, i) => sum + i.amount, 0).toLocaleString();
+            document.getElementById('totalOverdue').textContent = overdue.length;
+        }
+
+        function renderInvoices(invoices) {
+            const tbody = document.getElementById('invoicesTable');
+            
+            if (invoices.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                            <i class="fas fa-file-invoice" style="font-size: 2rem; opacity: 0.5; display: block; margin-bottom: 1rem;"></i>
+                            No hay facturas que mostrar
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = invoices.map(invoice => {
+                const isOverdue = invoice.status === 'pending' && new Date(invoice.dueDate) < new Date();
+                const status = isOverdue ? 'overdue' : invoice.status;
+                const statusClass = status === 'paid' ? 'status-active' : status === 'pending' ? 'status-trial' : 'status-inactive';
+                const statusText = status === 'paid' ? 'Pagada' : status === 'pending' ? 'Pendiente' : 'Vencida';
+                
+                return `
+                    <tr>
+                        <td><strong>INV-${String(invoice.id).padStart(4, '0')}</strong></td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div class="avatar avatar-sm">${invoice.company.charAt(0)}</div>
+                                <span>${invoice.company}</span>
+                            </div>
+                        </td>
+                        <td>${invoice.concept}</td>
+                        <td><strong>$${invoice.amount.toLocaleString()}</strong></td>
+                        <td>${formatDate(invoice.date)}</td>
+                        <td>${formatDate(invoice.dueDate)}</td>
+                        <td><span class="status ${statusClass}">${statusText}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-ghost" onclick="viewInvoice(${invoice.id})" title="Ver detalle">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            ${status === 'paid' ? `
+                                <button class="btn btn-sm btn-ghost" onclick="downloadInvoice(${invoice.id})" title="Descargar">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            ` : status === 'pending' ? `
+                                <button class="btn btn-sm btn-ghost" onclick="sendReminder(${invoice.id})" title="Enviar recordatorio">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                                <button class="btn btn-sm btn-ghost" onclick="markAsPaid(${invoice.id})" title="Marcar como pagada">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            ` : `
+                                <button class="btn btn-sm btn-ghost" onclick="sendReminder(${invoice.id})" title="Enviar recordatorio urgente">
+                                    <i class="fas fa-bell"></i>
+                                </button>
+                                <button class="btn btn-sm btn-ghost" onclick="markAsPaid(${invoice.id})" title="Marcar como pagada">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            `}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filterInvoices() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            let filtered = [...allInvoices];
+            
+            if (search) {
+                filtered = filtered.filter(i => 
+                    i.company.toLowerCase().includes(search) ||
+                    i.concept.toLowerCase().includes(search) ||
+                    `INV-${String(i.id).padStart(4, '0')}`.toLowerCase().includes(search)
+                );
+            }
+            
+            if (statusFilter) {
+                if (statusFilter === 'overdue') {
+                    filtered = filtered.filter(i => i.status === 'pending' && new Date(i.dueDate) < new Date());
+                } else {
+                    filtered = filtered.filter(i => i.status === statusFilter);
+                }
+            }
+            
+            renderInvoices(filtered);
+        }
+
+        function populateCompanySelect() {
+            const select = document.getElementById('invoiceCompany');
+            const companies = SuperAdminData.getCompanies();
+            select.innerHTML = '<option value="">Seleccionar cliente...</option>' +
+                companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        }
+
+        function setDefaultDueDate() {
+            const dueDate = document.getElementById('invoiceDueDate');
+            const date = new Date();
+            date.setDate(date.getDate() + 15);
+            dueDate.value = date.toISOString().split('T')[0];
+        }
+
+        function openNewInvoiceModal() {
+            document.getElementById('newInvoiceModal').style.display = 'flex';
+            document.getElementById('newInvoiceForm').reset();
+            setDefaultDueDate();
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function createInvoice() {
+            const companyId = document.getElementById('invoiceCompany').value;
+            const concept = document.getElementById('invoiceConcept').value;
+            const amount = parseFloat(document.getElementById('invoiceAmount').value);
+            const dueDate = document.getElementById('invoiceDueDate').value;
+            
+            if (!companyId || !concept || !amount || !dueDate) {
+                showNotification('Por favor completa todos los campos', 'error');
+                return;
+            }
+            
+            const company = SuperAdminData.getCompany(companyId);
+            
+            const invoice = SuperAdminData.createInvoice({
+                companyId: parseInt(companyId),
+                company: company.name,
+                concept: concept,
+                amount: amount,
+                dueDate: dueDate,
+                date: new Date().toISOString().split('T')[0],
+                status: 'pending'
+            });
+            
+            closeModal('newInvoiceModal');
+            loadInvoices();
+            showNotification(`Factura INV-${String(invoice.id).padStart(4, '0')} creada exitosamente`, 'success');
+        }
+
+        function viewInvoice(id) {
+            const invoice = allInvoices.find(i => i.id === id);
+            if (!invoice) return;
+            
+            const isOverdue = invoice.status === 'pending' && new Date(invoice.dueDate) < new Date();
+            const status = isOverdue ? 'Vencida' : invoice.status === 'paid' ? 'Pagada' : 'Pendiente';
+            
+            document.getElementById('invoiceDetailContent').innerHTML = `
+                <div style="text-align: center; padding: 1rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1rem;">
+                    <h2 style="color: var(--primary-color);">INV-${String(invoice.id).padStart(4, '0')}</h2>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label style="font-size: 0.75rem; color: var(--text-secondary);">Cliente</label>
+                        <p style="font-weight: 600;">${invoice.company}</p>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.75rem; color: var(--text-secondary);">Monto</label>
+                        <p style="font-weight: 700; font-size: 1.5rem; color: var(--primary-color);">$${invoice.amount.toLocaleString()}</p>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.75rem; color: var(--text-secondary);">Fecha de Emisión</label>
+                        <p>${formatDate(invoice.date)}</p>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.75rem; color: var(--text-secondary);">Fecha de Vencimiento</label>
+                        <p>${formatDate(invoice.dueDate)}</p>
+                    </div>
+                    <div style="grid-column: span 2;">
+                        <label style="font-size: 0.75rem; color: var(--text-secondary);">Concepto</label>
+                        <p>${invoice.concept}</p>
+                    </div>
+                    <div style="grid-column: span 2;">
+                        <label style="font-size: 0.75rem; color: var(--text-secondary);">Estado</label>
+                        <p><span class="status status-${isOverdue ? 'inactive' : invoice.status === 'paid' ? 'active' : 'trial'}">${status}</span></p>
+                    </div>
+                </div>
+            `;
+            
+            const actionBtn = document.getElementById('invoiceActionBtn');
+            if (invoice.status === 'paid') {
+                actionBtn.innerHTML = '<i class="fas fa-download"></i> Descargar PDF';
+                actionBtn.onclick = () => downloadInvoice(id);
+            } else {
+                actionBtn.innerHTML = '<i class="fas fa-check"></i> Marcar como Pagada';
+                actionBtn.onclick = () => { markAsPaid(id); closeModal('invoiceDetailModal'); };
+            }
+            
+            document.getElementById('invoiceDetailModal').style.display = 'flex';
+        }
+
+        function markAsPaid(id) {
+            SuperAdminData.updateInvoice(id, { status: 'paid' });
+            loadInvoices();
+            showNotification('Factura marcada como pagada', 'success');
+        }
+
+        function sendReminder(id) {
+            const invoice = allInvoices.find(i => i.id === id);
+            if (!invoice) return;
+            showNotification(`Recordatorio enviado a ${invoice.company}`, 'success');
+        }
+
+        function downloadInvoice(id) {
+            const invoice = allInvoices.find(i => i.id === id);
+            if (!invoice) return;
+            
+            const content = `
+================================================================================
+                         FACTURA - OPSIS SUITE
+================================================================================
+
+Nº Factura: INV-${String(invoice.id).padStart(4, '0')}
+Fecha: ${formatDate(invoice.date)}
+Vencimiento: ${formatDate(invoice.dueDate)}
+
+--------------------------------------------------------------------------------
+Cliente: ${invoice.company}
+--------------------------------------------------------------------------------
+
+Concepto: ${invoice.concept}
+
+--------------------------------------------------------------------------------
+                                          TOTAL: $${invoice.amount.toLocaleString()}
+--------------------------------------------------------------------------------
+
+Estado: ${invoice.status === 'paid' ? 'PAGADA' : 'PENDIENTE'}
+
+================================================================================
+                          Gracias por su preferencia
+                             www.opsis-suite.com
+================================================================================
+`;
+            
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `factura-INV-${String(invoice.id).padStart(4, '0')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification('Factura descargada', 'success');
+        }
+
+        function exportInvoices() {
+            const csv = [
+                ['Nº Factura', 'Cliente', 'Concepto', 'Monto', 'Fecha', 'Vencimiento', 'Estado'].join(','),
+                ...allInvoices.map(i => [
+                    `INV-${String(i.id).padStart(4, '0')}`,
+                    `"${i.company}"`,
+                    `"${i.concept}"`,
+                    i.amount,
+                    i.date,
+                    i.dueDate,
+                    i.status
+                ].join(','))
+            ].join('\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `facturas-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification('Facturas exportadas a CSV', 'success');
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            `;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+                color: white;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                font-weight: 500;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 9999;
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100px)';
+                notification.style.transition = 'all 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Close modal on outside click
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    </script>
 </body>
 </html>

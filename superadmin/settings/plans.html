@@ -288,13 +288,186 @@
     <script src="../js/sidebar.js"></script>
     <script src="../js/data.js"></script>
     <script>
+        // Plan editing modal functionality
         function openAddPlanModal() {
-            alert('Crear nuevo plan - En desarrollo');
+            document.getElementById('addPlanModal').classList.add('show');
+        }
+        
+        function closeAddPlanModal() {
+            document.getElementById('addPlanModal').classList.remove('show');
         }
 
         function editPlan(planId) {
-            alert(`Editar plan: ${planId}`);
+            const plan = SuperAdminData.plans[planId];
+            if (!plan) return;
+            
+            document.getElementById('editPlanKey').value = planId;
+            document.getElementById('editPlanName').value = plan.name;
+            document.getElementById('editPlanPrice').value = plan.price;
+            document.getElementById('editPlanDuration').value = plan.duration || 'mensual';
+            document.getElementById('editPlanFeatures').value = (plan.features || []).join('\n');
+            document.getElementById('editPlanColor').value = plan.color;
+            
+            document.getElementById('editPlanModal').classList.add('show');
         }
+        
+        function closeEditPlanModal() {
+            document.getElementById('editPlanModal').classList.remove('show');
+        }
+        
+        function updatePlan() {
+            const key = document.getElementById('editPlanKey').value;
+            const name = document.getElementById('editPlanName').value;
+            const price = parseInt(document.getElementById('editPlanPrice').value);
+            const duration = document.getElementById('editPlanDuration').value;
+            const features = document.getElementById('editPlanFeatures').value.split('\n').filter(f => f.trim());
+            const color = document.getElementById('editPlanColor').value;
+            
+            if (!name) {
+                showToast('El nombre es requerido', 'error');
+                return;
+            }
+            
+            SuperAdminData.plans[key] = {
+                ...SuperAdminData.plans[key],
+                name: name,
+                price: price,
+                duration: duration,
+                features: features,
+                color: color
+            };
+            
+            closeEditPlanModal();
+            showToast(`Plan "${name}" actualizado`, 'success');
+            
+            // Reload page to reflect changes
+            setTimeout(() => location.reload(), 500);
+        }
+        
+        function addNewPlan() {
+            const name = document.getElementById('newPlanName').value;
+            const price = parseInt(document.getElementById('newPlanPrice').value);
+            const features = document.getElementById('newPlanFeatures').value.split('\n').filter(f => f.trim());
+            const color = document.getElementById('newPlanColor').value;
+            
+            if (!name) {
+                showToast('El nombre es requerido', 'error');
+                return;
+            }
+            
+            const key = name.toLowerCase().replace(/\s+/g, '-');
+            
+            SuperAdminData.plans[key] = {
+                name: name,
+                price: price || 0,
+                features: features,
+                color: color || '#64748b'
+            };
+            
+            closeAddPlanModal();
+            showToast(`Plan "${name}" creado`, 'success');
+            
+            setTimeout(() => location.reload(), 500);
+        }
+        
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const iconClass = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-times-circle' : 'fa-info-circle';
+            toast.innerHTML = `<i class="fas ${iconClass}"></i> ${message}`;
+            
+            let container = document.querySelector('.toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'toast-container';
+                document.body.appendChild(container);
+            }
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        // Close modals on backdrop click
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal')) {
+                    modal.classList.remove('show');
+                }
+            });
+        });
     </script>
+    
+    <!-- Edit Plan Modal -->
+    <div class="modal" id="editPlanModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-edit"></i> Editar Plan</h3>
+                <button class="modal-close" onclick="closeEditPlanModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editPlanKey">
+                <div class="form-group">
+                    <label class="form-label">Nombre del Plan *</label>
+                    <input type="text" class="form-input" id="editPlanName" placeholder="Ej: Professional">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Precio (USD/mes)</label>
+                    <input type="number" class="form-input" id="editPlanPrice" placeholder="99" min="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Duración</label>
+                    <select class="form-select" id="editPlanDuration">
+                        <option value="mensual">Mensual</option>
+                        <option value="14 días">14 días (Trial)</option>
+                        <option value="anual">Anual</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Características (una por línea)</label>
+                    <textarea class="form-textarea" id="editPlanFeatures" rows="5" placeholder="1 producto&#10;5 usuarios&#10;10GB almacenamiento"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Color del Plan</label>
+                    <input type="color" class="form-input" id="editPlanColor" style="height: 40px; padding: 4px;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeEditPlanModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="updatePlan()"><i class="fas fa-save"></i> Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Plan Modal -->
+    <div class="modal" id="addPlanModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-plus-circle"></i> Nuevo Plan</h3>
+                <button class="modal-close" onclick="closeAddPlanModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Nombre del Plan *</label>
+                    <input type="text" class="form-input" id="newPlanName" placeholder="Ej: Business">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Precio (USD/mes)</label>
+                    <input type="number" class="form-input" id="newPlanPrice" placeholder="149" min="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Características (una por línea)</label>
+                    <textarea class="form-textarea" id="newPlanFeatures" rows="5" placeholder="2 productos&#10;15 usuarios&#10;25GB almacenamiento"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Color del Plan</label>
+                    <input type="color" class="form-input" id="newPlanColor" value="#3b82f6" style="height: 40px; padding: 4px;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeAddPlanModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="addNewPlan()"><i class="fas fa-plus"></i> Crear Plan</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

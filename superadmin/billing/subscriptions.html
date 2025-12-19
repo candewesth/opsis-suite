@@ -32,11 +32,11 @@
                     <p class="page-subtitle">Gestión de planes y suscripciones activas</p>
                 </div>
                 <div class="header-actions">
-                    <button class="btn btn-secondary">
+                    <button class="btn btn-secondary" onclick="showMetrics()">
                         <i class="fas fa-chart-line"></i> Métricas
                     </button>
-                    <button class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Nueva Suscripción
+                    <button class="btn btn-primary" onclick="openUpgradeModal()">
+                        <i class="fas fa-arrow-up"></i> Cambiar Plan
                     </button>
                 </div>
             </header>
@@ -49,7 +49,7 @@
                             <i class="fas fa-sync-alt"></i>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-value">18</div>
+                            <div class="stat-value" id="activeCount">0</div>
                             <div class="stat-label">Suscripciones Activas</div>
                         </div>
                     </div>
@@ -58,7 +58,7 @@
                             <i class="fas fa-dollar-sign"></i>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-value">$3,847</div>
+                            <div class="stat-value">$<span id="totalMRR">0</span></div>
                             <div class="stat-label">MRR Total</div>
                         </div>
                     </div>
@@ -67,7 +67,7 @@
                             <i class="fas fa-hourglass-half"></i>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-value">3</div>
+                            <div class="stat-value" id="trialCount">0</div>
                             <div class="stat-label">En Trial</div>
                         </div>
                     </div>
@@ -76,7 +76,7 @@
                             <i class="fas fa-arrow-down"></i>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-value">1</div>
+                            <div class="stat-value" id="churnCount">0</div>
                             <div class="stat-label">Churn este mes</div>
                         </div>
                     </div>
@@ -86,29 +86,39 @@
                 <div class="card" style="margin-bottom: 1.5rem;">
                     <div class="card-header">
                         <h3 class="card-title">
-                            <i class="fas fa-tags"></i> Planes Disponibles
+                            <i class="fas fa-layer-group"></i> Modelo de Pricing
                         </h3>
+                        <button class="btn btn-sm btn-secondary" onclick="openPricingCalculator()">
+                            <i class="fas fa-calculator"></i> Calculadora
+                        </button>
                     </div>
                     <div class="card-body">
-                        <div class="grid" style="grid-template-columns: repeat(3, 1fr);">
-                            <div style="padding: 1.5rem; border: 2px solid var(--border-color); border-radius: var(--border-radius-lg); text-align: center;">
-                                <div style="font-size: 1.5rem; color: var(--primary-color); margin-bottom: 0.5rem;"><i class="fas fa-seedling"></i></div>
-                                <h4>Starter</h4>
-                                <p style="font-size: 2rem; font-weight: 700; margin: 0.5rem 0;">$49<span style="font-size: 0.875rem; font-weight: 400;">/mes</span></p>
-                                <p style="color: var(--text-secondary); font-size: 0.875rem;">5 compañías activas</p>
+                        <!-- Pricing Model Explanation -->
+                        <div style="background: linear-gradient(135deg, #f0fdf4, #ecfdf5); border: 1px solid #86efac; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                                <i class="fas fa-info-circle" style="color: #22c55e;"></i>
+                                <strong style="color: #166534;">Cómo funciona el pricing</strong>
                             </div>
-                            <div style="padding: 1.5rem; border: 2px solid var(--primary-color); border-radius: var(--border-radius-lg); text-align: center; background: linear-gradient(180deg, rgba(2, 115, 94, 0.05), transparent);">
-                                <div style="font-size: 1.5rem; color: var(--primary-color); margin-bottom: 0.5rem;"><i class="fas fa-bolt"></i></div>
-                                <h4>Professional</h4>
-                                <p style="font-size: 2rem; font-weight: 700; margin: 0.5rem 0;">$99<span style="font-size: 0.875rem; font-weight: 400;">/mes</span></p>
-                                <p style="color: var(--text-secondary); font-size: 0.875rem;">8 compañías activas</p>
-                            </div>
-                            <div style="padding: 1.5rem; border: 2px solid var(--border-color); border-radius: var(--border-radius-lg); text-align: center;">
-                                <div style="font-size: 1.5rem; color: var(--primary-color); margin-bottom: 0.5rem;"><i class="fas fa-building"></i></div>
-                                <h4>Enterprise</h4>
-                                <p style="font-size: 2rem; font-weight: 700; margin: 0.5rem 0;">$249<span style="font-size: 0.875rem; font-weight: 400;">/mes</span></p>
-                                <p style="color: var(--text-secondary); font-size: 0.875rem;">5 compañías activas</p>
-                            </div>
+                            <p style="font-size: 0.875rem; color: #166534; margin: 0;">
+                                <strong>Plan (incluye MotorSync)</strong> + <strong>Módulos Premium</strong> = Precio mensual<br>
+                                Todos los planes incluyen MotorSync. Los módulos premium son opcionales.
+                            </p>
+                        </div>
+                        
+                        <!-- Plans Row -->
+                        <h4 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-server" style="color: var(--primary-color);"></i> Planes (Capacidad)
+                        </h4>
+                        <div id="plansGrid" class="grid-4" style="margin-bottom: 2rem;">
+                            <!-- Populated by JS -->
+                        </div>
+                        
+                        <!-- Modules Section -->
+                        <h4 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-puzzle-piece" style="color: var(--primary-color);"></i> Módulos
+                        </h4>
+                        <div id="modulesGrid" class="grid-2" style="gap: 1rem;">
+                            <!-- Populated by JS -->
                         </div>
                     </div>
                 </div>
@@ -121,7 +131,7 @@
                         </h3>
                         <div class="search-box">
                             <i class="fas fa-search"></i>
-                            <input type="text" placeholder="Buscar...">
+                            <input type="text" id="searchInput" placeholder="Buscar..." oninput="filterSubscriptions()">
                         </div>
                     </div>
                     <div class="card-body" style="padding: 0;">
@@ -130,69 +140,15 @@
                                 <tr>
                                     <th>Cliente</th>
                                     <th>Plan</th>
-                                    <th>Productos</th>
-                                    <th>MRR</th>
-                                    <th>Inicio</th>
-                                    <th>Renovación</th>
+                                    <th>Módulos Premium</th>
+                                    <th>Desglose</th>
+                                    <th>MRR Total</th>
                                     <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                            <div class="avatar avatar-sm">C</div>
-                                            <span>Construcciones ABC</span>
-                                        </div>
-                                    </td>
-                                    <td><span class="badge">Professional</span></td>
-                                    <td>MotorSync, TimeSync</td>
-                                    <td><strong>$248</strong></td>
-                                    <td>15 Oct 2025</td>
-                                    <td>15 Ene 2026</td>
-                                    <td><span class="status status-active">Activa</span></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-ghost"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-sm btn-ghost"><i class="fas fa-ellipsis-v"></i></button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                            <div class="avatar avatar-sm">M</div>
-                                            <span>Médica Plus</span>
-                                        </div>
-                                    </td>
-                                    <td><span class="badge">Enterprise</span></td>
-                                    <td>TimeSync, HumanSync</td>
-                                    <td><strong>$398</strong></td>
-                                    <td>01 Nov 2025</td>
-                                    <td>01 Feb 2026</td>
-                                    <td><span class="status status-active">Activa</span></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-ghost"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-sm btn-ghost"><i class="fas fa-ellipsis-v"></i></button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                            <div class="avatar avatar-sm">H</div>
-                                            <span>Home Solutions</span>
-                                        </div>
-                                    </td>
-                                    <td><span class="badge">Starter</span></td>
-                                    <td>MotorSync</td>
-                                    <td><strong>$99</strong></td>
-                                    <td>01 Dic 2025</td>
-                                    <td>01 Ene 2026</td>
-                                    <td><span class="status status-trial">Trial</span></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-ghost"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-sm btn-ghost"><i class="fas fa-ellipsis-v"></i></button>
-                                    </td>
-                                </tr>
+                            <tbody id="subscriptionsTable">
+                                <!-- Populated by JS -->
                             </tbody>
                         </table>
                     </div>
@@ -201,7 +157,701 @@
         </main>
     </div>
 
+    <!-- Upgrade Plan Modal -->
+    <div class="modal-overlay" id="upgradeModal" style="display: none;">
+        <div class="modal" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> Gestionar Suscripción</h3>
+                <button class="modal-close" onclick="closeModal('upgradeModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="upgradeForm">
+                    <div class="form-group">
+                        <label>Cliente</label>
+                        <select id="upgradeCompany" required onchange="loadCurrentSubscription()">
+                            <option value="">Seleccionar cliente...</option>
+                        </select>
+                    </div>
+                    
+                    <div id="subscriptionDetails" style="display: none;">
+                        <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--border-color);">
+                        
+                        <div class="form-group">
+                            <label>Plan</label>
+                            <div id="planOptions" class="grid-4" style="gap: 0.75rem;">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Módulos Premium</label>
+                            <div id="moduleOptions" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                        
+                        <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--border-color);">
+                        
+                        <div id="pricingSummary" style="background: var(--bg-tertiary); padding: 1rem; border-radius: 8px;">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('upgradeModal')">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveSubscription()">
+                    <i class="fas fa-save"></i> Guardar Cambios
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pricing Calculator Modal -->
+    <div class="modal-overlay" id="calculatorModal" style="display: none;">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-calculator"></i> Calculadora de Precios</h3>
+                <button class="modal-close" onclick="closeModal('calculatorModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Seleccionar Plan</label>
+                    <div id="calcPlanOptions" class="grid-4" style="gap: 0.75rem;">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Módulos Premium</label>
+                    <div id="calcModuleOptions" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+                
+                <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--border-color);">
+                
+                <div id="calcSummary" style="background: linear-gradient(135deg, #02735E, #4ecdc4); padding: 1.5rem; border-radius: 12px; color: white;">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('calculatorModal')">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Metrics Modal -->
+    <div class="modal-overlay" id="metricsModal" style="display: none;">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-chart-line"></i> Métricas de Suscripciones</h3>
+                <button class="modal-close" onclick="closeModal('metricsModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="metricsContent">
+                <!-- Populated by JS -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('metricsModal')">Cerrar</button>
+                <button class="btn btn-primary" onclick="exportMetrics()">
+                    <i class="fas fa-download"></i> Exportar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="../js/sidebar.js"></script>
     <script src="../js/data.js"></script>
+    <script>
+        // Ensure page is visible
+        document.body.classList.add('loaded');
+        
+        let allCompanies = [];
+        let selectedPlan = null;
+        let selectedModules = [];
+        let editingCompanyId = null;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                // Reset data para asegurar estructura correcta
+                if (!localStorage.getItem('opsis_data_v2')) {
+                    SuperAdminData.reset();
+                    localStorage.setItem('opsis_data_v2', 'true');
+                }
+                
+                loadSubscriptions();
+                renderPricingModel();
+                populateSelects();
+                console.log('Subscriptions page loaded successfully');
+            } catch (e) {
+                console.error('Error loading subscriptions:', e);
+                showNotification('Error cargando datos: ' + e.message, 'error');
+            }
+        });
+
+        function loadSubscriptions() {
+            allCompanies = SuperAdminData.getCompanies();
+            console.log('Companies loaded:', allCompanies);
+            updateStats();
+            renderSubscriptions(allCompanies);
+        }
+
+        function updateStats() {
+            const active = allCompanies.filter(c => c.status === 'active');
+            const trial = allCompanies.filter(c => c.status === 'trial');
+            const totals = SuperAdminData.getTotals();
+            
+            document.getElementById('activeCount').textContent = active.length;
+            document.getElementById('totalMRR').textContent = totals.mrr.toLocaleString();
+            document.getElementById('trialCount').textContent = trial.length;
+            document.getElementById('churnCount').textContent = allCompanies.filter(c => c.status === 'inactive').length;
+        }
+
+        function renderPricingModel() {
+            // Render Plans
+            const planCounts = {};
+            allCompanies.forEach(c => {
+                const key = c.plan.toLowerCase();
+                planCounts[key] = (planCounts[key] || 0) + 1;
+            });
+            
+            const planIcons = {
+                trial: 'fa-clock',
+                starter: 'fa-seedling',
+                professional: 'fa-bolt',
+                enterprise: 'fa-building'
+            };
+            
+            document.getElementById('plansGrid').innerHTML = Object.entries(SuperAdminData.plans).map(([key, plan]) => {
+                const count = planCounts[key] || 0;
+                const isPopular = key === 'professional';
+                const usersText = plan.users === -1 ? 'Ilimitados' : `${plan.users} usuarios`;
+                
+                return `
+                    <div style="padding: 1rem; border: 2px solid ${isPopular ? 'var(--primary-color)' : 'var(--border-color)'}; border-radius: 12px; text-align: center; position: relative; ${isPopular ? 'background: linear-gradient(180deg, rgba(2, 115, 94, 0.05), transparent);' : ''}">
+                        ${isPopular ? '<span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--primary-color); color: white; padding: 2px 10px; border-radius: 10px; font-size: 0.65rem; font-weight: 600;">POPULAR</span>' : ''}
+                        <div style="font-size: 1.25rem; color: ${plan.color}; margin-bottom: 0.25rem;">
+                            <i class="fas ${planIcons[key] || 'fa-tag'}"></i>
+                        </div>
+                        <h4 style="margin-bottom: 0.25rem; font-size: 0.9rem;">${plan.name}</h4>
+                        <p style="font-size: 1.25rem; font-weight: 700; margin: 0.25rem 0; color: var(--text-primary);">
+                            $${plan.price}<span style="font-size: 0.7rem; font-weight: 400; color: var(--text-secondary);">/mes</span>
+                        </p>
+                        <p style="color: var(--text-secondary); font-size: 0.7rem; margin-bottom: 0.5rem;">${usersText}</p>
+                        <p style="font-size: 0.75rem; color: ${plan.color}; font-weight: 600;">${count} clientes</p>
+                    </div>
+                `;
+            }).join('');
+            
+            // Render Modules
+            const moduleUsage = {};
+            allCompanies.forEach(c => {
+                (c.premiumModules || []).forEach(m => {
+                    const key = m.toLowerCase().replace(/\s+/g, '');
+                    moduleUsage[key] = (moduleUsage[key] || 0) + 1;
+                });
+            });
+            
+            document.getElementById('modulesGrid').innerHTML = `
+                <!-- Base Module -->
+                <div style="padding: 1rem; border: 2px solid var(--primary-color); border-radius: 12px; background: linear-gradient(135deg, rgba(2, 115, 94, 0.1), transparent); display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 50px; height: 50px; border-radius: 12px; background: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem;">
+                        <i class="fas fa-wrench"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <strong>MotorSync</strong>
+                            <span style="background: var(--primary-color); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.65rem; font-weight: 600;">INCLUIDO EN TODOS LOS PLANES</span>
+                        </div>
+                        <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0.25rem 0 0 0;">Gestión de proyectos, clientes y operaciones</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 1.25rem; font-weight: 700; color: var(--primary-color);">Incluido</div>
+                        <div style="font-size: 0.65rem; color: var(--text-secondary);">En tu plan</div>
+                    </div>
+                </div>
+                
+                ${SuperAdminData.getPremiumModules().map(module => {
+                    const usage = moduleUsage[module.key] || 0;
+                    const isActive = module.status === 'active';
+                    
+                    return `
+                        <div style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 12px; display: flex; align-items: center; gap: 1rem; ${!isActive ? 'opacity: 0.6;' : ''}">
+                            <div style="width: 50px; height: 50px; border-radius: 12px; background: ${isActive ? '#f1f5f9' : '#e2e8f0'}; display: flex; align-items: center; justify-content: center; color: ${isActive ? '#3b82f6' : '#94a3b8'}; font-size: 1.25rem;">
+                                <i class="${module.icon}"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <strong>${module.name}</strong>
+                                    <span style="background: ${isActive ? '#dbeafe' : '#f1f5f9'}; color: ${isActive ? '#3b82f6' : '#94a3b8'}; padding: 2px 8px; border-radius: 10px; font-size: 0.65rem; font-weight: 600;">
+                                        ${isActive ? 'PREMIUM' : 'PRÓXIMAMENTE'}
+                                    </span>
+                                </div>
+                                <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0.25rem 0 0 0;">${module.description}</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 1.25rem; font-weight: 700; color: ${isActive ? '#3b82f6' : '#94a3b8'};">+$${module.price}</div>
+                                <div style="font-size: 0.65rem; color: var(--text-secondary);">${usage} clientes</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            `;
+        }
+
+        function renderSubscriptions(companies) {
+            const tbody = document.getElementById('subscriptionsTable');
+            
+            if (companies.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                            <i class="fas fa-sync-alt" style="font-size: 2rem; opacity: 0.5; display: block; margin-bottom: 1rem;"></i>
+                            No hay suscripciones
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = companies.map(company => {
+                const statusClass = company.status === 'active' ? 'status-active' : company.status === 'trial' ? 'status-trial' : 'status-inactive';
+                const statusText = company.status === 'active' ? 'Activa' : company.status === 'trial' ? 'Trial' : 'Cancelada';
+                const plan = SuperAdminData.plans[company.plan.toLowerCase()] || {};
+                const premiumModules = company.premiumModules || [];
+                
+                // Calculate breakdown
+                let breakdown = `Plan: $${plan.price || 0}`;
+                let modulesTotal = 0;
+                premiumModules.forEach(m => {
+                    const mod = SuperAdminData.products[m.toLowerCase().replace(/\s+/g, '')];
+                    if (mod) {
+                        modulesTotal += mod.price;
+                    }
+                });
+                if (modulesTotal > 0) {
+                    breakdown += ` + Módulos: $${modulesTotal}`;
+                }
+                
+                return `
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div class="avatar avatar-sm">${company.name.charAt(0)}</div>
+                                <div>
+                                    <div style="font-weight: 600;">${company.name}</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary);">${company.users} usuarios</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge" style="background: ${plan.color || '#64748b'}20; color: ${plan.color || '#64748b'};">
+                                ${company.plan}
+                            </span>
+                        </td>
+                        <td>
+                            ${premiumModules.length > 0 ? premiumModules.map(m => `
+                                <span style="display: inline-block; background: #dbeafe; color: #3b82f6; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; margin: 1px;">${m}</span>
+                            `).join('') : '<span style="color: var(--text-secondary); font-size: 0.75rem;">Solo MotorSync</span>'}
+                        </td>
+                        <td>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary);">${breakdown}</div>
+                        </td>
+                        <td><strong style="color: var(--primary-color);">$${company.mrr.toLocaleString()}</strong></td>
+                        <td><span class="status ${statusClass}">${statusText}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-ghost" onclick="editSubscription(${company.id})" title="Editar suscripción">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            ${company.status === 'trial' ? `
+                                <button class="btn btn-sm btn-ghost" onclick="convertToPaid(${company.id})" title="Convertir a pagado">
+                                    <i class="fas fa-arrow-up"></i>
+                                </button>
+                            ` : company.status === 'active' ? `
+                                <button class="btn btn-sm btn-ghost" onclick="cancelSubscription(${company.id})" title="Cancelar">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            ` : `
+                                <button class="btn btn-sm btn-ghost" onclick="reactivateSubscription(${company.id})" title="Reactivar">
+                                    <i class="fas fa-redo"></i>
+                                </button>
+                            `}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filterSubscriptions() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allCompanies.filter(c => 
+                c.name.toLowerCase().includes(search) ||
+                c.plan.toLowerCase().includes(search) ||
+                (c.premiumModules || []).some(m => m.toLowerCase().includes(search))
+            );
+            renderSubscriptions(filtered);
+        }
+
+        function populateSelects() {
+            const companySelect = document.getElementById('upgradeCompany');
+            companySelect.innerHTML = '<option value="">Seleccionar cliente...</option>' +
+                allCompanies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        }
+
+        function openUpgradeModal() {
+            editingCompanyId = null;
+            selectedPlan = null;
+            selectedModules = [];
+            document.getElementById('upgradeModal').style.display = 'flex';
+            document.getElementById('upgradeForm').reset();
+            document.getElementById('subscriptionDetails').style.display = 'none';
+        }
+
+        function loadCurrentSubscription() {
+            const companyId = document.getElementById('upgradeCompany').value;
+            if (!companyId) {
+                document.getElementById('subscriptionDetails').style.display = 'none';
+                return;
+            }
+            
+            const company = SuperAdminData.getCompany(companyId);
+            if (!company) return;
+            
+            editingCompanyId = companyId;
+            selectedPlan = company.plan.toLowerCase();
+            selectedModules = [...(company.premiumModules || [])].map(m => m.toLowerCase().replace(/\s+/g, ''));
+            
+            document.getElementById('subscriptionDetails').style.display = 'block';
+            renderPlanOptions();
+            renderModuleOptions();
+            updatePricingSummary();
+        }
+
+        function renderPlanOptions() {
+            const container = document.getElementById('planOptions');
+            const planIcons = {
+                trial: 'fa-clock',
+                starter: 'fa-seedling',
+                professional: 'fa-bolt',
+                enterprise: 'fa-building'
+            };
+            
+            container.innerHTML = Object.entries(SuperAdminData.plans)
+                .filter(([key]) => key !== 'trial')
+                .map(([key, plan]) => {
+                    const isSelected = selectedPlan === key;
+                    return `
+                        <div onclick="selectPlan('${key}')" style="padding: 0.75rem; border: 2px solid ${isSelected ? 'var(--primary-color)' : 'var(--border-color)'}; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s; ${isSelected ? 'background: rgba(2, 115, 94, 0.1);' : ''}">
+                            <i class="fas ${planIcons[key]}" style="color: ${plan.color}; margin-bottom: 0.25rem;"></i>
+                            <div style="font-weight: 600; font-size: 0.8rem;">${plan.name}</div>
+                            <div style="font-size: 0.9rem; font-weight: 700;">$${plan.price}</div>
+                        </div>
+                    `;
+                }).join('');
+        }
+
+        function renderModuleOptions() {
+            const container = document.getElementById('moduleOptions');
+            const premiumModules = SuperAdminData.getActivePremiumModules();
+            
+            container.innerHTML = premiumModules.map(module => {
+                const isSelected = selectedModules.includes(module.key);
+                return `
+                    <div onclick="toggleModule('${module.key}')" style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; border: 2px solid ${isSelected ? '#3b82f6' : 'var(--border-color)'}; border-radius: 8px; cursor: pointer; transition: all 0.2s; ${isSelected ? 'background: rgba(59, 130, 246, 0.1);' : ''}">
+                        <div style="width: 20px; height: 20px; border: 2px solid ${isSelected ? '#3b82f6' : '#cbd5e1'}; border-radius: 4px; display: flex; align-items: center; justify-content: center; background: ${isSelected ? '#3b82f6' : 'white'};">
+                            ${isSelected ? '<i class="fas fa-check" style="color: white; font-size: 0.7rem;"></i>' : ''}
+                        </div>
+                        <i class="${module.icon}" style="color: #3b82f6; font-size: 1.25rem;"></i>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600;">${module.name}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">${module.description}</div>
+                        </div>
+                        <div style="font-weight: 700; color: #3b82f6;">+$${module.price}/mes</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectPlan(planKey) {
+            selectedPlan = planKey;
+            renderPlanOptions();
+            updatePricingSummary();
+        }
+
+        function toggleModule(moduleKey) {
+            const index = selectedModules.indexOf(moduleKey);
+            if (index > -1) {
+                selectedModules.splice(index, 1);
+            } else {
+                selectedModules.push(moduleKey);
+            }
+            renderModuleOptions();
+            updatePricingSummary();
+        }
+
+        function updatePricingSummary() {
+            const container = document.getElementById('pricingSummary');
+            const plan = SuperAdminData.plans[selectedPlan];
+            
+            if (!plan) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">Selecciona un plan</p>';
+                return;
+            }
+            
+            const breakdown = SuperAdminData.getPricingBreakdown(selectedPlan, selectedModules);
+            
+            container.innerHTML = `
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Plan ${breakdown.plan.name}</span>
+                    <span>$${breakdown.plan.price}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: var(--text-secondary);">
+                    <span><i class="fas fa-check-circle" style="color: var(--primary-color);"></i> MotorSync</span>
+                    <span>Incluido</span>
+                </div>
+                ${breakdown.premiumModules.map(m => `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span><i class="fas fa-plus-circle" style="color: #3b82f6;"></i> ${m.name}</span>
+                        <span>+$${m.price}</span>
+                    </div>
+                `).join('')}
+                <hr style="margin: 0.75rem 0; border: none; border-top: 1px dashed var(--border-color);">
+                <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 700;">
+                    <span>Total Mensual</span>
+                    <span style="color: var(--primary-color);">$${breakdown.total}</span>
+                </div>
+            `;
+        }
+
+        function saveSubscription() {
+            if (!editingCompanyId || !selectedPlan) {
+                showNotification('Por favor selecciona un plan', 'error');
+                return;
+            }
+            
+            const plan = SuperAdminData.plans[selectedPlan];
+            const mrr = SuperAdminData.calculateMRR(selectedPlan, selectedModules);
+            
+            SuperAdminData.updateCompany(editingCompanyId, {
+                plan: plan.name,
+                premiumModules: selectedModules.map(key => SuperAdminData.products[key]?.name || key),
+                mrr: mrr,
+                status: 'active'
+            });
+            
+            closeModal('upgradeModal');
+            loadSubscriptions();
+            renderPricingModel();
+            showNotification('Suscripción actualizada exitosamente', 'success');
+        }
+
+        function editSubscription(id) {
+            document.getElementById('upgradeCompany').value = id;
+            document.getElementById('upgradeModal').style.display = 'flex';
+            loadCurrentSubscription();
+        }
+
+        function convertToPaid(id) {
+            editSubscription(id);
+        }
+
+        function cancelSubscription(id) {
+            if (!confirm('¿Estás seguro de cancelar esta suscripción?')) return;
+            
+            SuperAdminData.updateCompany(id, {
+                status: 'inactive',
+                mrr: 0
+            });
+            
+            loadSubscriptions();
+            renderPricingModel();
+            showNotification('Suscripción cancelada', 'warning');
+        }
+
+        function reactivateSubscription(id) {
+            editSubscription(id);
+        }
+
+        // Pricing Calculator
+        function openPricingCalculator() {
+            selectedPlan = 'professional';
+            selectedModules = [];
+            document.getElementById('calculatorModal').style.display = 'flex';
+            renderCalcPlanOptions();
+            renderCalcModuleOptions();
+            updateCalcSummary();
+        }
+
+        function renderCalcPlanOptions() {
+            const container = document.getElementById('calcPlanOptions');
+            const planIcons = {
+                starter: 'fa-seedling',
+                professional: 'fa-bolt',
+                enterprise: 'fa-building'
+            };
+            
+            container.innerHTML = Object.entries(SuperAdminData.plans)
+                .filter(([key]) => key !== 'trial')
+                .map(([key, plan]) => {
+                    const isSelected = selectedPlan === key;
+                    return `
+                        <div onclick="selectCalcPlan('${key}')" style="padding: 0.75rem; border: 2px solid ${isSelected ? 'var(--primary-color)' : 'var(--border-color)'}; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s; ${isSelected ? 'background: rgba(2, 115, 94, 0.1);' : ''}">
+                            <i class="fas ${planIcons[key]}" style="color: ${plan.color}; margin-bottom: 0.25rem;"></i>
+                            <div style="font-weight: 600; font-size: 0.8rem;">${plan.name}</div>
+                            <div style="font-size: 0.9rem; font-weight: 700;">$${plan.price}</div>
+                        </div>
+                    `;
+                }).join('');
+        }
+
+        function renderCalcModuleOptions() {
+            const container = document.getElementById('calcModuleOptions');
+            const premiumModules = SuperAdminData.getActivePremiumModules();
+            
+            container.innerHTML = premiumModules.map(module => {
+                const isSelected = selectedModules.includes(module.key);
+                return `
+                    <div onclick="toggleCalcModule('${module.key}')" style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; border: 2px solid ${isSelected ? '#3b82f6' : 'var(--border-color)'}; border-radius: 8px; cursor: pointer; transition: all 0.2s; ${isSelected ? 'background: rgba(59, 130, 246, 0.1);' : ''}">
+                        <div style="width: 20px; height: 20px; border: 2px solid ${isSelected ? '#3b82f6' : '#cbd5e1'}; border-radius: 4px; display: flex; align-items: center; justify-content: center; background: ${isSelected ? '#3b82f6' : 'white'};">
+                            ${isSelected ? '<i class="fas fa-check" style="color: white; font-size: 0.7rem;"></i>' : ''}
+                        </div>
+                        <i class="${module.icon}" style="color: #3b82f6; font-size: 1.25rem;"></i>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600;">${module.name}</div>
+                        </div>
+                        <div style="font-weight: 700; color: #3b82f6;">+$${module.price}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectCalcPlan(planKey) {
+            selectedPlan = planKey;
+            renderCalcPlanOptions();
+            updateCalcSummary();
+        }
+
+        function toggleCalcModule(moduleKey) {
+            const index = selectedModules.indexOf(moduleKey);
+            if (index > -1) {
+                selectedModules.splice(index, 1);
+            } else {
+                selectedModules.push(moduleKey);
+            }
+            renderCalcModuleOptions();
+            updateCalcSummary();
+        }
+
+        function updateCalcSummary() {
+            const container = document.getElementById('calcSummary');
+            const breakdown = SuperAdminData.getPricingBreakdown(selectedPlan, selectedModules);
+            
+            container.innerHTML = `
+                <div style="text-align: center;">
+                    <div style="font-size: 0.875rem; opacity: 0.8; margin-bottom: 0.5rem;">Precio Mensual</div>
+                    <div style="font-size: 3rem; font-weight: 800;">$${breakdown.total}</div>
+                    <div style="font-size: 0.875rem; opacity: 0.8; margin-top: 0.5rem;">
+                        Plan ${breakdown.plan.name} ($${breakdown.plan.price}) - MotorSync incluido
+                        ${breakdown.premiumModules.length > 0 ? ` + ${breakdown.premiumModules.map(m => m.name).join(', ')}` : ''}
+                    </div>
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.3);">
+                        <span style="font-size: 1.5rem; font-weight: 700;">$${breakdown.total * 12}</span>
+                        <span style="opacity: 0.8;">/año</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showMetrics() {
+            const totals = SuperAdminData.getTotals();
+            const planBreakdown = {};
+            const moduleBreakdown = {};
+            
+            allCompanies.forEach(c => {
+                const plan = c.plan.toLowerCase();
+                planBreakdown[plan] = planBreakdown[plan] || { count: 0, mrr: 0 };
+                planBreakdown[plan].count++;
+                planBreakdown[plan].mrr += c.mrr;
+                
+                (c.premiumModules || []).forEach(m => {
+                    const key = m.toLowerCase().replace(/\s+/g, '');
+                    const mod = SuperAdminData.products[key];
+                    if (mod) {
+                        moduleBreakdown[key] = moduleBreakdown[key] || { name: mod.name, count: 0, revenue: 0 };
+                        moduleBreakdown[key].count++;
+                        moduleBreakdown[key].revenue += mod.price;
+                    }
+                });
+            });
+            
+            document.getElementById('metricsContent').innerHTML = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div style="padding: 1rem; background: linear-gradient(135deg, #02735E, #4ecdc4); border-radius: 12px; color: white; text-align: center;">
+                        <div style="font-size: 1.75rem; font-weight: 700;">$${totals.mrr.toLocaleString()}</div>
+                        <div style="opacity: 0.8; font-size: 0.875rem;">MRR Total</div>
+                    </div>
+                    <div style="padding: 1rem; background: linear-gradient(135deg, #3b82f6, #60a5fa); border-radius: 12px; color: white; text-align: center;">
+                        <div style="font-size: 1.75rem; font-weight: 700;">$${(totals.mrr * 12).toLocaleString()}</div>
+                        <div style="opacity: 0.8; font-size: 0.875rem;">ARR Proyectado</div>
+                    </div>
+                </div>
+                
+                <h4 style="margin-bottom: 0.75rem;">Ingresos por Plan</h4>
+                ${Object.entries(SuperAdminData.plans).filter(([k]) => k !== 'trial').map(([key, plan]) => {
+                    const data = planBreakdown[key] || { count: 0, mrr: 0 };
+                    return `
+                        <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; border-bottom: 1px solid var(--border-color);">
+                            <div style="width: 32px; height: 32px; border-radius: 6px; background: ${plan.color}20; color: ${plan.color}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.875rem;">
+                                ${data.count}
+                            </div>
+                            <div style="flex: 1; font-weight: 500;">${plan.name}</div>
+                            <div style="font-weight: 600;">$${data.mrr.toLocaleString()}</div>
+                        </div>
+                    `;
+                }).join('')}
+                
+                <h4 style="margin: 1rem 0 0.75rem 0;">Ingresos por Módulo Premium</h4>
+                ${Object.entries(moduleBreakdown).map(([key, data]) => `
+                    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; border-bottom: 1px solid var(--border-color);">
+                        <div style="width: 32px; height: 32px; border-radius: 6px; background: #dbeafe; color: #3b82f6; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.875rem;">
+                            ${data.count}
+                        </div>
+                        <div style="flex: 1; font-weight: 500;">${data.name}</div>
+                        <div style="font-weight: 600;">$${data.revenue.toLocaleString()}/mes</div>
+                    </div>
+                `).join('') || '<p style="color: var(--text-secondary); font-size: 0.875rem;">Sin módulos premium activos</p>'}
+            `;
+            
+            document.getElementById('metricsModal').style.display = 'flex';
+        }
+
+        function exportMetrics() {
+            const totals = SuperAdminData.getTotals();
+            const content = `Métricas - ${new Date().toLocaleDateString('es-ES')}\n\nMRR: $${totals.mrr}\nARR: $${totals.mrr * 12}\nClientes: ${totals.companies}`;
+            
+            const blob = new Blob([content], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `metricas-${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            showNotification('Métricas exportadas', 'success');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'exclamation-triangle'}"></i> ${message}`;
+            notification.style.cssText = `position: fixed; top: 20px; right: 20px; padding: 1rem 1.5rem; background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#f59e0b'}; color: white; border-radius: 8px; display: flex; align-items: center; gap: 0.75rem; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999;`;
+            document.body.appendChild(notification);
+            setTimeout(() => { notification.style.opacity = '0'; setTimeout(() => notification.remove(), 300); }, 3000);
+        }
+
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+        });
+    </script>
 </body>
 </html>

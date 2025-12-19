@@ -1107,12 +1107,6 @@
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando...';
 
-            // Get existing companies from localStorage or SuperAdminData
-            let storedCompanies = JSON.parse(localStorage.getItem('opsis_companies') || '[]');
-            const allCompanies = [...SuperAdminData.companies, ...storedCompanies];
-            const maxId = Math.max(...allCompanies.map(c => c.id), 0);
-            const today = new Date().toISOString().split('T')[0];
-
             // Generate domain if not provided
             let domain = document.getElementById('companyDomain').value.trim();
             if (!domain) {
@@ -1122,8 +1116,8 @@
                     .replace(/[^a-z0-9-]/g, '');
             }
 
-            const company = {
-                id: maxId + 1,
+            // Use the new API method
+            const company = SuperAdminData.createCompany({
                 name: document.getElementById('companyName').value.trim(),
                 email: document.getElementById('companyEmail').value.trim(),
                 phone: document.getElementById('companyPhone').value.trim(),
@@ -1133,18 +1127,9 @@
                 products: selectedProducts.map(p => p.name),
                 plan: selectedPlan.name,
                 status: 'active',
-                createdAt: today,
-                lastActive: today,
                 users: 1,
                 mrr: selectedProducts.reduce((s, p) => s + p.price, 0) + selectedPlan.price
-            };
-
-            // Save to SuperAdminData (in-memory)
-            SuperAdminData.companies.push(company);
-            
-            // Persist to localStorage for multi-tenant system
-            storedCompanies.push(company);
-            localStorage.setItem('opsis_companies', JSON.stringify(storedCompanies));
+            });
             
             // Store the last created company for the success page
             localStorage.setItem('opsis_last_created_company', JSON.stringify(company));
