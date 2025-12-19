@@ -36,9 +36,6 @@
                     <button class="btn btn-secondary" onclick="exportToCSV()">
                         <i class="fas fa-file-csv"></i> Exportar
                     </button>
-                    <button class="btn btn-primary" onclick="openUpgradeModal()">
-                        <i class="fas fa-arrow-up"></i> Cambiar Plan
-                    </button>
                 </div>
             </header>
 
@@ -253,56 +250,6 @@
                 </div>
             </div>
         </main>
-    </div>
-
-    <!-- Upgrade Plan Modal -->
-    <div class="modal-overlay" id="upgradeModal">
-        <div class="modal" style="max-width: 700px;">
-            <div class="modal-header">
-                <h3><i class="fas fa-edit"></i> Gestionar Suscripción</h3>
-                <button class="modal-close" onclick="closeModal('upgradeModal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="upgradeForm">
-                    <div class="form-group">
-                        <label>Cliente</label>
-                        <select id="upgradeCompany" required onchange="loadCurrentSubscription()">
-                            <option value="">Seleccionar cliente...</option>
-                        </select>
-                    </div>
-                    
-                    <div id="subscriptionDetails" style="display: none;">
-                        <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--border-color);">
-                        
-                        <div class="form-group">
-                            <label>Plan</label>
-                            <div id="planOptions" class="grid-4" style="gap: 0.75rem;">
-                                <!-- Populated by JS -->
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Módulos Premium</label>
-                            <div id="moduleOptions" style="display: flex; flex-direction: column; gap: 0.75rem;">
-                                <!-- Populated by JS -->
-                            </div>
-                        </div>
-                        
-                        <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--border-color);">
-                        
-                        <div id="pricingSummary" style="background: var(--bg-tertiary); padding: 1rem; border-radius: 8px;">
-                            <!-- Populated by JS -->
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('upgradeModal')">Cancelar</button>
-                <button class="btn btn-primary" onclick="saveSubscription()">
-                    <i class="fas fa-save"></i> Guardar Cambios
-                </button>
-            </div>
-        </div>
     </div>
 
     <!-- Pricing Calculator Modal -->
@@ -688,7 +635,7 @@
                             ${a.alertType === 'trial_ending' ? 'Trial termina' : 'Renovación'} en ${a.daysLeft} día${a.daysLeft !== 1 ? 's' : ''}
                         </div>
                     </div>
-                    <button class="btn btn-sm btn-primary" onclick="editSubscription(${a.id})">
+                    <button class="btn btn-sm btn-primary" onclick="goToCompanyEdit(${a.id})">
                         ${a.alertType === 'trial_ending' ? 'Convertir' : 'Gestionar'}
                     </button>
                 </div>
@@ -997,11 +944,11 @@
                             <button class="btn btn-sm btn-ghost" onclick="showHistory(${company.id})" title="Ver historial">
                                 <i class="fas fa-history"></i>
                             </button>
-                            <button class="btn btn-sm btn-ghost" onclick="editSubscription(${company.id})" title="Editar suscripción">
+                            <button class="btn btn-sm btn-ghost" onclick="goToCompanyEdit(${company.id})" title="Editar suscripción">
                                 <i class="fas fa-edit"></i>
                             </button>
                             ${company.status === 'trial' ? `
-                                <button class="btn btn-sm btn-ghost" onclick="convertToPaid(${company.id})" title="Convertir a pagado">
+                                <button class="btn btn-sm btn-ghost" onclick="goToCompanyEdit(${company.id})" title="Convertir a pagado">
                                     <i class="fas fa-arrow-up"></i>
                                 </button>
                             ` : company.status === 'active' ? `
@@ -1029,167 +976,9 @@
             renderSubscriptions(filtered);
         }
 
-        function populateSelects() {
-            const companySelect = document.getElementById('upgradeCompany');
-            companySelect.innerHTML = '<option value="">Seleccionar cliente...</option>' +
-                allCompanies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-        }
-
-        function openUpgradeModal() {
-            editingCompanyId = null;
-            selectedPlan = null;
-            selectedModules = [];
-            document.getElementById('upgradeModal').classList.add('active');
-            document.getElementById('upgradeForm').reset();
-            document.getElementById('subscriptionDetails').style.display = 'none';
-        }
-
-        function loadCurrentSubscription() {
-            const companyId = document.getElementById('upgradeCompany').value;
-            if (!companyId) {
-                document.getElementById('subscriptionDetails').style.display = 'none';
-                return;
-            }
-            
-            const company = SuperAdminData.getCompany(companyId);
-            if (!company) return;
-            
-            editingCompanyId = companyId;
-            selectedPlan = company.plan.toLowerCase();
-            selectedModules = [...(company.premiumModules || [])].map(m => m.toLowerCase().replace(/\s+/g, ''));
-            
-            document.getElementById('subscriptionDetails').style.display = 'block';
-            renderPlanOptions();
-            renderModuleOptions();
-            updatePricingSummary();
-        }
-
-        function renderPlanOptions() {
-            const container = document.getElementById('planOptions');
-            const planIcons = {
-                trial: 'fa-clock',
-                starter: 'fa-seedling',
-                professional: 'fa-bolt',
-                enterprise: 'fa-building'
-            };
-            
-            container.innerHTML = Object.entries(SuperAdminData.plans)
-                .filter(([key]) => key !== 'trial')
-                .map(([key, plan]) => {
-                    const isSelected = selectedPlan === key;
-                    return `
-                        <div onclick="selectPlan('${key}')" style="padding: 0.75rem; border: 2px solid ${isSelected ? 'var(--primary-color)' : 'var(--border-color)'}; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s; ${isSelected ? 'background: rgba(2, 115, 94, 0.1);' : ''}">
-                            <i class="fas ${planIcons[key]}" style="color: ${plan.color}; margin-bottom: 0.25rem;"></i>
-                            <div style="font-weight: 600; font-size: 0.8rem;">${plan.name}</div>
-                            <div style="font-size: 0.9rem; font-weight: 700;">$${plan.price}</div>
-                        </div>
-                    `;
-                }).join('');
-        }
-
-        function renderModuleOptions() {
-            const container = document.getElementById('moduleOptions');
-            const premiumModules = SuperAdminData.getActivePremiumModules();
-            
-            container.innerHTML = premiumModules.map(module => {
-                const isSelected = selectedModules.includes(module.key);
-                return `
-                    <div onclick="toggleModule('${module.key}')" style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; border: 2px solid ${isSelected ? '#3b82f6' : 'var(--border-color)'}; border-radius: 8px; cursor: pointer; transition: all 0.2s; ${isSelected ? 'background: rgba(59, 130, 246, 0.1);' : ''}">
-                        <div style="width: 20px; height: 20px; border: 2px solid ${isSelected ? '#3b82f6' : '#cbd5e1'}; border-radius: 4px; display: flex; align-items: center; justify-content: center; background: ${isSelected ? '#3b82f6' : 'white'};">
-                            ${isSelected ? '<i class="fas fa-check" style="color: white; font-size: 0.7rem;"></i>' : ''}
-                        </div>
-                        <i class="${module.icon}" style="color: #3b82f6; font-size: 1.25rem;"></i>
-                        <div style="flex: 1;">
-                            <div style="font-weight: 600;">${module.name}</div>
-                            <div style="font-size: 0.75rem; color: var(--text-secondary);">${module.description}</div>
-                        </div>
-                        <div style="font-weight: 700; color: #3b82f6;">+$${module.price}/mes</div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function selectPlan(planKey) {
-            selectedPlan = planKey;
-            renderPlanOptions();
-            updatePricingSummary();
-        }
-
-        function toggleModule(moduleKey) {
-            const index = selectedModules.indexOf(moduleKey);
-            if (index > -1) {
-                selectedModules.splice(index, 1);
-            } else {
-                selectedModules.push(moduleKey);
-            }
-            renderModuleOptions();
-            updatePricingSummary();
-        }
-
-        function updatePricingSummary() {
-            const container = document.getElementById('pricingSummary');
-            const plan = SuperAdminData.plans[selectedPlan];
-            
-            if (!plan) {
-                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">Selecciona un plan</p>';
-                return;
-            }
-            
-            const breakdown = SuperAdminData.getPricingBreakdown(selectedPlan, selectedModules);
-            
-            container.innerHTML = `
-                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                    <span>Plan ${breakdown.plan.name}</span>
-                    <span>$${breakdown.plan.price}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: var(--text-secondary);">
-                    <span><i class="fas fa-check-circle" style="color: var(--primary-color);"></i> MotorSync</span>
-                    <span>Incluido</span>
-                </div>
-                ${breakdown.premiumModules.map(m => `
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                        <span><i class="fas fa-plus-circle" style="color: #3b82f6;"></i> ${m.name}</span>
-                        <span>+$${m.price}</span>
-                    </div>
-                `).join('')}
-                <hr style="margin: 0.75rem 0; border: none; border-top: 1px dashed var(--border-color);">
-                <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 700;">
-                    <span>Total Mensual</span>
-                    <span style="color: var(--primary-color);">$${breakdown.total}</span>
-                </div>
-            `;
-        }
-
-        function saveSubscription() {
-            if (!editingCompanyId || !selectedPlan) {
-                showNotification('Por favor selecciona un plan', 'error');
-                return;
-            }
-            
-            const plan = SuperAdminData.plans[selectedPlan];
-            const mrr = SuperAdminData.calculateMRR(selectedPlan, selectedModules);
-            
-            SuperAdminData.updateCompany(editingCompanyId, {
-                plan: plan.name,
-                premiumModules: selectedModules.map(key => SuperAdminData.products[key]?.name || key),
-                mrr: mrr,
-                status: 'active'
-            });
-            
-            closeModal('upgradeModal');
-            loadSubscriptions();
-            renderPricingModel();
-            showNotification('Suscripción actualizada exitosamente', 'success');
-        }
-
-        function editSubscription(id) {
-            document.getElementById('upgradeCompany').value = id;
-            document.getElementById('upgradeModal').classList.add('active');
-            loadCurrentSubscription();
-        }
-
-        function convertToPaid(id) {
-            editSubscription(id);
+        // Redirect to company edit page for subscription management
+        function goToCompanyEdit(companyId) {
+            window.location.href = `../companies/form.html?id=${companyId}&tab=subscription`;
         }
 
         function cancelSubscription(id) {
@@ -1206,7 +995,7 @@
         }
 
         function reactivateSubscription(id) {
-            editSubscription(id);
+            goToCompanyEdit(id);
         }
 
         // Pricing Calculator
