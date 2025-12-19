@@ -5,14 +5,481 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Equipo - SuperAdmin | Opsis Suite</title>
     <style>
-        :root { --verdi-dark: #022326; --sidebar-width: 240px; }
+        :root { 
+            --verdi-dark: #022326; 
+            --verdi-mid: #034040;
+            --verdi-accent: #035951;
+            --verdi-light: #02735E;
+            --sidebar-width: 260px;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { background: #f8fafc; }
-        body { opacity: 0; transition: opacity 0.15s ease-in; }
+        body { opacity: 0; transition: opacity 0.2s ease-in; font-family: 'Inter', sans-serif; }
         body.loaded { opacity: 1; }
         .app-shell { min-height: 100vh; background: #f8fafc; }
         .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh; background: var(--verdi-dark); }
         .main-content { margin-left: var(--sidebar-width); min-height: 100vh; background: #f8fafc; }
+
+        /* Enhanced Member Cards */
+        .member-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .member-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+            border-color: var(--verdi-light);
+        }
+        .member-card-header {
+            background: linear-gradient(135deg, var(--verdi-dark) 0%, var(--verdi-mid) 100%);
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .member-card-header::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        }
+        .member-avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            border: 3px solid rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: white;
+            margin: 0 auto 1rem;
+            position: relative;
+            z-index: 1;
+        }
+        .member-name {
+            color: white;
+            font-size: 1.125rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 0.25rem;
+            position: relative;
+            z-index: 1;
+        }
+        .member-email {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.8rem;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        .member-card-body {
+            padding: 1.25rem;
+        }
+        .member-role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            width: 100%;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        .member-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            padding-top: 1rem;
+            border-top: 1px solid #f1f5f9;
+        }
+        .member-stat {
+            text-align: center;
+            padding: 0.5rem;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+        .member-stat-value {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        .member-stat-label {
+            font-size: 0.7rem;
+            color: #64748b;
+            margin-top: 0.125rem;
+        }
+        .member-status {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.25rem 0.625rem;
+            background: rgba(16, 185, 129, 0.2);
+            border-radius: 20px;
+            font-size: 0.7rem;
+            color: #10b981;
+            font-weight: 500;
+        }
+        .member-status i {
+            font-size: 0.5rem;
+        }
+        .member-status.offline {
+            background: rgba(148, 163, 184, 0.2);
+            color: #64748b;
+        }
+
+        /* Search and Filters */
+        .team-toolbar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--verdi-light);
+            box-shadow: 0 0 0 3px rgba(2, 115, 94, 0.1);
+        }
+        .search-box i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+        .filter-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: 0.75rem 1.25rem;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #64748b;
+            font-weight: 500;
+        }
+        .filter-btn:hover {
+            border-color: var(--verdi-light);
+            color: var(--verdi-light);
+        }
+        .filter-btn.active {
+            background: var(--verdi-light);
+            border-color: var(--verdi-light);
+            color: white;
+        }
+
+        /* Activity Timeline */
+        .activity-timeline {
+            padding: 1.25rem;
+        }
+        .activity-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+        .activity-icon.create { background: #dcfce7; color: #16a34a; }
+        .activity-icon.edit { background: #dbeafe; color: #2563eb; }
+        .activity-icon.delete { background: #fee2e2; color: #dc2626; }
+        .activity-icon.login { background: #f3e8ff; color: #9333ea; }
+        .activity-icon.support { background: #fef3c7; color: #d97706; }
+        .activity-content {
+            flex: 1;
+        }
+        .activity-text {
+            font-size: 0.875rem;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+        .activity-text strong {
+            color: var(--verdi-dark);
+        }
+        .activity-meta {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        /* Modal Enhancements */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalSlideIn 0.3s ease;
+        }
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .modal-title i {
+            color: var(--verdi-light);
+        }
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #f1f5f9;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.25rem;
+            color: #64748b;
+            transition: all 0.2s;
+        }
+        .modal-close:hover {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        .modal-body {
+            padding: 1.5rem;
+        }
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--verdi-light);
+            box-shadow: 0 0 0 3px rgba(2, 115, 94, 0.1);
+        }
+        .form-hint {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 0.375rem;
+        }
+
+        /* Avatar Upload */
+        .avatar-upload {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 2px dashed #e2e8f0;
+        }
+        .avatar-preview {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--verdi-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+        }
+        .avatar-upload-info h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        .avatar-upload-info p {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        /* Member Detail View */
+        .member-detail-header {
+            text-align: center;
+            padding: 2rem 1.5rem;
+            background: linear-gradient(135deg, var(--verdi-dark) 0%, var(--verdi-mid) 100%);
+            border-radius: 16px 16px 0 0;
+            margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+        }
+        .member-avatar-lg {
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            border: 4px solid rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: white;
+            margin: 0 auto 1rem;
+        }
+        .member-detail-name {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .member-detail-email {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        .member-info-grid {
+            display: grid;
+            gap: 1rem;
+        }
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            background: #f8fafc;
+            border-radius: 10px;
+        }
+        .info-row i {
+            width: 20px;
+            color: var(--verdi-light);
+        }
+        .info-row-label {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+        .info-row-value {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #1e293b;
+        }
+        .permissions-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .permission-tag {
+            padding: 0.375rem 0.75rem;
+            background: #ecfdf5;
+            color: #059669;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .toast {
+            padding: 1rem 1.25rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            animation: toastSlide 0.3s ease;
+            border-left: 4px solid var(--success);
+        }
+        .toast.error { border-left-color: var(--danger); }
+        .toast.warning { border-left-color: var(--warning); }
+        @keyframes toastSlide {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -36,7 +503,7 @@
                         <i class="fas fa-user-shield"></i> Roles y Permisos
                     </button>
                     <button class="btn btn-primary" onclick="openAddMemberModal()">
-                        <i class="fas fa-plus"></i> Agregar Miembro
+                        <i class="fas fa-user-plus"></i> Agregar Miembro
                     </button>
                 </div>
             </header>
@@ -49,7 +516,7 @@
                             <i class="fas fa-users"></i>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-value" id="totalMembers">4</div>
+                            <div class="stat-value" id="totalMembers">0</div>
                             <div class="stat-label">Miembros del Equipo</div>
                         </div>
                     </div>
@@ -58,7 +525,7 @@
                             <i class="fas fa-circle"></i>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-value" id="activeMembers">4</div>
+                            <div class="stat-value" id="activeMembers">0</div>
                             <div class="stat-label">Activos Ahora</div>
                         </div>
                     </div>
@@ -67,33 +534,47 @@
                             <i class="fas fa-key"></i>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-value">4</div>
+                            <div class="stat-value" id="rolesCount">5</div>
                             <div class="stat-label">Roles Definidos</div>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon info">
-                            <i class="fas fa-chart-bar"></i>
+                            <i class="fas fa-chart-line"></i>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-value">142</div>
+                            <div class="stat-value" id="weeklyActions">0</div>
                             <div class="stat-label">Acciones esta semana</div>
                         </div>
                     </div>
                 </div>
 
+                <!-- Search and Filters -->
+                <div class="team-toolbar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Buscar miembro por nombre o email..." oninput="filterMembers()">
+                    </div>
+                    <div class="filter-group">
+                        <button class="filter-btn active" onclick="filterByRole(this, '')">Todos</button>
+                        <button class="filter-btn" onclick="filterByRole(this, 'super_admin')">Super Admin</button>
+                        <button class="filter-btn" onclick="filterByRole(this, 'admin')">Admin</button>
+                        <button class="filter-btn" onclick="filterByRole(this, 'support')">Soporte</button>
+                        <button class="filter-btn" onclick="filterByRole(this, 'billing')">Facturación</button>
+                    </div>
+                </div>
+
                 <!-- Team Grid -->
-                <div class="grid-2" id="teamGrid">
+                <div class="grid-2" id="teamGrid" style="margin-bottom: 2rem;">
                     <!-- Populated by JS -->
                 </div>
 
                 <!-- Activity Log -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title"><i class="fas fa-history"></i> Actividad Reciente del Equipo</h3>
-                        <button class="btn btn-sm btn-secondary" onclick="location.href='activity.html'">Ver todo</button>
+                        <h3 class="card-title"><i class="fas fa-stream"></i> Actividad Reciente del Equipo</h3>
                     </div>
-                    <div id="activityLog">
+                    <div class="activity-timeline" id="activityLog">
                         <!-- Populated by JS -->
                     </div>
                 </div>
@@ -101,39 +582,58 @@
         </main>
     </div>
 
-    <!-- Add Member Modal -->
-    <div class="modal" id="addMemberModal">
+    <!-- Add/Edit Member Modal -->
+    <div class="modal" id="memberModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">
-                    <i class="fas fa-user-plus"></i> Agregar Miembro al Equipo
+                <h3 class="modal-title" id="memberModalTitle">
+                    <i class="fas fa-user-plus"></i> Agregar Miembro
                 </h3>
-                <button class="modal-close" onclick="closeAddMemberModal()">&times;</button>
+                <button class="modal-close" onclick="closeMemberModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Nombre Completo *</label>
-                    <input type="text" class="form-input" id="memberName" placeholder="Nombre del miembro">
+                <input type="hidden" id="editMemberId">
+                
+                <div class="avatar-upload">
+                    <div class="avatar-preview" id="avatarPreview">?</div>
+                    <div class="avatar-upload-info">
+                        <h4>Avatar del miembro</h4>
+                        <p>Se generará automáticamente con las iniciales</p>
+                    </div>
                 </div>
+
+                <div class="form-group" style="margin-top: 1.25rem;">
+                    <label class="form-label">Nombre Completo *</label>
+                    <input type="text" class="form-input" id="memberName" placeholder="Ej: Carlos Mendoza" oninput="updateAvatarPreview()">
+                </div>
+                
                 <div class="form-group">
                     <label class="form-label">Email *</label>
                     <input type="email" class="form-input" id="memberEmail" placeholder="email@opsis-suite.com">
+                    <p class="form-hint">Se enviará una invitación a este email</p>
                 </div>
+                
                 <div class="form-group">
                     <label class="form-label">Rol *</label>
                     <select class="form-select" id="memberRole">
                         <option value="">Seleccionar rol...</option>
-                        <option value="super_admin">Super Admin</option>
-                        <option value="support_admin">Admin de Soporte</option>
-                        <option value="data_analyst">Analista de Datos</option>
-                        <option value="billing_admin">Admin de Facturación</option>
+                        <option value="super_admin">🔑 Super Admin - Acceso total</option>
+                        <option value="admin">👔 Admin - Gestión general</option>
+                        <option value="support">🎧 Soporte - Atención al cliente</option>
+                        <option value="billing">💰 Facturación - Gestión financiera</option>
+                        <option value="viewer">👁️ Viewer - Solo lectura</option>
                     </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Teléfono (opcional)</label>
+                    <input type="tel" class="form-input" id="memberPhone" placeholder="+52 555 123 4567">
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeAddMemberModal()">Cancelar</button>
-                <button class="btn btn-primary" onclick="addMember()">
-                    <i class="fas fa-plus"></i> Agregar Miembro
+                <button class="btn btn-secondary" onclick="closeMemberModal()">Cancelar</button>
+                <button class="btn btn-primary" id="saveMemberBtn" onclick="saveMember()">
+                    <i class="fas fa-check"></i> Guardar
                 </button>
             </div>
         </div>
@@ -141,17 +641,19 @@
 
     <!-- View Member Modal -->
     <div class="modal" id="viewMemberModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="viewMemberTitle">Detalles del Miembro</h3>
-                <button class="modal-close" onclick="closeViewMemberModal()">&times;</button>
+        <div class="modal-content" style="max-width: 480px;">
+            <div class="modal-header" style="border: none; position: absolute; right: 0; z-index: 10;">
+                <button class="modal-close" onclick="closeViewModal()" style="background: rgba(255,255,255,0.2); color: white;">&times;</button>
             </div>
-            <div class="modal-body" id="viewMemberBody">
+            <div class="modal-body" id="viewMemberBody" style="padding: 0;">
                 <!-- Populated by JS -->
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeViewMemberModal()">Cerrar</button>
-                <button class="btn btn-primary" id="editMemberBtn">
+                <button class="btn btn-secondary" onclick="closeViewModal()">Cerrar</button>
+                <button class="btn btn-ghost" id="deleteMemberBtn" style="color: var(--danger);">
+                    <i class="fas fa-trash"></i> Eliminar
+                </button>
+                <button class="btn btn-primary" onclick="editCurrentMember()">
                     <i class="fas fa-edit"></i> Editar
                 </button>
             </div>
@@ -161,144 +663,332 @@
     <script src="../js/sidebar.js"></script>
     <script src="../js/data.js"></script>
     <script>
+        let allMembers = [];
+        let filteredMembers = [];
+        let currentFilter = '';
+        let viewingMemberId = null;
+
         document.addEventListener('DOMContentLoaded', () => {
-            loadTeamGrid();
+            document.body.classList.add('loaded');
+            loadMembers();
             loadActivityLog();
-            updateStats();
         });
 
-        function updateStats() {
-            document.getElementById('totalMembers').textContent = SuperAdminData.team.length;
-            document.getElementById('activeMembers').textContent = SuperAdminData.team.filter(m => m.status === 'active').length;
+        function loadMembers() {
+            allMembers = SuperAdminData.team || [];
+            filteredMembers = [...allMembers];
+            renderMembers();
+            updateStats();
         }
 
-        function loadTeamGrid() {
+        function updateStats() {
+            document.getElementById('totalMembers').textContent = allMembers.length;
+            document.getElementById('activeMembers').textContent = allMembers.filter(m => m.status === 'active').length;
+            document.getElementById('weeklyActions').textContent = Math.floor(allMembers.length * 35 + Math.random() * 20);
+        }
+
+        function renderMembers() {
             const grid = document.getElementById('teamGrid');
             
-            grid.innerHTML = SuperAdminData.team.map(member => `
-                <div class="card member-card" onclick="viewMember(${member.id})">
-                    <div class="member-info">
-                        <div class="member-avatar" style="background: linear-gradient(135deg, ${SuperAdminData.getRoleColor(member.role)}, ${SuperAdminData.getRoleColor(member.role)}80);">
-                            ${member.avatar}
-                        </div>
-                        <div class="member-details">
-                            <h4>${member.name}</h4>
-                            <p class="member-email">${member.email}</p>
-                            <span class="role-badge" style="background: ${SuperAdminData.getRoleColor(member.role)}20; color: ${SuperAdminData.getRoleColor(member.role)};">
-                                ${SuperAdminData.getRoleName(member.role)}
+            if (filteredMembers.length === 0) {
+                grid.innerHTML = `
+                    <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+                        <i class="fas fa-users" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
+                        <h3 style="color: #64748b; margin-bottom: 0.5rem;">No se encontraron miembros</h3>
+                        <p style="color: #94a3b8;">Intenta con otros filtros o agrega un nuevo miembro</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            grid.innerHTML = filteredMembers.map(member => {
+                const roleColor = getRoleColor(member.role);
+                const roleName = getRoleName(member.role);
+                const isOnline = member.status === 'active';
+                const initials = getInitials(member.name);
+                
+                return `
+                    <div class="member-card" onclick="viewMember(${member.id})">
+                        <div class="member-card-header">
+                            <span class="member-status ${isOnline ? '' : 'offline'}">
+                                <i class="fas fa-circle"></i> ${isOnline ? 'En línea' : 'Offline'}
                             </span>
+                            <div class="member-avatar">${initials}</div>
+                            <div class="member-name">${member.name}</div>
+                            <div class="member-email">${member.email}</div>
                         </div>
-                        <div class="member-status">
-                            <div class="last-login-label">Último acceso</div>
-                            <div class="last-login-value">${member.lastLogin}</div>
-                            <span class="status status-active"><i class="fas fa-circle"></i> Activo</span>
+                        <div class="member-card-body">
+                            <div class="member-role-badge" style="background: ${roleColor}15; color: ${roleColor};">
+                                <i class="${getRoleIcon(member.role)}"></i>
+                                ${roleName}
+                            </div>
+                            <div class="member-stats">
+                                <div class="member-stat">
+                                    <div class="member-stat-value">${member.lastLogin || 'Nunca'}</div>
+                                    <div class="member-stat-label">Último acceso</div>
+                                </div>
+                                <div class="member-stat">
+                                    <div class="member-stat-value">${member.permissions?.length || 0}</div>
+                                    <div class="member-stat-label">Permisos</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
+        }
+
+        function filterMembers() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            filteredMembers = allMembers.filter(m => {
+                const matchesSearch = m.name.toLowerCase().includes(search) || m.email.toLowerCase().includes(search);
+                const matchesRole = !currentFilter || m.role === currentFilter;
+                return matchesSearch && matchesRole;
+            });
+            renderMembers();
+        }
+
+        function filterByRole(btn, role) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = role;
+            filterMembers();
         }
 
         function loadActivityLog() {
             const activities = [
-                { user: 'Carlos Mendoza', action: 'Creó nueva compañía: Supermercados La Familia', time: 'Hace 2 horas', icon: 'fa-building' },
-                { user: 'María García', action: 'Respondió ticket #3 de Jardines Verdes', time: 'Hace 3 horas', icon: 'fa-headset' },
-                { user: 'Ana Rodríguez', action: 'Procesó pago de Constructora ABC - $299', time: 'Hace 5 horas', icon: 'fa-credit-card' },
-                { user: 'Juan Pérez', action: 'Generó reporte mensual de analytics', time: 'Hace 8 horas', icon: 'fa-chart-bar' },
-                { user: 'Carlos Mendoza', action: 'Actualizó configuración de precios', time: 'Ayer', icon: 'fa-cog' }
+                { user: 'Carlos Mendoza', action: 'creó nueva compañía', target: 'Supermercados La Familia', time: 'Hace 2 horas', type: 'create' },
+                { user: 'María García', action: 'respondió ticket #3 de', target: 'Jardines Verdes', time: 'Hace 3 horas', type: 'support' },
+                { user: 'Ana Rodríguez', action: 'procesó pago de', target: 'Constructora ABC - $299', time: 'Hace 5 horas', type: 'edit' },
+                { user: 'Juan Pérez', action: 'generó reporte mensual de', target: 'Analytics', time: 'Hace 8 horas', type: 'create' },
+                { user: 'Carlos Mendoza', action: 'inició sesión desde', target: 'Ciudad de México', time: 'Ayer', type: 'login' }
             ];
             
             document.getElementById('activityLog').innerHTML = activities.map(activity => `
                 <div class="activity-item">
-                    <span class="activity-icon"><i class="fas ${activity.icon}"></i></span>
+                    <div class="activity-icon ${activity.type}">
+                        <i class="fas ${getActivityIcon(activity.type)}"></i>
+                    </div>
                     <div class="activity-content">
-                        <p><strong>${activity.user}</strong> ${activity.action}</p>
-                        <small>${activity.time}</small>
+                        <div class="activity-text">
+                            <strong>${activity.user}</strong> ${activity.action} <strong>${activity.target}</strong>
+                        </div>
+                        <div class="activity-meta">
+                            <i class="fas fa-clock"></i> ${activity.time}
+                        </div>
                     </div>
                 </div>
             `).join('');
         }
 
         function viewMember(id) {
-            const member = SuperAdminData.getTeamMember(id);
+            const member = allMembers.find(m => m.id === id);
             if (!member) return;
             
-            document.getElementById('viewMemberTitle').textContent = member.name;
+            viewingMemberId = id;
+            const roleColor = getRoleColor(member.role);
+            const initials = getInitials(member.name);
+            
             document.getElementById('viewMemberBody').innerHTML = `
                 <div class="member-detail-header">
-                    <div class="member-avatar-lg" style="background: linear-gradient(135deg, ${SuperAdminData.getRoleColor(member.role)}, ${SuperAdminData.getRoleColor(member.role)}80);">
-                        ${member.avatar}
+                    <div class="member-avatar-lg">${initials}</div>
+                    <div class="member-detail-name">${member.name}</div>
+                    <div class="member-detail-email">${member.email}</div>
+                    <div class="member-role-badge" style="background: rgba(255,255,255,0.2); color: white; display: inline-flex; width: auto;">
+                        <i class="${getRoleIcon(member.role)}"></i>
+                        ${getRoleName(member.role)}
                     </div>
-                    <h3>${member.name}</h3>
-                    <span class="role-badge" style="background: ${SuperAdminData.getRoleColor(member.role)}20; color: ${SuperAdminData.getRoleColor(member.role)};">
-                        ${SuperAdminData.getRoleName(member.role)}
-                    </span>
                 </div>
-                
-                <div class="member-detail-info">
-                    <p><i class="fas fa-envelope"></i> <strong>Email:</strong> ${member.email}</p>
-                    <p><i class="fas fa-clock"></i> <strong>Último acceso:</strong> ${member.lastLogin}</p>
-                    <p><i class="fas fa-chart-line"></i> <strong>Estado:</strong> <span class="status status-active">Activo</span></p>
-                    
-                    <h4><i class="fas fa-key"></i> Permisos</h4>
-                    <div class="permissions-list">
-                        ${member.permissions.map(p => `<span class="permission-tag">${p}</span>`).join('')}
+                <div style="padding: 1.5rem;">
+                    <div class="member-info-grid">
+                        <div class="info-row">
+                            <i class="fas fa-clock"></i>
+                            <div>
+                                <div class="info-row-label">Último acceso</div>
+                                <div class="info-row-value">${member.lastLogin || 'Nunca'}</div>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <i class="fas fa-circle" style="color: ${member.status === 'active' ? 'var(--success)' : '#94a3b8'};"></i>
+                            <div>
+                                <div class="info-row-label">Estado</div>
+                                <div class="info-row-value">${member.status === 'active' ? 'Activo' : 'Inactivo'}</div>
+                            </div>
+                        </div>
+                        <div class="info-row" style="flex-direction: column; align-items: flex-start;">
+                            <div style="display: flex; align-items: center; gap: 1rem; width: 100%;">
+                                <i class="fas fa-key"></i>
+                                <div class="info-row-label">Permisos asignados</div>
+                            </div>
+                            <div class="permissions-grid">
+                                ${(member.permissions || ['Sin permisos específicos']).map(p => 
+                                    `<span class="permission-tag">${p}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
             document.getElementById('viewMemberModal').classList.add('show');
         }
 
-        function closeViewMemberModal() {
+        function closeViewModal() {
             document.getElementById('viewMemberModal').classList.remove('show');
+            viewingMemberId = null;
+        }
+
+        function editCurrentMember() {
+            if (!viewingMemberId) return;
+            closeViewModal();
+            openEditMemberModal(viewingMemberId);
         }
 
         function openAddMemberModal() {
-            document.getElementById('addMemberModal').classList.add('show');
-        }
-
-        function closeAddMemberModal() {
-            document.getElementById('addMemberModal').classList.remove('show');
-        }
-
-        function addMember() {
-            const name = document.getElementById('memberName').value;
-            const email = document.getElementById('memberEmail').value;
-            const role = document.getElementById('memberRole').value;
-            
-            if (!name || !email || !role) {
-                showToast('Por favor completa todos los campos', 'error');
-                return;
-            }
-            
-            const newMember = {
-                id: Date.now(),
-                name: name,
-                email: email,
-                role: role,
-                status: 'active',
-                avatar: name.charAt(0).toUpperCase(),
-                lastLogin: 'Nunca',
-                permissions: role === 'super_admin' ? ['all'] : [role.replace('_admin', '')]
-            };
-            
-            SuperAdminData.team.push(newMember);
-            
-            closeAddMemberModal();
-            loadTeamGrid();
-            updateStats();
-            showToast(`Miembro "${name}" agregado exitosamente`, 'success');
-            
-            // Clear form
+            document.getElementById('memberModalTitle').innerHTML = '<i class="fas fa-user-plus"></i> Agregar Miembro';
+            document.getElementById('editMemberId').value = '';
             document.getElementById('memberName').value = '';
             document.getElementById('memberEmail').value = '';
             document.getElementById('memberRole').value = '';
+            document.getElementById('memberPhone').value = '';
+            document.getElementById('avatarPreview').textContent = '?';
+            document.getElementById('saveMemberBtn').innerHTML = '<i class="fas fa-check"></i> Agregar';
+            document.getElementById('memberModal').classList.add('show');
+        }
+
+        function openEditMemberModal(id) {
+            const member = allMembers.find(m => m.id === id);
+            if (!member) return;
+            
+            document.getElementById('memberModalTitle').innerHTML = '<i class="fas fa-user-edit"></i> Editar Miembro';
+            document.getElementById('editMemberId').value = id;
+            document.getElementById('memberName').value = member.name;
+            document.getElementById('memberEmail').value = member.email;
+            document.getElementById('memberRole').value = member.role;
+            document.getElementById('memberPhone').value = member.phone || '';
+            document.getElementById('avatarPreview').textContent = getInitials(member.name);
+            document.getElementById('saveMemberBtn').innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
+            document.getElementById('memberModal').classList.add('show');
+        }
+
+        function closeMemberModal() {
+            document.getElementById('memberModal').classList.remove('show');
+        }
+
+        function updateAvatarPreview() {
+            const name = document.getElementById('memberName').value;
+            document.getElementById('avatarPreview').textContent = getInitials(name) || '?';
+        }
+
+        function saveMember() {
+            const id = document.getElementById('editMemberId').value;
+            const name = document.getElementById('memberName').value.trim();
+            const email = document.getElementById('memberEmail').value.trim();
+            const role = document.getElementById('memberRole').value;
+            const phone = document.getElementById('memberPhone').value.trim();
+            
+            if (!name || !email || !role) {
+                showToast('Por favor completa todos los campos requeridos', 'error');
+                return;
+            }
+            
+            if (id) {
+                // Edit existing
+                const member = SuperAdminData.team.find(m => m.id === parseInt(id));
+                if (member) {
+                    member.name = name;
+                    member.email = email;
+                    member.role = role;
+                    member.phone = phone;
+                    member.avatar = getInitials(name);
+                    showToast(`Miembro "${name}" actualizado exitosamente`);
+                }
+            } else {
+                // Add new
+                const newMember = {
+                    id: Date.now(),
+                    name: name,
+                    email: email,
+                    role: role,
+                    phone: phone,
+                    status: 'active',
+                    avatar: getInitials(name),
+                    lastLogin: 'Invitación pendiente',
+                    permissions: getPermissionsForRole(role)
+                };
+                SuperAdminData.team.push(newMember);
+                showToast(`Miembro "${name}" agregado exitosamente`);
+            }
+            
+            closeMemberModal();
+            loadMembers();
+        }
+
+        // Helper functions
+        function getInitials(name) {
+            if (!name) return '?';
+            return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        }
+
+        function getRoleColor(role) {
+            const colors = {
+                super_admin: '#fbbf24',
+                admin: '#02735E',
+                support: '#3b82f6',
+                billing: '#10b981',
+                viewer: '#64748b'
+            };
+            return colors[role] || '#64748b';
+        }
+
+        function getRoleName(role) {
+            const names = {
+                super_admin: 'Super Admin',
+                admin: 'Admin',
+                support: 'Soporte',
+                billing: 'Facturación',
+                viewer: 'Viewer'
+            };
+            return names[role] || role;
+        }
+
+        function getRoleIcon(role) {
+            const icons = {
+                super_admin: 'fas fa-crown',
+                admin: 'fas fa-user-shield',
+                support: 'fas fa-headset',
+                billing: 'fas fa-file-invoice-dollar',
+                viewer: 'fas fa-eye'
+            };
+            return icons[role] || 'fas fa-user';
+        }
+
+        function getActivityIcon(type) {
+            const icons = {
+                create: 'fa-plus',
+                edit: 'fa-edit',
+                delete: 'fa-trash',
+                login: 'fa-sign-in-alt',
+                support: 'fa-headset'
+            };
+            return icons[type] || 'fa-circle';
+        }
+
+        function getPermissionsForRole(role) {
+            const perms = {
+                super_admin: ['Acceso total', 'Configuración', 'Equipo', 'Facturación', 'Clientes', 'Soporte'],
+                admin: ['Clientes', 'Facturación', 'Soporte', 'Dashboard'],
+                support: ['Soporte', 'Clientes (lectura)'],
+                billing: ['Facturación', 'Dashboard', 'Clientes (lectura)'],
+                viewer: ['Dashboard (lectura)']
+            };
+            return perms[role] || [];
         }
 
         function showToast(message, type = 'success') {
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            const iconMap = { success: 'fa-check-circle', error: 'fa-times-circle' };
-            toast.innerHTML = `<i class="fas ${iconMap[type] || iconMap.success}"></i> ${message}`;
+            const icons = { success: 'fa-check-circle', error: 'fa-times-circle', warning: 'fa-exclamation-triangle' };
+            toast.innerHTML = `<i class="fas ${icons[type] || icons.success}" style="color: var(--${type === 'success' ? 'success' : type});"></i> ${message}`;
             
             let container = document.querySelector('.toast-container');
             if (!container) {
@@ -314,7 +1004,7 @@
         // Close modals on backdrop click
         document.querySelectorAll('.modal').forEach(modal => {
             modal.addEventListener('click', (e) => {
-                if (e.target.classList.contains('modal')) {
+                if (e.target === modal) {
                     modal.classList.remove('show');
                 }
             });
