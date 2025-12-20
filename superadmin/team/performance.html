@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desempeño - SuperAdmin | Opsis Suite</title>
+    <style>
+        :root { --verdi-dark: #022326; --sidebar-width: 240px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { background: #f8fafc; }
+        body { opacity: 0; transition: opacity 0.15s ease-in; }
+        body.loaded { opacity: 1; }
+        .app-shell { min-height: 100vh; background: #f8fafc; }
+        .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh; background: var(--verdi-dark); }
+        .main-content { margin-left: var(--sidebar-width); min-height: 100vh; background: #f8fafc; }
+
+        /* Performance Cards */
+        .performance-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
+        .performance-card { background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; transition: all 0.2s; }
+        .performance-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+        .performance-card-header { display: flex; align-items: center; gap: 0.75rem; padding: 1.25rem; border-bottom: 1px solid #f1f5f9; }
+        .performance-avatar { width: 48px; height: 48px; border-radius: 50%; background: #02735E; color: white; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 600; }
+        .performance-info { flex: 1; }
+        .performance-info h4 { font-size: 1rem; margin-bottom: 0.125rem; }
+        .performance-info span { font-size: 0.75rem; color: #64748b; }
+        .performance-rank { display: flex; align-items: center; gap: 0.25rem; padding: 0.375rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .performance-rank.gold { background: #fef3c7; color: #d97706; }
+        .performance-rank.silver { background: #f1f5f9; color: #64748b; }
+        .performance-rank.bronze { background: #fed7aa; color: #c2410c; }
+        .performance-card-body { padding: 1.25rem; }
+
+        .metrics-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1rem; }
+        .metric-item { text-align: center; padding: 0.75rem; background: #f8fafc; border-radius: 8px; }
+        .metric-value { font-size: 1.25rem; font-weight: 700; color: #1e293b; }
+        .metric-value.positive { color: #10b981; }
+        .metric-value.warning { color: #f59e0b; }
+        .metric-value.negative { color: #ef4444; }
+        .metric-label { font-size: 0.65rem; color: #64748b; margin-top: 0.125rem; }
+
+        .performance-bar { margin-bottom: 0.75rem; }
+        .performance-bar-label { display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.375rem; }
+        .performance-bar-label span:first-child { color: #64748b; }
+        .performance-bar-label span:last-child { font-weight: 600; }
+        .performance-bar-track { height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
+        .performance-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s ease; }
+
+        /* Leaderboard */
+        .leaderboard-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-bottom: 1px solid #f1f5f9; }
+        .leaderboard-item:last-child { border-bottom: none; }
+        .leaderboard-rank { width: 32px; height: 32px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 0.875rem; font-weight: 700; color: #64748b; }
+        .leaderboard-item:nth-child(1) .leaderboard-rank { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: white; }
+        .leaderboard-item:nth-child(2) .leaderboard-rank { background: linear-gradient(135deg, #94a3b8, #64748b); color: white; }
+        .leaderboard-item:nth-child(3) .leaderboard-rank { background: linear-gradient(135deg, #fb923c, #ea580c); color: white; }
+        .leaderboard-avatar { width: 40px; height: 40px; border-radius: 50%; background: #02735E; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.875rem; font-weight: 600; }
+        .leaderboard-info { flex: 1; }
+        .leaderboard-info strong { font-size: 0.9rem; display: block; margin-bottom: 0.125rem; }
+        .leaderboard-info span { font-size: 0.75rem; color: #64748b; }
+        .leaderboard-score { font-size: 1.125rem; font-weight: 700; color: #02735E; }
+
+        .chart-container { height: 250px; }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/superadmin/css/superadmin.css?v=7">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar" id="sidebar"></aside>
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <h1 class="page-title">Desempeño del Equipo</h1>
+                    <p class="page-subtitle">Métricas de productividad y rendimiento</p>
+                </div>
+                <div class="header-actions">
+                    <select class="form-control" style="width: auto;" onchange="updatePeriod()">
+                        <option>Esta semana</option>
+                        <option selected>Este mes</option>
+                        <option>Este trimestre</option>
+                    </select>
+                    <button class="btn btn-secondary" onclick="exportReport()"><i class="fas fa-download"></i> Exportar</button>
+                    <a href="index.html" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Volver</a>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <!-- Stats -->
+                <div class="stats-grid" style="margin-bottom: 1.5rem;">
+                    <div class="stat-card">
+                        <div class="stat-icon success"><i class="fas fa-ticket-alt"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-value">156</div>
+                            <div class="stat-label">Tickets Resueltos</div>
+                        </div>
+                        <span class="stat-trend up"><i class="fas fa-arrow-up"></i> +12%</span>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon info"><i class="fas fa-clock"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-value">2.4h</div>
+                            <div class="stat-label">Tiempo Promedio</div>
+                        </div>
+                        <span class="stat-trend up"><i class="fas fa-arrow-down"></i> -18%</span>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon warning"><i class="fas fa-star"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-value">4.8</div>
+                            <div class="stat-label">Satisfacción</div>
+                        </div>
+                        <span class="stat-trend up"><i class="fas fa-arrow-up"></i> +5%</span>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-value">45</div>
+                            <div class="stat-label">Clientes Gestionados</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="grid-2" style="margin-bottom: 1.5rem; gap: 1.5rem;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-chart-line"></i> Tickets por Semana</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container"><canvas id="ticketsChart"></canvas></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-chart-bar"></i> Tickets por Miembro</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container"><canvas id="memberChart"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Leaderboard & Goals -->
+                <div class="grid-2" style="gap: 1.5rem; margin-bottom: 1.5rem;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-trophy"></i> Leaderboard</h3>
+                        </div>
+                        <div class="card-body" style="padding: 0;" id="leaderboard"></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-bullseye"></i> Metas del Equipo</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="performance-bar">
+                                <div class="performance-bar-label"><span>Tickets resueltos</span><span>156 / 200</span></div>
+                                <div class="performance-bar-track"><div class="performance-bar-fill" style="width: 78%; background: #10b981;"></div></div>
+                            </div>
+                            <div class="performance-bar">
+                                <div class="performance-bar-label"><span>Tiempo respuesta < 2h</span><span>85%</span></div>
+                                <div class="performance-bar-track"><div class="performance-bar-fill" style="width: 85%; background: #3b82f6;"></div></div>
+                            </div>
+                            <div class="performance-bar">
+                                <div class="performance-bar-label"><span>Satisfacción > 4.5</span><span>4.8 ⭐</span></div>
+                                <div class="performance-bar-track"><div class="performance-bar-fill" style="width: 96%; background: #f59e0b;"></div></div>
+                            </div>
+                            <div class="performance-bar">
+                                <div class="performance-bar-label"><span>Clientes activos</span><span>45 / 50</span></div>
+                                <div class="performance-bar-track"><div class="performance-bar-fill" style="width: 90%; background: #8b5cf6;"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Individual Performance -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-user-chart"></i> Desempeño Individual</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="performance-grid" id="performanceGrid"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/superadmin/js/sidebar.js"></script>
+    <script src="/superadmin/js/data.js"></script>
+    <script>
+        document.body.classList.add('loaded');
+
+        const performanceData = [
+            { id: 1, name: 'Laura Martínez', avatar: 'LM', role: 'Soporte', tickets: 45, responseTime: '1.8h', satisfaction: 4.9, rank: 1 },
+            { id: 2, name: 'Juan Pérez', avatar: 'JP', role: 'Admin', tickets: 38, responseTime: '2.1h', satisfaction: 4.7, rank: 2 },
+            { id: 3, name: 'Diego López', avatar: 'DL', role: 'Soporte', tickets: 32, responseTime: '2.5h', satisfaction: 4.6, rank: 3 },
+            { id: 4, name: 'Pedro Sánchez', avatar: 'PS', role: 'Admin', tickets: 28, responseTime: '2.8h', satisfaction: 4.5, rank: 4 },
+            { id: 5, name: 'María González', avatar: 'MG', role: 'Super Admin', tickets: 13, responseTime: '3.2h', satisfaction: 4.8, rank: 5 }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof SuperAdminSidebar !== 'undefined') SuperAdminSidebar.init();
+            renderLeaderboard();
+            renderPerformanceCards();
+            initCharts();
+        });
+
+        function renderLeaderboard() {
+            const container = document.getElementById('leaderboard');
+            container.innerHTML = performanceData.map((m, i) => `
+                <div class="leaderboard-item">
+                    <div class="leaderboard-rank">${i + 1}</div>
+                    <div class="leaderboard-avatar">${m.avatar}</div>
+                    <div class="leaderboard-info"><strong>${m.name}</strong><span>${m.role}</span></div>
+                    <div class="leaderboard-score">${m.tickets}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderPerformanceCards() {
+            const grid = document.getElementById('performanceGrid');
+            grid.innerHTML = performanceData.map(m => {
+                const rankClass = m.rank === 1 ? 'gold' : m.rank === 2 ? 'silver' : m.rank === 3 ? 'bronze' : '';
+                const responseClass = parseFloat(m.responseTime) <= 2 ? 'positive' : parseFloat(m.responseTime) <= 3 ? 'warning' : 'negative';
+                return `
+                    <div class="performance-card">
+                        <div class="performance-card-header">
+                            <div class="performance-avatar">${m.avatar}</div>
+                            <div class="performance-info"><h4>${m.name}</h4><span>${m.role}</span></div>
+                            ${rankClass ? `<div class="performance-rank ${rankClass}"><i class="fas fa-trophy"></i> #${m.rank}</div>` : ''}
+                        </div>
+                        <div class="performance-card-body">
+                            <div class="metrics-row">
+                                <div class="metric-item"><div class="metric-value">${m.tickets}</div><div class="metric-label">Tickets</div></div>
+                                <div class="metric-item"><div class="metric-value ${responseClass}">${m.responseTime}</div><div class="metric-label">Tiempo Resp.</div></div>
+                                <div class="metric-item"><div class="metric-value positive">${m.satisfaction}</div><div class="metric-label">Satisfacción</div></div>
+                            </div>
+                            <div class="performance-bar">
+                                <div class="performance-bar-label"><span>Meta mensual</span><span>${m.tickets}/40 tickets</span></div>
+                                <div class="performance-bar-track"><div class="performance-bar-fill" style="width: ${Math.min((m.tickets/40)*100, 100)}%; background: ${m.tickets >= 40 ? '#10b981' : '#3b82f6'};"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function initCharts() {
+            new Chart(document.getElementById('ticketsChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
+                    datasets: [{ label: 'Tickets', data: [32, 45, 38, 41], borderColor: '#02735E', backgroundColor: 'rgba(2, 115, 94, 0.1)', borderWidth: 3, fill: true, tension: 0.4 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+            });
+
+            new Chart(document.getElementById('memberChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: performanceData.map(m => m.name.split(' ')[0]),
+                    datasets: [{ label: 'Tickets', data: performanceData.map(m => m.tickets), backgroundColor: ['#fbbf24', '#94a3b8', '#fb923c', '#02735E', '#3b82f6'], borderRadius: 6 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        function updatePeriod() { showNotification('Período actualizado', 'info'); }
+        function exportReport() { showNotification('Reporte exportado', 'success'); }
+
+        function showNotification(msg, type = 'info') {
+            const n = document.createElement('div');
+            n.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i> ${msg}`;
+            n.style.cssText = `position: fixed; top: 20px; right: 20px; padding: 1rem 1.5rem; background: ${type === 'success' ? '#10b981' : '#3b82f6'}; color: white; border-radius: 8px; display: flex; align-items: center; gap: 0.75rem; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999;`;
+            document.body.appendChild(n);
+            setTimeout(() => { n.style.opacity = '0'; setTimeout(() => n.remove(), 300); }, 3000);
+        }
+    </script>
+</body>
+</html>

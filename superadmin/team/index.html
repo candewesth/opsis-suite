@@ -1,0 +1,1787 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equipo - SuperAdmin | Opsis Suite</title>
+    <style>
+        :root { --verdi-dark: #022326; --sidebar-width: 240px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { background: #f8fafc; }
+        body { opacity: 0; transition: opacity 0.15s ease-in; }
+        body.loaded { opacity: 1; }
+        .app-shell { min-height: 100vh; background: #f8fafc; }
+        .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh; background: var(--verdi-dark); }
+        .main-content { margin-left: var(--sidebar-width); min-height: 100vh; background: #f8fafc; }
+
+        /* Tabs */
+        .tabs-container { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; background: white; padding: 0.5rem; border-radius: 12px; border: 1px solid #e2e8f0; }
+        .tab-btn { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; border: none; background: transparent; border-radius: 8px; cursor: pointer; font-weight: 500; color: #64748b; transition: all 0.2s; }
+        .tab-btn:hover { background: #f1f5f9; color: #1e293b; }
+        .tab-btn.active { background: #02735E; color: white; }
+        .tab-btn .badge-count { background: #e2e8f0; color: #64748b; padding: 0.125rem 0.5rem; border-radius: 10px; font-size: 0.75rem; }
+        .tab-btn.active .badge-count { background: rgba(255,255,255,0.2); color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Member Cards */
+        .members-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+        .member-card { background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; cursor: pointer; transition: all 0.2s; }
+        .member-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); transform: translateY(-2px); }
+        .member-card-header { background: linear-gradient(135deg, #022326, #034040); padding: 1.25rem; text-align: center; color: white; }
+        .member-avatar { width: 56px; height: 56px; border-radius: 50%; background: #02735E; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem; font-size: 1.25rem; font-weight: 600; border: 3px solid rgba(255,255,255,0.2); }
+        .member-name { font-weight: 600; margin-bottom: 0.25rem; }
+        .member-email { font-size: 0.75rem; opacity: 0.8; }
+        .member-status { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.7rem; padding: 0.25rem 0.5rem; border-radius: 10px; margin-bottom: 0.5rem; }
+        .member-status.online { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .member-status.offline { background: rgba(100, 116, 139, 0.2); color: #94a3b8; }
+        .member-card-body { padding: 1rem; }
+        .member-role-badge { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.75rem; border-radius: 6px; font-size: 0.75rem; font-weight: 500; }
+        .member-meta { display: flex; justify-content: space-between; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #f1f5f9; font-size: 0.75rem; color: #64748b; }
+
+        /* Role Cards - Enhanced */
+        .roles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
+        .role-card { background: white; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; cursor: pointer; transition: all 0.3s; position: relative; }
+        .role-card:hover { box-shadow: 0 12px 32px rgba(0,0,0,0.1); transform: translateY(-4px); }
+        .role-card.selected { border-color: #02735E; box-shadow: 0 0 0 2px rgba(2, 115, 94, 0.2); }
+        .role-card-header { padding: 1.25rem; display: flex; align-items: center; gap: 1rem; }
+        .role-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0; }
+        .role-info { flex: 1; min-width: 0; }
+        .role-info h4 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; color: #1e293b; }
+        .role-info span { font-size: 0.8rem; color: #64748b; }
+        .role-badge { font-size: 0.65rem; padding: 0.25rem 0.5rem; border-radius: 6px; font-weight: 600; text-transform: uppercase; }
+        .role-badge.system { background: #dcfce7; color: #059669; }
+        .role-badge.custom { background: #fef3c7; color: #d97706; }
+        .role-card-body { padding: 0 1.25rem 1.25rem; }
+        .role-permissions-list { display: flex; flex-wrap: wrap; gap: 0.375rem; margin-bottom: 1rem; }
+        .perm-badge { padding: 0.35rem 0.625rem; background: #f1f5f9; border-radius: 6px; font-size: 0.7rem; color: #475569; display: flex; align-items: center; gap: 0.35rem; }
+        .perm-badge i { font-size: 0.6rem; opacity: 0.7; }
+        .role-stats { display: flex; gap: 1rem; padding: 1rem 1.25rem; background: #f8fafc; border-top: 1px solid #f1f5f9; }
+        .role-stat { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #64748b; }
+        .role-stat i { font-size: 0.7rem; }
+        .role-stat strong { color: #1e293b; }
+        .role-actions { position: absolute; top: 1rem; right: 1rem; display: flex; gap: 0.25rem; opacity: 0; transition: opacity 0.2s; }
+        .role-card:hover .role-actions { opacity: 1; }
+        .role-action-btn { width: 28px; height: 28px; border-radius: 6px; border: none; background: #f1f5f9; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .role-action-btn:hover { background: #e2e8f0; color: #1e293b; }
+        .role-action-btn.danger:hover { background: #fee2e2; color: #dc2626; }
+
+        /* Icon & Color Selectors */
+        .icon-option { width: 40px; height: 40px; border-radius: 10px; border: 2px solid #e2e8f0; background: white; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .icon-option:hover { border-color: #02735E; color: #02735E; }
+        .icon-option.active { border-color: #02735E; background: #02735E; color: white; }
+        .color-option { width: 32px; height: 32px; border-radius: 8px; border: 3px solid transparent; cursor: pointer; transition: all 0.2s; }
+        .color-option:hover { transform: scale(1.1); }
+        .color-option.active { border-color: #1e293b; box-shadow: 0 0 0 2px white, 0 0 0 4px #1e293b; }
+
+        /* Permissions Matrix */
+        .matrix-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+        .matrix-table th, .matrix-table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #f1f5f9; }
+        .matrix-table th { background: #f8fafc; font-weight: 600; color: #64748b; font-size: 0.75rem; text-transform: uppercase; }
+        .matrix-table td:first-child { font-weight: 500; }
+        .perm-check { color: #10b981; }
+        .perm-none { color: #e2e8f0; }
+
+        /* Detail Panel */
+        .detail-panel { position: fixed; right: -400px; top: 0; width: 400px; height: 100vh; background: white; box-shadow: -4px 0 20px rgba(0,0,0,0.1); transition: right 0.3s ease; z-index: 1000; overflow-y: auto; }
+        .detail-panel.open { right: 0; }
+        .panel-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); opacity: 0; visibility: hidden; transition: all 0.3s; z-index: 999; }
+        .panel-overlay.open { opacity: 1; visibility: visible; }
+        .panel-header { background: linear-gradient(135deg, #022326, #034040); color: white; padding: 1.5rem; text-align: center; position: relative; }
+        .panel-avatar { width: 80px; height: 80px; border-radius: 50%; background: #02735E; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.75rem; font-weight: 600; border: 4px solid rgba(255,255,255,0.2); }
+        .panel-close { position: absolute; top: 1rem; right: 1rem; background: rgba(255,255,255,0.1); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; }
+        .panel-body { padding: 1.5rem; }
+        .panel-section { margin-bottom: 1.5rem; }
+        .panel-section h4 { font-size: 0.75rem; text-transform: uppercase; color: #64748b; margin-bottom: 0.75rem; }
+        .panel-info-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9; font-size: 0.875rem; }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/superadmin/css/superadmin.css?v=7">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar" id="sidebar"></aside>
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <h1 class="page-title">Mi Equipo</h1>
+                    <p class="page-subtitle">Gestiona miembros, roles y permisos</p>
+                </div>
+                <div class="header-actions">
+                    <a href="activity.html" class="btn btn-secondary"><i class="fas fa-history"></i> Actividad</a>
+                    <button class="btn btn-primary" onclick="openModal('inviteModal')"><i class="fas fa-user-plus"></i> Invitar</button>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <!-- Tabs -->
+                <div class="tabs-container">
+                    <button class="tab-btn active" data-tab="members" onclick="switchTab('members')">
+                        <i class="fas fa-users"></i> Miembros <span class="badge-count" id="membersCount">8</span>
+                    </button>
+                    <button class="tab-btn" data-tab="roles" onclick="switchTab('roles')">
+                        <i class="fas fa-shield-alt"></i> Roles <span class="badge-count" id="rolesCount">5</span>
+                    </button>
+                    <button class="tab-btn" data-tab="permissions" onclick="switchTab('permissions')">
+                        <i class="fas fa-key"></i> Permisos
+                    </button>
+                </div>
+
+                <!-- Tab: Members -->
+                <div class="tab-content active" id="tab-members">
+                    <!-- Member Stats -->
+                    <div class="stats-grid" id="memberStats" style="margin-bottom: 1.5rem;">
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-users"></i></div>
+                            <div class="stat-content">
+                                <div class="stat-value" id="totalMembers">8</div>
+                                <div class="stat-label">Miembros</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon success"><i class="fas fa-circle"></i></div>
+                            <div class="stat-content">
+                                <div class="stat-value" id="onlineMembers">5</div>
+                                <div class="stat-label">En Línea</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon info"><i class="fas fa-shield-alt"></i></div>
+                            <div class="stat-content">
+                                <div class="stat-value" id="totalRoles">5</div>
+                                <div class="stat-label">Roles</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon warning"><i class="fas fa-envelope"></i></div>
+                            <div class="stat-content">
+                                <div class="stat-value">2</div>
+                                <div class="stat-label">Pendientes</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="members-grid" id="membersGrid"></div>
+                </div>
+
+                <!-- Tab: Roles -->
+                <div class="tab-content" id="tab-roles">
+                    <!-- Roles Header -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <div>
+                            <p style="color: #64748b; font-size: 0.875rem;">Define los niveles de acceso y responsabilidades para tu equipo</p>
+                        </div>
+                        <div style="display: flex; gap: 0.75rem;">
+                            <button class="btn btn-secondary" onclick="openModal('roleCompareModal')"><i class="fas fa-columns"></i> Comparar</button>
+                            <button class="btn btn-primary" onclick="openRoleModal()"><i class="fas fa-plus"></i> Nuevo Rol</button>
+                        </div>
+                    </div>
+
+                    <!-- Roles Stats -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                        <div style="background: linear-gradient(135deg, #022326, #035951); border-radius: 12px; padding: 1.25rem; color: white;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div>
+                                    <div style="font-size: 1.5rem; font-weight: 700;" id="rolesTotal">5</div>
+                                    <div style="font-size: 0.75rem; opacity: 0.8;">Roles Totales</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="background: white; border-radius: 12px; padding: 1.25rem; border: 1px solid #e2e8f0;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="width: 40px; height: 40px; border-radius: 10px; background: #dcfce7; color: #059669; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-lock"></i>
+                                </div>
+                                <div>
+                                    <div style="font-size: 1.5rem; font-weight: 700; color: #1e293b;" id="systemRoles">5</div>
+                                    <div style="font-size: 0.75rem; color: #64748b;">Roles de Sistema</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="background: white; border-radius: 12px; padding: 1.25rem; border: 1px solid #e2e8f0;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="width: 40px; height: 40px; border-radius: 10px; background: #fef3c7; color: #d97706; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-user-tag"></i>
+                                </div>
+                                <div>
+                                    <div style="font-size: 1.5rem; font-weight: 700; color: #1e293b;" id="customRoles">0</div>
+                                    <div style="font-size: 0.75rem; color: #64748b;">Roles Custom</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="background: white; border-radius: 12px; padding: 1.25rem; border: 1px solid #e2e8f0;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="width: 40px; height: 40px; border-radius: 10px; background: #e0e7ff; color: #4f46e5; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-key"></i>
+                                </div>
+                                <div>
+                                    <div style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">7</div>
+                                    <div style="font-size: 0.75rem; color: #64748b;">Permisos</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Roles Grid -->
+                    <div class="roles-grid" id="rolesGrid"></div>
+
+                    <!-- Hierarchy Visual -->
+                    <div style="margin-top: 2rem; background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.5rem;">
+                        <h4 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; color: #1e293b;">
+                            <i class="fas fa-sitemap" style="color: #02735E;"></i> Jerarquía de Roles
+                        </h4>
+                        <div id="roleHierarchy" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+                    </div>
+                </div>
+
+                <!-- Tab: Permissions -->
+                <div class="tab-content" id="tab-permissions">
+                    <div class="card">
+                        <div class="card-header"><h3 class="card-title"><i class="fas fa-table"></i> Matriz de Permisos</h3></div>
+                        <div class="card-body" style="overflow-x: auto;">
+                            <table class="matrix-table" id="permissionsMatrix"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Detail Panel -->
+    <div class="panel-overlay" id="panelOverlay" onclick="closePanel()"></div>
+    <div class="detail-panel" id="detailPanel">
+        <div class="panel-header">
+            <button class="panel-close" onclick="closePanel()"><i class="fas fa-times"></i></button>
+            <div class="panel-avatar-container" style="position: relative; display: inline-block;">
+                <div class="panel-avatar" id="panelAvatar">CW</div>
+                <img id="panelAvatarImg" src="" alt="" style="display: none; width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 4px solid rgba(255,255,255,0.2);">
+                <button onclick="openEditModal()" class="avatar-edit-btn" style="position: absolute; bottom: 0; right: 0; width: 28px; height: 28px; border-radius: 50%; background: #02735E; border: 2px solid white; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-camera" style="font-size: 0.7rem;"></i>
+                </button>
+            </div>
+            <h3 id="panelName">Carlos Westheimer</h3>
+            <p style="opacity: 0.8; font-size: 0.875rem;" id="panelEmail">carlos@opsis.com</p>
+        </div>
+        <div class="panel-body">
+            <div class="panel-section">
+                <h4>Información</h4>
+                <div class="panel-info-row"><span>Rol</span><span id="panelRole">Super Admin</span></div>
+                <div class="panel-info-row"><span>Estado</span><span id="panelStatus">En línea</span></div>
+                <div class="panel-info-row"><span>Última conexión</span><span id="panelLastLogin">Hace 5 min</span></div>
+                <div class="panel-info-row"><span>Fecha de ingreso</span><span id="panelJoined">15 Ene 2024</span></div>
+            </div>
+            <div class="panel-section">
+                <h4>Acciones</h4>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button class="btn btn-secondary btn-sm" onclick="openEditModal()"><i class="fas fa-edit"></i> Editar</button>
+                    <button class="btn btn-secondary btn-sm" onclick="openPermissionsModal()"><i class="fas fa-key"></i> Permisos</button>
+                    <button class="btn btn-danger btn-sm" onclick="openRemoveModal()"><i class="fas fa-user-minus"></i> Remover</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invite Modal -->
+    <div class="modal-overlay" id="inviteModal">
+        <div class="modal" style="max-width: 450px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-plus"></i> Invitar Miembro</h3>
+                <button class="modal-close" onclick="closeModal('inviteModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" class="form-control" placeholder="email@ejemplo.com">
+                </div>
+                <div class="form-group">
+                    <label>Rol</label>
+                    <select class="form-control">
+                        <option>Admin</option>
+                        <option>Soporte</option>
+                        <option>Facturación</option>
+                        <option>Viewer</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('inviteModal')">Cancelar</button>
+                <button class="btn btn-primary" onclick="sendInvite()"><i class="fas fa-paper-plane"></i> Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Role Modal -->
+    <div class="modal-overlay" id="roleModal">
+        <div class="modal" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-shield-alt"></i> Nuevo Rol</h3>
+                <button class="modal-close" onclick="closeModal('roleModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Nombre del Rol</label>
+                    <input type="text" class="form-control" placeholder="Ej: Supervisor">
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <input type="text" class="form-control" placeholder="Breve descripción del rol">
+                </div>
+                <div class="form-group">
+                    <label>Permisos</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.5rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;"><input type="checkbox"> Dashboard</label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;"><input type="checkbox"> Clientes</label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;"><input type="checkbox"> Facturación</label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;"><input type="checkbox"> Soporte</label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;"><input type="checkbox"> Equipo</label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;"><input type="checkbox"> Configuración</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('roleModal')">Cancelar</button>
+                <button class="btn btn-primary" onclick="createRole()"><i class="fas fa-check"></i> Crear</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Member Modal -->
+    <div class="modal-overlay" id="editMemberModal">
+        <div class="modal" style="max-width: 520px; overflow: hidden;">
+            <!-- Header con gradiente -->
+            <div style="background: linear-gradient(135deg, #022326 0%, #035951 100%); padding: 1.5rem 1.5rem 4rem; position: relative;">
+                <button class="modal-close" onclick="closeModal('editMemberModal')" style="position: absolute; top: 1rem; right: 1rem; background: rgba(255,255,255,0.1); border: none; color: white; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h3 style="color: white; font-size: 1.125rem; margin: 0;"><i class="fas fa-user-edit" style="margin-right: 0.5rem; opacity: 0.8;"></i> Editar Miembro</h3>
+                <p style="color: rgba(255,255,255,0.6); font-size: 0.8rem; margin-top: 0.25rem;">Actualiza la información del usuario</p>
+            </div>
+            
+            <!-- Avatar flotante -->
+            <div style="display: flex; justify-content: center; margin-top: -3.5rem; position: relative; z-index: 10;">
+                <div style="position: relative;">
+                    <div id="editAvatarPreview" style="width: 110px; height: 110px; border-radius: 50%; background: linear-gradient(135deg, #02735E, #10b981); display: flex; align-items: center; justify-content: center; font-size: 2.25rem; font-weight: 700; color: white; box-shadow: 0 8px 24px rgba(2, 115, 94, 0.4); border: 4px solid white; overflow: hidden;">
+                        <span id="editAvatarInitials">CW</span>
+                        <img id="editAvatarImg" src="" style="display: none; width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <label for="avatarUpload" style="position: absolute; bottom: 4px; right: 4px; width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border: 3px solid white; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4); transition: all 0.2s;">
+                        <i class="fas fa-camera" style="font-size: 0.85rem;"></i>
+                    </label>
+                    <input type="file" id="avatarUpload" accept="image/*" style="display: none;" onchange="previewAvatar(this)">
+                </div>
+            </div>
+            
+            <div class="modal-body" style="padding: 1rem 1.5rem 1.5rem;">
+                <p style="text-align: center; font-size: 0.75rem; color: #64748b; margin: 0.5rem 0 1.25rem;">
+                    <i class="fas fa-info-circle" style="margin-right: 0.25rem;"></i> Click en la cámara para cambiar foto
+                </p>
+                
+                <!-- Nombre con icono -->
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; font-size: 0.8rem; color: #374151; margin-bottom: 0.5rem;">
+                        <i class="fas fa-user" style="color: #02735E; width: 16px;"></i> Nombre Completo
+                    </label>
+                    <input type="text" class="form-control" id="editMemberName" placeholder="Ej: Carlos Westheimer" style="padding: 0.75rem 1rem; border-radius: 10px; border: 2px solid #e2e8f0; transition: all 0.2s; font-size: 0.9rem;">
+                </div>
+                
+                <!-- Email con icono -->
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; font-size: 0.8rem; color: #374151; margin-bottom: 0.5rem;">
+                        <i class="fas fa-envelope" style="color: #02735E; width: 16px;"></i> Correo Electrónico
+                    </label>
+                    <input type="email" class="form-control" id="editMemberEmail" placeholder="email@empresa.com" style="padding: 0.75rem 1rem; border-radius: 10px; border: 2px solid #e2e8f0; transition: all 0.2s; font-size: 0.9rem;">
+                </div>
+                
+                <!-- Row con Rol y Estado -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; font-size: 0.8rem; color: #374151; margin-bottom: 0.5rem;">
+                            <i class="fas fa-shield-alt" style="color: #02735E; width: 16px;"></i> Rol
+                        </label>
+                        <select class="form-control" id="editMemberRole" style="padding: 0.75rem 1rem; border-radius: 10px; border: 2px solid #e2e8f0; font-size: 0.9rem; cursor: pointer;">
+                            <option value="superadmin">Super Admin</option>
+                            <option value="admin">Admin</option>
+                            <option value="support">Soporte</option>
+                            <option value="billing">Facturación</option>
+                            <option value="viewer">Viewer</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; font-size: 0.8rem; color: #374151; margin-bottom: 0.5rem;">
+                            <i class="fas fa-toggle-on" style="color: #02735E; width: 16px;"></i> Estado
+                        </label>
+                        <select class="form-control" id="editMemberStatus" style="padding: 0.75rem 1rem; border-radius: 10px; border: 2px solid #e2e8f0; font-size: 0.9rem; cursor: pointer;">
+                            <option value="online">Activo</option>
+                            <option value="offline">Inactivo</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer con botones mejorados -->
+            <div style="padding: 1rem 1.5rem 1.5rem; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; gap: 0.75rem;">
+                <button onclick="closeModal('editMemberModal')" style="flex: 1; padding: 0.875rem; border: 2px solid #e2e8f0; background: white; border-radius: 10px; font-weight: 600; color: #64748b; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">
+                    Cancelar
+                </button>
+                <button onclick="saveMember()" style="flex: 2; padding: 0.875rem; border: none; background: linear-gradient(135deg, #02735E, #10b981); border-radius: 10px; font-weight: 600; color: white; cursor: pointer; transition: all 0.2s; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(2, 115, 94, 0.3);">
+                    <i class="fas fa-check-circle"></i> Guardar Cambios
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Member Permissions Modal (Editable) -->
+    <div class="modal-overlay" id="permissionsModal">
+        <div class="modal" style="max-width: 580px; overflow: hidden; max-height: 90vh;">
+            <!-- Header con gradiente Verdi -->
+            <div style="background: linear-gradient(135deg, #022326 0%, #035951 100%); padding: 1.5rem; position: relative;">
+                <button class="modal-close" onclick="closeModal('permissionsModal')" style="position: absolute; top: 1rem; right: 1rem; background: rgba(255,255,255,0.15); border: none; color: white; width: 32px; height: 32px; border-radius: 8px; cursor: pointer;">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div id="permsRoleBadge" style="width: 56px; height: 56px; border-radius: 14px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+                        <i class="fas fa-crown" style="color: #fbbf24; font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h3 style="color: white; font-size: 1.125rem; margin: 0;" id="permsMemberName">Usuario</h3>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
+                            <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; color: white;" id="permsRoleName">Super Admin</span>
+                            <span style="font-size: 0.7rem; color: rgba(255,255,255,0.6);">• Permisos personalizados</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-body" style="padding: 1rem; max-height: 50vh; overflow-y: auto;">
+                <!-- Quick actions -->
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                    <button onclick="selectAllPerms()" style="flex: 1; padding: 0.5rem; border: 1px solid #10b981; background: #f0fdf4; border-radius: 8px; font-size: 0.75rem; font-weight: 600; color: #16a34a; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.375rem;">
+                        <i class="fas fa-check-double"></i> Todos
+                    </button>
+                    <button onclick="deselectAllPerms()" style="flex: 1; padding: 0.5rem; border: 1px solid #dc2626; background: #fef2f2; border-radius: 8px; font-size: 0.75rem; font-weight: 600; color: #dc2626; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.375rem;">
+                        <i class="fas fa-times"></i> Ninguno
+                    </button>
+                    <button onclick="resetToRolePerms()" style="flex: 1; padding: 0.5rem; border: 1px solid #64748b; background: #f8fafc; border-radius: 8px; font-size: 0.75rem; font-weight: 600; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.375rem;">
+                        <i class="fas fa-undo"></i> Reset al Rol
+                    </button>
+                </div>
+                
+                <!-- Modules Accordion -->
+                <div id="permsModulesList" style="display: grid; gap: 0.625rem;">
+                    <!-- Generated dynamically -->
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div style="padding: 1rem 1.5rem; background: #f8fafc; border-top: 1px solid #e2e8f0;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                    <span style="font-size: 0.75rem; color: #64748b;"><i class="fas fa-info-circle" style="margin-right: 0.25rem;"></i> Los cambios sobrescriben los permisos del rol</span>
+                    <span id="permsCounter" style="font-size: 0.75rem; font-weight: 600; color: #02735E;">0 permisos activos</span>
+                </div>
+                <div style="display: flex; gap: 0.75rem;">
+                    <button onclick="closeModal('permissionsModal')" style="flex: 1; padding: 0.75rem; border: 2px solid #e2e8f0; background: white; border-radius: 10px; font-weight: 600; color: #64748b; cursor: pointer; font-size: 0.875rem;">
+                        Cancelar
+                    </button>
+                    <button onclick="saveUserPermissions()" style="flex: 2; padding: 0.75rem; border: none; background: linear-gradient(135deg, #02735E, #10b981); border-radius: 10px; font-weight: 600; color: white; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <i class="fas fa-save"></i> Guardar Permisos
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Remove Member Modal -->
+    <div class="modal-overlay" id="removeMemberModal">
+        <div class="modal" style="max-width: 420px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #dc2626, #b91c1c); color: white;">
+                <h3 style="color: white;"><i class="fas fa-exclamation-triangle"></i> Remover Miembro</h3>
+                <button class="modal-close" onclick="closeModal('removeMemberModal')" style="background: rgba(255,255,255,0.2);"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" style="text-align: center; padding: 2rem;">
+                <div style="width: 64px; height: 64px; border-radius: 50%; background: #fee2e2; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-user-minus" style="font-size: 1.5rem; color: #dc2626;"></i>
+                </div>
+                <h4 style="margin-bottom: 0.5rem;">¿Estás seguro?</h4>
+                <p style="color: #64748b; font-size: 0.875rem; margin-bottom: 1rem;">
+                    Estás a punto de remover a <strong id="removeMemberName">Usuario</strong> del equipo.
+                </p>
+                <div style="background: #fef3c7; padding: 0.75rem; border-radius: 8px; font-size: 0.8rem; color: #92400e;">
+                    <i class="fas fa-info-circle"></i> Esta acción revocará todos los accesos inmediatamente.
+                </div>
+            </div>
+            <div class="modal-footer" style="justify-content: center; gap: 1rem;">
+                <button class="btn btn-secondary" onclick="closeModal('removeMemberModal')">Cancelar</button>
+                <button class="btn btn-danger" onclick="confirmRemoveMember()"><i class="fas fa-trash"></i> Sí, Remover</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Role Panel (Detail View) -->
+    <div class="panel-overlay" id="rolePanelOverlay" onclick="closeRolePanel()"></div>
+    <div class="detail-panel" id="roleDetailPanel">
+        <div class="panel-header" id="rolePanelHeader" style="padding-bottom: 1.5rem;">
+            <button class="panel-close" onclick="closeRolePanel()"><i class="fas fa-times"></i></button>
+            <div class="panel-avatar" id="rolePanelIcon" style="background: #02735E;">
+                <i class="fas fa-crown"></i>
+            </div>
+            <h3 id="rolePanelName">Super Admin</h3>
+            <p style="opacity: 0.8; font-size: 0.875rem;" id="rolePanelDesc">Acceso total al sistema</p>
+            <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+                <span id="rolePanelBadge" class="role-badge system" style="font-size: 0.7rem;">Sistema</span>
+                <span class="role-badge" style="background: rgba(255,255,255,0.2); color: white; font-size: 0.7rem;">Nivel 1</span>
+            </div>
+        </div>
+        <div class="panel-body">
+            <!-- Role Stats -->
+            <div class="panel-section">
+                <h4><i class="fas fa-chart-bar"></i> Estadísticas</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem;">
+                    <div style="background: #f8fafc; padding: 1rem; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #02735E;" id="rolePanelMembers">2</div>
+                        <div style="font-size: 0.75rem; color: #64748b;">Miembros</div>
+                    </div>
+                    <div style="background: #f8fafc; padding: 1rem; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #02735E;" id="rolePanelPerms">7</div>
+                        <div style="font-size: 0.75rem; color: #64748b;">Permisos</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Role Permissions -->
+            <div class="panel-section">
+                <h4><i class="fas fa-key"></i> Permisos del Rol</h4>
+                <div id="rolePanelPermList" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.75rem;"></div>
+            </div>
+
+            <!-- Role Members -->
+            <div class="panel-section">
+                <h4><i class="fas fa-users"></i> Miembros con este Rol</h4>
+                <div id="rolePanelMembersList" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.75rem;"></div>
+            </div>
+
+            <!-- Role Info -->
+            <div class="panel-section">
+                <h4><i class="fas fa-info-circle"></i> Información</h4>
+                <div class="panel-info-row">
+                    <span>Creado</span>
+                    <span id="rolePanelCreated">01/01/2024</span>
+                </div>
+                <div class="panel-info-row">
+                    <span>Tipo</span>
+                    <span id="rolePanelType">Sistema</span>
+                </div>
+                <div class="panel-info-row">
+                    <span>Nivel Jerárquico</span>
+                    <span id="rolePanelLevel">1</span>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">
+                <button class="btn btn-primary" style="width: 100%;" onclick="editRoleFromPanel()">
+                    <i class="fas fa-pen"></i> Editar Rol
+                </button>
+                <button class="btn btn-secondary" style="width: 100%;" onclick="duplicateRole()">
+                    <i class="fas fa-copy"></i> Duplicar Rol
+                </button>
+                <button id="deleteRoleBtn" class="btn btn-danger" style="width: 100%; display: none;" onclick="deleteRoleFromPanel()">
+                    <i class="fas fa-trash"></i> Eliminar Rol
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Role Compare Modal -->
+    <div class="modal-overlay" id="roleCompareModal">
+        <div class="modal" style="max-width: 800px; max-height: 90vh; overflow: hidden;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #022326, #035951); color: white;">
+                <h3 style="color: white;"><i class="fas fa-columns"></i> Comparar Roles</h3>
+                <button class="modal-close" onclick="closeModal('roleCompareModal')" style="background: rgba(255,255,255,0.1);"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem;">
+                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.5rem; display: block;">Rol 1</label>
+                        <select class="form-control" id="compareRole1" onchange="updateCompareTable()">
+                            <!-- Populated by JS -->
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.5rem; display: block;">Rol 2</label>
+                        <select class="form-control" id="compareRole2" onchange="updateCompareTable()">
+                            <!-- Populated by JS -->
+                        </select>
+                    </div>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table id="compareTable" style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
+                        <thead>
+                            <tr style="background: #f8fafc;">
+                                <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #64748b;">Permiso</th>
+                                <th id="compare1Header" style="padding: 0.75rem; text-align: center; font-weight: 600;">Super Admin</th>
+                                <th id="compare2Header" style="padding: 0.75rem; text-align: center; font-weight: 600;">Admin</th>
+                            </tr>
+                        </thead>
+                        <tbody id="compareTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('roleCompareModal')">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Role Modal -->
+    <div class="modal-overlay" id="roleModal">
+        <div class="modal" style="max-width: 600px; overflow: hidden; max-height: 90vh;">
+            <div style="background: linear-gradient(135deg, #022326 0%, #035951 100%); padding: 1.5rem 1.5rem 3rem; position: relative;">
+                <button class="modal-close" onclick="closeModal('roleModal')" style="position: absolute; top: 1rem; right: 1rem; background: rgba(255,255,255,0.1); border: none; color: white; width: 32px; height: 32px; border-radius: 8px; cursor: pointer;">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h3 id="roleModalTitle" style="color: white; font-size: 1.125rem; margin: 0;"><i class="fas fa-shield-alt" style="margin-right: 0.5rem;"></i> Nuevo Rol</h3>
+                <p style="color: rgba(255,255,255,0.6); font-size: 0.8rem; margin-top: 0.25rem;">Define permisos y accesos para tu equipo</p>
+            </div>
+
+            <!-- Icon Preview -->
+            <div style="display: flex; justify-content: center; margin-top: -2.5rem; margin-bottom: 1rem;">
+                <div id="roleIconPreview" style="width: 80px; height: 80px; border-radius: 16px; background: #02735E; color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem; box-shadow: 0 8px 24px rgba(2, 115, 94, 0.4); border: 4px solid white;">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+            </div>
+
+            <div class="modal-body" style="padding: 1rem 1.5rem 1.5rem; overflow-y: auto; max-height: 50vh;">
+                <!-- Basic Info -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 0.8rem; color: #374151; font-weight: 600; margin-bottom: 0.5rem; display: block;">Nombre del Rol</label>
+                        <input type="text" class="form-control" id="roleFormName" placeholder="Ej: Supervisor" style="padding: 0.75rem;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 0.8rem; color: #374151; font-weight: 600; margin-bottom: 0.5rem; display: block;">Nivel Jerárquico</label>
+                        <select class="form-control" id="roleFormLevel" style="padding: 0.75rem;">
+                            <option value="1">1 - Máximo acceso</option>
+                            <option value="2" selected>2 - Administración</option>
+                            <option value="3">3 - Operaciones</option>
+                            <option value="4">4 - Lectura</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.8rem; color: #374151; font-weight: 600; margin-bottom: 0.5rem; display: block;">Descripción</label>
+                    <input type="text" class="form-control" id="roleFormDesc" placeholder="Breve descripción del rol" style="padding: 0.75rem;">
+                </div>
+
+                <!-- Icon & Color Selection -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div>
+                        <label style="font-size: 0.8rem; color: #374151; font-weight: 600; margin-bottom: 0.5rem; display: block;">Icono</label>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                            <button type="button" class="icon-option active" data-icon="fa-user-shield" onclick="selectRoleIcon(this)"><i class="fas fa-user-shield"></i></button>
+                            <button type="button" class="icon-option" data-icon="fa-crown" onclick="selectRoleIcon(this)"><i class="fas fa-crown"></i></button>
+                            <button type="button" class="icon-option" data-icon="fa-headset" onclick="selectRoleIcon(this)"><i class="fas fa-headset"></i></button>
+                            <button type="button" class="icon-option" data-icon="fa-file-invoice-dollar" onclick="selectRoleIcon(this)"><i class="fas fa-file-invoice-dollar"></i></button>
+                            <button type="button" class="icon-option" data-icon="fa-eye" onclick="selectRoleIcon(this)"><i class="fas fa-eye"></i></button>
+                            <button type="button" class="icon-option" data-icon="fa-cog" onclick="selectRoleIcon(this)"><i class="fas fa-cog"></i></button>
+                            <button type="button" class="icon-option" data-icon="fa-code" onclick="selectRoleIcon(this)"><i class="fas fa-code"></i></button>
+                            <button type="button" class="icon-option" data-icon="fa-chart-pie" onclick="selectRoleIcon(this)"><i class="fas fa-chart-pie"></i></button>
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: #374151; font-weight: 600; margin-bottom: 0.5rem; display: block;">Color</label>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                            <button type="button" class="color-option active" data-color="#022326" style="background: #022326;" onclick="selectRoleColor(this)"></button>
+                            <button type="button" class="color-option" data-color="#035951" style="background: #035951;" onclick="selectRoleColor(this)"></button>
+                            <button type="button" class="color-option" data-color="#02735E" style="background: #02735E;" onclick="selectRoleColor(this)"></button>
+                            <button type="button" class="color-option" data-color="#10b981" style="background: #10b981;" onclick="selectRoleColor(this)"></button>
+                            <button type="button" class="color-option" data-color="#059669" style="background: #059669;" onclick="selectRoleColor(this)"></button>
+                            <button type="button" class="color-option" data-color="#64748b" style="background: #64748b;" onclick="selectRoleColor(this)"></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Permissions -->
+                <div>
+                    <label style="font-size: 0.8rem; color: #374151; font-weight: 600; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-key" style="color: #02735E;"></i> Permisos del Rol
+                    </label>
+                    <div id="roleFormPerms" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;"></div>
+                </div>
+            </div>
+
+            <div style="padding: 1rem 1.5rem; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; gap: 0.75rem;">
+                <button onclick="closeModal('roleModal')" style="flex: 1; padding: 0.875rem; border: 2px solid #e2e8f0; background: white; border-radius: 10px; font-weight: 600; color: #64748b; cursor: pointer;">
+                    Cancelar
+                </button>
+                <button onclick="saveRole()" style="flex: 2; padding: 0.875rem; border: none; background: linear-gradient(135deg, #02735E, #10b981); border-radius: 10px; font-weight: 600; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                    <i class="fas fa-check-circle"></i> <span id="roleModalSaveText">Crear Rol</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Role Confirmation -->
+    <div class="modal-overlay" id="deleteRoleModal">
+        <div class="modal" style="max-width: 420px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #dc2626, #b91c1c); color: white;">
+                <h3 style="color: white;"><i class="fas fa-exclamation-triangle"></i> Eliminar Rol</h3>
+                <button class="modal-close" onclick="closeModal('deleteRoleModal')" style="background: rgba(255,255,255,0.2);"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" style="text-align: center; padding: 2rem;">
+                <div style="width: 64px; height: 64px; border-radius: 50%; background: #fee2e2; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-shield-alt" style="font-size: 1.5rem; color: #dc2626;"></i>
+                </div>
+                <h4 style="margin-bottom: 0.5rem;">¿Eliminar este rol?</h4>
+                <p style="color: #64748b; font-size: 0.875rem; margin-bottom: 1rem;">
+                    Vas a eliminar el rol <strong id="deleteRoleName">Nombre</strong>
+                </p>
+                <div id="deleteRoleWarning" style="background: #fef3c7; padding: 0.75rem; border-radius: 8px; font-size: 0.8rem; color: #92400e; display: none;">
+                    <i class="fas fa-exclamation-circle"></i> <span id="deleteRoleWarnText"></span>
+                </div>
+            </div>
+            <div class="modal-footer" style="justify-content: center; gap: 1rem;">
+                <button class="btn btn-secondary" onclick="closeModal('deleteRoleModal')">Cancelar</button>
+                <button class="btn btn-danger" onclick="confirmDeleteRole()"><i class="fas fa-trash"></i> Sí, Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/superadmin/js/sidebar.js"></script>
+    <script src="/superadmin/js/data.js"></script>
+    <script>
+        document.body.classList.add('loaded');
+
+        const teamMembers = [
+            { id: 1, name: 'Carlos Westheimer', email: 'carlos@opsis.com', role: 'superadmin', status: 'online', joined: '2024-01-15', lastLogin: 'Hace 5 min', avatar: 'CW' },
+            { id: 2, name: 'María González', email: 'maria@opsis.com', role: 'superadmin', status: 'online', joined: '2024-01-15', lastLogin: 'Hace 10 min', avatar: 'MG' },
+            { id: 3, name: 'Juan Pérez', email: 'juan@opsis.com', role: 'admin', status: 'online', joined: '2024-02-01', lastLogin: 'Hace 1 hora', avatar: 'JP' },
+            { id: 4, name: 'Ana Rodríguez', email: 'ana@opsis.com', role: 'admin', status: 'offline', joined: '2024-02-15', lastLogin: 'Ayer', avatar: 'AR' },
+            { id: 5, name: 'Pedro Sánchez', email: 'pedro@opsis.com', role: 'admin', status: 'online', joined: '2024-03-01', lastLogin: 'Hace 30 min', avatar: 'PS' },
+            { id: 6, name: 'Laura Martínez', email: 'laura@opsis.com', role: 'support', status: 'online', joined: '2024-03-15', lastLogin: 'Hace 15 min', avatar: 'LM' },
+            { id: 7, name: 'Diego López', email: 'diego@opsis.com', role: 'support', status: 'offline', joined: '2024-04-01', lastLogin: 'Hace 2 días', avatar: 'DL' },
+            { id: 8, name: 'Sofia Torres', email: 'sofia@opsis.com', role: 'billing', status: 'offline', joined: '2024-04-15', lastLogin: 'Hace 1 día', avatar: 'ST' }
+        ];
+
+        const roles = [
+            { id: 'superadmin', name: 'Super Admin', desc: 'Acceso total al sistema', icon: 'fa-crown', color: '#fbbf24', bgColor: '#022326', permissions: ['dashboard', 'companies', 'billing', 'team', 'support', 'settings', 'audit'], members: 2, isSystem: true, level: 1, created: '2024-01-01' },
+            { id: 'admin', name: 'Administrador', desc: 'Administración general', icon: 'fa-user-shield', color: 'white', bgColor: '#035951', permissions: ['dashboard', 'companies', 'billing', 'support'], members: 3, isSystem: true, level: 2, created: '2024-01-01' },
+            { id: 'support', name: 'Soporte', desc: 'Atención al cliente', icon: 'fa-headset', color: 'white', bgColor: '#059669', permissions: ['support', 'companies_read'], members: 2, isSystem: true, level: 3, created: '2024-01-01' },
+            { id: 'billing', name: 'Facturación', desc: 'Gestión financiera', icon: 'fa-file-invoice-dollar', color: 'white', bgColor: '#10b981', permissions: ['dashboard', 'billing'], members: 1, isSystem: true, level: 3, created: '2024-01-01' },
+            { id: 'viewer', name: 'Visor', desc: 'Solo lectura', icon: 'fa-eye', color: 'white', bgColor: '#64748b', permissions: ['dashboard_read'], members: 0, isSystem: true, level: 4, created: '2024-01-01' }
+        ];
+
+        const permissions = [
+            { key: 'dashboard', name: 'Dashboard', icon: 'fa-chart-line' },
+            { key: 'companies', name: 'Clientes', icon: 'fa-building' },
+            { key: 'billing', name: 'Facturación', icon: 'fa-file-invoice-dollar' },
+            { key: 'team', name: 'Equipo', icon: 'fa-users' },
+            { key: 'support', name: 'Soporte', icon: 'fa-headset' },
+            { key: 'settings', name: 'Configuración', icon: 'fa-cog' },
+            { key: 'audit', name: 'Auditoría', icon: 'fa-clipboard-list' }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof SuperAdminSidebar !== 'undefined') SuperAdminSidebar.init();
+            renderMembers();
+            renderRoles();
+            renderPermissionsMatrix();
+        });
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+        }
+
+        function renderMembers() {
+            const grid = document.getElementById('membersGrid');
+            grid.innerHTML = teamMembers.map(m => {
+                const role = roles.find(r => r.id === m.role);
+                const avatarContent = m.photo 
+                    ? `<img src="${m.photo}" alt="${m.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">` 
+                    : m.avatar;
+                return `
+                    <div class="member-card" onclick="openPanel(${m.id})">
+                        <div class="member-card-header">
+                            <div class="member-status ${m.status}"><i class="fas fa-circle"></i> ${m.status === 'online' ? 'En línea' : 'Offline'}</div>
+                            <div class="member-avatar">${avatarContent}</div>
+                            <div class="member-name">${m.name}</div>
+                            <div class="member-email">${m.email}</div>
+                        </div>
+                        <div class="member-card-body">
+                            <div class="member-role-badge" style="background: ${role.bgColor}20; color: ${role.bgColor};"><i class="fas ${role.icon}"></i> ${role.name}</div>
+                            <div class="member-meta"><span>Último: ${m.lastLogin}</span></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderRoles() {
+            const grid = document.getElementById('rolesGrid');
+            grid.innerHTML = roles.map(r => {
+                const permList = r.permissions.slice(0, 4).map(p => {
+                    const perm = permissions.find(x => x.key === p || x.key === p.replace('_read', ''));
+                    return perm ? `<span class="perm-badge"><i class="fas ${perm.icon}"></i> ${perm.name}</span>` : '';
+                }).join('');
+                const moreCount = r.permissions.length > 4 ? `<span class="perm-badge">+${r.permissions.length - 4}</span>` : '';
+                
+                return `
+                    <div class="role-card" onclick="openRolePanel('${r.id}')">
+                        <div class="role-actions">
+                            <button class="role-action-btn" onclick="event.stopPropagation(); editRole('${r.id}')" title="Editar">
+                                <i class="fas fa-pen"></i>
+                            </button>
+                            ${!r.isSystem ? `<button class="role-action-btn danger" onclick="event.stopPropagation(); deleteRole('${r.id}')" title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </button>` : ''}
+                        </div>
+                        <div class="role-card-header">
+                            <div class="role-icon" style="background: ${r.bgColor}; color: ${r.color};">
+                                <i class="fas ${r.icon}"></i>
+                            </div>
+                            <div class="role-info">
+                                <h4>${r.name}</h4>
+                                <span>${r.desc}</span>
+                            </div>
+                            <span class="role-badge ${r.isSystem ? 'system' : 'custom'}">${r.isSystem ? 'Sistema' : 'Custom'}</span>
+                        </div>
+                        <div class="role-card-body">
+                            <div class="role-permissions-list">${permList}${moreCount}</div>
+                        </div>
+                        <div class="role-stats">
+                            <div class="role-stat">
+                                <i class="fas fa-users"></i>
+                                <span><strong>${r.members}</strong> miembros</span>
+                            </div>
+                            <div class="role-stat">
+                                <i class="fas fa-key"></i>
+                                <span><strong>${r.permissions.length}</strong> permisos</span>
+                            </div>
+                            <div class="role-stat">
+                                <i class="fas fa-layer-group"></i>
+                                <span>Nivel <strong>${r.level}</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Render hierarchy
+            renderRoleHierarchy();
+        }
+        
+        function renderRoleHierarchy() {
+            const container = document.getElementById('roleHierarchy');
+            if (!container) return;
+            
+            const sortedRoles = [...roles].sort((a, b) => a.level - b.level);
+            container.innerHTML = sortedRoles.map((r, idx) => {
+                const indent = (r.level - 1) * 24;
+                const barWidth = 100 - ((r.level - 1) * 15);
+                return `
+                    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: ${r.bgColor}10; border-radius: 8px; margin-left: ${indent}px; border-left: 3px solid ${r.bgColor};">
+                        <div style="width: 32px; height: 32px; border-radius: 8px; background: ${r.bgColor}; color: ${r.color}; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">
+                            <i class="fas ${r.icon}"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; font-size: 0.875rem; color: #1e293b;">${r.name}</div>
+                            <div style="font-size: 0.7rem; color: #64748b;">${r.permissions.length} permisos • ${r.members} miembros</div>
+                        </div>
+                        <div style="width: ${barWidth}px; height: 6px; background: ${r.bgColor}30; border-radius: 3px; overflow: hidden;">
+                            <div style="width: ${(r.permissions.length / 7) * 100}%; height: 100%; background: ${r.bgColor}; border-radius: 3px;"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderPermissionsMatrix() {
+            const table = document.getElementById('permissionsMatrix');
+            table.innerHTML = `
+                <thead><tr><th>Rol</th>${permissions.map(p => `<th>${p.name}</th>`).join('')}</tr></thead>
+                <tbody>${roles.map(r => `
+                    <tr>
+                        <td><div style="display: flex; align-items: center; gap: 0.5rem;"><div style="width: 24px; height: 24px; border-radius: 6px; background: ${r.bgColor}; color: ${r.color}; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;"><i class="fas ${r.icon}"></i></div>${r.name}</div></td>
+                        ${permissions.map(p => `<td><i class="fas ${r.permissions.includes(p.key) ? 'fa-check perm-check' : 'fa-minus perm-none'}"></i></td>`).join('')}
+                    </tr>
+                `).join('')}</tbody>
+            `;
+        }
+
+        let currentMemberId = null;
+
+        function openPanel(id) {
+            currentMemberId = id;
+            const m = teamMembers.find(x => x.id === id);
+            const role = roles.find(r => r.id === m.role);
+            
+            // Handle avatar - check if member has photo
+            const avatarDiv = document.getElementById('panelAvatar');
+            const avatarImg = document.getElementById('panelAvatarImg');
+            if (m.photo) {
+                avatarDiv.style.display = 'none';
+                avatarImg.style.display = 'block';
+                avatarImg.src = m.photo;
+            } else {
+                avatarDiv.style.display = 'flex';
+                avatarImg.style.display = 'none';
+                avatarDiv.textContent = m.avatar;
+            }
+            
+            document.getElementById('panelName').textContent = m.name;
+            document.getElementById('panelEmail').textContent = m.email;
+            document.getElementById('panelRole').textContent = role.name;
+            document.getElementById('panelStatus').innerHTML = `<span style="color: ${m.status === 'online' ? '#10b981' : '#94a3b8'}"><i class="fas fa-circle"></i> ${m.status === 'online' ? 'En línea' : 'Offline'}</span>`;
+            document.getElementById('panelLastLogin').textContent = m.lastLogin;
+            document.getElementById('panelJoined').textContent = m.joined;
+            document.getElementById('detailPanel').classList.add('open');
+            document.getElementById('panelOverlay').classList.add('open');
+        }
+
+        function closePanel() {
+            document.getElementById('detailPanel').classList.remove('open');
+            document.getElementById('panelOverlay').classList.remove('open');
+        }
+
+        // Edit Member Functions
+        function openEditModal() {
+            const m = teamMembers.find(x => x.id === currentMemberId);
+            if (!m) return;
+            
+            document.getElementById('editMemberName').value = m.name;
+            document.getElementById('editMemberEmail').value = m.email;
+            document.getElementById('editMemberRole').value = m.role;
+            document.getElementById('editMemberStatus').value = m.status;
+            
+            // Handle avatar preview
+            const initials = document.getElementById('editAvatarInitials');
+            const img = document.getElementById('editAvatarImg');
+            if (m.photo) {
+                initials.style.display = 'none';
+                img.style.display = 'block';
+                img.src = m.photo;
+            } else {
+                initials.style.display = 'block';
+                img.style.display = 'none';
+                initials.textContent = m.avatar;
+            }
+            
+            openModal('editMemberModal');
+        }
+
+        function previewAvatar(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('editAvatarImg');
+                    const initials = document.getElementById('editAvatarInitials');
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                    initials.style.display = 'none';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function saveMember() {
+            const m = teamMembers.find(x => x.id === currentMemberId);
+            if (!m) return;
+            
+            const newName = document.getElementById('editMemberName').value;
+            const newEmail = document.getElementById('editMemberEmail').value;
+            const newRole = document.getElementById('editMemberRole').value;
+            const newStatus = document.getElementById('editMemberStatus').value;
+            const avatarImg = document.getElementById('editAvatarImg');
+            
+            // Update member data
+            m.name = newName;
+            m.email = newEmail;
+            m.role = newRole;
+            m.status = newStatus;
+            m.avatar = newName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+            
+            // Save photo if uploaded
+            if (avatarImg.style.display === 'block' && avatarImg.src) {
+                m.photo = avatarImg.src;
+            }
+            
+            // Re-render and update panel
+            renderMembers();
+            updateRoleCounts();
+            openPanel(currentMemberId);
+            closeModal('editMemberModal');
+            showNotification('Miembro actualizado correctamente', 'success');
+        }
+
+        // Permissions Functions (Editable with Granular Sub-permissions)
+        const modulePermissions = {
+            dashboard: {
+                name: 'Dashboard',
+                icon: 'fa-chart-line',
+                subPerms: [
+                    { key: 'view', name: 'Ver dashboard', desc: 'Acceso al panel principal' },
+                    { key: 'analytics', name: 'Ver analíticas', desc: 'Métricas y estadísticas' },
+                    { key: 'export', name: 'Exportar reportes', desc: 'Descargar datos en CSV/PDF' }
+                ]
+            },
+            companies: {
+                name: 'Clientes',
+                icon: 'fa-building',
+                subPerms: [
+                    { key: 'view', name: 'Ver clientes', desc: 'Lista y detalles de clientes' },
+                    { key: 'create', name: 'Crear clientes', desc: 'Registrar nuevas empresas' },
+                    { key: 'edit', name: 'Editar clientes', desc: 'Modificar información' },
+                    { key: 'delete', name: 'Eliminar clientes', desc: 'Borrar empresas' },
+                    { key: 'impersonate', name: 'Acceder como admin', desc: 'Entrar al portal del cliente' },
+                    { key: 'onboarding', name: 'Gestionar onboarding', desc: 'Proceso de alta' }
+                ]
+            },
+            billing: {
+                name: 'Facturación',
+                icon: 'fa-file-invoice-dollar',
+                subPerms: [
+                    { key: 'view', name: 'Ver facturas', desc: 'Historial de cobros' },
+                    { key: 'create', name: 'Crear facturas', desc: 'Generar nuevos cobros' },
+                    { key: 'refund', name: 'Procesar reembolsos', desc: 'Devolver pagos' },
+                    { key: 'subscriptions', name: 'Gestionar suscripciones', desc: 'Planes y renovaciones' },
+                    { key: 'pricing', name: 'Modificar precios', desc: 'Cambiar tarifas' },
+                    { key: 'reports', name: 'Reportes financieros', desc: 'Ingresos y proyecciones' }
+                ]
+            },
+            team: {
+                name: 'Equipo',
+                icon: 'fa-users',
+                subPerms: [
+                    { key: 'view', name: 'Ver miembros', desc: 'Lista del equipo' },
+                    { key: 'invite', name: 'Invitar miembros', desc: 'Agregar usuarios' },
+                    { key: 'edit', name: 'Editar miembros', desc: 'Modificar datos' },
+                    { key: 'remove', name: 'Remover miembros', desc: 'Eliminar usuarios' },
+                    { key: 'roles', name: 'Gestionar roles', desc: 'Crear y editar roles' },
+                    { key: 'permissions', name: 'Asignar permisos', desc: 'Configurar accesos' }
+                ]
+            },
+            support: {
+                name: 'Soporte',
+                icon: 'fa-headset',
+                subPerms: [
+                    { key: 'view', name: 'Ver tickets', desc: 'Lista de solicitudes' },
+                    { key: 'respond', name: 'Responder tickets', desc: 'Enviar respuestas' },
+                    { key: 'assign', name: 'Asignar tickets', desc: 'Reasignar a otros agentes' },
+                    { key: 'close', name: 'Cerrar tickets', desc: 'Marcar como resueltos' },
+                    { key: 'priority', name: 'Cambiar prioridad', desc: 'Urgente, normal, bajo' },
+                    { key: 'knowledge', name: 'Base de conocimiento', desc: 'Crear y editar artículos' }
+                ]
+            },
+            settings: {
+                name: 'Configuración',
+                icon: 'fa-cog',
+                subPerms: [
+                    { key: 'view', name: 'Ver configuración', desc: 'Ajustes del sistema' },
+                    { key: 'general', name: 'Ajustes generales', desc: 'Nombre, logo, etc.' },
+                    { key: 'products', name: 'Gestionar productos', desc: 'Módulos y funciones' },
+                    { key: 'plans', name: 'Gestionar planes', desc: 'Precios y límites' },
+                    { key: 'industries', name: 'Gestionar industrias', desc: 'Sectores disponibles' },
+                    { key: 'integrations', name: 'Integraciones', desc: 'APIs y conexiones' },
+                    { key: 'security', name: 'Seguridad', desc: '2FA, sesiones, logs' }
+                ]
+            },
+            audit: {
+                name: 'Auditoría',
+                icon: 'fa-clipboard-list',
+                subPerms: [
+                    { key: 'view', name: 'Ver logs', desc: 'Historial de actividad' },
+                    { key: 'export', name: 'Exportar logs', desc: 'Descargar registros' },
+                    { key: 'filter', name: 'Filtrar por usuario', desc: 'Búsqueda avanzada' }
+                ]
+            },
+            notifications: {
+                name: 'Notificaciones',
+                icon: 'fa-bell',
+                subPerms: [
+                    { key: 'view', name: 'Ver notificaciones', desc: 'Centro de alertas' },
+                    { key: 'send', name: 'Enviar masivas', desc: 'Notificar a todos los clientes' },
+                    { key: 'configure', name: 'Configurar alertas', desc: 'Reglas automáticas' }
+                ]
+            }
+        };
+
+        // Define which sub-permissions each role has by default
+        const roleDefaultPermissions = {
+            superadmin: {
+                dashboard: ['view', 'analytics', 'export'],
+                companies: ['view', 'create', 'edit', 'delete', 'impersonate', 'onboarding'],
+                billing: ['view', 'create', 'refund', 'subscriptions', 'pricing', 'reports'],
+                team: ['view', 'invite', 'edit', 'remove', 'roles', 'permissions'],
+                support: ['view', 'respond', 'assign', 'close', 'priority', 'knowledge'],
+                settings: ['view', 'general', 'products', 'plans', 'industries', 'integrations', 'security'],
+                audit: ['view', 'export', 'filter'],
+                notifications: ['view', 'send', 'configure']
+            },
+            admin: {
+                dashboard: ['view', 'analytics'],
+                companies: ['view', 'create', 'edit', 'onboarding'],
+                billing: ['view', 'create', 'subscriptions'],
+                team: ['view'],
+                support: ['view', 'respond', 'assign', 'close'],
+                settings: ['view'],
+                audit: ['view'],
+                notifications: ['view']
+            },
+            support: {
+                dashboard: ['view'],
+                companies: ['view'],
+                billing: [],
+                team: [],
+                support: ['view', 'respond', 'close', 'knowledge'],
+                settings: [],
+                audit: [],
+                notifications: ['view']
+            },
+            billing: {
+                dashboard: ['view', 'analytics'],
+                companies: ['view'],
+                billing: ['view', 'create', 'refund', 'subscriptions', 'reports'],
+                team: [],
+                support: [],
+                settings: [],
+                audit: ['view'],
+                notifications: ['view']
+            },
+            viewer: {
+                dashboard: ['view'],
+                companies: ['view'],
+                billing: ['view'],
+                team: [],
+                support: ['view'],
+                settings: [],
+                audit: [],
+                notifications: ['view']
+            }
+        };
+
+        // Temporary storage for current editing permissions
+        let currentEditingPerms = {};
+
+        function openPermissionsModal() {
+            const m = teamMembers.find(x => x.id === currentMemberId);
+            if (!m) return;
+            
+            const role = roles.find(r => r.id === m.role);
+            document.getElementById('permsMemberName').textContent = m.name;
+            document.getElementById('permsRoleName').textContent = role.name;
+            
+            // Update role badge icon
+            const badge = document.getElementById('permsRoleBadge');
+            badge.innerHTML = `<i class="fas ${role.icon}" style="color: ${role.color}; font-size: 1.5rem;"></i>`;
+            
+            // Initialize current editing permissions - use custom if exists, otherwise use role defaults
+            if (m.customPerms && Object.keys(m.customPerms).length > 0) {
+                currentEditingPerms = JSON.parse(JSON.stringify(m.customPerms));
+            } else {
+                currentEditingPerms = JSON.parse(JSON.stringify(roleDefaultPermissions[m.role] || {}));
+            }
+            
+            renderPermissionsEditor();
+            updatePermsCounter();
+            openModal('permissionsModal');
+        }
+
+        function renderPermissionsEditor() {
+            const container = document.getElementById('permsModulesList');
+            
+            container.innerHTML = Object.entries(modulePermissions).map(([modKey, mod]) => {
+                const modPerms = currentEditingPerms[modKey] || [];
+                const hasAnyAccess = modPerms.length > 0;
+                const hasFullAccess = modPerms.length === mod.subPerms.length;
+                const accessCount = modPerms.length;
+                const totalCount = mod.subPerms.length;
+                
+                return `
+                    <div class="perm-module" data-module="${modKey}" style="border: 1px solid ${hasAnyAccess ? '#d1d5db' : '#e5e7eb'}; border-radius: 12px; overflow: hidden; background: white;">
+                        <div class="perm-module-header" onclick="togglePermModule(this)" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; background: #f9fafb;">
+                            <label onclick="event.stopPropagation()" style="display: flex; align-items: center;">
+                                <input type="checkbox" class="module-toggle" data-module="${modKey}" 
+                                    ${hasFullAccess ? 'checked' : ''} 
+                                    ${hasAnyAccess && !hasFullAccess ? 'indeterminate' : ''}
+                                    onchange="toggleModuleAll('${modKey}', this.checked)"
+                                    style="width: 18px; height: 18px; accent-color: #02735E; cursor: pointer;">
+                            </label>
+                            <div style="width: 34px; height: 34px; border-radius: 8px; background: ${hasAnyAccess ? '#dcfce7' : '#f3f4f6'}; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas ${mod.icon}" style="color: ${hasAnyAccess ? '#16a34a' : '#9ca3af'}; font-size: 0.875rem;"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; font-size: 0.875rem; color: #1f2937;">${mod.name}</div>
+                            </div>
+                            <span style="font-size: 0.7rem; font-weight: 600; padding: 0.25rem 0.5rem; border-radius: 6px; background: ${hasAnyAccess ? '#dcfce7' : '#f3f4f6'}; color: ${hasAnyAccess ? '#16a34a' : '#9ca3af'};">
+                                ${accessCount}/${totalCount}
+                            </span>
+                            <i class="fas fa-chevron-down perm-chevron" style="color: #94a3b8; font-size: 0.75rem; transition: transform 0.2s;"></i>
+                        </div>
+                        <div class="perm-sublist" style="display: none; padding: 0.5rem 0.75rem 0.75rem; border-top: 1px solid #e5e7eb; background: #fafafa;">
+                            <div style="display: grid; gap: 0.25rem;">
+                                ${mod.subPerms.map(sp => {
+                                    const allowed = modPerms.includes(sp.key);
+                                    return `
+                                        <label style="display: flex; align-items: center; gap: 0.625rem; padding: 0.5rem 0.625rem; background: ${allowed ? '#f0fdf4' : 'white'}; border-radius: 8px; cursor: pointer; border: 1px solid ${allowed ? '#bbf7d0' : '#e5e7eb'}; transition: all 0.15s;">
+                                            <input type="checkbox" class="subperm-toggle" data-module="${modKey}" data-perm="${sp.key}" 
+                                                ${allowed ? 'checked' : ''}
+                                                onchange="toggleSubPerm('${modKey}', '${sp.key}', this.checked)"
+                                                style="width: 16px; height: 16px; accent-color: #02735E; cursor: pointer;">
+                                            <div style="flex: 1;">
+                                                <div style="font-size: 0.8rem; font-weight: 500; color: ${allowed ? '#1f2937' : '#6b7280'};">${sp.name}</div>
+                                                <div style="font-size: 0.675rem; color: #9ca3af;">${sp.desc}</div>
+                                            </div>
+                                        </label>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Set indeterminate state for partially checked modules
+            Object.entries(modulePermissions).forEach(([modKey, mod]) => {
+                const modPerms = currentEditingPerms[modKey] || [];
+                const checkbox = document.querySelector(`.module-toggle[data-module="${modKey}"]`);
+                if (checkbox && modPerms.length > 0 && modPerms.length < mod.subPerms.length) {
+                    checkbox.indeterminate = true;
+                }
+            });
+        }
+
+        function togglePermModule(header) {
+            const sublist = header.nextElementSibling;
+            const chevron = header.querySelector('.perm-chevron');
+            const isOpen = sublist.style.display !== 'none';
+            
+            if (isOpen) {
+                sublist.style.display = 'none';
+                chevron.style.transform = 'rotate(0deg)';
+            } else {
+                sublist.style.display = 'block';
+                chevron.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        function toggleModuleAll(modKey, checked) {
+            const mod = modulePermissions[modKey];
+            if (checked) {
+                currentEditingPerms[modKey] = mod.subPerms.map(sp => sp.key);
+            } else {
+                currentEditingPerms[modKey] = [];
+            }
+            renderPermissionsEditor();
+            updatePermsCounter();
+            
+            // Re-open the module that was just toggled
+            const moduleEl = document.querySelector(`[data-module="${modKey}"] .perm-sublist`);
+            const chevron = document.querySelector(`[data-module="${modKey}"] .perm-chevron`);
+            if (moduleEl) {
+                moduleEl.style.display = 'block';
+                chevron.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        function toggleSubPerm(modKey, permKey, checked) {
+            if (!currentEditingPerms[modKey]) {
+                currentEditingPerms[modKey] = [];
+            }
+            
+            if (checked) {
+                if (!currentEditingPerms[modKey].includes(permKey)) {
+                    currentEditingPerms[modKey].push(permKey);
+                }
+            } else {
+                currentEditingPerms[modKey] = currentEditingPerms[modKey].filter(p => p !== permKey);
+            }
+            
+            // Update module checkbox state
+            const mod = modulePermissions[modKey];
+            const modPerms = currentEditingPerms[modKey];
+            const moduleCheckbox = document.querySelector(`.module-toggle[data-module="${modKey}"]`);
+            
+            if (moduleCheckbox) {
+                if (modPerms.length === 0) {
+                    moduleCheckbox.checked = false;
+                    moduleCheckbox.indeterminate = false;
+                } else if (modPerms.length === mod.subPerms.length) {
+                    moduleCheckbox.checked = true;
+                    moduleCheckbox.indeterminate = false;
+                } else {
+                    moduleCheckbox.checked = false;
+                    moduleCheckbox.indeterminate = true;
+                }
+            }
+            
+            // Update visual state
+            const label = document.querySelector(`input[data-module="${modKey}"][data-perm="${permKey}"]`).closest('label');
+            if (checked) {
+                label.style.background = '#f0fdf4';
+                label.style.borderColor = '#bbf7d0';
+            } else {
+                label.style.background = 'white';
+                label.style.borderColor = '#e5e7eb';
+            }
+            
+            // Update module header counter
+            updateModuleCounter(modKey);
+            updatePermsCounter();
+        }
+
+        function updateModuleCounter(modKey) {
+            const mod = modulePermissions[modKey];
+            const modPerms = currentEditingPerms[modKey] || [];
+            const hasAnyAccess = modPerms.length > 0;
+            
+            const moduleEl = document.querySelector(`.perm-module[data-module="${modKey}"]`);
+            if (moduleEl) {
+                const counter = moduleEl.querySelector('.perm-module-header span');
+                const icon = moduleEl.querySelector('.perm-module-header > div:nth-child(3)');
+                
+                counter.textContent = `${modPerms.length}/${mod.subPerms.length}`;
+                counter.style.background = hasAnyAccess ? '#dcfce7' : '#f3f4f6';
+                counter.style.color = hasAnyAccess ? '#16a34a' : '#9ca3af';
+                
+                icon.style.background = hasAnyAccess ? '#dcfce7' : '#f3f4f6';
+                icon.querySelector('i').style.color = hasAnyAccess ? '#16a34a' : '#9ca3af';
+            }
+        }
+
+        function updatePermsCounter() {
+            let total = 0;
+            Object.values(currentEditingPerms).forEach(perms => {
+                total += perms.length;
+            });
+            document.getElementById('permsCounter').textContent = `${total} permisos activos`;
+        }
+
+        function selectAllPerms() {
+            Object.entries(modulePermissions).forEach(([modKey, mod]) => {
+                currentEditingPerms[modKey] = mod.subPerms.map(sp => sp.key);
+            });
+            renderPermissionsEditor();
+            updatePermsCounter();
+        }
+
+        function deselectAllPerms() {
+            Object.keys(modulePermissions).forEach(modKey => {
+                currentEditingPerms[modKey] = [];
+            });
+            renderPermissionsEditor();
+            updatePermsCounter();
+        }
+
+        function resetToRolePerms() {
+            const m = teamMembers.find(x => x.id === currentMemberId);
+            if (!m) return;
+            currentEditingPerms = JSON.parse(JSON.stringify(roleDefaultPermissions[m.role] || {}));
+            renderPermissionsEditor();
+            updatePermsCounter();
+            showNotification('Permisos restaurados al rol ' + m.role, 'success');
+        }
+
+        function saveUserPermissions() {
+            const m = teamMembers.find(x => x.id === currentMemberId);
+            if (!m) return;
+            
+            // Save custom permissions to the member
+            m.customPerms = JSON.parse(JSON.stringify(currentEditingPerms));
+            
+            closeModal('permissionsModal');
+            showNotification('Permisos guardados correctamente', 'success');
+        }
+
+        // Remove Member Functions
+        function openRemoveModal() {
+            const m = teamMembers.find(x => x.id === currentMemberId);
+            if (!m) return;
+            
+            document.getElementById('removeMemberName').textContent = m.name;
+            openModal('removeMemberModal');
+        }
+
+        function confirmRemoveMember() {
+            const index = teamMembers.findIndex(x => x.id === currentMemberId);
+            if (index > -1) {
+                const removed = teamMembers.splice(index, 1)[0];
+                renderMembers();
+                updateRoleCounts();
+                updateStats();
+                closeModal('removeMemberModal');
+                closePanel();
+                showNotification(`${removed.name} ha sido removido del equipo`, 'success');
+            }
+        }
+
+        function updateRoleCounts() {
+            roles.forEach(r => {
+                r.members = teamMembers.filter(m => m.role === r.id).length;
+            });
+            renderRoles();
+            renderPermissionsMatrix();
+        }
+
+        function updateStats() {
+            document.getElementById('totalMembers').textContent = teamMembers.length;
+            document.getElementById('onlineMembers').textContent = teamMembers.filter(m => m.status === 'online').length;
+            document.getElementById('membersCount').textContent = teamMembers.length;
+        }
+
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        function sendInvite() { closeModal('inviteModal'); showNotification('Invitación enviada', 'success'); }
+
+        // ========== ROLE MANAGEMENT ==========
+        let currentRoleId = null;
+        let editingRoleId = null;
+        let selectedRoleIcon = 'fa-user-shield';
+        let selectedRoleColor = '#022326';
+
+        function openRolePanel(roleId) {
+            currentRoleId = roleId;
+            const r = roles.find(x => x.id === roleId);
+            if (!r) return;
+
+            // Update panel header
+            document.getElementById('rolePanelIcon').style.background = r.bgColor;
+            document.getElementById('rolePanelIcon').style.color = r.color;
+            document.getElementById('rolePanelIcon').innerHTML = `<i class="fas ${r.icon}"></i>`;
+            document.getElementById('rolePanelName').textContent = r.name;
+            document.getElementById('rolePanelDesc').textContent = r.desc;
+            document.getElementById('rolePanelBadge').textContent = r.isSystem ? 'Sistema' : 'Custom';
+            document.getElementById('rolePanelBadge').className = `role-badge ${r.isSystem ? 'system' : 'custom'}`;
+
+            // Stats
+            document.getElementById('rolePanelMembers').textContent = r.members;
+            document.getElementById('rolePanelPerms').textContent = r.permissions.length;
+
+            // Permissions list
+            const permsList = document.getElementById('rolePanelPermList');
+            permsList.innerHTML = permissions.map(p => {
+                const hasIt = r.permissions.includes(p.key) || r.permissions.includes(p.key + '_read');
+                const isReadOnly = r.permissions.includes(p.key + '_read') && !r.permissions.includes(p.key);
+                return `
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.625rem 0.75rem; background: ${hasIt ? '#dcfce7' : '#f8fafc'}; border-radius: 8px; border: 1px solid ${hasIt ? '#bbf7d0' : '#e2e8f0'};">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas ${p.icon}" style="color: ${hasIt ? '#059669' : '#94a3b8'}; font-size: 0.8rem;"></i>
+                            <span style="font-size: 0.85rem; color: ${hasIt ? '#1e293b' : '#64748b'};">${p.name}</span>
+                            ${isReadOnly ? '<span style="font-size: 0.65rem; color: #f59e0b; background: #fef3c7; padding: 0.125rem 0.375rem; border-radius: 4px;">Solo Lectura</span>' : ''}
+                        </div>
+                        <i class="fas ${hasIt ? 'fa-check-circle' : 'fa-times-circle'}" style="color: ${hasIt ? '#10b981' : '#cbd5e1'};"></i>
+                    </div>
+                `;
+            }).join('');
+
+            // Members list
+            const membersList = document.getElementById('rolePanelMembersList');
+            const roleMembers = teamMembers.filter(m => m.role === roleId);
+            if (roleMembers.length === 0) {
+                membersList.innerHTML = '<div style="text-align: center; padding: 1rem; color: #94a3b8; font-size: 0.8rem;"><i class="fas fa-user-slash"></i> Sin miembros</div>';
+            } else {
+                membersList.innerHTML = roleMembers.slice(0, 5).map(m => `
+                    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; background: #f8fafc; border-radius: 8px; cursor: pointer;" onclick="closeRolePanel(); openPanel(${m.id});">
+                        <div style="width: 32px; height: 32px; border-radius: 50%; background: ${r.bgColor}; color: ${r.color}; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600;">${m.avatar}</div>
+                        <div style="flex: 1;">
+                            <div style="font-size: 0.85rem; font-weight: 500; color: #1e293b;">${m.name}</div>
+                            <div style="font-size: 0.7rem; color: #64748b;">${m.email}</div>
+                        </div>
+                        <span style="font-size: 0.65rem; color: ${m.status === 'online' ? '#10b981' : '#94a3b8'};"><i class="fas fa-circle"></i></span>
+                    </div>
+                `).join('') + (roleMembers.length > 5 ? `<div style="text-align: center; font-size: 0.75rem; color: #64748b; padding: 0.5rem;">+ ${roleMembers.length - 5} más</div>` : '');
+            }
+
+            // Info
+            document.getElementById('rolePanelCreated').textContent = r.created || '01/01/2024';
+            document.getElementById('rolePanelType').textContent = r.isSystem ? 'Sistema (protegido)' : 'Personalizado';
+            document.getElementById('rolePanelLevel').textContent = r.level;
+
+            // Show/hide delete button
+            document.getElementById('deleteRoleBtn').style.display = r.isSystem ? 'none' : 'block';
+
+            // Open panel
+            document.getElementById('roleDetailPanel').classList.add('open');
+            document.getElementById('rolePanelOverlay').classList.add('open');
+        }
+
+        function closeRolePanel() {
+            document.getElementById('roleDetailPanel').classList.remove('open');
+            document.getElementById('rolePanelOverlay').classList.remove('open');
+        }
+
+        function openRoleModal(roleId = null) {
+            editingRoleId = roleId;
+            const isEdit = roleId !== null;
+            const r = isEdit ? roles.find(x => x.id === roleId) : null;
+
+            // Update modal title
+            document.getElementById('roleModalTitle').innerHTML = `<i class="fas fa-shield-alt" style="margin-right: 0.5rem;"></i> ${isEdit ? 'Editar Rol' : 'Nuevo Rol'}`;
+            document.getElementById('roleModalSaveText').textContent = isEdit ? 'Guardar Cambios' : 'Crear Rol';
+
+            // Fill form
+            document.getElementById('roleFormName').value = r ? r.name : '';
+            document.getElementById('roleFormDesc').value = r ? r.desc : '';
+            document.getElementById('roleFormLevel').value = r ? r.level : 2;
+
+            // Icon selection
+            selectedRoleIcon = r ? r.icon : 'fa-user-shield';
+            selectedRoleColor = r ? r.bgColor : '#022326';
+            
+            document.querySelectorAll('.icon-option').forEach(opt => {
+                opt.classList.toggle('active', opt.dataset.icon === selectedRoleIcon);
+            });
+            document.querySelectorAll('.color-option').forEach(opt => {
+                opt.classList.toggle('active', opt.dataset.color === selectedRoleColor);
+            });
+            updateRoleIconPreview();
+
+            // Permissions
+            const permsContainer = document.getElementById('roleFormPerms');
+            permsContainer.innerHTML = permissions.map(p => {
+                const hasIt = r && (r.permissions.includes(p.key) || r.permissions.includes(p.key + '_read'));
+                return `
+                    <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; background: ${hasIt ? '#dcfce7' : '#f8fafc'}; border: 1px solid ${hasIt ? '#bbf7d0' : '#e2e8f0'}; border-radius: 8px; cursor: pointer; transition: all 0.2s;" onchange="this.style.background = this.querySelector('input').checked ? '#dcfce7' : '#f8fafc'; this.style.borderColor = this.querySelector('input').checked ? '#bbf7d0' : '#e2e8f0';">
+                        <input type="checkbox" value="${p.key}" ${hasIt ? 'checked' : ''} style="width: 16px; height: 16px; accent-color: #02735E;">
+                        <i class="fas ${p.icon}" style="color: #02735E;"></i>
+                        <span style="font-size: 0.85rem;">${p.name}</span>
+                    </label>
+                `;
+            }).join('');
+
+            openModal('roleModal');
+        }
+
+        function selectRoleIcon(el) {
+            document.querySelectorAll('.icon-option').forEach(o => o.classList.remove('active'));
+            el.classList.add('active');
+            selectedRoleIcon = el.dataset.icon;
+            updateRoleIconPreview();
+        }
+
+        function selectRoleColor(el) {
+            document.querySelectorAll('.color-option').forEach(o => o.classList.remove('active'));
+            el.classList.add('active');
+            selectedRoleColor = el.dataset.color;
+            updateRoleIconPreview();
+        }
+
+        function updateRoleIconPreview() {
+            const preview = document.getElementById('roleIconPreview');
+            preview.style.background = selectedRoleColor;
+            preview.innerHTML = `<i class="fas ${selectedRoleIcon}"></i>`;
+        }
+
+        function saveRole() {
+            const name = document.getElementById('roleFormName').value.trim();
+            const desc = document.getElementById('roleFormDesc').value.trim();
+            const level = parseInt(document.getElementById('roleFormLevel').value);
+            const perms = Array.from(document.querySelectorAll('#roleFormPerms input:checked')).map(i => i.value);
+
+            if (!name) {
+                showNotification('Ingresa un nombre para el rol', 'error');
+                return;
+            }
+
+            if (editingRoleId) {
+                // Edit existing
+                const r = roles.find(x => x.id === editingRoleId);
+                if (r) {
+                    r.name = name;
+                    r.desc = desc;
+                    r.level = level;
+                    r.icon = selectedRoleIcon;
+                    r.bgColor = selectedRoleColor;
+                    r.permissions = perms;
+                    showNotification('Rol actualizado correctamente', 'success');
+                }
+            } else {
+                // Create new
+                const newId = name.toLowerCase().replace(/\s+/g, '_');
+                roles.push({
+                    id: newId,
+                    name: name,
+                    desc: desc,
+                    icon: selectedRoleIcon,
+                    color: 'white',
+                    bgColor: selectedRoleColor,
+                    permissions: perms,
+                    members: 0,
+                    isSystem: false,
+                    level: level,
+                    created: new Date().toLocaleDateString('es-ES')
+                });
+                showNotification('Rol creado correctamente', 'success');
+            }
+
+            renderRoles();
+            renderPermissionsMatrix();
+            closeModal('roleModal');
+        }
+
+        function editRole(roleId) {
+            openRoleModal(roleId);
+        }
+
+        function editRoleFromPanel() {
+            closeRolePanel();
+            openRoleModal(currentRoleId);
+        }
+
+        function duplicateRole() {
+            const r = roles.find(x => x.id === currentRoleId);
+            if (!r) return;
+
+            const newId = r.id + '_copy_' + Date.now();
+            roles.push({
+                ...r,
+                id: newId,
+                name: r.name + ' (Copia)',
+                members: 0,
+                isSystem: false,
+                created: new Date().toLocaleDateString('es-ES')
+            });
+
+            renderRoles();
+            closeRolePanel();
+            showNotification('Rol duplicado correctamente', 'success');
+        }
+
+        function deleteRole(roleId) {
+            currentRoleId = roleId;
+            const r = roles.find(x => x.id === roleId);
+            if (!r) return;
+
+            document.getElementById('deleteRoleName').textContent = r.name;
+            
+            const memberCount = teamMembers.filter(m => m.role === roleId).length;
+            const warning = document.getElementById('deleteRoleWarning');
+            const warnText = document.getElementById('deleteRoleWarnText');
+            
+            if (memberCount > 0) {
+                warning.style.display = 'block';
+                warnText.textContent = `${memberCount} miembro(s) tienen este rol. Se les asignará el rol "Visor".`;
+            } else {
+                warning.style.display = 'none';
+            }
+
+            openModal('deleteRoleModal');
+        }
+
+        function deleteRoleFromPanel() {
+            closeRolePanel();
+            deleteRole(currentRoleId);
+        }
+
+        function confirmDeleteRole() {
+            const r = roles.find(x => x.id === currentRoleId);
+            if (!r || r.isSystem) {
+                showNotification('No se puede eliminar un rol de sistema', 'error');
+                return;
+            }
+
+            // Reassign members
+            teamMembers.forEach(m => {
+                if (m.role === currentRoleId) {
+                    m.role = 'viewer';
+                }
+            });
+
+            // Remove role
+            const idx = roles.findIndex(x => x.id === currentRoleId);
+            if (idx > -1) {
+                roles.splice(idx, 1);
+            }
+
+            renderRoles();
+            renderMembers();
+            renderPermissionsMatrix();
+            closeModal('deleteRoleModal');
+            showNotification('Rol eliminado correctamente', 'success');
+        }
+
+        // Compare Roles
+        function populateCompareSelects() {
+            const select1 = document.getElementById('compareRole1');
+            const select2 = document.getElementById('compareRole2');
+            
+            const options = roles.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+            select1.innerHTML = options;
+            select2.innerHTML = options;
+            
+            if (roles.length >= 2) {
+                select2.selectedIndex = 1;
+            }
+        }
+
+        function updateCompareTable() {
+            const role1 = roles.find(r => r.id === document.getElementById('compareRole1').value);
+            const role2 = roles.find(r => r.id === document.getElementById('compareRole2').value);
+
+            if (!role1 || !role2) return;
+
+            document.getElementById('compare1Header').innerHTML = `<div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;"><div style="width: 24px; height: 24px; border-radius: 6px; background: ${role1.bgColor}; color: ${role1.color}; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;"><i class="fas ${role1.icon}"></i></div>${role1.name}</div>`;
+            document.getElementById('compare2Header').innerHTML = `<div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;"><div style="width: 24px; height: 24px; border-radius: 6px; background: ${role2.bgColor}; color: ${role2.color}; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;"><i class="fas ${role2.icon}"></i></div>${role2.name}</div>`;
+
+            const tbody = document.getElementById('compareTableBody');
+            tbody.innerHTML = permissions.map(p => {
+                const has1 = role1.permissions.includes(p.key) || role1.permissions.includes(p.key + '_read');
+                const has2 = role2.permissions.includes(p.key) || role2.permissions.includes(p.key + '_read');
+                const same = has1 === has2;
+
+                return `
+                    <tr style="background: ${same ? 'white' : '#fffbeb'};">
+                        <td style="padding: 0.75rem; border-bottom: 1px solid #f1f5f9;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas ${p.icon}" style="color: #64748b;"></i> ${p.name}
+                            </div>
+                        </td>
+                        <td style="padding: 0.75rem; text-align: center; border-bottom: 1px solid #f1f5f9;">
+                            <i class="fas ${has1 ? 'fa-check-circle' : 'fa-times-circle'}" style="color: ${has1 ? '#10b981' : '#e2e8f0'}; font-size: 1.125rem;"></i>
+                        </td>
+                        <td style="padding: 0.75rem; text-align: center; border-bottom: 1px solid #f1f5f9;">
+                            <i class="fas ${has2 ? 'fa-check-circle' : 'fa-times-circle'}" style="color: ${has2 ? '#10b981' : '#e2e8f0'}; font-size: 1.125rem;"></i>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Initialize compare modal when opened
+        document.getElementById('roleCompareModal')?.addEventListener('click', function(e) {
+            if (e.target === this) closeModal('roleCompareModal');
+        });
+
+        // Populate on load
+        document.addEventListener('DOMContentLoaded', () => {
+            populateCompareSelects();
+            updateCompareTable();
+        });
+
+        function showNotification(msg, type = 'info') {
+            const colors = {
+                success: '#10b981',
+                error: '#ef4444',
+                warning: '#f59e0b',
+                info: '#02735E'
+            };
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle'
+            };
+            const n = document.createElement('div');
+            n.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i> ${msg}`;
+            n.style.cssText = `position: fixed; top: 20px; right: 20px; padding: 1rem 1.5rem; background: ${colors[type] || colors.info}; color: white; border-radius: 8px; display: flex; align-items: center; gap: 0.75rem; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999; animation: slideIn 0.3s ease;`;
+            document.body.appendChild(n);
+            setTimeout(() => { n.style.opacity = '0'; n.style.transform = 'translateX(20px)'; n.style.transition = 'all 0.3s'; setTimeout(() => n.remove(), 300); }, 3000);
+        }
+    </script>
+</body>
+</html>

@@ -19,8 +19,10 @@ const SuperAdminSidebar = {
             { id: 'subscriptions', label: 'Suscripciones', icon: 'fas fa-sync-alt', href: '/superadmin/billing/subscriptions.html' }
         ],
         equipo: [
-            { id: 'team', label: 'Miembros', icon: 'fas fa-users', href: '/superadmin/team/list.html' },
-            { id: 'roles', label: 'Roles', icon: 'fas fa-user-shield', href: '/superadmin/team/roles.html' }
+            { id: 'team', label: 'Equipo', icon: 'fas fa-users', href: '/superadmin/team/index.html' },
+            { id: 'activity', label: 'Actividad', icon: 'fas fa-history', href: '/superadmin/team/activity.html' },
+            { id: 'onboarding-team', label: 'Onboarding', icon: 'fas fa-user-plus', href: '/superadmin/team/onboarding.html' },
+            { id: 'performance', label: 'Desempeño', icon: 'fas fa-chart-line', href: '/superadmin/team/performance.html' }
         ],
         soporte: [
             { id: 'tickets', label: 'Tickets', icon: 'fas fa-ticket-alt', href: '/superadmin/support/tickets.html', badge: '3' },
@@ -43,7 +45,10 @@ const SuperAdminSidebar = {
         if (path.includes('/billing/invoices')) return 'invoices';
         if (path.includes('/billing/subscriptions')) return 'subscriptions';
         if (path.includes('/billing/')) return 'billing';
-        if (path.includes('/team/roles')) return 'roles';
+        if (path.includes('/team/activity')) return 'activity';
+        if (path.includes('/team/onboarding')) return 'onboarding-team';
+        if (path.includes('/team/performance')) return 'performance';
+        if (path.includes('/team/index') || path.endsWith('/team/') || path.endsWith('/team')) return 'team';
         if (path.includes('/team/')) return 'team';
         if (path.includes('/support/knowledge')) return 'knowledge';
         if (path.includes('/support/')) return 'tickets';

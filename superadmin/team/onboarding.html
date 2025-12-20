@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onboarding - SuperAdmin | Opsis Suite</title>
+    <style>
+        :root { --verdi-dark: #022326; --sidebar-width: 240px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { background: #f8fafc; }
+        body { opacity: 0; transition: opacity 0.15s ease-in; }
+        body.loaded { opacity: 1; }
+        .app-shell { min-height: 100vh; background: #f8fafc; }
+        .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh; background: var(--verdi-dark); }
+        .main-content { margin-left: var(--sidebar-width); min-height: 100vh; background: #f8fafc; }
+
+        /* Onboarding Cards */
+        .onboarding-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem; }
+        .onboarding-card { background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
+        .onboarding-card-header { display: flex; align-items: center; gap: 1rem; padding: 1.25rem; border-bottom: 1px solid #f1f5f9; }
+        .onboarding-avatar { width: 48px; height: 48px; border-radius: 50%; background: #02735E; color: white; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 600; }
+        .onboarding-info { flex: 1; }
+        .onboarding-info h4 { font-size: 1rem; margin-bottom: 0.125rem; }
+        .onboarding-info span { font-size: 0.75rem; color: #64748b; }
+        .onboarding-card-body { padding: 1.25rem; }
+
+        /* Progress */
+        .progress-container { margin-bottom: 1rem; }
+        .progress-header { display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.5rem; }
+        .progress-header span:first-child { color: #64748b; }
+        .progress-header span:last-child { font-weight: 600; color: #02735E; }
+        .progress-bar { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #02735E, #10b981); border-radius: 4px; transition: width 0.3s; }
+
+        /* Checklist */
+        .checklist { list-style: none; }
+        .checklist-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 0; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: all 0.2s; }
+        .checklist-item:last-child { border-bottom: none; }
+        .checklist-item:hover { background: #f8fafc; margin: 0 -1.25rem; padding-left: 1.25rem; padding-right: 1.25rem; }
+        .check-icon { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #e2e8f0; transition: all 0.2s; }
+        .checklist-item.completed .check-icon { background: #10b981; border-color: #10b981; color: white; }
+        .checklist-item.completed .check-text { color: #94a3b8; text-decoration: line-through; }
+        .check-text { font-size: 0.875rem; }
+
+        /* Pending Invites */
+        .invite-card { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 10px; margin-bottom: 0.75rem; }
+        .invite-card .avatar { width: 40px; height: 40px; border-radius: 50%; background: #f59e0b; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+        .invite-info { flex: 1; }
+        .invite-info strong { font-size: 0.875rem; display: block; margin-bottom: 0.125rem; }
+        .invite-info span { font-size: 0.75rem; color: #92400e; }
+        .invite-actions { display: flex; gap: 0.5rem; }
+
+        /* Template Cards */
+        .template-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+        .template-card { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .template-card:hover { border-color: #02735E; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .template-icon { width: 48px; height: 48px; border-radius: 12px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem; font-size: 1.25rem; color: #64748b; }
+        .template-card h4 { font-size: 0.875rem; margin-bottom: 0.25rem; }
+        .template-card span { font-size: 0.75rem; color: #64748b; }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/superadmin/css/superadmin.css?v=7">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar" id="sidebar"></aside>
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <h1 class="page-title">Onboarding</h1>
+                    <p class="page-subtitle">Gestiona el proceso de incorporación</p>
+                </div>
+                <div class="header-actions">
+                    <a href="index.html" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Volver</a>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <!-- Stats -->
+                <div class="stats-grid" style="margin-bottom: 1.5rem;">
+                    <div class="stat-card">
+                        <div class="stat-icon warning"><i class="fas fa-envelope"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-value">2</div>
+                            <div class="stat-label">Invitaciones Pendientes</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon info"><i class="fas fa-spinner"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-value">1</div>
+                            <div class="stat-label">En Progreso</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon success"><i class="fas fa-check-circle"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-value">6</div>
+                            <div class="stat-label">Completados</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-value">3.2 días</div>
+                            <div class="stat-label">Tiempo Promedio</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pending Invitations -->
+                <div class="card" style="margin-bottom: 1.5rem;">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-envelope-open"></i> Invitaciones Pendientes</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="invite-card">
+                            <div class="avatar">RS</div>
+                            <div class="invite-info">
+                                <strong>Roberto Silva</strong>
+                                <span>roberto@empresa.com • Enviada hace 2 días</span>
+                            </div>
+                            <div class="invite-actions">
+                                <button class="btn btn-sm btn-secondary" onclick="resendInvite()"><i class="fas fa-redo"></i></button>
+                                <button class="btn btn-sm btn-danger" onclick="cancelInvite()"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="invite-card">
+                            <div class="avatar">AC</div>
+                            <div class="invite-info">
+                                <strong>Ana Castillo</strong>
+                                <span>ana@empresa.com • Enviada hace 5 días</span>
+                            </div>
+                            <div class="invite-actions">
+                                <button class="btn btn-sm btn-secondary" onclick="resendInvite()"><i class="fas fa-redo"></i></button>
+                                <button class="btn btn-sm btn-danger" onclick="cancelInvite()"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- In Progress -->
+                <div class="card" style="margin-bottom: 1.5rem;">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-user-clock"></i> Onboarding en Progreso</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="onboarding-grid">
+                            <div class="onboarding-card">
+                                <div class="onboarding-card-header">
+                                    <div class="onboarding-avatar">FM</div>
+                                    <div class="onboarding-info">
+                                        <h4>Fernando Mendez</h4>
+                                        <span>Soporte • Inició hace 1 día</span>
+                                    </div>
+                                </div>
+                                <div class="onboarding-card-body">
+                                    <div class="progress-container">
+                                        <div class="progress-header">
+                                            <span>Progreso</span>
+                                            <span class="progress-value">60%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 60%;"></div>
+                                        </div>
+                                    </div>
+                                    <ul class="checklist">
+                                        <li class="checklist-item completed" onclick="toggleCheck(this)">
+                                            <div class="check-icon"><i class="fas fa-check"></i></div>
+                                            <span class="check-text">Completar perfil</span>
+                                        </li>
+                                        <li class="checklist-item completed" onclick="toggleCheck(this)">
+                                            <div class="check-icon"><i class="fas fa-check"></i></div>
+                                            <span class="check-text">Ver video de bienvenida</span>
+                                        </li>
+                                        <li class="checklist-item completed" onclick="toggleCheck(this)">
+                                            <div class="check-icon"><i class="fas fa-check"></i></div>
+                                            <span class="check-text">Configurar notificaciones</span>
+                                        </li>
+                                        <li class="checklist-item" onclick="toggleCheck(this)">
+                                            <div class="check-icon"><i class="fas fa-circle"></i></div>
+                                            <span class="check-text">Completar capacitación</span>
+                                        </li>
+                                        <li class="checklist-item" onclick="toggleCheck(this)">
+                                            <div class="check-icon"><i class="fas fa-circle"></i></div>
+                                            <span class="check-text">Resolver primer ticket</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Templates -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-clipboard-list"></i> Templates de Onboarding</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="template-grid">
+                            <div class="template-card">
+                                <div class="template-icon"><i class="fas fa-crown"></i></div>
+                                <h4>Super Admin</h4>
+                                <span>8 pasos • 5 días</span>
+                            </div>
+                            <div class="template-card">
+                                <div class="template-icon"><i class="fas fa-user-shield"></i></div>
+                                <h4>Admin</h4>
+                                <span>6 pasos • 3 días</span>
+                            </div>
+                            <div class="template-card">
+                                <div class="template-icon"><i class="fas fa-headset"></i></div>
+                                <h4>Soporte</h4>
+                                <span>5 pasos • 2 días</span>
+                            </div>
+                            <div class="template-card">
+                                <div class="template-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+                                <h4>Facturación</h4>
+                                <span>4 pasos • 2 días</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/superadmin/js/sidebar.js"></script>
+    <script src="/superadmin/js/data.js"></script>
+    <script>
+        document.body.classList.add('loaded');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof SuperAdminSidebar !== 'undefined') SuperAdminSidebar.init();
+        });
+
+        function toggleCheck(element) {
+            element.classList.toggle('completed');
+            const icon = element.querySelector('.check-icon i');
+            icon.className = element.classList.contains('completed') ? 'fas fa-check' : 'fas fa-circle';
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const items = document.querySelectorAll('.checklist-item');
+            const completed = document.querySelectorAll('.checklist-item.completed');
+            const percent = Math.round((completed.length / items.length) * 100);
+            document.querySelector('.progress-value').textContent = percent + '%';
+            document.querySelector('.progress-fill').style.width = percent + '%';
+        }
+
+        function resendInvite() { showNotification('Invitación reenviada', 'success'); }
+        function cancelInvite() { showNotification('Invitación cancelada', 'info'); }
+
+        function showNotification(msg, type = 'info') {
+            const n = document.createElement('div');
+            n.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i> ${msg}`;
+            n.style.cssText = `position: fixed; top: 20px; right: 20px; padding: 1rem 1.5rem; background: ${type === 'success' ? '#10b981' : '#3b82f6'}; color: white; border-radius: 8px; display: flex; align-items: center; gap: 0.75rem; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999;`;
+            document.body.appendChild(n);
+            setTimeout(() => { n.style.opacity = '0'; setTimeout(() => n.remove(), 300); }, 3000);
+        }
+    </script>
+</body>
+</html>
