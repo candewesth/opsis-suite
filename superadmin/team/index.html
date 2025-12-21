@@ -14,6 +14,12 @@
         .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh; background: var(--verdi-dark); }
         .main-content { margin-left: var(--sidebar-width); min-height: 100vh; background: #f8fafc; }
 
+        /* Pulse animation for live indicator */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
         /* Tabs */
         .tabs-container { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; background: white; padding: 0.5rem; border-radius: 12px; border: 1px solid #e2e8f0; }
         .tab-btn { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; border: none; background: transparent; border-radius: 8px; cursor: pointer; font-weight: 500; color: #64748b; transition: all 0.2s; }
@@ -390,75 +396,303 @@
 
                 <!-- Tab: Groups -->
                 <div class="tab-content" id="tab-groups">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
-                        <div>
-                            <h2 style="font-size: 1.25rem; font-weight: 700; color: #022326; margin: 0 0 0.25rem 0;">Grupos y Departamentos</h2>
-                            <p style="font-size: 0.875rem; color: #64748b; margin: 0;">Organiza tu equipo en grupos para una mejor gestión</p>
+                    <!-- Header con propósito claro -->
+                    <div style="background: linear-gradient(135deg, #f0fdf4, #ecfdf5); border: 1px solid #bbf7d0; border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div style="width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, #02735E, #059669); display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-layer-group" style="color: white; font-size: 1.25rem;"></i>
+                                </div>
+                                <div>
+                                    <h2 style="font-size: 1.25rem; font-weight: 700; color: #022326; margin: 0;">Grupos de Trabajo</h2>
+                                    <p style="font-size: 0.875rem; color: #475569; margin: 0.25rem 0 0 0;">Organiza a tu equipo en departamentos para asignar proyectos y enviar comunicaciones masivas</p>
+                                </div>
+                            </div>
+                            <button onclick="openGroupModal()" style="display: flex; align-items: center; gap: 0.625rem; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #022326, #035951); color: white; border: none; border-radius: 12px; font-weight: 600; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 12px rgba(2, 115, 94, 0.3); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(2, 115, 94, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(2, 115, 94, 0.3)';">
+                                <div style="width: 28px; height: 28px; border-radius: 8px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-plus" style="font-size: 0.8rem;"></i>
+                                </div>
+                                <span>Nuevo Grupo</span>
+                            </button>
                         </div>
-                        <button class="btn btn-primary" onclick="openModal('groupModal')"><i class="fas fa-plus"></i> Crear Grupo</button>
+                    </div>
+
+                    <!-- Stats de grupos -->
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; display: flex; align-items: center; gap: 1rem;">
+                            <div style="width: 44px; height: 44px; border-radius: 10px; background: #dbeafe; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-users" style="color: #1d4ed8;"></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #022326;" id="groupsTotal">3</div>
+                                <div style="font-size: 0.75rem; color: #64748b;">Grupos Activos</div>
+                            </div>
+                        </div>
+                        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; display: flex; align-items: center; gap: 1rem;">
+                            <div style="width: 44px; height: 44px; border-radius: 10px; background: #d1fae5; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-user-check" style="color: #059669;"></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #022326;" id="groupedMembers">6</div>
+                                <div style="font-size: 0.75rem; color: #64748b;">Miembros Asignados</div>
+                            </div>
+                        </div>
+                        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; display: flex; align-items: center; gap: 1rem;">
+                            <div style="width: 44px; height: 44px; border-radius: 10px; background: #fef3c7; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-user-slash" style="color: #d97706;"></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;" id="ungroupedMembers">2</div>
+                                <div style="font-size: 0.75rem; color: #64748b;">Sin Asignar</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Caso de uso explicativo -->
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 0.75rem;">
+                        <i class="fas fa-lightbulb" style="color: #f59e0b; margin-top: 0.125rem;"></i>
+                        <div style="font-size: 0.8rem; color: #475569;">
+                            <strong style="color: #1e293b;">¿Para qué sirven los grupos?</strong> 
+                            Asigna miembros a departamentos como "Ventas", "Soporte" o "Desarrollo". Esto te permite enviar notificaciones masivas, asignar proyectos por área y ver métricas de productividad por equipo.
+                        </div>
                     </div>
 
                     <!-- Groups Grid -->
-                    <div id="groupsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;"></div>
+                    <div id="groupsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem;"></div>
+                    
+                    <!-- Empty state si no hay grupos -->
+                    <div id="groupsEmptyState" style="display: none; text-align: center; padding: 3rem; background: white; border: 2px dashed #e2e8f0; border-radius: 16px;">
+                        <div style="width: 64px; height: 64px; border-radius: 16px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                            <i class="fas fa-layer-group" style="font-size: 1.5rem; color: #94a3b8;"></i>
+                        </div>
+                        <h3 style="color: #1e293b; margin: 0 0 0.5rem;">No hay grupos creados</h3>
+                        <p style="color: #64748b; font-size: 0.875rem; margin: 0 0 1rem;">Crea tu primer grupo para organizar a tu equipo</p>
+                        <button class="btn btn-primary" onclick="openGroupModal()"><i class="fas fa-plus"></i> Crear Primer Grupo</button>
+                    </div>
                 </div>
 
                 <!-- Tab: Activity -->
                 <div class="tab-content" id="tab-activity">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
-                        <div>
-                            <h2 style="font-size: 1.25rem; font-weight: 700; color: #022326; margin: 0 0 0.25rem 0;">Registro de Actividad</h2>
-                            <p style="font-size: 0.875rem; color: #64748b; margin: 0;">Historial de acciones del equipo</p>
-                        </div>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <select id="activityFilter" onchange="filterActivity()" style="padding: 0.625rem 1rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.875rem; cursor: pointer;">
-                                <option value="">Todas las acciones</option>
-                                <option value="login">Inicios de sesión</option>
-                                <option value="change">Cambios de permisos</option>
-                                <option value="invite">Invitaciones</option>
-                                <option value="edit">Ediciones</option>
-                            </select>
-                            <button class="btn btn-secondary" onclick="exportActivity()"><i class="fas fa-download"></i> Exportar</button>
+                    <!-- Header con diseño Verdi + Aire -->
+                    <div style="background: linear-gradient(135deg, #022326 0%, #035951 50%, #02735E 100%); border-radius: 20px; padding: 2rem; margin-bottom: 1.5rem; position: relative; overflow: hidden;">
+                        <!-- Decoraciones de fondo -->
+                        <div style="position: absolute; top: -40px; right: -40px; width: 150px; height: 150px; background: rgba(255,255,255,0.05); border-radius: 50%;"></div>
+                        <div style="position: absolute; bottom: -30px; left: 20%; width: 100px; height: 100px; background: rgba(255,255,255,0.03); border-radius: 50%;"></div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
+                            <div style="display: flex; align-items: center; gap: 1.25rem;">
+                                <div style="width: 56px; height: 56px; border-radius: 16px; background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.2);">
+                                    <i class="fas fa-history" style="color: white; font-size: 1.5rem;"></i>
+                                </div>
+                                <div>
+                                    <h2 style="font-size: 1.5rem; font-weight: 700; color: white; margin: 0;">Registro de Auditoría</h2>
+                                    <p style="font-size: 0.9rem; color: rgba(255,255,255,0.7); margin: 0.375rem 0 0 0;">Historial completo de acciones para cumplimiento y seguridad</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <!-- Live indicator -->
+                                <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 20px;">
+                                    <div style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: pulse 2s infinite;"></div>
+                                    <span style="color: #10b981; font-size: 0.8rem; font-weight: 600;">En vivo</span>
+                                </div>
+                                <!-- Refresh button -->
+                                <button onclick="refreshActivity()" id="refreshActivityBtn" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); color: white; border-radius: 10px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'" title="Actualizar actividad">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                                <button onclick="exportActivity()" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); color: white; border-radius: 10px; font-weight: 500; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+                                    <i class="fas fa-download"></i>
+                                    <span>Exportar CSV</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Activity Stats -->
+                    <!-- Filtros avanzados con mejor diseño -->
+                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                            <i class="fas fa-filter" style="color: #02735E; font-size: 0.8rem;"></i>
+                            <span style="font-size: 0.8rem; font-weight: 600; color: #1e293b;">Filtros</span>
+                        </div>
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
+                            <div style="flex: 1; min-width: 180px;">
+                                <label style="font-size: 0.7rem; color: #64748b; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 0.5rem;">Tipo de Acción</label>
+                                <select id="activityFilter" onchange="filterActivity()" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 0.875rem; background: #fafbfc; cursor: pointer; transition: all 0.2s;" onfocus="this.style.borderColor='#02735E'" onblur="this.style.borderColor='#e2e8f0'">
+                                    <option value="">Todas las acciones</option>
+                                    <option value="login">Inicios de sesión</option>
+                                    <option value="change">Cambios de configuración</option>
+                                    <option value="invite">Invitaciones</option>
+                                    <option value="edit">Ediciones</option>
+                                    <option value="delete">Eliminaciones</option>
+                                </select>
+                            </div>
+                            <div style="flex: 1; min-width: 180px;">
+                                <label style="font-size: 0.7rem; color: #64748b; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 0.5rem;">Usuario</label>
+                                <select id="activityUserFilter" onchange="filterActivity()" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 0.875rem; background: #fafbfc; cursor: pointer; transition: all 0.2s;" onfocus="this.style.borderColor='#02735E'" onblur="this.style.borderColor='#e2e8f0'">
+                                    <option value="">Todos los usuarios</option>
+                                </select>
+                            </div>
+                            <div style="flex: 1; min-width: 180px;">
+                                <label style="font-size: 0.7rem; color: #64748b; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 0.5rem;">Período</label>
+                                <select id="activityDateFilter" onchange="filterActivity()" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 0.875rem; background: #fafbfc; cursor: pointer; transition: all 0.2s;" onfocus="this.style.borderColor='#02735E'" onblur="this.style.borderColor='#e2e8f0'">
+                                    <option value="today">Hoy</option>
+                                    <option value="week" selected>Esta semana</option>
+                                    <option value="month">Este mes</option>
+                                    <option value="all">Todo el historial</option>
+                                </select>
+                            </div>
+                            <button onclick="clearActivityFilters()" style="padding: 0.75rem 1.25rem; border: 2px solid #e2e8f0; background: white; border-radius: 10px; font-size: 0.85rem; color: #64748b; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem;" onmouseover="this.style.borderColor='#dc2626'; this.style.color='#dc2626'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#64748b'">
+                                <i class="fas fa-times"></i>
+                                <span>Limpiar</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Stats con mejor diseño -->
                     <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
-                        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem;">
-                            <div style="font-size: 0.7rem; color: #64748b; text-transform: uppercase;">Hoy</div>
-                            <div style="font-size: 1.5rem; font-weight: 700; color: #022326;" id="activityToday">24</div>
+                        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.25rem; transition: all 0.3s; cursor: default;" onmouseover="this.style.boxShadow='0 8px 20px rgba(0,0,0,0.08)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='none'; this.style.transform='translateY(0)'">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div style="width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, #dbeafe, #bfdbfe); display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-bolt" style="color: #1d4ed8; font-size: 1.1rem;"></i>
+                                </div>
+                                <div>
+                                    <div style="font-size: 1.75rem; font-weight: 800; color: #022326; line-height: 1;" id="activityToday">4</div>
+                                    <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">Acciones Hoy</div>
+                                </div>
+                            </div>
                         </div>
-                        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem;">
-                            <div style="font-size: 0.7rem; color: #64748b; text-transform: uppercase;">Esta semana</div>
-                            <div style="font-size: 1.5rem; font-weight: 700; color: #022326;" id="activityWeek">142</div>
+                        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.25rem; transition: all 0.3s; cursor: default;" onmouseover="this.style.boxShadow='0 8px 20px rgba(0,0,0,0.08)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='none'; this.style.transform='translateY(0)'">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div style="width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, #d1fae5, #a7f3d0); display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-sign-in-alt" style="color: #059669; font-size: 1.1rem;"></i>
+                                </div>
+                                <div>
+                                    <div style="font-size: 1.75rem; font-weight: 800; color: #022326; line-height: 1;" id="activityLogins">12</div>
+                                    <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">Inicios Sesión</div>
+                                </div>
+                            </div>
                         </div>
-                        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem;">
-                            <div style="font-size: 0.7rem; color: #64748b; text-transform: uppercase;">Más activo</div>
-                            <div style="font-size: 0.9rem; font-weight: 600; color: #02735E;" id="mostActive">Carlos W.</div>
+                        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.25rem; transition: all 0.3s; cursor: default;" onmouseover="this.style.boxShadow='0 8px 20px rgba(0,0,0,0.08)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='none'; this.style.transform='translateY(0)'">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div style="width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, #fef3c7, #fde68a); display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-edit" style="color: #d97706; font-size: 1.1rem;"></i>
+                                </div>
+                                <div>
+                                    <div style="font-size: 1.75rem; font-weight: 800; color: #022326; line-height: 1;" id="activityChanges">5</div>
+                                    <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">Modificaciones</div>
+                                </div>
+                            </div>
                         </div>
-                        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem;">
-                            <div style="font-size: 0.7rem; color: #64748b; text-transform: uppercase;">Última acción</div>
-                            <div style="font-size: 0.9rem; font-weight: 600; color: #475569;" id="lastAction">Hace 2 min</div>
+                        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.25rem; transition: all 0.3s; cursor: default;" onmouseover="this.style.boxShadow='0 8px 20px rgba(0,0,0,0.08)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='none'; this.style.transform='translateY(0)'">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div style="width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, #fee2e2, #fecaca); display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-exclamation-triangle" style="color: #dc2626; font-size: 1.1rem;"></i>
+                                </div>
+                                <div>
+                                    <div style="font-size: 1.75rem; font-weight: 800; color: #dc2626; line-height: 1;" id="activityAlerts">0</div>
+                                    <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">Alertas</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Activity Timeline -->
-                    <div class="card">
-                        <div class="card-body" style="padding: 0;">
-                            <div id="activityTimeline" style="max-height: 500px; overflow-y: auto;"></div>
+                    <!-- Caso de uso con mejor diseño -->
+                    <div style="background: linear-gradient(135deg, #f0fdf4, #ecfdf5); border: 1px solid #bbf7d0; border-radius: 14px; padding: 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 1rem;">
+                        <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #fbbf24, #f59e0b); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i class="fas fa-lightbulb" style="color: white; font-size: 0.9rem;"></i>
                         </div>
+                        <div>
+                            <div style="font-weight: 600; color: #022326; margin-bottom: 0.375rem;">¿Cuándo usar el registro de auditoría?</div>
+                            <div style="font-size: 0.85rem; color: #475569; line-height: 1.5;">
+                                Revisa quién modificó permisos, detecta accesos sospechosos, cumple con regulaciones de privacidad (GDPR, SOC2), y resuelve disputas sobre "quién hizo qué".
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Activity Timeline con mejor diseño -->
+                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                        <div style="background: linear-gradient(135deg, #f8fafc, #f1f5f9); padding: 1.25rem 1.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e2e8f0;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #02735E, #059669); display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-stream" style="color: white; font-size: 0.8rem;"></i>
+                                </div>
+                                <span style="font-weight: 700; color: #022326; font-size: 1rem;">Timeline de Actividad</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="font-size: 0.8rem; color: #64748b; background: #f1f5f9; padding: 0.375rem 0.75rem; border-radius: 6px;" id="activityCount">7 eventos</span>
+                            </div>
+                        </div>
+                        <div id="activityTimeline" style="max-height: 500px; overflow-y: auto;"></div>
                     </div>
                 </div>
 
                 <!-- Tab: Security -->
                 <div class="tab-content" id="tab-security">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
-                        <div>
-                            <h2 style="font-size: 1.25rem; font-weight: 700; color: #022326; margin: 0 0 0.25rem 0;">Seguridad del Equipo</h2>
-                            <p style="font-size: 0.875rem; color: #64748b; margin: 0;">Gestiona 2FA, sesiones activas y políticas de acceso</p>
+                    <!-- Header con propósito claro -->
+                    <div style="background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 1px solid #fca5a5; border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div style="width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, #dc2626, #ef4444); display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-shield-alt" style="color: white; font-size: 1.25rem;"></i>
+                                </div>
+                                <div>
+                                    <h2 style="font-size: 1.25rem; font-weight: 700; color: #022326; margin: 0;">Centro de Seguridad</h2>
+                                    <p style="font-size: 0.875rem; color: #475569; margin: 0.25rem 0 0 0;">Controla el acceso, gestiona 2FA y monitorea sesiones para proteger tu organización</p>
+                                </div>
+                            </div>
+                            <button class="btn btn-secondary" onclick="downloadSecurityReport()"><i class="fas fa-file-pdf"></i> Descargar Reporte</button>
                         </div>
                     </div>
 
-                    <!-- Security Stats -->
+                    <!-- Alerta de seguridad si hay problemas -->
+                    <div id="securityAlert" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border: 1px solid #fbbf24; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem;">
+                        <div style="width: 40px; height: 40px; border-radius: 10px; background: #f59e0b; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i class="fas fa-exclamation" style="color: white;"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; color: #92400e;">Acción recomendada</div>
+                            <div style="font-size: 0.875rem; color: #78350f;"><span id="securityAlertText">3 miembros no tienen 2FA activado. Activa la autenticación de dos factores para mayor seguridad.</span></div>
+                        </div>
+                        <button onclick="require2FAForAll()" style="background: #f59e0b; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 500; cursor: pointer; white-space: nowrap;">
+                            Activar 2FA
+                        </button>
+                    </div>
+
+                    <!-- Security Score -->
+                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                            <div>
+                                <h3 style="font-size: 1rem; font-weight: 600; color: #1e293b; margin: 0;">Puntuación de Seguridad</h3>
+                                <p style="font-size: 0.8rem; color: #64748b; margin: 0.25rem 0 0;">Basado en configuración actual del equipo</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 2rem; font-weight: 800; color: #f59e0b;" id="securityScore">72</div>
+                                <div style="font-size: 0.7rem; color: #64748b;">de 100</div>
+                            </div>
+                        </div>
+                        <div style="background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 1rem;">
+                            <div id="securityScoreBar" style="width: 72%; height: 100%; background: linear-gradient(90deg, #ef4444 0%, #f59e0b 50%, #10b981 100%); border-radius: 4px; transition: width 0.5s;"></div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; font-size: 0.75rem;">
+                            <div style="display: flex; align-items: center; gap: 0.375rem;">
+                                <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                                <span style="color: #475569;">Contraseñas fuertes</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.375rem;">
+                                <i class="fas fa-exclamation-circle" style="color: #f59e0b;"></i>
+                                <span style="color: #475569;">2FA parcial</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.375rem;">
+                                <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                                <span style="color: #475569;">Sin accesos bloqueados</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.375rem;">
+                                <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                                <span style="color: #475569;">Sesiones monitoreadas</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Grid -->
                     <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
                         <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem 1.25rem;">
                             <div style="display: flex; align-items: center; justify-content: space-between;">
@@ -474,8 +708,8 @@
                         <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem 1.25rem;">
                             <div style="display: flex; align-items: center; justify-content: space-between;">
                                 <div>
-                                    <div style="font-size: 0.7rem; color: #64748b; text-transform: uppercase;">Sesiones Activas</div>
-                                    <div style="font-size: 1.5rem; font-weight: 700; color: #022326;" id="secSessions">12</div>
+                                    <div style="font-size: 0.7rem; color: #64748b; text-transform: uppercase;">Sesiones</div>
+                                    <div style="font-size: 1.5rem; font-weight: 700; color: #022326;" id="secSessions">3</div>
                                 </div>
                                 <div style="width: 40px; height: 40px; border-radius: 10px; background: #dbeafe; display: flex; align-items: center; justify-content: center;">
                                     <i class="fas fa-desktop" style="color: #1d4ed8;"></i>
@@ -486,7 +720,7 @@
                             <div style="display: flex; align-items: center; justify-content: space-between;">
                                 <div>
                                     <div style="font-size: 0.7rem; color: #64748b; text-transform: uppercase;">Intentos Fallidos</div>
-                                    <div style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;" id="secFailed">3</div>
+                                    <div style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;" id="secFailed">0</div>
                                 </div>
                                 <div style="width: 40px; height: 40px; border-radius: 10px; background: #fef3c7; display: flex; align-items: center; justify-content: center;">
                                     <i class="fas fa-exclamation-triangle" style="color: #b45309;"></i>
@@ -496,51 +730,56 @@
                         <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem 1.25rem;">
                             <div style="display: flex; align-items: center; justify-content: space-between;">
                                 <div>
-                                    <div style="font-size: 0.7rem; color: #64748b; text-transform: uppercase;">Último Reporte</div>
-                                    <div style="font-size: 0.9rem; font-weight: 600; color: #475569;" id="secLastReport">Hoy 10:30</div>
+                                    <div style="font-size: 0.7rem; color: #64748b; text-transform: uppercase;">Última Revisión</div>
+                                    <div style="font-size: 0.9rem; font-weight: 600; color: #475569;">Hoy</div>
                                 </div>
                                 <div style="width: 40px; height: 40px; border-radius: 10px; background: #f1f5f9; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-file-alt" style="color: #475569;"></i>
+                                    <i class="fas fa-calendar-check" style="color: #475569;"></i>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 2FA Management -->
-                    <div class="card" style="margin-bottom: 1.5rem;">
-                        <div class="card-header" style="background: #f8fafc; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between;">
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #02735E, #059669); display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-lock" style="color: white; font-size: 0.9rem;"></i>
+                    <!-- Two columns: 2FA and Sessions -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <!-- 2FA Management -->
+                        <div class="card">
+                            <div class="card-header" style="background: #f8fafc; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e2e8f0;">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <div style="width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #02735E, #059669); display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-mobile-alt" style="color: white; font-size: 0.8rem;"></i>
+                                    </div>
+                                    <div>
+                                        <h3 style="margin: 0; font-size: 0.95rem; color: #022326;">Autenticación 2FA</h3>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 style="margin: 0; font-size: 1rem; color: #022326;">Autenticación de Dos Factores (2FA)</h3>
-                                    <p style="font-size: 0.75rem; color: #64748b; margin: 0;">Gestiona la seguridad de las cuentas</p>
-                                </div>
+                                <button onclick="require2FAForAll()" style="font-size: 0.75rem; padding: 0.375rem 0.75rem; background: #02735E; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                                    Requerir a todos
+                                </button>
                             </div>
-                            <button class="btn btn-primary btn-sm" onclick="require2FAForAll()"><i class="fas fa-shield-alt"></i> Requerir 2FA para todos</button>
+                            <div class="card-body" style="padding: 0; max-height: 300px; overflow-y: auto;">
+                                <div id="sec2FAList"></div>
+                            </div>
                         </div>
-                        <div class="card-body" style="padding: 0;">
-                            <div id="sec2FAList"></div>
-                        </div>
-                    </div>
 
-                    <!-- Active Sessions -->
-                    <div class="card">
-                        <div class="card-header" style="background: #f8fafc; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between;">
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #1d4ed8, #3b82f6); display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-desktop" style="color: white; font-size: 0.9rem;"></i>
+                        <!-- Active Sessions -->
+                        <div class="card">
+                            <div class="card-header" style="background: #f8fafc; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e2e8f0;">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <div style="width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #1d4ed8, #3b82f6); display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-desktop" style="color: white; font-size: 0.8rem;"></i>
+                                    </div>
+                                    <div>
+                                        <h3 style="margin: 0; font-size: 0.95rem; color: #022326;">Sesiones Activas</h3>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 style="margin: 0; font-size: 1rem; color: #022326;">Sesiones Activas</h3>
-                                    <p style="font-size: 0.75rem; color: #64748b; margin: 0;">Dispositivos conectados actualmente</p>
-                                </div>
+                                <button onclick="terminateAllSessions()" style="font-size: 0.75rem; padding: 0.375rem 0.75rem; background: #dc2626; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                                    Cerrar todas
+                                </button>
                             </div>
-                            <button class="btn btn-danger btn-sm" onclick="terminateAllSessions()"><i class="fas fa-sign-out-alt"></i> Cerrar todas las sesiones</button>
-                        </div>
-                        <div class="card-body" style="padding: 0;">
-                            <div id="secSessionsList"></div>
+                            <div class="card-body" style="padding: 0; max-height: 300px; overflow-y: auto;">
+                                <div id="secSessionsList"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1128,41 +1367,384 @@
         </div>
     </div>
 
-    <!-- Create Group Modal -->
+    <!-- Modal: Activity Detail -->
+    <div class="modal-overlay" id="activityDetailModal">
+        <div class="modal" style="max-width: 520px; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); background: white;">
+            <!-- Header con icono grande centrado -->
+            <div id="activityDetailHeader" style="padding: 2rem 2rem 1.5rem; text-align: center; border-bottom: 1px solid #e2e8f0;">
+                <div style="display: flex; justify-content: flex-end; margin-bottom: -0.5rem;">
+                    <button onclick="closeModal('activityDetailModal')" style="width: 28px; height: 28px; border-radius: 6px; background: #f1f5f9; border: none; color: #94a3b8; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='#e2e8f0'; this.style.color='#64748b'" onmouseout="this.style.background='#f1f5f9'; this.style.color='#94a3b8'">
+                        <i class="fas fa-times" style="font-size: 0.75rem;"></i>
+                    </button>
+                </div>
+                <div id="activityDetailIconWrapper" style="width: 64px; height: 64px; border-radius: 16px; background: #dcfce7; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i id="activityDetailIconEl" class="fas fa-sign-in-alt" style="color: #059669; font-size: 1.5rem;"></i>
+                </div>
+                <h3 style="color: #022326; font-size: 1.25rem; font-weight: 700; margin: 0 0 0.25rem;" id="activityDetailTitle">Inicio de Sesión</h3>
+                <p style="color: #64748b; font-size: 0.85rem; margin: 0;" id="activityDetailTimeAgo">Hace 5 minutos</p>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body" style="padding: 0; max-height: 60vh; overflow-y: auto;">
+                <!-- Usuario card -->
+                <div style="padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 0.875rem; border-bottom: 1px solid #f1f5f9;">
+                    <div id="activityDetailAvatar" style="width: 44px; height: 44px; border-radius: 50%; background: #02735E; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 1rem;">
+                        CW
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: #1e293b; font-size: 0.95rem;" id="activityDetailUser">Carlos Westheimer</div>
+                        <div style="font-size: 0.8rem; color: #94a3b8;" id="activityDetailUserEmail">carlos@opsis.com</div>
+                    </div>
+                </div>
+
+                <!-- Descripción visual -->
+                <div style="padding: 1.25rem 1.5rem; background: #f8fafc; border-bottom: 1px solid #f1f5f9;">
+                    <p style="font-size: 0.9rem; color: #475569; line-height: 1.6; margin: 0;" id="activityDetailDesc">
+                        Inició sesión en el panel de SuperAdmin
+                    </p>
+                </div>
+
+                <!-- Info cards visuales -->
+                <div style="padding: 1.25rem 1.5rem;">
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.625rem;">
+                        <!-- Fecha -->
+                        <div style="padding: 0.875rem; background: #f8fafc; border-radius: 10px;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.375rem;">
+                                <i class="fas fa-calendar" style="font-size: 0.7rem; color: #02735E;"></i>
+                                <span style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 600;">Fecha</span>
+                            </div>
+                            <div style="font-size: 0.875rem; color: #1e293b; font-weight: 600;" id="activityDetailDate">20 Dic 2025</div>
+                        </div>
+                        <!-- Hora -->
+                        <div style="padding: 0.875rem; background: #f8fafc; border-radius: 10px;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.375rem;">
+                                <i class="fas fa-clock" style="font-size: 0.7rem; color: #02735E;"></i>
+                                <span style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 600;">Hora</span>
+                            </div>
+                            <div style="font-size: 0.875rem; color: #1e293b; font-weight: 600;" id="activityDetailTime">14:32:15</div>
+                        </div>
+                        <!-- Ubicación -->
+                        <div style="padding: 0.875rem; background: #f8fafc; border-radius: 10px;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.375rem;">
+                                <i class="fas fa-map-marker-alt" style="font-size: 0.7rem; color: #02735E;"></i>
+                                <span style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 600;">Ubicación</span>
+                            </div>
+                            <div style="font-size: 0.875rem; color: #1e293b; font-weight: 600;" id="activityDetailLocation">CDMX, México</div>
+                        </div>
+                        <!-- Dispositivo -->
+                        <div style="padding: 0.875rem; background: #f8fafc; border-radius: 10px;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.375rem;">
+                                <i class="fas fa-laptop" style="font-size: 0.7rem; color: #02735E;"></i>
+                                <span style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 600;">Dispositivo</span>
+                            </div>
+                            <div style="font-size: 0.875rem; color: #1e293b; font-weight: 600;" id="activityDetailDevice">Chrome / macOS</div>
+                        </div>
+                    </div>
+
+                    <!-- Detalles extra colapsables -->
+                    <div style="margin-top: 1rem;">
+                        <button onclick="toggleActivityDetails()" id="activityDetailsToggle" style="width: 100%; padding: 0.75rem; background: white; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.8rem; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s;" onmouseover="this.style.borderColor='#02735E'; this.style.color='#02735E'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#64748b'">
+                            <span>Ver más detalles</span>
+                            <i class="fas fa-chevron-down" style="font-size: 0.65rem; transition: transform 0.2s;"></i>
+                        </button>
+                        
+                        <div id="activityExtraDetails" style="display: none; margin-top: 0.75rem; padding: 1rem; background: #fafbfc; border: 1px solid #e2e8f0; border-radius: 10px;">
+                            <div style="display: flex; flex-direction: column; gap: 0.625rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 0.8rem; color: #64748b;">Dirección IP</span>
+                                    <span style="font-size: 0.8rem; color: #1e293b; font-weight: 500; font-family: monospace;" id="activityDetailIP">192.168.1.105</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 0.8rem; color: #64748b;">Módulo</span>
+                                    <span style="font-size: 0.8rem; color: #1e293b; font-weight: 500;" id="activityDetailModule">SuperAdmin</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 0.8rem; color: #64748b;">ID del evento</span>
+                                    <div style="display: flex; align-items: center; gap: 0.375rem;">
+                                        <span style="font-size: 0.75rem; color: #94a3b8; font-family: monospace;" id="activityDetailID">evt_a1b2c3</span>
+                                        <button onclick="copyActivityEventId()" style="padding: 0.25rem; background: none; border: none; color: #94a3b8; cursor: pointer;" title="Copiar ID">
+                                            <i class="fas fa-copy" style="font-size: 0.7rem;"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cambios realizados (solo para ediciones) -->
+                <div id="activityDetailChanges" style="padding: 0 1.5rem 1.25rem; display: none;">
+                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden;">
+                        <div style="padding: 0.75rem 1rem; background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase;">
+                            Cambios realizados
+                        </div>
+                        <div id="activityDetailChangesContent">
+                            <!-- Se llena dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Historial de actividades del usuario -->
+                <div id="activityUserHistory" style="padding: 0 1.5rem 1.25rem;">
+                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden;">
+                        <div style="padding: 0.75rem 1rem; background: linear-gradient(135deg, #022326, #035951); display: flex; align-items: center; justify-content: space-between;">
+                            <span style="font-size: 0.75rem; font-weight: 600; color: white; text-transform: uppercase; letter-spacing: 0.5px;">Historial del usuario</span>
+                            <span id="activityHistoryCount" style="font-size: 0.7rem; color: rgba(255,255,255,0.7);">5 actividades</span>
+                        </div>
+                        <div id="activityHistoryContent" style="max-height: 220px; overflow-y: auto;">
+                            <!-- Se llena dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div style="padding: 1rem 1.5rem; border-top: 1px solid #e2e8f0; display: flex; justify-content: center; background: white;">
+                <button onclick="closeModal('activityDetailModal')" style="padding: 0.625rem 2rem; background: #022326; border: none; color: white; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-size: 0.875rem;" onmouseover="this.style.background='#035951'" onmouseout="this.style.background='#022326'">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Group Confirmation Modal -->
+    <div class="modal-overlay" id="deleteGroupModal">
+        <div class="modal" style="max-width: 420px;">
+            <div class="modal-body" style="text-align: center; padding: 2rem;">
+                <div style="width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #fee2e2, #fecaca); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-layer-group" style="font-size: 1.5rem; color: #dc2626;"></i>
+                </div>
+                <h4 style="margin: 0 0 0.5rem; color: #1e293b; font-size: 1.1rem;">¿Eliminar este grupo?</h4>
+                <p style="color: #64748b; font-size: 0.875rem; margin: 0 0 1rem;">
+                    Vas a eliminar el grupo <strong id="deleteGroupName" style="color: #dc2626;">Nombre</strong>
+                </p>
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem; text-align: left; margin-bottom: 1.25rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <i class="fas fa-info-circle" style="color: #02735E;"></i>
+                        <span style="font-size: 0.8rem; font-weight: 600; color: #1e293b;">¿Qué pasará?</span>
+                    </div>
+                    <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.8rem; color: #64748b;">
+                        <li>El grupo será eliminado permanentemente</li>
+                        <li>Los miembros no serán eliminados</li>
+                        <li>Los miembros quedarán sin asignar a este grupo</li>
+                    </ul>
+                </div>
+                <div style="display: flex; gap: 0.75rem; justify-content: center;">
+                    <button class="btn btn-secondary" onclick="closeModal('deleteGroupModal')" style="flex: 1;">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <button class="btn btn-danger" onclick="confirmDeleteGroup()" style="flex: 1; background: linear-gradient(135deg, #dc2626, #ef4444);">
+                        <i class="fas fa-trash"></i> Sí, Eliminar
+                    </button>
+                </div>
+            </div>
+            <input type="hidden" id="deleteGroupId" value="">
+        </div>
+    </div>
+
+    <!-- Create/Edit Group Modal -->
     <div class="modal-overlay" id="groupModal">
-        <div class="modal" style="max-width: 480px;">
-            <div class="modal-header" style="background: linear-gradient(135deg, #022326, #035951);">
-                <h3 style="color: white;"><i class="fas fa-users-cog"></i> Crear Grupo</h3>
-                <button class="modal-close" onclick="closeModal('groupModal')" style="background: rgba(255,255,255,0.15); border: none; color: white;"><i class="fas fa-times"></i></button>
+        <div class="modal" style="max-width: 520px; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+            <!-- Header con diseño elaborado -->
+            <div style="background: linear-gradient(135deg, #022326 0%, #035951 50%, #02735E 100%); padding: 1.75rem 2rem; position: relative; overflow: hidden;">
+                <!-- Decoración de fondo -->
+                <div style="position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: rgba(255,255,255,0.05); border-radius: 50%;"></div>
+                <div style="position: absolute; bottom: -40px; left: -20px; width: 80px; height: 80px; background: rgba(255,255,255,0.03); border-radius: 50%;"></div>
+                
+                <div style="display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 1;">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div style="width: 52px; height: 52px; border-radius: 14px; background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.2);">
+                            <i class="fas fa-layer-group" style="color: white; font-size: 1.25rem;"></i>
+                        </div>
+                        <div>
+                            <h3 style="color: white; margin: 0; font-size: 1.25rem; font-weight: 700;" id="groupModalTitle">Crear Grupo</h3>
+                            <p style="color: rgba(255,255,255,0.7); margin: 0.25rem 0 0; font-size: 0.8rem;">Organiza a tu equipo en departamentos</p>
+                        </div>
+                    </div>
+                    <button onclick="closeModal('groupModal')" style="width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Body del modal -->
+            <div style="padding: 1.75rem 2rem; background: #fafbfc;">
+                <!-- Nombre del grupo -->
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">
+                        <i class="fas fa-tag" style="color: #02735E; font-size: 0.7rem;"></i>
+                        Nombre del Grupo
+                    </label>
+                    <input type="text" id="groupName" placeholder="Ej: Ventas, Desarrollo, Marketing..." style="width: 100%; padding: 0.875rem 1rem; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 0.95rem; transition: all 0.2s; background: white;" onfocus="this.style.borderColor='#02735E'; this.style.boxShadow='0 0 0 3px rgba(2,115,94,0.1)'" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                </div>
+                
+                <!-- Descripción -->
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">
+                        <i class="fas fa-align-left" style="color: #02735E; font-size: 0.7rem;"></i>
+                        Descripción
+                    </label>
+                    <input type="text" id="groupDesc" placeholder="Breve descripción del grupo..." style="width: 100%; padding: 0.875rem 1rem; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 0.95rem; transition: all 0.2s; background: white;" onfocus="this.style.borderColor='#02735E'; this.style.boxShadow='0 0 0 3px rgba(2,115,94,0.1)'" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                </div>
+                
+                <!-- Color del grupo -->
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 600; color: #1e293b; margin-bottom: 0.75rem;">
+                        <i class="fas fa-palette" style="color: #02735E; font-size: 0.7rem;"></i>
+                        Color del Grupo
+                    </label>
+                    <div style="display: flex; gap: 0.75rem; background: white; padding: 1rem; border-radius: 12px; border: 1px solid #e2e8f0;">
+                        <button type="button" class="color-btn-verdi active" data-color="#02735E" onclick="selectGroupColor(this)" style="width: 44px; height: 44px; background: linear-gradient(135deg, #02735E, #059669); border-radius: 12px; border: 3px solid transparent; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(2,115,94,0.3);" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></button>
+                        <button type="button" class="color-btn-verdi" data-color="#022326" onclick="selectGroupColor(this)" style="width: 44px; height: 44px; background: linear-gradient(135deg, #022326, #064e3b); border-radius: 12px; border: 3px solid transparent; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(2,35,38,0.3);" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></button>
+                        <button type="button" class="color-btn-verdi" data-color="#1d4ed8" onclick="selectGroupColor(this)" style="width: 44px; height: 44px; background: linear-gradient(135deg, #1d4ed8, #3b82f6); border-radius: 12px; border: 3px solid transparent; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(29,78,216,0.3);" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></button>
+                        <button type="button" class="color-btn-verdi" data-color="#7c3aed" onclick="selectGroupColor(this)" style="width: 44px; height: 44px; background: linear-gradient(135deg, #7c3aed, #a855f7); border-radius: 12px; border: 3px solid transparent; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(124,58,237,0.3);" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></button>
+                        <button type="button" class="color-btn-verdi" data-color="#db2777" onclick="selectGroupColor(this)" style="width: 44px; height: 44px; background: linear-gradient(135deg, #db2777, #ec4899); border-radius: 12px; border: 3px solid transparent; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(219,39,119,0.3);" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></button>
+                        <button type="button" class="color-btn-verdi" data-color="#f59e0b" onclick="selectGroupColor(this)" style="width: 44px; height: 44px; background: linear-gradient(135deg, #f59e0b, #fbbf24); border-radius: 12px; border: 3px solid transparent; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(245,158,11,0.3);" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></button>
+                    </div>
+                </div>
+                
+                <!-- Líder del grupo -->
+                <div style="margin-bottom: 0.5rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">
+                        <i class="fas fa-crown" style="color: #f59e0b; font-size: 0.7rem;"></i>
+                        Líder del Grupo
+                        <span style="font-weight: 400; color: #94a3b8; font-size: 0.75rem;">(opcional)</span>
+                    </label>
+                    <select id="groupLeader" style="width: 100%; padding: 0.875rem 1rem; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 0.95rem; transition: all 0.2s; background: white; cursor: pointer;" onfocus="this.style.borderColor='#02735E'; this.style.boxShadow='0 0 0 3px rgba(2,115,94,0.1)'" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'"></select>
+                </div>
+            </div>
+            
+            <!-- Footer del modal -->
+            <div style="padding: 1.25rem 2rem; background: white; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button onclick="closeModal('groupModal')" style="padding: 0.75rem 1.5rem; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 0.9rem; font-weight: 500; color: #64748b; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
+                    Cancelar
+                </button>
+                <button id="groupSaveBtn" onclick="saveGroup()" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.75rem; background: linear-gradient(135deg, #02735E, #059669); border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 12px rgba(2,115,94,0.3); transition: all 0.2s;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 16px rgba(2,115,94,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(2,115,94,0.3)'">
+                    <i class="fas fa-check"></i>
+                    <span>Crear Grupo</span>
+                </button>
+            </div>
+            <input type="hidden" id="editingGroupId" value="">
+        </div>
+    </div>
+
+    <!-- Add Member to Group Modal -->
+    <div class="modal-overlay" id="addMemberToGroupModal">
+        <div class="modal" style="max-width: 500px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #02735E, #059669);">
+                <h3 style="color: white;"><i class="fas fa-user-plus"></i> Agregar Miembro al Grupo</h3>
+                <button class="modal-close" onclick="closeModal('addMemberToGroupModal')" style="background: rgba(255,255,255,0.15); border: none; color: white;"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
-                <div class="form-group">
-                    <label>Nombre del Grupo</label>
-                    <input type="text" id="groupName" class="form-control" placeholder="Ej: Ventas, Desarrollo...">
-                </div>
-                <div class="form-group">
-                    <label>Descripción</label>
-                    <input type="text" id="groupDesc" class="form-control" placeholder="Breve descripción...">
-                </div>
-                <div class="form-group">
-                    <label>Color</label>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <button type="button" class="color-btn-verdi active" data-color="#02735E" style="width: 36px; height: 36px; background: #02735E; border-radius: 8px; border: 2px solid transparent; cursor: pointer;" onclick="selectGroupColor(this)"></button>
-                        <button type="button" class="color-btn-verdi" data-color="#1d4ed8" style="width: 36px; height: 36px; background: #1d4ed8; border-radius: 8px; border: 2px solid transparent; cursor: pointer;" onclick="selectGroupColor(this)"></button>
-                        <button type="button" class="color-btn-verdi" data-color="#7c3aed" style="width: 36px; height: 36px; background: #7c3aed; border-radius: 8px; border: 2px solid transparent; cursor: pointer;" onclick="selectGroupColor(this)"></button>
-                        <button type="button" class="color-btn-verdi" data-color="#db2777" style="width: 36px; height: 36px; background: #db2777; border-radius: 8px; border: 2px solid transparent; cursor: pointer;" onclick="selectGroupColor(this)"></button>
-                        <button type="button" class="color-btn-verdi" data-color="#f59e0b" style="width: 36px; height: 36px; background: #f59e0b; border-radius: 8px; border: 2px solid transparent; cursor: pointer;" onclick="selectGroupColor(this)"></button>
+                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem;">
+                    <div id="addMemberGroupIcon" style="width: 40px; height: 40px; border-radius: 10px; background: #02735E; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-layer-group" style="color: white;"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: #022326;" id="addMemberGroupName">Grupo</div>
+                        <div style="font-size: 0.8rem; color: #64748b;"><span id="addMemberGroupCount">0</span> miembros actuales</div>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Líder del Grupo</label>
-                    <select id="groupLeader" class="form-control"></select>
+                    <label style="font-weight: 600; color: #1e293b; margin-bottom: 0.75rem; display: block;">Selecciona miembros para agregar:</label>
+                    <div id="addMemberList" style="max-height: 280px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 10px;"></div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('groupModal')">Cancelar</button>
-                <button class="btn btn-primary" onclick="saveGroup()"><i class="fas fa-check"></i> Crear Grupo</button>
+                <button class="btn btn-secondary" onclick="closeModal('addMemberToGroupModal')">Cancelar</button>
+                <button class="btn btn-primary" onclick="confirmAddMembersToGroup()"><i class="fas fa-plus"></i> Agregar Seleccionados</button>
             </div>
+            <input type="hidden" id="addMemberTargetGroupId" value="">
+        </div>
+    </div>
+
+    <!-- Notify Group Modal -->
+    <div class="modal-overlay" id="notifyGroupModal">
+        <div class="modal" style="max-width: 500px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1d4ed8, #3b82f6);">
+                <h3 style="color: white;"><i class="fas fa-bell"></i> Notificar al Grupo</h3>
+                <button class="modal-close" onclick="closeModal('notifyGroupModal')" style="background: rgba(255,255,255,0.15); border: none; color: white;"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem;">
+                    <div id="notifyGroupIcon" style="width: 40px; height: 40px; border-radius: 10px; background: #1d4ed8; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-users" style="color: white;"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: #022326;" id="notifyGroupName">Grupo</div>
+                        <div style="font-size: 0.8rem; color: #64748b;">Se notificará a <span id="notifyGroupCount">0</span> miembros</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Notificación</label>
+                    <select id="notifyType" class="form-control">
+                        <option value="info">Informativa</option>
+                        <option value="urgent">Urgente</option>
+                        <option value="reminder">Recordatorio</option>
+                        <option value="announcement">Anuncio</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Asunto</label>
+                    <input type="text" id="notifySubject" class="form-control" placeholder="Ej: Reunión de equipo mañana">
+                </div>
+                <div class="form-group">
+                    <label>Mensaje</label>
+                    <textarea id="notifyMessage" class="form-control" rows="4" placeholder="Escribe el mensaje para el grupo..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" id="notifyEmail" checked>
+                        <span>Enviar también por email</span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('notifyGroupModal')">Cancelar</button>
+                <button class="btn btn-primary" onclick="sendGroupNotification()" style="background: linear-gradient(135deg, #1d4ed8, #3b82f6);"><i class="fas fa-paper-plane"></i> Enviar Notificación</button>
+            </div>
+            <input type="hidden" id="notifyTargetGroupId" value="">
+        </div>
+    </div>
+
+    <!-- Group Detail Panel -->
+    <div class="modal-overlay" id="groupDetailModal">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-header" id="groupDetailHeader" style="background: linear-gradient(135deg, #02735E, #059669);">
+                <h3 style="color: white;"><i class="fas fa-layer-group"></i> <span id="groupDetailName">Grupo</span></h3>
+                <button class="modal-close" onclick="closeModal('groupDetailModal')" style="background: rgba(255,255,255,0.15); border: none; color: white;"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" style="padding: 0;">
+                <!-- Group Info -->
+                <div style="padding: 1.5rem; border-bottom: 1px solid #e2e8f0;">
+                    <p style="color: #64748b; margin: 0;" id="groupDetailDesc">Descripción del grupo</p>
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <div style="background: #f8fafc; padding: 0.75rem 1rem; border-radius: 8px; flex: 1; text-align: center;">
+                            <div style="font-size: 1.25rem; font-weight: 700; color: #022326;" id="groupDetailMemberCount">0</div>
+                            <div style="font-size: 0.7rem; color: #64748b;">Miembros</div>
+                        </div>
+                        <div style="background: #f8fafc; padding: 0.75rem 1rem; border-radius: 8px; flex: 1; text-align: center;">
+                            <div style="font-size: 0.9rem; font-weight: 600; color: #022326;" id="groupDetailLeader">-</div>
+                            <div style="font-size: 0.7rem; color: #64748b;">Líder</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Members List -->
+                <div style="padding: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h4 style="margin: 0; color: #1e293b; font-size: 0.95rem;">Miembros del Grupo</h4>
+                        <button onclick="addMemberToGroupFromDetail()" style="background: #02735E; color: white; border: none; padding: 0.375rem 0.75rem; border-radius: 6px; font-size: 0.75rem; cursor: pointer;">
+                            <i class="fas fa-plus"></i> Agregar
+                        </button>
+                    </div>
+                    <div id="groupDetailMembers" style="max-height: 250px; overflow-y: auto;"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('groupDetailModal')">Cerrar</button>
+                <button class="btn btn-primary" id="editGroupFromDetailBtn" onclick="editGroupFromDetail()"><i class="fas fa-edit"></i> Editar Grupo</button>
+            </div>
+            <input type="hidden" id="groupDetailId" value="">
         </div>
     </div>
 
@@ -1178,21 +1760,21 @@
         ];
 
         // Groups Data
-        const groups = [
+        let groups = [
             { id: 1, name: 'Administración', desc: 'Equipo directivo', color: '#022326', leader: 1, members: [1, 2, 3] },
             { id: 2, name: 'Soporte', desc: 'Atención al cliente', color: '#02735E', leader: 6, members: [6, 7] },
             { id: 3, name: 'Finanzas', desc: 'Gestión financiera', color: '#1d4ed8', leader: 8, members: [8] }
         ];
 
         // Activity Log Data
-        const activityLog = [
-            { id: 1, user: 'Carlos Westheimer', action: 'login', desc: 'Inició sesión', time: 'Hace 5 min', icon: 'fa-sign-in-alt', color: '#10b981' },
-            { id: 2, user: 'María González', action: 'change', desc: 'Cambió permisos de Juan Pérez', time: 'Hace 15 min', icon: 'fa-key', color: '#f59e0b' },
-            { id: 3, user: 'Carlos Westheimer', action: 'invite', desc: 'Invitó a nuevo@empresa.com', time: 'Hace 1 hora', icon: 'fa-user-plus', color: '#1d4ed8' },
-            { id: 4, user: 'Juan Pérez', action: 'login', desc: 'Inició sesión', time: 'Hace 1 hora', icon: 'fa-sign-in-alt', color: '#10b981' },
-            { id: 5, user: 'Ana Rodríguez', action: 'edit', desc: 'Editó configuración de empresa', time: 'Ayer', icon: 'fa-edit', color: '#7c3aed' },
-            { id: 6, user: 'Pedro Sánchez', action: 'login', desc: 'Inició sesión desde nuevo dispositivo', time: 'Ayer', icon: 'fa-sign-in-alt', color: '#10b981' },
-            { id: 7, user: 'Laura Martínez', action: 'change', desc: 'Actualizó rol de soporte', time: 'Hace 2 días', icon: 'fa-shield-alt', color: '#f59e0b' }
+        let activityLog = [
+            { id: 1, user: 'Carlos Westheimer', email: 'carlos@opsis.com', action: 'login', desc: 'Inició sesión en el panel de SuperAdmin', time: 'Hace 5 min', icon: 'fa-sign-in-alt', color: '#10b981', date: '20 Dic 2025', hour: '14:32:15', ip: '192.168.1.105', device: 'Chrome / macOS', location: 'Ciudad de México, MX', module: 'Autenticación', eventId: 'evt_a1b2c3d4e5f6' },
+            { id: 2, user: 'María González', email: 'maria@opsis.com', action: 'change', desc: 'Cambió permisos de Juan Pérez: agregó acceso a Facturación', time: 'Hace 15 min', icon: 'fa-key', color: '#f59e0b', date: '20 Dic 2025', hour: '14:22:08', ip: '192.168.1.42', device: 'Safari / iOS', location: 'Ciudad de México, MX', module: 'Equipo', eventId: 'evt_b2c3d4e5f6g7' },
+            { id: 3, user: 'Carlos Westheimer', email: 'carlos@opsis.com', action: 'invite', desc: 'Invitó a nuevo@empresa.com como Administrador', time: 'Hace 1 hora', icon: 'fa-user-plus', color: '#1d4ed8', date: '20 Dic 2025', hour: '13:45:22', ip: '192.168.1.105', device: 'Chrome / macOS', location: 'Ciudad de México, MX', module: 'Equipo', eventId: 'evt_c3d4e5f6g7h8' },
+            { id: 4, user: 'Juan Pérez', email: 'juan@opsis.com', action: 'login', desc: 'Inició sesión desde Guadalajara', time: 'Hace 1 hora', icon: 'fa-sign-in-alt', color: '#10b981', date: '20 Dic 2025', hour: '13:30:45', ip: '201.142.88.15', device: 'Firefox / Windows', location: 'Guadalajara, MX', module: 'Autenticación', eventId: 'evt_d4e5f6g7h8i9' },
+            { id: 5, user: 'Ana Rodríguez', email: 'ana@opsis.com', action: 'edit', desc: 'Editó configuración de empresa: actualizó logo y colores', time: 'Ayer', icon: 'fa-edit', color: '#7c3aed', date: '19 Dic 2025', hour: '18:15:33', ip: '192.168.1.78', device: 'Chrome / Windows', location: 'Monterrey, MX', module: 'Configuración', eventId: 'evt_e5f6g7h8i9j0' },
+            { id: 6, user: 'Pedro Sánchez', email: 'pedro@opsis.com', action: 'login', desc: 'Inició sesión desde nuevo dispositivo (iPhone)', time: 'Ayer', icon: 'fa-sign-in-alt', color: '#10b981', date: '19 Dic 2025', hour: '16:42:11', ip: '187.190.55.22', device: 'Safari / iOS', location: 'Puebla, MX', module: 'Autenticación', eventId: 'evt_f6g7h8i9j0k1' },
+            { id: 7, user: 'Laura Martínez', email: 'laura@opsis.com', action: 'change', desc: 'Actualizó rol de soporte: agregó permiso de visualización de clientes', time: 'Hace 2 días', icon: 'fa-shield-alt', color: '#f59e0b', date: '18 Dic 2025', hour: '10:25:08', ip: '192.168.1.91', device: 'Edge / Windows', location: 'Ciudad de México, MX', module: 'Roles', eventId: 'evt_g7h8i9j0k1l2' }
         ];
 
         // Sessions Data
@@ -2469,6 +3051,7 @@
             renderPendingInvitations();
             updateSecurityStats();
             updateActivityStats();
+            populateActivityUserFilter();
         });
 
         // ===================
@@ -2618,67 +3201,361 @@
         // ===================
         function renderGroups() {
             const grid = document.getElementById('groupsGrid');
+            const emptyState = document.getElementById('groupsEmptyState');
             if (!grid) return;
+            
+            // Update stats
+            const totalGrouped = new Set(groups.flatMap(g => g.members)).size;
+            document.getElementById('groupsTotal').textContent = groups.length;
+            document.getElementById('groupedMembers').textContent = totalGrouped;
+            document.getElementById('ungroupedMembers').textContent = teamMembers.length - totalGrouped;
+            
+            if (groups.length === 0) {
+                grid.style.display = 'none';
+                if (emptyState) emptyState.style.display = 'block';
+                return;
+            }
+            
+            grid.style.display = 'grid';
+            if (emptyState) emptyState.style.display = 'none';
             
             grid.innerHTML = groups.map(g => {
                 const leader = teamMembers.find(m => m.id === g.leader);
                 const membersList = g.members.map(id => teamMembers.find(m => m.id === id)).filter(Boolean);
                 
                 return `
-                    <div style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; transition: all 0.3s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.08)'" onmouseout="this.style.boxShadow='none'">
-                        <div style="height: 8px; background: ${g.color};"></div>
+                    <div style="background: white; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; transition: all 0.3s; cursor: pointer;" onclick="openGroupDetail(${g.id})" onmouseover="this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='none'; this.style.transform='translateY(0)'">
+                        <div style="height: 6px; background: ${g.color};"></div>
                         <div style="padding: 1.25rem;">
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
-                                <div>
-                                    <h4 style="margin: 0; color: #1e293b; font-size: 1rem;">${g.name}</h4>
-                                    <p style="margin: 0.25rem 0 0; font-size: 0.8rem; color: #64748b;">${g.desc}</p>
-                                </div>
-                                <div style="display: flex; gap: 0.25rem;">
-                                    <button onclick="editGroup(${g.id})" style="background: transparent; border: none; color: #64748b; cursor: pointer; padding: 0.5rem;"><i class="fas fa-edit"></i></button>
-                                    <button onclick="deleteGroup(${g.id})" style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 0.5rem;"><i class="fas fa-trash"></i></button>
-                                </div>
-                            </div>
-                            ${leader ? `
-                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; padding: 0.5rem; background: #f8fafc; border-radius: 8px;">
-                                    <div style="width: 28px; height: 28px; border-radius: 50%; background: #dbeafe; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 600; color: #1d4ed8;">${leader.avatar}</div>
+                            <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem;">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <div style="width: 40px; height: 40px; border-radius: 10px; background: ${g.color}15; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-layer-group" style="color: ${g.color}; font-size: 1rem;"></i>
+                                    </div>
                                     <div>
-                                        <div style="font-size: 0.75rem; color: #64748b;">Líder</div>
-                                        <div style="font-size: 0.875rem; font-weight: 500; color: #1e293b;">${leader.name}</div>
+                                        <h4 style="margin: 0; color: #1e293b; font-size: 1rem; font-weight: 600;">${g.name}</h4>
+                                        <p style="margin: 0.125rem 0 0; font-size: 0.75rem; color: #64748b;">${g.desc || 'Sin descripción'}</p>
                                     </div>
                                 </div>
-                            ` : ''}
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <div style="display: flex;">
-                                    ${membersList.slice(0, 3).map((m, i) => `
-                                        <div style="width: 28px; height: 28px; border-radius: 50%; background: #e2e8f0; border: 2px solid white; margin-left: ${i > 0 ? '-8px' : '0'}; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 600; color: #475569;">${m.avatar}</div>
-                                    `).join('')}
-                                    ${membersList.length > 3 ? `<div style="width: 28px; height: 28px; border-radius: 50%; background: #cbd5e1; border: 2px solid white; margin-left: -8px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 500; color: #475569;">+${membersList.length - 3}</div>` : ''}
+                                <button onclick="event.stopPropagation(); editGroup(${g.id})" title="Editar grupo" style="background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; cursor: pointer; padding: 0.375rem 0.5rem; border-radius: 6px;">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+                            
+                            ${leader ? `
+                                <div style="display: flex; align-items: center; gap: 0.625rem; margin-bottom: 1rem; padding: 0.625rem; background: linear-gradient(135deg, #f8fafc, #f1f5f9); border-radius: 10px;">
+                                    <div style="width: 32px; height: 32px; border-radius: 8px; background: ${g.color}; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 600; color: white;">${leader.avatar}</div>
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 0.7rem; color: #64748b; text-transform: uppercase;">Líder</div>
+                                        <div style="font-size: 0.8rem; font-weight: 600; color: #1e293b;">${leader.name}</div>
+                                    </div>
+                                    <i class="fas fa-crown" style="color: #f59e0b; font-size: 0.75rem;"></i>
                                 </div>
-                                <span style="font-size: 0.8rem; color: #64748b;">${membersList.length} miembros</span>
+                            ` : `
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; padding: 0.625rem; background: #fef3c7; border-radius: 10px; border: 1px dashed #fbbf24;">
+                                    <i class="fas fa-user-slash" style="color: #d97706; font-size: 0.8rem;"></i>
+                                    <span style="font-size: 0.75rem; color: #92400e;">Sin líder asignado</span>
+                                </div>
+                            `}
+                            
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <div style="display: flex;">
+                                        ${membersList.slice(0, 4).map((m, i) => `
+                                            <div title="${m.name}" style="width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #e2e8f0, #cbd5e1); border: 2px solid white; margin-left: ${i > 0 ? '-8px' : '0'}; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 600; color: #475569;">${m.avatar}</div>
+                                        `).join('')}
+                                        ${membersList.length > 4 ? `<div style="width: 28px; height: 28px; border-radius: 50%; background: ${g.color}; border: 2px solid white; margin-left: -8px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 600; color: white;">+${membersList.length - 4}</div>` : ''}
+                                    </div>
+                                    <span style="font-size: 0.75rem; color: #64748b;">${membersList.length} miembro${membersList.length !== 1 ? 's' : ''}</span>
+                                </div>
+                                <div style="display: flex; gap: 0.375rem;">
+                                    <button onclick="event.stopPropagation(); addMemberToGroup(${g.id})" title="Agregar miembro" style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #059669; cursor: pointer; padding: 0.375rem 0.5rem; border-radius: 6px; font-size: 0.75rem;">
+                                        <i class="fas fa-user-plus"></i>
+                                    </button>
+                                    <button onclick="event.stopPropagation(); notifyGroup(${g.id})" title="Notificar grupo" style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; cursor: pointer; padding: 0.375rem 0.5rem; border-radius: 6px; font-size: 0.75rem;">
+                                        <i class="fas fa-bell"></i>
+                                    </button>
+                                    <button onclick="event.stopPropagation(); deleteGroup(${g.id})" title="Eliminar" style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; cursor: pointer; padding: 0.375rem 0.5rem; border-radius: 6px; font-size: 0.75rem;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 `;
             }).join('');
         }
-
-        function openGroupModal() {
-            document.getElementById('groupName').value = '';
-            document.getElementById('groupDesc').value = '';
-            selectedGroupColor = '#02735E';
+        
+        // Open Add Member to Group Modal
+        function addMemberToGroup(groupId) {
+            const group = groups.find(g => g.id === groupId);
+            if (!group) return;
             
-            // Populate leader select
-            const sel = document.getElementById('groupLeader');
-            sel.innerHTML = '<option value="">Sin líder asignado</option>' + teamMembers.map(m => 
-                `<option value="${m.id}">${m.name}</option>`
-            ).join('');
+            document.getElementById('addMemberTargetGroupId').value = groupId;
+            document.getElementById('addMemberGroupName').textContent = group.name;
+            document.getElementById('addMemberGroupCount').textContent = group.members.length;
+            document.getElementById('addMemberGroupIcon').style.background = group.color;
+            
+            // Get members not in this group
+            const availableMembers = teamMembers.filter(m => !group.members.includes(m.id));
+            const listEl = document.getElementById('addMemberList');
+            
+            if (availableMembers.length === 0) {
+                listEl.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #64748b;">
+                        <i class="fas fa-check-circle" style="font-size: 2rem; color: #10b981; margin-bottom: 0.5rem;"></i>
+                        <p style="margin: 0;">Todos los miembros ya están en este grupo</p>
+                    </div>
+                `;
+            } else {
+                listEl.innerHTML = availableMembers.map(m => `
+                    <label style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                        <input type="checkbox" class="add-member-checkbox" value="${m.id}" style="width: 18px; height: 18px; cursor: pointer;">
+                        <div style="width: 36px; height: 36px; border-radius: 50%; background: #e0f2fe; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #0369a1; font-size: 0.8rem;">${m.avatar}</div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 500; color: #1e293b; font-size: 0.9rem;">${m.name}</div>
+                            <div style="font-size: 0.75rem; color: #64748b;">${m.email}</div>
+                        </div>
+                        <span style="font-size: 0.7rem; padding: 0.25rem 0.5rem; background: ${getRoleColor(m.role)}15; color: ${getRoleColor(m.role)}; border-radius: 4px;">${getRoleName(m.role)}</span>
+                    </label>
+                `).join('');
+            }
+            
+            openModal('addMemberToGroupModal');
+        }
+        
+        function getRoleColor(roleId) {
+            const role = roles.find(r => r.id === roleId);
+            return role ? role.color : '#64748b';
+        }
+        
+        function getRoleName(roleId) {
+            const role = roles.find(r => r.id === roleId);
+            return role ? role.name : 'Sin rol';
+        }
+        
+        function confirmAddMembersToGroup() {
+            const groupId = parseInt(document.getElementById('addMemberTargetGroupId').value);
+            const group = groups.find(g => g.id === groupId);
+            if (!group) return;
+            
+            const checkboxes = document.querySelectorAll('.add-member-checkbox:checked');
+            if (checkboxes.length === 0) {
+                showNotification('Selecciona al menos un miembro', 'warning');
+                return;
+            }
+            
+            checkboxes.forEach(cb => {
+                const memberId = parseInt(cb.value);
+                if (!group.members.includes(memberId)) {
+                    group.members.push(memberId);
+                }
+            });
+            
+            renderGroups();
+            closeModal('addMemberToGroupModal');
+            showNotification(`${checkboxes.length} miembro${checkboxes.length > 1 ? 's agregados' : ' agregado'} al grupo "${group.name}"`, 'success');
+            
+            // Update detail modal if open
+            const detailId = document.getElementById('groupDetailId').value;
+            if (detailId && parseInt(detailId) === groupId) {
+                openGroupDetail(groupId);
+            }
+        }
+        
+        // Open Notify Group Modal
+        function notifyGroup(groupId) {
+            const group = groups.find(g => g.id === groupId);
+            if (!group) return;
+            
+            document.getElementById('notifyTargetGroupId').value = groupId;
+            document.getElementById('notifyGroupName').textContent = group.name;
+            document.getElementById('notifyGroupCount').textContent = group.members.length;
+            document.getElementById('notifyGroupIcon').style.background = group.color;
+            document.getElementById('notifySubject').value = '';
+            document.getElementById('notifyMessage').value = '';
+            document.getElementById('notifyType').value = 'info';
+            document.getElementById('notifyEmail').checked = true;
+            
+            openModal('notifyGroupModal');
+        }
+        
+        function sendGroupNotification() {
+            const groupId = parseInt(document.getElementById('notifyTargetGroupId').value);
+            const group = groups.find(g => g.id === groupId);
+            if (!group) return;
+            
+            const subject = document.getElementById('notifySubject').value.trim();
+            const message = document.getElementById('notifyMessage').value.trim();
+            const type = document.getElementById('notifyType').value;
+            const sendEmail = document.getElementById('notifyEmail').checked;
+            
+            if (!subject || !message) {
+                showNotification('Completa el asunto y mensaje', 'warning');
+                return;
+            }
+            
+            // Simulate sending notification
+            closeModal('notifyGroupModal');
+            showNotification(`Notificación enviada a ${group.members.length} miembros de "${group.name}"${sendEmail ? ' (incluye email)' : ''}`, 'success');
+            
+            // Add to activity log
+            activityLog.unshift({
+                user: 'Carlos Westheimer',
+                action: 'change',
+                desc: `Envió notificación "${subject}" al grupo ${group.name}`,
+                time: 'Hace 1 min',
+                icon: 'fa-bell',
+                color: '#1d4ed8'
+            });
+            updateActivityStats();
+        }
+        
+        // Open Group Detail Modal
+        function openGroupDetail(groupId) {
+            const group = groups.find(g => g.id === groupId);
+            if (!group) return;
+            
+            document.getElementById('groupDetailId').value = groupId;
+            document.getElementById('groupDetailName').textContent = group.name;
+            document.getElementById('groupDetailDesc').textContent = group.desc || 'Sin descripción';
+            document.getElementById('groupDetailMemberCount').textContent = group.members.length;
+            document.getElementById('groupDetailHeader').style.background = `linear-gradient(135deg, ${group.color}, ${group.color}dd)`;
+            
+            // Get leader name
+            const leader = group.leader ? teamMembers.find(m => m.id === group.leader) : null;
+            document.getElementById('groupDetailLeader').textContent = leader ? leader.name : 'Sin asignar';
+            
+            // Render members list
+            const membersEl = document.getElementById('groupDetailMembers');
+            if (group.members.length === 0) {
+                membersEl.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #64748b;">
+                        <i class="fas fa-users" style="font-size: 2rem; color: #cbd5e1; margin-bottom: 0.5rem;"></i>
+                        <p style="margin: 0;">No hay miembros en este grupo</p>
+                        <button onclick="addMemberToGroupFromDetail()" style="margin-top: 0.75rem; background: #02735E; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">
+                            <i class="fas fa-plus"></i> Agregar miembros
+                        </button>
+                    </div>
+                `;
+            } else {
+                membersEl.innerHTML = group.members.map(memberId => {
+                    const member = teamMembers.find(m => m.id === memberId);
+                    if (!member) return '';
+                    const isLeader = group.leader === memberId;
+                    return `
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; border-bottom: 1px solid #f1f5f9;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="width: 36px; height: 36px; border-radius: 50%; background: ${isLeader ? group.color + '20' : '#e0f2fe'}; display: flex; align-items: center; justify-content: center; font-weight: 600; color: ${isLeader ? group.color : '#0369a1'}; font-size: 0.8rem; border: ${isLeader ? '2px solid ' + group.color : 'none'};">${member.avatar}</div>
+                                <div>
+                                    <div style="font-weight: 500; color: #1e293b; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
+                                        ${member.name}
+                                        ${isLeader ? '<span style="font-size: 0.65rem; padding: 0.125rem 0.375rem; background: ' + group.color + '20; color: ' + group.color + '; border-radius: 4px;"><i class="fas fa-crown"></i> Líder</span>' : ''}
+                                    </div>
+                                    <div style="font-size: 0.75rem; color: #64748b;">${member.email}</div>
+                                </div>
+                            </div>
+                            <button onclick="removeMemberFromGroup(${groupId}, ${memberId})" title="Quitar del grupo" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 0.375rem;" ${isLeader ? 'disabled style="opacity: 0.3; cursor: not-allowed;"' : ''}>
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            openModal('groupDetailModal');
+        }
+        
+        function addMemberToGroupFromDetail() {
+            const groupId = parseInt(document.getElementById('groupDetailId').value);
+            closeModal('groupDetailModal');
+            addMemberToGroup(groupId);
+        }
+        
+        function removeMemberFromGroup(groupId, memberId) {
+            const group = groups.find(g => g.id === groupId);
+            if (!group) return;
+            
+            const member = teamMembers.find(m => m.id === memberId);
+            if (!confirm(`¿Quitar a ${member?.name || 'este miembro'} del grupo "${group.name}"?`)) return;
+            
+            const idx = group.members.indexOf(memberId);
+            if (idx > -1) {
+                group.members.splice(idx, 1);
+                renderGroups();
+                openGroupDetail(groupId); // Refresh detail modal
+                showNotification('Miembro removido del grupo', 'success');
+            }
+        }
+        
+        function editGroupFromDetail() {
+            const groupId = parseInt(document.getElementById('groupDetailId').value);
+            closeModal('groupDetailModal');
+            editGroup(groupId);
+        }
+
+        function openGroupModal(editId = null) {
+            document.getElementById('editingGroupId').value = editId || '';
+            
+            if (editId) {
+                const group = groups.find(g => g.id === editId);
+                if (!group) return;
+                
+                document.getElementById('groupModalTitle').textContent = 'Editar Grupo';
+                document.getElementById('groupSaveBtn').innerHTML = '<i class="fas fa-check"></i><span>Guardar Cambios</span>';
+                document.getElementById('groupName').value = group.name;
+                document.getElementById('groupDesc').value = group.desc || '';
+                selectedGroupColor = group.color;
+                
+                // Update color selection
+                document.querySelectorAll('#groupModal .color-btn-verdi').forEach(btn => {
+                    if (btn.dataset.color === group.color) {
+                        btn.style.border = '3px solid #022326';
+                        btn.classList.add('active');
+                    } else {
+                        btn.style.border = '3px solid transparent';
+                        btn.classList.remove('active');
+                    }
+                });
+                
+                // Populate leader select
+                const sel = document.getElementById('groupLeader');
+                sel.innerHTML = '<option value="">Sin líder asignado</option>' + teamMembers.map(m => 
+                    `<option value="${m.id}" ${group.leader === m.id ? 'selected' : ''}>${m.name}</option>`
+                ).join('');
+            } else {
+                document.getElementById('groupModalTitle').textContent = 'Crear Grupo';
+                document.getElementById('groupSaveBtn').innerHTML = '<i class="fas fa-check"></i><span>Crear Grupo</span>';
+                document.getElementById('groupName').value = '';
+                document.getElementById('groupDesc').value = '';
+                selectedGroupColor = '#02735E';
+                
+                document.querySelectorAll('#groupModal .color-btn-verdi').forEach(btn => {
+                    if (btn.dataset.color === '#02735E') {
+                        btn.style.border = '3px solid #022326';
+                        btn.classList.add('active');
+                    } else {
+                        btn.style.border = '3px solid transparent';
+                        btn.classList.remove('active');
+                    }
+                });
+                
+                const sel = document.getElementById('groupLeader');
+                sel.innerHTML = '<option value="">Sin líder asignado</option>' + teamMembers.map(m => 
+                    `<option value="${m.id}">${m.name}</option>`
+                ).join('');
+            }
             
             openModal('groupModal');
         }
 
         function selectGroupColor(btn) {
-            document.querySelectorAll('#groupModal .color-btn-verdi').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('#groupModal .color-btn-verdi').forEach(b => {
+                b.classList.remove('active');
+                b.style.border = '3px solid transparent';
+            });
             btn.classList.add('active');
+            btn.style.border = '3px solid #022326';
             selectedGroupColor = btn.dataset.color;
         }
 
@@ -2686,38 +3563,70 @@
             const name = document.getElementById('groupName').value.trim();
             const desc = document.getElementById('groupDesc').value.trim();
             const leader = document.getElementById('groupLeader').value;
+            const editId = document.getElementById('editingGroupId').value;
             
             if (!name) {
                 showNotification('El nombre es requerido', 'warning');
                 return;
             }
             
-            const newGroup = {
-                id: Date.now(),
-                name,
-                desc,
-                color: selectedGroupColor,
-                leader: leader ? parseInt(leader) : null,
-                members: leader ? [parseInt(leader)] : []
-            };
+            if (editId) {
+                // Editing existing group
+                const group = groups.find(g => g.id === parseInt(editId));
+                if (group) {
+                    group.name = name;
+                    group.desc = desc;
+                    group.color = selectedGroupColor;
+                    const newLeader = leader ? parseInt(leader) : null;
+                    
+                    // Add new leader to members if not already
+                    if (newLeader && !group.members.includes(newLeader)) {
+                        group.members.push(newLeader);
+                    }
+                    group.leader = newLeader;
+                    
+                    showNotification('Grupo actualizado correctamente', 'success');
+                }
+            } else {
+                // Creating new group
+                const newGroup = {
+                    id: Date.now(),
+                    name,
+                    desc,
+                    color: selectedGroupColor,
+                    leader: leader ? parseInt(leader) : null,
+                    members: leader ? [parseInt(leader)] : []
+                };
+                
+                groups.push(newGroup);
+                showNotification('Grupo creado correctamente', 'success');
+            }
             
-            groups.push(newGroup);
             renderGroups();
             closeModal('groupModal');
-            showNotification('Grupo creado correctamente', 'success');
         }
 
         function editGroup(id) {
-            showNotification('Edición de grupos disponible próximamente', 'info');
+            openGroupModal(id);
         }
 
         function deleteGroup(id) {
-            if (!confirm('¿Eliminar este grupo?')) return;
+            const group = groups.find(g => g.id === id);
+            if (!group) return;
+            
+            document.getElementById('deleteGroupId').value = id;
+            document.getElementById('deleteGroupName').textContent = group.name;
+            openModal('deleteGroupModal');
+        }
+
+        function confirmDeleteGroup() {
+            const id = parseInt(document.getElementById('deleteGroupId').value);
             const idx = groups.findIndex(g => g.id === id);
             if (idx > -1) {
                 groups.splice(idx, 1);
                 renderGroups();
-                showNotification('Grupo eliminado', 'success');
+                closeModal('deleteGroupModal');
+                showNotification('Grupo eliminado correctamente', 'success');
             }
         }
 
@@ -2726,65 +3635,330 @@
         // ===================
         function updateActivityStats() {
             const today = activityLog.filter(a => a.time.includes('min') || a.time.includes('hora')).length;
-            const week = activityLog.length;
-            
-            // Count actions by user
-            const userActions = {};
-            activityLog.forEach(a => {
-                userActions[a.user] = (userActions[a.user] || 0) + 1;
-            });
-            const mostActiveUser = Object.entries(userActions).sort((a, b) => b[1] - a[1])[0];
-            const lastAction = activityLog[0];
+            const logins = activityLog.filter(a => a.action === 'login').length;
+            const changes = activityLog.filter(a => ['change', 'edit', 'invite'].includes(a.action)).length;
+            const alerts = activityLog.filter(a => a.action === 'delete' || a.action === 'security').length;
             
             document.getElementById('activityToday').textContent = today;
-            document.getElementById('activityWeek').textContent = week;
-            document.getElementById('mostActive').textContent = mostActiveUser ? mostActiveUser[0].split(' ')[0] : '-';
-            document.getElementById('lastAction').textContent = lastAction ? lastAction.time : '-';
+            document.getElementById('activityLogins').textContent = logins;
+            document.getElementById('activityChanges').textContent = changes;
+            document.getElementById('activityAlerts').textContent = alerts;
+        }
+
+        function populateActivityUserFilter() {
+            const userFilter = document.getElementById('activityUserFilter');
+            if (!userFilter) return;
+            
+            // Get unique users from activity log
+            const users = [...new Set(activityLog.map(a => a.user))];
+            userFilter.innerHTML = '<option value="">Todos los usuarios</option>' +
+                users.map(u => `<option value="${u}">${u}</option>`).join('');
+        }
+
+        function renderActivityItem(a) {
+            return `
+                <div onclick="openActivityDetail(${a.id})" style="display: flex; gap: 1rem; padding: 1.25rem 1.5rem; border-bottom: 1px solid #f1f5f9; transition: all 0.2s; position: relative; cursor: pointer;" onmouseover="this.style.background='#f8fafc'; this.style.paddingLeft='1.75rem'" onmouseout="this.style.background='transparent'; this.style.paddingLeft='1.5rem'">
+                    <!-- Timeline line -->
+                    <div style="position: absolute; left: 2.75rem; top: 3.5rem; bottom: -0.25rem; width: 2px; background: linear-gradient(to bottom, #e2e8f0, transparent);"></div>
+                    
+                    <!-- Icon with gradient border -->
+                    <div style="width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, ${a.color}20, ${a.color}10); display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; border: 2px solid ${a.color}30; z-index: 1;">
+                        <i class="fas ${a.icon}" style="color: ${a.color}; font-size: 1rem;"></i>
+                    </div>
+                    
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 0.625rem;">
+                                <span style="font-weight: 700; color: #022326; font-size: 0.9rem;">${a.user}</span>
+                                <span style="font-size: 0.7rem; padding: 0.25rem 0.625rem; background: linear-gradient(135deg, ${a.color}20, ${a.color}10); color: ${a.color}; border-radius: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em;">${getActionLabel(a.action)}</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-clock" style="font-size: 0.65rem; color: #cbd5e1;"></i>
+                                <span style="font-size: 0.75rem; color: #94a3b8; white-space: nowrap; font-weight: 500;">${a.time}</span>
+                                <i class="fas fa-chevron-right" style="font-size: 0.65rem; color: #cbd5e1; margin-left: 0.25rem;"></i>
+                            </div>
+                        </div>
+                        <p style="margin: 0.5rem 0 0; font-size: 0.875rem; color: #475569; line-height: 1.5; padding: 0.625rem 0.875rem; background: #f8fafc; border-radius: 8px; border-left: 3px solid ${a.color}40;">${a.desc}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function openActivityDetail(activityId) {
+            const activity = activityLog.find(a => a.id === activityId);
+            if (!activity) return;
+
+            // Reset extra details visibility
+            document.getElementById('activityExtraDetails').style.display = 'none';
+            const toggleBtn = document.getElementById('activityDetailsToggle');
+            toggleBtn.querySelector('span').textContent = 'Ver más detalles';
+            toggleBtn.querySelector('i').style.transform = 'rotate(0deg)';
+
+            // Update icon and colors based on action type
+            const iconWrapper = document.getElementById('activityDetailIconWrapper');
+            const iconEl = document.getElementById('activityDetailIconEl');
+            
+            iconEl.className = `fas ${activity.icon}`;
+            iconWrapper.style.background = `${activity.color}15`;
+            iconEl.style.color = activity.color;
+
+            // Update title based on action
+            const actionTitles = {
+                'login': 'Inicio de Sesión',
+                'change': 'Cambio de Permisos',
+                'edit': 'Edición',
+                'invite': 'Invitación Enviada',
+                'delete': 'Eliminación',
+                'security': 'Evento de Seguridad'
+            };
+            document.getElementById('activityDetailTitle').textContent = actionTitles[activity.action] || 'Actividad';
+            document.getElementById('activityDetailTimeAgo').textContent = activity.time;
+            
+            // Avatar with initials
+            const initials = activity.user.split(' ').map(n => n[0]).join('').substring(0, 2);
+            document.getElementById('activityDetailAvatar').textContent = initials;
+            document.getElementById('activityDetailUser').textContent = activity.user;
+            document.getElementById('activityDetailUserEmail').textContent = activity.email || 'Sin email registrado';
+
+            // Description
+            document.getElementById('activityDetailDesc').textContent = activity.desc;
+
+            // Date and time
+            document.getElementById('activityDetailDate').textContent = activity.date || 'N/A';
+            document.getElementById('activityDetailTime').textContent = activity.hour || 'N/A';
+
+            // Location and device
+            document.getElementById('activityDetailLocation').textContent = activity.location ? activity.location.split(',')[0] : 'N/A';
+            document.getElementById('activityDetailDevice').textContent = activity.device || 'N/A';
+
+            // Extra details
+            document.getElementById('activityDetailIP').textContent = activity.ip || 'N/A';
+            document.getElementById('activityDetailModule').textContent = activity.module || 'SuperAdmin';
+            document.getElementById('activityDetailID').textContent = activity.eventId ? activity.eventId.substring(0, 12) : `evt_${activity.id}`;
+
+            // Show changes section if it's an edit or change action
+            const changesSection = document.getElementById('activityDetailChanges');
+            const changesContent = document.getElementById('activityDetailChangesContent');
+            
+            if (activity.action === 'change' || activity.action === 'edit') {
+                changesSection.style.display = 'block';
+                changesContent.innerHTML = `
+                    <div style="display: flex;">
+                        <div style="flex: 1; padding: 0.875rem 1rem; background: #fef2f2; border-right: 1px solid #e2e8f0;">
+                            <div style="display: flex; align-items: center; gap: 0.375rem; margin-bottom: 0.5rem;">
+                                <i class="fas fa-minus-circle" style="font-size: 0.65rem; color: #dc2626;"></i>
+                                <span style="font-size: 0.7rem; text-transform: uppercase; color: #dc2626; font-weight: 600;">Antes</span>
+                            </div>
+                            <div style="font-size: 0.8rem; color: #991b1b;">${getBeforeValueVisual(activity)}</div>
+                        </div>
+                        <div style="flex: 1; padding: 0.875rem 1rem; background: #f0fdf4;">
+                            <div style="display: flex; align-items: center; gap: 0.375rem; margin-bottom: 0.5rem;">
+                                <i class="fas fa-plus-circle" style="font-size: 0.65rem; color: #059669;"></i>
+                                <span style="font-size: 0.7rem; text-transform: uppercase; color: #059669; font-weight: 600;">Después</span>
+                            </div>
+                            <div style="font-size: 0.8rem; color: #166534;">${getAfterValueVisual(activity)}</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                changesSection.style.display = 'none';
+            }
+
+            // Generate user history - all activities from this user
+            const userActivities = activityLog.filter(a => a.user === activity.user);
+            document.getElementById('activityHistoryCount').textContent = `${userActivities.length} ${userActivities.length === 1 ? 'actividad' : 'actividades'}`;
+            
+            const historyHtml = userActivities.map((a, index) => {
+                const isCurrentEvent = a.id === activity.id;
+                return `
+                    <div style="padding: 0.875rem 1rem; border-bottom: 1px solid #f1f5f9; display: flex; align-items: flex-start; gap: 0.75rem; ${isCurrentEvent ? 'background: #f0fdf4;' : ''} cursor: pointer; transition: background 0.2s;" 
+                         onmouseover="if(!${isCurrentEvent}) this.style.background='#f8fafc'" 
+                         onmouseout="if(!${isCurrentEvent}) this.style.background='transparent'"
+                         onclick="closeModal('activityDetailModal'); setTimeout(() => openActivityDetail(${a.id}), 150)">
+                        <div style="width: 28px; height: 28px; border-radius: 8px; background: ${a.color}15; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i class="fas ${a.icon}" style="font-size: 0.7rem; color: ${a.color};"></i>
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                                <span style="font-size: 0.8rem; font-weight: 600; color: ${isCurrentEvent ? '#059669' : '#1e293b'};">${getActionLabel(a.action)}</span>
+                                ${isCurrentEvent ? '<span style="font-size: 0.6rem; padding: 0.125rem 0.375rem; background: #059669; color: white; border-radius: 4px; font-weight: 600;">ACTUAL</span>' : ''}
+                            </div>
+                            <p style="font-size: 0.75rem; color: #64748b; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${a.desc}</p>
+                            <div style="display: flex; align-items: center; gap: 0.75rem; margin-top: 0.375rem;">
+                                <span style="font-size: 0.7rem; color: #94a3b8;"><i class="fas fa-calendar" style="margin-right: 0.25rem;"></i>${a.date || 'N/A'}</span>
+                                <span style="font-size: 0.7rem; color: #94a3b8;"><i class="fas fa-clock" style="margin-right: 0.25rem;"></i>${a.hour || 'N/A'}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('activityHistoryContent').innerHTML = historyHtml || '<div style="padding: 1.5rem; text-align: center; color: #94a3b8; font-size: 0.85rem;">No hay más actividades</div>';
+
+            openModal('activityDetailModal');
+        }
+
+        function toggleActivityDetails() {
+            const details = document.getElementById('activityExtraDetails');
+            const toggleBtn = document.getElementById('activityDetailsToggle');
+            const icon = toggleBtn.querySelector('i');
+            const text = toggleBtn.querySelector('span');
+            
+            if (details.style.display === 'none') {
+                details.style.display = 'block';
+                icon.style.transform = 'rotate(180deg)';
+                text.textContent = 'Ocultar detalles';
+            } else {
+                details.style.display = 'none';
+                icon.style.transform = 'rotate(0deg)';
+                text.textContent = 'Ver más detalles';
+            }
+        }
+
+        function getBeforeValueVisual(activity) {
+            if (activity.action === 'change' && activity.desc.includes('permisos')) {
+                return 'Sin acceso a Facturación';
+            }
+            if (activity.action === 'edit' && activity.desc.includes('logo')) {
+                return 'Logo anterior';
+            }
+            if (activity.action === 'change' && activity.desc.includes('rol')) {
+                return 'Solo soporte básico';
+            }
+            return 'Valor anterior';
+        }
+
+        function getAfterValueVisual(activity) {
+            if (activity.action === 'change' && activity.desc.includes('permisos')) {
+                return 'Acceso a Facturación activado';
+            }
+            if (activity.action === 'edit' && activity.desc.includes('logo')) {
+                return 'Nuevo logo y colores';
+            }
+            if (activity.action === 'change' && activity.desc.includes('rol')) {
+                return 'Puede ver clientes';
+            }
+            return 'Valor actualizado';
+        }
+
+        function copyActivityEventId() {
+            const eventId = document.getElementById('activityDetailID').textContent;
+            navigator.clipboard.writeText(eventId).then(() => {
+                showNotification('ID copiado', 'success');
+            }).catch(() => {
+                showNotification('Error al copiar', 'error');
+            });
+        }
+
+        function getActionLabel(action) {
+            const labels = {
+                'login': 'Sesión',
+                'change': 'Cambio',
+                'edit': 'Edición',
+                'invite': 'Invitación',
+                'delete': 'Eliminación',
+                'security': 'Seguridad'
+            };
+            return labels[action] || action;
         }
 
         function renderActivity() {
             const timeline = document.getElementById('activityTimeline');
             if (!timeline) return;
             
-            timeline.innerHTML = activityLog.map(a => `
-                <div style="display: flex; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid #f1f5f9;">
-                    <div style="width: 36px; height: 36px; border-radius: 50%; background: ${a.color}20; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                        <i class="fas ${a.icon}" style="color: ${a.color}; font-size: 0.875rem;"></i>
-                    </div>
-                    <div style="flex: 1;">
-                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <span style="font-weight: 500; color: #1e293b;">${a.user}</span>
-                            <span style="font-size: 0.75rem; color: #94a3b8;">${a.time}</span>
+            const countEl = document.getElementById('activityCount');
+            if (countEl) countEl.textContent = `${activityLog.length} eventos`;
+            
+            if (activityLog.length === 0) {
+                timeline.innerHTML = `
+                    <div style="text-align: center; padding: 4rem 2rem; color: #64748b;">
+                        <div style="width: 80px; height: 80px; margin: 0 auto 1.5rem; border-radius: 20px; background: linear-gradient(135deg, #f1f5f9, #e2e8f0); display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-history" style="font-size: 2rem; color: #94a3b8;"></i>
                         </div>
-                        <p style="margin: 0.25rem 0 0; font-size: 0.875rem; color: #64748b;">${a.desc}</p>
+                        <h4 style="font-size: 1rem; color: #1e293b; margin-bottom: 0.5rem;">Sin actividad registrada</h4>
+                        <p style="margin: 0; font-size: 0.875rem;">Las acciones de tu equipo aparecerán aquí</p>
                     </div>
-                </div>
-            `).join('');
+                `;
+                return;
+            }
+            
+            timeline.innerHTML = activityLog.map(a => renderActivityItem(a)).join('');
         }
 
         function filterActivity() {
             const type = document.getElementById('activityFilter')?.value || '';
+            const user = document.getElementById('activityUserFilter')?.value || '';
+            const period = document.getElementById('activityDateFilter')?.value || 'week';
             
-            let filtered = activityLog;
+            let filtered = [...activityLog];
+            
+            // Filter by type
             if (type) filtered = filtered.filter(a => a.action === type);
             
-            const timeline = document.getElementById('activityTimeline');
-            if (timeline) {
-                timeline.innerHTML = filtered.map(a => `
-                    <div style="display: flex; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid #f1f5f9;">
-                        <div style="width: 36px; height: 36px; border-radius: 50%; background: ${a.color}20; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <i class="fas ${a.icon}" style="color: ${a.color}; font-size: 0.875rem;"></i>
-                        </div>
-                        <div style="flex: 1;">
-                            <div style="display: flex; align-items: center; justify-content: space-between;">
-                                <span style="font-weight: 500; color: #1e293b;">${a.user}</span>
-                                <span style="font-size: 0.75rem; color: #94a3b8;">${a.time}</span>
-                            </div>
-                            <p style="margin: 0.25rem 0 0; font-size: 0.875rem; color: #64748b;">${a.desc}</p>
-                        </div>
-                    </div>
-                `).join('');
+            // Filter by user
+            if (user) filtered = filtered.filter(a => a.user === user);
+            
+            // Filter by period (simulated based on time string)
+            if (period === 'today') {
+                filtered = filtered.filter(a => a.time.includes('min') || a.time.includes('hora'));
+            } else if (period === 'week') {
+                filtered = filtered.filter(a => !a.time.includes('semana'));
             }
+            // 'month' and 'all' show everything
+            
+            const timeline = document.getElementById('activityTimeline');
+            const countEl = document.getElementById('activityCount');
+            
+            if (countEl) countEl.textContent = `${filtered.length} eventos`;
+            
+            if (timeline) {
+                if (filtered.length === 0) {
+                    timeline.innerHTML = `
+                        <div style="text-align: center; padding: 4rem 2rem; color: #64748b;">
+                            <div style="width: 80px; height: 80px; margin: 0 auto 1.5rem; border-radius: 20px; background: linear-gradient(135deg, #fef3c7, #fde68a); display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-filter" style="font-size: 2rem; color: #d97706;"></i>
+                            </div>
+                            <h4 style="font-size: 1rem; color: #1e293b; margin-bottom: 0.5rem;">Sin resultados</h4>
+                            <p style="margin: 0 0 1.25rem; font-size: 0.875rem;">No hay actividad con los filtros aplicados</p>
+                            <button onclick="clearActivityFilters()" style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #02735E, #059669); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 12px rgba(2, 115, 94, 0.25); transition: all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(2, 115, 94, 0.35)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(2, 115, 94, 0.25)'">
+                                <i class="fas fa-times" style="margin-right: 0.5rem;"></i>Limpiar filtros
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+                timeline.innerHTML = filtered.map(a => renderActivityItem(a)).join('');
+            }
+        }
+
+        function clearActivityFilters() {
+            document.getElementById('activityFilter').value = '';
+            document.getElementById('activityUserFilter').value = '';
+            document.getElementById('activityDateFilter').value = 'week';
+            renderActivity();
+        }
+
+        function refreshActivity() {
+            const btn = document.getElementById('refreshActivityBtn');
+            const icon = btn.querySelector('i');
+            
+            // Animate icon
+            icon.style.transition = 'transform 0.5s ease';
+            icon.style.transform = 'rotate(360deg)';
+            
+            // Simulate refresh
+            setTimeout(() => {
+                renderActivity();
+                updateActivityStats();
+                populateActivityUserFilter();
+                showNotification('Actividad actualizada', 'success');
+                
+                // Reset rotation
+                setTimeout(() => {
+                    icon.style.transition = 'none';
+                    icon.style.transform = 'rotate(0deg)';
+                }, 100);
+            }, 500);
         }
 
         function exportActivity() {
@@ -2810,12 +3984,68 @@
         // ===================
         function updateSecurityStats() {
             const with2FA = teamMembers.filter(m => m.has2FA).length;
+            const without2FA = teamMembers.length - with2FA;
             const sessionsCount = activeSessions.length;
             const failedAttempts = Math.floor(Math.random() * 5); // Simulated
             
             document.getElementById('sec2faActive').textContent = `${with2FA}/${teamMembers.length}`;
             document.getElementById('secSessions').textContent = sessionsCount;
             document.getElementById('secFailed').textContent = failedAttempts;
+            
+            // Calculate Security Score
+            calculateSecurityScore();
+            
+            // Update security alert
+            const alertEl = document.getElementById('securityAlert');
+            const alertTextEl = document.getElementById('securityAlertText');
+            if (without2FA > 0) {
+                alertEl.style.display = 'flex';
+                alertTextEl.textContent = `${without2FA} miembro${without2FA > 1 ? 's no tienen' : ' no tiene'} 2FA activado. Activa la autenticación de dos factores para mayor seguridad.`;
+            } else {
+                alertEl.style.display = 'none';
+            }
+        }
+
+        function calculateSecurityScore() {
+            let score = 0;
+            
+            // 2FA coverage (40 points max)
+            const with2FA = teamMembers.filter(m => m.has2FA).length;
+            const coverage2FA = with2FA / teamMembers.length;
+            score += Math.round(coverage2FA * 40);
+            
+            // Strong passwords (assumed 25 points)
+            score += 25;
+            
+            // No blocked access (20 points)
+            score += 20;
+            
+            // Session monitoring active (15 points)
+            score += activeSessions.length > 0 ? 15 : 0;
+            
+            // Penalty for failed attempts (up to -10 points)
+            const failedAttempts = parseInt(document.getElementById('secFailed')?.textContent || '0');
+            score -= Math.min(failedAttempts * 2, 10);
+            
+            score = Math.max(0, Math.min(100, score));
+            
+            // Update UI
+            const scoreEl = document.getElementById('securityScore');
+            const barEl = document.getElementById('securityScoreBar');
+            
+            if (scoreEl) scoreEl.textContent = score;
+            if (barEl) barEl.style.width = `${score}%`;
+            
+            // Update color based on score
+            if (scoreEl) {
+                if (score >= 80) {
+                    scoreEl.style.color = '#10b981';
+                } else if (score >= 60) {
+                    scoreEl.style.color = '#f59e0b';
+                } else {
+                    scoreEl.style.color = '#ef4444';
+                }
+            }
         }
 
         function renderSecurityLists() {

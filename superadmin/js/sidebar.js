@@ -20,7 +20,6 @@ const SuperAdminSidebar = {
         ],
         equipo: [
             { id: 'team', label: 'Equipo', icon: 'fas fa-users', href: '/superadmin/team/index.html' },
-            { id: 'activity', label: 'Actividad', icon: 'fas fa-history', href: '/superadmin/team/activity.html' },
             { id: 'onboarding-team', label: 'Onboarding', icon: 'fas fa-user-plus', href: '/superadmin/team/onboarding.html' },
             { id: 'performance', label: 'Desempeño', icon: 'fas fa-chart-line', href: '/superadmin/team/performance.html' }
         ],
@@ -45,7 +44,6 @@ const SuperAdminSidebar = {
         if (path.includes('/billing/invoices')) return 'invoices';
         if (path.includes('/billing/subscriptions')) return 'subscriptions';
         if (path.includes('/billing/')) return 'billing';
-        if (path.includes('/team/activity')) return 'activity';
         if (path.includes('/team/onboarding')) return 'onboarding-team';
         if (path.includes('/team/performance')) return 'performance';
         if (path.includes('/team/index') || path.endsWith('/team/') || path.endsWith('/team')) return 'team';
