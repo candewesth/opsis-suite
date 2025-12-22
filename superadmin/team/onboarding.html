@@ -4,8 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Onboarding - SuperAdmin | Opsis Suite</title>
+    <!-- External CSS first -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/superadmin/css/superadmin.css?v=12">
+    <!-- Verdi + Aire overrides AFTER external CSS -->
     <style>
-        :root { --verdi-dark: #022326; --sidebar-width: 240px; }
+        :root { 
+            --verdi-dark: #022326; 
+            --verdi-mid: #034040;
+            --verdi-accent: #035951;
+            --verdi-light: #02735E;
+            --success: #10b981;
+            --success-light: #34d399;
+            --sidebar-width: 240px; 
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { background: #f8fafc; }
         body { opacity: 0; transition: opacity 0.15s ease-in; }
@@ -14,53 +27,57 @@
         .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh; background: var(--verdi-dark); }
         .main-content { margin-left: var(--sidebar-width); min-height: 100vh; background: #f8fafc; }
 
-        /* Onboarding Cards */
+        /* Onboarding Cards - Verdi + Aire */
         .onboarding-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem; }
-        .onboarding-card { background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
-        .onboarding-card-header { display: flex; align-items: center; gap: 1rem; padding: 1.25rem; border-bottom: 1px solid #f1f5f9; }
-        .onboarding-avatar { width: 48px; height: 48px; border-radius: 50%; background: #02735E; color: white; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 600; }
+        .onboarding-card { background: white; border-radius: 14px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 2px 8px rgba(2, 35, 38, 0.06); transition: all 0.3s ease; }
+        .onboarding-card:hover { border-color: var(--verdi-light); box-shadow: 0 8px 24px rgba(2, 115, 94, 0.12); }
+        .onboarding-card-header { display: flex; align-items: center; gap: 1rem; padding: 1.25rem; border-bottom: 1px solid #f1f5f9; background: linear-gradient(135deg, #f8fafc 0%, #f0fdf4 100%); }
+        .onboarding-avatar { width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, var(--verdi-dark), var(--verdi-accent)); color: white; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 600; }
         .onboarding-info { flex: 1; }
-        .onboarding-info h4 { font-size: 1rem; margin-bottom: 0.125rem; }
+        .onboarding-info h4 { font-size: 1rem; margin-bottom: 0.125rem; color: var(--verdi-dark); }
         .onboarding-info span { font-size: 0.75rem; color: #64748b; }
         .onboarding-card-body { padding: 1.25rem; }
 
-        /* Progress */
+        /* Progress - Verdi + Aire */
         .progress-container { margin-bottom: 1rem; }
         .progress-header { display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.5rem; }
         .progress-header span:first-child { color: #64748b; }
-        .progress-header span:last-child { font-weight: 600; color: #02735E; }
-        .progress-bar { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, #02735E, #10b981); border-radius: 4px; transition: width 0.3s; }
+        .progress-header span:last-child { font-weight: 600; color: var(--success); }
+        .progress-bar { height: 8px; background: linear-gradient(90deg, #e2e8f0, #f1f5f9); border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--verdi-accent) 0%, var(--verdi-light) 50%, var(--success) 100%); border-radius: 4px; transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        /* Checklist */
+        /* Checklist - Verdi + Aire */
         .checklist { list-style: none; }
         .checklist-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 0; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: all 0.2s; }
         .checklist-item:last-child { border-bottom: none; }
-        .checklist-item:hover { background: #f8fafc; margin: 0 -1.25rem; padding-left: 1.25rem; padding-right: 1.25rem; }
-        .check-icon { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #e2e8f0; transition: all 0.2s; }
-        .checklist-item.completed .check-icon { background: #10b981; border-color: #10b981; color: white; }
+        .checklist-item:hover { background: linear-gradient(90deg, #f0fdf4, transparent); margin: 0 -1.25rem; padding-left: 1.25rem; padding-right: 1.25rem; }
+        .check-icon { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #e2e8f0; transition: all 0.3s; }
+        .checklist-item.completed .check-icon { background: linear-gradient(135deg, var(--verdi-light), var(--success)); border-color: var(--success); color: white; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3); }
         .checklist-item.completed .check-text { color: #94a3b8; text-decoration: line-through; }
-        .check-text { font-size: 0.875rem; }
+        .check-text { font-size: 0.875rem; color: var(--verdi-dark); }
 
-        /* Pending Invites */
-        .invite-card { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 10px; margin-bottom: 0.75rem; }
-        .invite-card .avatar { width: 40px; height: 40px; border-radius: 50%; background: #f59e0b; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+        /* Pending Invites - Verdi + Aire */
+        .invite-card { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid var(--success); border-radius: 12px; margin-bottom: 0.75rem; transition: all 0.2s; }
+        .invite-card:hover { box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15); }
+        .invite-card .avatar { width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, var(--verdi-mid), var(--verdi-accent)); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.875rem; }
         .invite-info { flex: 1; }
-        .invite-info strong { font-size: 0.875rem; display: block; margin-bottom: 0.125rem; }
-        .invite-info span { font-size: 0.75rem; color: #92400e; }
+        .invite-info strong { font-size: 0.875rem; display: block; margin-bottom: 0.125rem; color: var(--verdi-dark); }
+        .invite-info span { font-size: 0.75rem; color: var(--verdi-accent); }
         .invite-actions { display: flex; gap: 0.5rem; }
+        .invite-actions .btn-secondary { background: white; border: 1px solid var(--verdi-light); color: var(--verdi-light); }
+        .invite-actions .btn-secondary:hover { background: var(--verdi-light); color: white; }
+        .invite-actions .btn-danger { background: var(--verdi-dark); border: 1px solid var(--verdi-dark); color: white; }
+        .invite-actions .btn-danger:hover { background: var(--verdi-mid); }
 
-        /* Template Cards */
+        /* Template Cards - Verdi + Aire */
         .template-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
-        .template-card { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem; text-align: center; cursor: pointer; transition: all 0.2s; }
-        .template-card:hover { border-color: #02735E; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        .template-icon { width: 48px; height: 48px; border-radius: 12px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem; font-size: 1.25rem; color: #64748b; }
-        .template-card h4 { font-size: 0.875rem; margin-bottom: 0.25rem; }
+        .template-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; text-align: center; cursor: pointer; transition: all 0.3s; }
+        .template-card:hover { border-color: var(--verdi-light); box-shadow: 0 8px 20px rgba(2, 115, 94, 0.12); transform: translateY(-2px); }
+        .template-icon { width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem; font-size: 1.25rem; color: var(--verdi-light); transition: all 0.3s; }
+        .template-card:hover .template-icon { background: linear-gradient(135deg, var(--verdi-dark), var(--verdi-accent)); color: white; }
+        .template-card h4 { font-size: 0.9rem; margin-bottom: 0.25rem; color: var(--verdi-dark); }
         .template-card span { font-size: 0.75rem; color: #64748b; }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/superadmin/css/superadmin.css?v=7">
 </head>
 <body>
     <div class="app-shell">
@@ -71,37 +88,35 @@
                     <h1 class="page-title">Onboarding</h1>
                     <p class="page-subtitle">Gestiona el proceso de incorporación</p>
                 </div>
-                <div class="header-actions">
-                    <a href="index.html" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Volver</a>
-                </div>
+
             </header>
 
             <div class="page-content">
                 <!-- Stats -->
                 <div class="stats-grid" style="margin-bottom: 1.5rem;">
                     <div class="stat-card">
-                        <div class="stat-icon warning"><i class="fas fa-envelope"></i></div>
+                        <div class="stat-icon verdi-1"><i class="fas fa-envelope"></i></div>
                         <div class="stat-content">
                             <div class="stat-value">2</div>
                             <div class="stat-label">Invitaciones Pendientes</div>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon info"><i class="fas fa-spinner"></i></div>
+                        <div class="stat-icon verdi-2"><i class="fas fa-spinner"></i></div>
                         <div class="stat-content">
                             <div class="stat-value">1</div>
                             <div class="stat-label">En Progreso</div>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon success"><i class="fas fa-check-circle"></i></div>
+                        <div class="stat-icon verdi-3"><i class="fas fa-check-circle"></i></div>
                         <div class="stat-content">
                             <div class="stat-value">6</div>
                             <div class="stat-label">Completados</div>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                        <div class="stat-icon verdi-4"><i class="fas fa-clock"></i></div>
                         <div class="stat-content">
                             <div class="stat-value">3.2 días</div>
                             <div class="stat-label">Tiempo Promedio</div>
@@ -234,6 +249,24 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof SuperAdminSidebar !== 'undefined') SuperAdminSidebar.init();
+            
+            // Force Verdi + Aire styles on stat-icons
+            const verdiStyles = {
+                'verdi-1': { bg: 'linear-gradient(135deg, #022326, #034040)', shadow: '0 4px 12px rgba(2, 35, 38, 0.25)' },
+                'verdi-2': { bg: 'linear-gradient(135deg, #034040, #035951)', shadow: '0 4px 12px rgba(3, 64, 64, 0.25)' },
+                'verdi-3': { bg: 'linear-gradient(135deg, #035951, #02735E)', shadow: '0 4px 12px rgba(3, 89, 81, 0.25)' },
+                'verdi-4': { bg: 'linear-gradient(135deg, #02735E, #10b981)', shadow: '0 4px 12px rgba(2, 115, 94, 0.25)' }
+            };
+            
+            Object.keys(verdiStyles).forEach(cls => {
+                document.querySelectorAll('.stat-icon.' + cls).forEach(el => {
+                    el.style.background = verdiStyles[cls].bg;
+                    el.style.color = 'white';
+                    el.style.boxShadow = verdiStyles[cls].shadow;
+                    const icon = el.querySelector('i');
+                    if (icon) icon.style.color = 'white';
+                });
+            });
         });
 
         function toggleCheck(element) {
@@ -255,11 +288,23 @@
         function cancelInvite() { showNotification('Invitación cancelada', 'info'); }
 
         function showNotification(msg, type = 'info') {
+            const colors = {
+                success: '#10b981',
+                error: '#022326',
+                warning: '#035951',
+                info: '#02735E'
+            };
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle'
+            };
             const n = document.createElement('div');
-            n.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i> ${msg}`;
-            n.style.cssText = `position: fixed; top: 20px; right: 20px; padding: 1rem 1.5rem; background: ${type === 'success' ? '#10b981' : '#3b82f6'}; color: white; border-radius: 8px; display: flex; align-items: center; gap: 0.75rem; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999;`;
+            n.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i> ${msg}`;
+            n.style.cssText = `position: fixed; top: 20px; right: 20px; padding: 1rem 1.5rem; background: ${colors[type] || colors.info}; color: white; border-radius: 10px; display: flex; align-items: center; gap: 0.75rem; font-weight: 500; box-shadow: 0 4px 16px rgba(2, 35, 38, 0.25); z-index: 9999; animation: slideIn 0.3s ease;`;
             document.body.appendChild(n);
-            setTimeout(() => { n.style.opacity = '0'; setTimeout(() => n.remove(), 300); }, 3000);
+            setTimeout(() => { n.style.opacity = '0'; n.style.transform = 'translateX(20px)'; n.style.transition = 'all 0.3s'; setTimeout(() => n.remove(), 300); }, 3000);
         }
     </script>
 </body>
