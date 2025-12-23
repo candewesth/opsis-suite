@@ -118,9 +118,27 @@
         .btn-ghost { background: transparent; color: #64748b; padding: 0.4rem; }
         .btn-ghost:hover { background: #f1f5f9; color: var(--verdi-dark); }
 
+        /* History Table - Verdi + Aire */
+        .history-table { width: 100%; border-collapse: collapse; }
+        .history-table thead { background: linear-gradient(135deg, #f8fafc, #f0fdf4); }
+        .history-table th { padding: 0.875rem 1rem; text-align: left; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--verdi-dark); font-weight: 600; border-bottom: 2px solid #e2e8f0; }
+        .history-table td { padding: 0.875rem 1rem; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; color: #334155; }
+        .history-row { cursor: pointer; transition: all 0.2s; }
+        .history-row:hover { background: linear-gradient(90deg, #f0fdf4, #f8fafc); }
+        .history-row:hover td { color: var(--verdi-dark); }
+        .history-avatar { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--verdi-dark), var(--verdi-accent)); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; flex-shrink: 0; }
+
+        /* Role Badges */
+        .role-badge { padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
+        .role-badge.superadmin { background: linear-gradient(135deg, #022326, #034040); color: white; }
+        .role-badge.admin { background: linear-gradient(135deg, #034040, #035951); color: white; }
+        .role-badge.soporte { background: linear-gradient(135deg, #035951, #02735E); color: white; }
+        .role-badge.facturacion { background: linear-gradient(135deg, #02735E, #10b981); color: white; }
+
         /* Responsive */
         @media (max-width: 1024px) {
             .page-content > div[style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr; }
+            .history-table { display: block; overflow-x: auto; }
         }
     </style>
 </head>
@@ -346,6 +364,180 @@
                                 <p style="font-size: 1rem; margin-bottom: 0.5rem;">No hay onboardings en progreso</p>
                                 <p style="font-size: 0.875rem;">Los nuevos miembros aparecerán aquí cuando acepten su invitación</p>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Historial de Completados -->
+                <div class="card">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3 class="card-title"><i class="fas fa-history"></i> Historial de Onboardings Completados</h3>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <span style="font-size: 0.75rem; color: #64748b;">Últimos 30 días</span>
+                            <select id="filter-completed-period" class="form-control" style="width: auto; padding: 0.4rem 0.75rem; font-size: 0.8rem;" onchange="filterCompletedHistory()">
+                                <option value="30">Últimos 30 días</option>
+                                <option value="90">Últimos 90 días</option>
+                                <option value="365">Este año</option>
+                                <option value="all">Todo el historial</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <table class="history-table" id="completed-history-table">
+                            <thead>
+                                <tr>
+                                    <th>Colaborador</th>
+                                    <th>Rol</th>
+                                    <th>Template</th>
+                                    <th>Duración</th>
+                                    <th>Completado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="completed-history-body">
+                                <tr class="history-row" onclick="goToProfile('maria-garcia')">
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                            <div class="history-avatar">MG</div>
+                                            <div>
+                                                <strong>María García</strong>
+                                                <span style="display: block; font-size: 0.7rem; color: #64748b;">maria@empresa.com</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="role-badge admin">Admin</span></td>
+                                    <td>Admin (6 pasos)</td>
+                                    <td>2.5 días</td>
+                                    <td>Hace 3 días</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation(); goToProfile('maria-garcia')" title="Ver perfil">
+                                            <i class="fas fa-user"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation(); viewOnboardingReport('María García')" title="Ver reporte">
+                                            <i class="fas fa-file-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="history-row" onclick="goToProfile('carlos-lopez')">
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                            <div class="history-avatar">CL</div>
+                                            <div>
+                                                <strong>Carlos López</strong>
+                                                <span style="display: block; font-size: 0.7rem; color: #64748b;">carlos@empresa.com</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="role-badge soporte">Soporte</span></td>
+                                    <td>Soporte (5 pasos)</td>
+                                    <td>1.8 días</td>
+                                    <td>Hace 5 días</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation(); goToProfile('carlos-lopez')" title="Ver perfil">
+                                            <i class="fas fa-user"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation(); viewOnboardingReport('Carlos López')" title="Ver reporte">
+                                            <i class="fas fa-file-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="history-row" onclick="goToProfile('laura-martinez')">
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                            <div class="history-avatar">LM</div>
+                                            <div>
+                                                <strong>Laura Martínez</strong>
+                                                <span style="display: block; font-size: 0.7rem; color: #64748b;">laura@empresa.com</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="role-badge facturacion">Facturación</span></td>
+                                    <td>Facturación (4 pasos)</td>
+                                    <td>1.2 días</td>
+                                    <td>Hace 1 semana</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation(); goToProfile('laura-martinez')" title="Ver perfil">
+                                            <i class="fas fa-user"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation(); viewOnboardingReport('Laura Martínez')" title="Ver reporte">
+                                            <i class="fas fa-file-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="history-row" onclick="goToProfile('pedro-sanchez')">
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                            <div class="history-avatar">PS</div>
+                                            <div>
+                                                <strong>Pedro Sánchez</strong>
+                                                <span style="display: block; font-size: 0.7rem; color: #64748b;">pedro@empresa.com</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="role-badge superadmin">Super Admin</span></td>
+                                    <td>Super Admin (8 pasos)</td>
+                                    <td>4.5 días</td>
+                                    <td>Hace 2 semanas</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation(); goToProfile('pedro-sanchez')" title="Ver perfil">
+                                            <i class="fas fa-user"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation(); viewOnboardingReport('Pedro Sánchez')" title="Ver reporte">
+                                            <i class="fas fa-file-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="history-row" onclick="goToProfile('ana-torres')">
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                            <div class="history-avatar">AT</div>
+                                            <div>
+                                                <strong>Ana Torres</strong>
+                                                <span style="display: block; font-size: 0.7rem; color: #64748b;">ana.torres@empresa.com</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="role-badge soporte">Soporte</span></td>
+                                    <td>Soporte (5 pasos)</td>
+                                    <td>2.1 días</td>
+                                    <td>Hace 3 semanas</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation(); goToProfile('ana-torres')" title="Ver perfil">
+                                            <i class="fas fa-user"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation(); viewOnboardingReport('Ana Torres')" title="Ver reporte">
+                                            <i class="fas fa-file-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="history-row" onclick="goToProfile('jorge-ruiz')">
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                            <div class="history-avatar">JR</div>
+                                            <div>
+                                                <strong>Jorge Ruiz</strong>
+                                                <span style="display: block; font-size: 0.7rem; color: #64748b;">jorge@empresa.com</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="role-badge admin">Admin</span></td>
+                                    <td>Admin (6 pasos)</td>
+                                    <td>3.0 días</td>
+                                    <td>Hace 1 mes</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation(); goToProfile('jorge-ruiz')" title="Ver perfil">
+                                            <i class="fas fa-user"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation(); viewOnboardingReport('Jorge Ruiz')" title="Ver reporte">
+                                            <i class="fas fa-file-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div id="empty-history" style="display: none; text-align: center; padding: 3rem; color: #64748b;">
+                            <i class="fas fa-clipboard-check" style="font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                            <p>No hay onboardings completados en este período</p>
                         </div>
                     </div>
                 </div>
@@ -706,18 +898,29 @@
             card.querySelector('.progress-value').textContent = percent + '%';
             card.querySelector('.progress-fill').style.width = percent + '%';
             
-            // Si completó todo, mover a completados
+            // Si completó todo, mover a historial de completados
             if (percent === 100) {
                 setTimeout(() => {
                     const name = card.querySelector('h4').textContent;
+                    const role = card.dataset.role || 'soporte';
+                    const template = onboardingTemplates[role] || onboardingTemplates.soporte;
+                    const stepsCount = items.length;
+                    
+                    // Calcular duración simulada (basada en pasos)
+                    const duration = (stepsCount * 0.4).toFixed(1);
+                    
                     card.style.opacity = '0';
                     card.style.transform = 'scale(0.95)';
                     card.style.transition = 'all 0.3s';
                     setTimeout(() => {
                         card.remove();
+                        
+                        // Agregar al historial
+                        addToCompletedHistory(name, role, template, duration);
+                        
                         const completedCount = parseInt(document.getElementById('stat-completed').textContent) + 1;
                         document.getElementById('stat-completed').textContent = completedCount;
-                        showNotification(`¡${name} completó el onboarding!`, 'success');
+                        showNotification(`¡${name} completó el onboarding! Agregado al historial.`, 'success');
                         updateStats();
                     }, 300);
                 }, 500);
@@ -839,6 +1042,71 @@
 
             closeModal('template-modal');
             showNotification(editingTemplate ? 'Template actualizado' : 'Template creado', 'success');
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // HISTORIAL DE COMPLETADOS
+        // ═══════════════════════════════════════════════════════════════
+        function goToProfile(userId) {
+            // Navegar a la página de equipo con el perfil del usuario
+            showNotification('Abriendo perfil...', 'info');
+            setTimeout(() => {
+                window.location.href = `/superadmin/team/index.html?profile=${userId}`;
+            }, 300);
+        }
+
+        function viewOnboardingReport(name) {
+            showNotification(`Generando reporte de onboarding de ${name}...`, 'info');
+            // En el futuro: abrir modal con reporte detallado
+        }
+
+        function filterCompletedHistory() {
+            const period = document.getElementById('filter-completed-period').value;
+            // Simular filtrado - en producción esto consultaría la BD
+            showNotification(`Mostrando: ${period === 'all' ? 'Todo el historial' : 'Últimos ' + period + ' días'}`, 'info');
+        }
+
+        function addToCompletedHistory(name, role, template, duration) {
+            const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            const userId = name.toLowerCase().replace(/\s+/g, '-').normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const roleLabels = { superadmin: 'Super Admin', admin: 'Admin', soporte: 'Soporte', facturacion: 'Facturación' };
+            
+            const newRow = document.createElement('tr');
+            newRow.className = 'history-row';
+            newRow.onclick = () => goToProfile(userId);
+            newRow.innerHTML = `
+                <td>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <div class="history-avatar">${initials}</div>
+                        <div>
+                            <strong>${name}</strong>
+                            <span style="display: block; font-size: 0.7rem; color: #64748b;">${userId}@empresa.com</span>
+                        </div>
+                    </div>
+                </td>
+                <td><span class="role-badge ${role}">${roleLabels[role]}</span></td>
+                <td>${template.name} (${template.steps.length} pasos)</td>
+                <td>${duration} días</td>
+                <td>Ahora</td>
+                <td>
+                    <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation(); goToProfile('${userId}')" title="Ver perfil">
+                        <i class="fas fa-user"></i>
+                    </button>
+                    <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation(); viewOnboardingReport('${name}')" title="Ver reporte">
+                        <i class="fas fa-file-alt"></i>
+                    </button>
+                </td>
+            `;
+            
+            const tbody = document.getElementById('completed-history-body');
+            tbody.insertBefore(newRow, tbody.firstChild);
+            
+            // Animar entrada
+            newRow.style.background = '#dcfce7';
+            setTimeout(() => {
+                newRow.style.transition = 'background 1s ease';
+                newRow.style.background = '';
+            }, 100);
         }
 
         // ═══════════════════════════════════════════════════════════════

@@ -16,7 +16,387 @@
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/superadmin.css?v=12">
+    <link rel="stylesheet" href="../css/superadmin.css?v=13">
+    <style>
+        /* Verdi + Aire Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-card.verdi-filled {
+            border-radius: 16px;
+            padding: 1.5rem;
+            color: white;
+            border: none;
+            box-shadow: 0 4px 20px rgba(2, 35, 38, 0.15);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .stat-card.verdi-filled:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(2, 35, 38, 0.25);
+        }
+        .stat-card.verdi-filled .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        .stat-card.verdi-filled .stat-icon i {
+            font-size: 1.25rem;
+            color: white;
+        }
+        .stat-card.verdi-filled .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+            line-height: 1.2;
+        }
+        .stat-card.verdi-filled .stat-label {
+            font-size: 0.875rem;
+            color: rgba(255,255,255,0.85);
+            margin-top: 0.25rem;
+        }
+        .stat-card.verdi-filled .stat-trend {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+            margin-top: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            background: rgba(255,255,255,0.15);
+            border-radius: 20px;
+            width: fit-content;
+        }
+
+        /* Filters Section - Verdi + Aire Design */
+        .filters-section {
+            background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+            border-radius: 20px;
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 20px rgba(2, 35, 38, 0.08);
+            border: 1px solid rgba(2, 115, 94, 0.1);
+        }
+        .filters-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .search-input-wrapper {
+            position: relative;
+            flex: 1;
+            min-width: 300px;
+            max-width: 450px;
+        }
+        .search-input-wrapper i {
+            position: absolute;
+            left: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #02735E;
+            font-size: 1rem;
+        }
+        .search-input-wrapper input {
+            width: 100%;
+            padding: 1rem 1.25rem 1rem 3rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            font-size: 0.95rem;
+            transition: all 0.25s ease;
+            background: white;
+        }
+        .search-input-wrapper input:focus {
+            outline: none;
+            border-color: #02735E;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(2, 115, 94, 0.12);
+        }
+        .search-input-wrapper input::placeholder {
+            color: #94a3b8;
+        }
+        .filter-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+        .filter-actions .btn {
+            padding: 0.875rem 1.5rem;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.25s ease;
+            border: none;
+            cursor: pointer;
+        }
+        .filter-actions .btn-secondary {
+            background: white;
+            color: #475569;
+            border: 2px solid #e2e8f0;
+        }
+        .filter-actions .btn-secondary:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            color: #334155;
+        }
+        .filter-actions .btn-primary {
+            background: linear-gradient(135deg, #02735E 0%, #10b981 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(2, 115, 94, 0.3);
+        }
+        .filter-actions .btn-primary:hover {
+            box-shadow: 0 6px 20px rgba(2, 115, 94, 0.4);
+            transform: translateY(-1px);
+        }
+        .filters-body {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+        .filter-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            padding: 0.5rem 0;
+        }
+        .filter-row-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #02735E;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-width: 80px;
+            background: rgba(2, 115, 94, 0.08);
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+        }
+        .filter-chips {
+            display: flex;
+            gap: 0.625rem;
+            flex-wrap: wrap;
+        }
+        .filter-chip {
+            padding: 0.625rem 1.25rem;
+            border-radius: 30px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+        .filter-chip:hover {
+            border-color: #02735E;
+            color: #02735E;
+            background: #f0fdf4;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(2, 115, 94, 0.15);
+        }
+        .filter-chip.active {
+            background: linear-gradient(135deg, #022326 0%, #02735E 100%);
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 4px 15px rgba(2, 35, 38, 0.25);
+        }
+        .filter-chip i {
+            font-size: 0.8rem;
+        }
+        .filter-chip .priority-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .filter-chip .priority-dot.high { background: #ef4444; }
+        .filter-chip .priority-dot.medium { background: #f59e0b; }
+        .filter-chip .priority-dot.low { background: #22c55e; }
+        .filter-chip.active .priority-dot {
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.5);
+        }
+
+        /* Table Styles - Verdi + Aire */
+        .tickets-table-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(2, 35, 38, 0.08);
+            border: 1px solid rgba(2, 115, 94, 0.1);
+        }
+        .tickets-table-card .table-header {
+            background: linear-gradient(135deg, #022326 0%, #034040 100%);
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .tickets-table-card .table-header h3 {
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .tickets-table-card .table-header .ticket-count {
+            background: rgba(255,255,255,0.2);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: white;
+        }
+        .tickets-table-card table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .tickets-table-card thead {
+            background: linear-gradient(135deg, #f8fafc 0%, #f0fdf4 100%);
+        }
+        .tickets-table-card thead th {
+            padding: 1rem 1.25rem;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #02735E;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid rgba(2, 115, 94, 0.15);
+        }
+        .tickets-table-card tbody tr {
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .tickets-table-card tbody tr:hover {
+            background: linear-gradient(135deg, #f8fafc 0%, #f0fdf4 100%);
+        }
+        .tickets-table-card tbody tr:last-child {
+            border-bottom: none;
+        }
+        .tickets-table-card tbody td {
+            padding: 1.25rem;
+            font-size: 0.9rem;
+            color: #334155;
+        }
+        .tickets-table-card tbody td strong {
+            color: #02735E;
+            font-weight: 700;
+        }
+        
+        /* Priority badges */
+        .priority-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .priority-badge.high {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            color: #dc2626;
+            border: 1px solid rgba(220, 38, 38, 0.2);
+        }
+        .priority-badge.medium {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            color: #d97706;
+            border: 1px solid rgba(217, 119, 6, 0.2);
+        }
+        .priority-badge.low {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            color: #16a34a;
+            border: 1px solid rgba(22, 163, 74, 0.2);
+        }
+        .priority-badge .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .priority-badge.high .dot { background: #dc2626; }
+        .priority-badge.medium .dot { background: #d97706; }
+        .priority-badge.low .dot { background: #16a34a; }
+
+        /* Status badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .status-badge.open {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            color: #16a34a;
+        }
+        .status-badge.in-progress {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            color: #2563eb;
+        }
+        .status-badge.closed {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: #64748b;
+        }
+
+        /* Action buttons */
+        .action-btns {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .action-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+            font-size: 0.9rem;
+        }
+        .action-btn.view {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: #475569;
+        }
+        .action-btn.view:hover {
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+            color: #334155;
+            transform: translateY(-2px);
+        }
+        .action-btn.reply {
+            background: linear-gradient(135deg, #02735E 0%, #10b981 100%);
+            color: white;
+            box-shadow: 0 3px 10px rgba(2, 115, 94, 0.25);
+        }
+        .action-btn.reply:hover {
+            box-shadow: 0 5px 15px rgba(2, 115, 94, 0.35);
+            transform: translateY(-2px);
+        }
+        .action-btn.close {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            color: #16a34a;
+        }
+        .action-btn.close:hover {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            transform: translateY(-2px);
+        }
+    </style>
 </head>
 <body>
     <div class="app-shell">
@@ -31,107 +411,119 @@
                     <h1 class="page-title">Tickets de Soporte</h1>
                     <p class="page-subtitle">Gestiona las solicitudes de soporte de tus clientes</p>
                 </div>
-                <div class="header-actions">
-                    <button class="btn btn-secondary" onclick="location.href='knowledge.html'">
-                        <i class="fas fa-book"></i> Base de Conocimiento
-                    </button>
-                    <button class="btn btn-primary" onclick="openNewTicketModal()">
-                        <i class="fas fa-plus"></i> Nuevo Ticket
-                    </button>
-                </div>
             </header>
 
             <div class="page-content">
-                <!-- Stats -->
+                <!-- Stats - Verdi + Aire Filled Cards -->
                 <div class="stats-grid">
-                    <div class="stat-card">
+                    <div class="stat-card verdi-filled" style="background: linear-gradient(135deg, #022326 0%, #034040 100%);">
                         <div class="stat-icon">
                             <i class="fas fa-ticket-alt"></i>
                         </div>
-                        <div class="stat-content">
-                            <div class="stat-value" id="totalTickets">3</div>
-                            <div class="stat-label">Tickets Totales</div>
-                        </div>
+                        <div class="stat-value" id="totalTickets">3</div>
+                        <div class="stat-label">Tickets Totales</div>
+                        <div class="stat-trend"><i class="fas fa-inbox"></i> Todas las solicitudes</div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon danger">
+                    <div class="stat-card verdi-filled" style="background: linear-gradient(135deg, #034040 0%, #035951 100%);">
+                        <div class="stat-icon">
                             <i class="fas fa-exclamation-circle"></i>
                         </div>
-                        <div class="stat-content">
-                            <div class="stat-value" id="openTickets">2</div>
-                            <div class="stat-label">Abiertos</div>
-                        </div>
+                        <div class="stat-value" id="openTickets">2</div>
+                        <div class="stat-label">Abiertos</div>
+                        <div class="stat-trend"><i class="fas fa-arrow-right"></i> Requieren atención</div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon warning">
-                            <i class="fas fa-spinner"></i>
+                    <div class="stat-card verdi-filled" style="background: linear-gradient(135deg, #035951 0%, #02735E 100%);">
+                        <div class="stat-icon">
+                            <i class="fas fa-spinner fa-spin"></i>
                         </div>
-                        <div class="stat-content">
-                            <div class="stat-value" id="inProgressTickets">1</div>
-                            <div class="stat-label">En Progreso</div>
-                        </div>
+                        <div class="stat-value" id="inProgressTickets">1</div>
+                        <div class="stat-label">En Progreso</div>
+                        <div class="stat-trend"><i class="fas fa-cog"></i> En resolución</div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon info">
+                    <div class="stat-card verdi-filled" style="background: linear-gradient(135deg, #02735E 0%, #10b981 100%);">
+                        <div class="stat-icon">
                             <i class="fas fa-clock"></i>
                         </div>
-                        <div class="stat-content">
-                            <div class="stat-value">2.4h</div>
-                            <div class="stat-label">Tiempo Promedio</div>
-                        </div>
+                        <div class="stat-value">2.4h</div>
+                        <div class="stat-label">Tiempo Promedio</div>
+                        <div class="stat-trend"><i class="fas fa-bolt"></i> Respuesta rápida</div>
                     </div>
                 </div>
 
-                <!-- Filters -->
-                <div class="card">
-                    <div class="filters-bar">
-                        <div class="search-box">
+                <!-- Filters - Modern Design -->
+                <div class="filters-section">
+                    <div class="filters-header">
+                        <div class="search-input-wrapper">
                             <i class="fas fa-search"></i>
-                            <input type="text" placeholder="Buscar tickets..." id="searchInput" oninput="filterTickets()">
+                            <input type="text" placeholder="Buscar por asunto, compañía o ID..." id="searchInput" oninput="filterTickets()">
                         </div>
-                        <div class="filter-tags">
-                            <button class="filter-tag active" data-filter="all" onclick="setFilter('all', this)">Todos</button>
-                            <button class="filter-tag" data-filter="open" onclick="setFilter('open', this)">Abiertos</button>
-                            <button class="filter-tag" data-filter="in-progress" onclick="setFilter('in-progress', this)">En Progreso</button>
-                            <button class="filter-tag" data-filter="closed" onclick="setFilter('closed', this)">Cerrados</button>
+                        <div class="filter-actions">
+                            <button type="button" class="btn btn-secondary" onclick="clearFilters(); return false;">
+                                <i class="fas fa-redo"></i> Limpiar Filtros
+                            </button>
                         </div>
                     </div>
-                    <div class="filter-tags" style="margin-top: 1rem;">
-                        <span class="filter-label">Prioridad:</span>
-                        <button class="filter-tag active" data-priority="all" onclick="setPriorityFilter('all', this)">Todas</button>
-                        <button class="filter-tag" data-priority="high" onclick="setPriorityFilter('high', this)">
-                            <i class="fas fa-circle text-danger"></i> Alta
-                        </button>
-                        <button class="filter-tag" data-priority="medium" onclick="setPriorityFilter('medium', this)">
-                            <i class="fas fa-circle text-warning"></i> Media
-                        </button>
-                        <button class="filter-tag" data-priority="low" onclick="setPriorityFilter('low', this)">
-                            <i class="fas fa-circle text-success"></i> Baja
-                        </button>
+                    <div class="filters-body">
+                        <div class="filter-row">
+                            <span class="filter-row-label">Estado</span>
+                            <div class="filter-chips">
+                                <button class="filter-chip active" data-filter="all" onclick="setFilter('all', this)">
+                                    <i class="fas fa-layer-group"></i> Todos
+                                </button>
+                                <button class="filter-chip" data-filter="open" onclick="setFilter('open', this)">
+                                    <i class="fas fa-folder-open"></i> Abiertos
+                                </button>
+                                <button class="filter-chip" data-filter="in-progress" onclick="setFilter('in-progress', this)">
+                                    <i class="fas fa-hourglass-half"></i> En Progreso
+                                </button>
+                                <button class="filter-chip" data-filter="closed" onclick="setFilter('closed', this)">
+                                    <i class="fas fa-check-circle"></i> Cerrados
+                                </button>
+                            </div>
+                        </div>
+                        <div class="filter-row">
+                            <span class="filter-row-label">Prioridad</span>
+                            <div class="filter-chips">
+                                <button class="filter-chip active" data-priority="all" onclick="setPriorityFilter('all', this)">
+                                    Todas
+                                </button>
+                                <button class="filter-chip" data-priority="high" onclick="setPriorityFilter('high', this)">
+                                    <span class="priority-dot high"></span> Alta
+                                </button>
+                                <button class="filter-chip" data-priority="medium" onclick="setPriorityFilter('medium', this)">
+                                    <span class="priority-dot medium"></span> Media
+                                </button>
+                                <button class="filter-chip" data-priority="low" onclick="setPriorityFilter('low', this)">
+                                    <span class="priority-dot low"></span> Baja
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Tickets Table -->
-                <div class="card">
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Asunto</th>
-                                    <th>Compañía</th>
-                                    <th>Prioridad</th>
-                                    <th>Estado</th>
-                                    <th>Asignado</th>
-                                    <th>Creado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="ticketsTable">
-                                <!-- Populated by JS -->
-                            </tbody>
-                        </table>
+                <div class="tickets-table-card">
+                    <div class="table-header">
+                        <h3><i class="fas fa-inbox"></i> Bandeja de Tickets</h3>
+                        <span class="ticket-count" id="ticketCountBadge">0 tickets</span>
                     </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Asunto</th>
+                                <th>Compañía</th>
+                                <th>Prioridad</th>
+                                <th>Estado</th>
+                                <th>Asignado</th>
+                                <th>Creado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ticketsTable">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </main>
@@ -212,6 +604,33 @@
         let currentFilter = 'all';
         let currentPriorityFilter = 'all';
 
+        // Combinar tickets de SuperAdminData con los del widget de soporte
+        function getAllTickets() {
+            // Tickets del widget (localStorage)
+            const widgetTickets = JSON.parse(localStorage.getItem('opsis_support_tickets') || '[]');
+            
+            // Convertir formato del widget al formato de SuperAdminData
+            const convertedWidgetTickets = widgetTickets.map((t, index) => ({
+                id: t.id || `WGT-${index + 1}`,
+                company: t.user?.company || 'Usuario Widget',
+                subject: t.subject,
+                priority: t.priority || 'medium',
+                status: t.status === 'new' ? 'open' : t.status,
+                created: t.createdAt ? new Date(t.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+                assignee: t.assignee?.name || null,
+                description: t.description,
+                category: t.category,
+                userName: t.user?.name,
+                userEmail: t.user?.email,
+                fromWidget: true
+            }));
+            
+            // Combinar con tickets existentes de SuperAdminData
+            const existingTickets = SuperAdminData.tickets || [];
+            
+            return [...convertedWidgetTickets, ...existingTickets];
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             loadStats();
             loadTicketsTable();
@@ -220,15 +639,15 @@
         });
 
         function loadStats() {
-            const tickets = SuperAdminData.tickets;
+            const tickets = getAllTickets();
             document.getElementById('totalTickets').textContent = tickets.length;
-            document.getElementById('openTickets').textContent = tickets.filter(t => t.status === 'open').length;
+            document.getElementById('openTickets').textContent = tickets.filter(t => t.status === 'open' || t.status === 'new').length;
             document.getElementById('inProgressTickets').textContent = tickets.filter(t => t.status === 'in-progress').length;
         }
 
         function loadTicketsTable() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            let tickets = [...SuperAdminData.tickets];
+            let tickets = getAllTickets();
             
             // Apply filters
             if (currentFilter !== 'all') {
@@ -245,14 +664,18 @@
             }
             
             const tbody = document.getElementById('ticketsTable');
+            const countBadge = document.getElementById('ticketCountBadge');
+            if (countBadge) {
+                countBadge.textContent = `${tickets.length} ticket${tickets.length !== 1 ? 's' : ''}`;
+            }
             
             if (tickets.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="8" class="empty-state">
-                            <div class="icon"><i class="fas fa-ticket-alt"></i></div>
-                            <h3>No hay tickets</h3>
-                            <p>No se encontraron tickets con los filtros seleccionados</p>
+                        <td colspan="8" style="text-align: center; padding: 4rem 2rem;">
+                            <div style="color: #94a3b8; font-size: 3rem; margin-bottom: 1rem;"><i class="fas fa-inbox"></i></div>
+                            <h3 style="color: #475569; font-weight: 600; margin-bottom: 0.5rem;">No hay tickets</h3>
+                            <p style="color: #94a3b8;">No se encontraron tickets con los filtros seleccionados</p>
                         </td>
                     </tr>
                 `;
@@ -262,31 +685,32 @@
             tbody.innerHTML = tickets.map(ticket => `
                 <tr data-id="${ticket.id}">
                     <td><strong>#${ticket.id}</strong></td>
-                    <td>${ticket.subject}</td>
-                    <td>${ticket.company}</td>
+                    <td style="font-weight: 500; color: #1e293b;">${ticket.subject}</td>
+                    <td style="color: #64748b;">${ticket.company}</td>
                     <td>
-                        <span class="priority priority-${ticket.priority}">
-                            <i class="fas fa-circle"></i>
+                        <span class="priority-badge ${ticket.priority}">
+                            <span class="dot"></span>
                             ${ticket.priority === 'high' ? 'Alta' : ticket.priority === 'medium' ? 'Media' : 'Baja'}
                         </span>
                     </td>
                     <td>
-                        <span class="status status-${ticket.status === 'open' ? 'trial' : ticket.status === 'in-progress' ? 'active' : 'inactive'}">
+                        <span class="status-badge ${ticket.status === 'open' ? 'open' : ticket.status === 'in-progress' ? 'in-progress' : 'closed'}">
+                            <i class="fas ${ticket.status === 'open' ? 'fa-circle' : ticket.status === 'in-progress' ? 'fa-spinner fa-spin' : 'fa-check-circle'}" style="font-size: 0.6rem;"></i>
                             ${ticket.status === 'open' ? 'Abierto' : ticket.status === 'in-progress' ? 'En Progreso' : 'Cerrado'}
                         </span>
                     </td>
-                    <td>${ticket.assignee || '<span class="text-muted">Sin asignar</span>'}</td>
-                    <td>${ticket.created}</td>
+                    <td>${ticket.assignee || '<span style="color: #94a3b8; font-style: italic;">Sin asignar</span>'}</td>
+                    <td style="color: #64748b; font-size: 0.85rem;">${ticket.created}</td>
                     <td>
-                        <div class="action-buttons">
-                            <button class="btn-icon" onclick="viewTicket(${ticket.id})" title="Ver detalles">
+                        <div class="action-btns">
+                            <button class="action-btn view" onclick="viewTicket('${ticket.id}')" title="Ver detalles">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            <button class="btn-icon primary" onclick="respondTicket(${ticket.id})" title="Responder">
+                            <button class="action-btn reply" onclick="respondTicket('${ticket.id}')" title="Responder">
                                 <i class="fas fa-reply"></i>
                             </button>
                             ${ticket.status !== 'closed' ? `
-                                <button class="btn-icon success" onclick="closeTicket(${ticket.id})" title="Cerrar">
+                                <button class="action-btn close" onclick="closeTicket('${ticket.id}')" title="Cerrar">
                                     <i class="fas fa-check"></i>
                                 </button>
                             ` : ''}
@@ -325,6 +749,43 @@
 
         function filterTickets() {
             loadTicketsTable();
+        }
+
+        function clearFilters() {
+            currentFilter = 'all';
+            currentPriorityFilter = 'all';
+            document.getElementById('searchInput').value = '';
+            document.querySelectorAll('[data-filter]').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('[data-priority]').forEach(el => el.classList.remove('active'));
+            document.querySelector('[data-filter="all"]').classList.add('active');
+            document.querySelector('[data-priority="all"]').classList.add('active');
+            loadTicketsTable();
+            showToast('Filtros limpiados', 'info');
+        }
+
+        function exportTickets() {
+            const tickets = getAllTickets();
+            const csv = [
+                ['ID', 'Asunto', 'Compañía', 'Prioridad', 'Estado', 'Asignado', 'Fecha'].join(','),
+                ...tickets.map(t => [
+                    t.id,
+                    `"${t.subject}"`,
+                    `"${t.company}"`,
+                    t.priority,
+                    t.status,
+                    t.assignee || 'Sin asignar',
+                    t.created
+                ].join(','))
+            ].join('\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `tickets-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Tickets exportados', 'success');
         }
 
         function viewTicket(id) {

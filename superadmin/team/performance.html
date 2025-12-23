@@ -3,9 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Desempeño - SuperAdmin | Opsis Suite</title>
     <style>
-        :root { --verdi-dark: #022326; --sidebar-width: 240px; }
+        :root { 
+            --verdi-dark: #022326; 
+            --verdi-mid: #034040;
+            --verdi-accent: #035951;
+            --verdi-light: #02735E;
+            --success: #10b981;
+            --sidebar-width: 240px; 
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { background: #f8fafc; }
         body { opacity: 0; transition: opacity 0.15s ease-in; }
@@ -16,52 +26,61 @@
 
         /* Performance Cards */
         .performance-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
-        .performance-card { background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; transition: all 0.2s; }
-        .performance-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
-        .performance-card-header { display: flex; align-items: center; gap: 0.75rem; padding: 1.25rem; border-bottom: 1px solid #f1f5f9; }
-        .performance-avatar { width: 48px; height: 48px; border-radius: 50%; background: #02735E; color: white; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 600; }
+        .performance-card { background: white; border-radius: 14px; border: 1px solid #e2e8f0; overflow: hidden; transition: all 0.2s; }
+        .performance-card:hover { box-shadow: 0 8px 24px rgba(2, 115, 94, 0.12); border-color: var(--verdi-light); }
+        .performance-card-header { display: flex; align-items: center; gap: 0.75rem; padding: 1.25rem; border-bottom: 1px solid #f1f5f9; background: linear-gradient(135deg, #f8fafc 0%, #f0fdf4 100%); }
+        .performance-avatar { width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, var(--verdi-dark), var(--verdi-accent)); color: white; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 600; }
         .performance-info { flex: 1; }
-        .performance-info h4 { font-size: 1rem; margin-bottom: 0.125rem; }
+        .performance-info h4 { font-size: 1rem; margin-bottom: 0.125rem; color: var(--verdi-dark); }
         .performance-info span { font-size: 0.75rem; color: #64748b; }
         .performance-rank { display: flex; align-items: center; gap: 0.25rem; padding: 0.375rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-        .performance-rank.gold { background: #fef3c7; color: #d97706; }
-        .performance-rank.silver { background: #f1f5f9; color: #64748b; }
-        .performance-rank.bronze { background: #fed7aa; color: #c2410c; }
+        .performance-rank.gold { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: white; }
+        .performance-rank.silver { background: linear-gradient(135deg, #94a3b8, #64748b); color: white; }
+        .performance-rank.bronze { background: linear-gradient(135deg, #fb923c, #ea580c); color: white; }
         .performance-card-body { padding: 1.25rem; }
 
         .metrics-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1rem; }
-        .metric-item { text-align: center; padding: 0.75rem; background: #f8fafc; border-radius: 8px; }
-        .metric-value { font-size: 1.25rem; font-weight: 700; color: #1e293b; }
-        .metric-value.positive { color: #10b981; }
+        .metric-item { text-align: center; padding: 0.75rem; background: linear-gradient(135deg, #f8fafc, #f0fdf4); border-radius: 10px; border: 1px solid #e2e8f0; }
+        .metric-value { font-size: 1.25rem; font-weight: 700; color: var(--verdi-dark); }
+        .metric-value.positive { color: var(--success); }
         .metric-value.warning { color: #f59e0b; }
         .metric-value.negative { color: #ef4444; }
-        .metric-label { font-size: 0.65rem; color: #64748b; margin-top: 0.125rem; }
+        .metric-label { font-size: 0.65rem; color: #64748b; margin-top: 0.125rem; text-transform: uppercase; letter-spacing: 0.03em; }
 
         .performance-bar { margin-bottom: 0.75rem; }
         .performance-bar-label { display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.375rem; }
         .performance-bar-label span:first-child { color: #64748b; }
-        .performance-bar-label span:last-child { font-weight: 600; }
-        .performance-bar-track { height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
-        .performance-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s ease; }
+        .performance-bar-label span:last-child { font-weight: 600; color: var(--verdi-dark); }
+        .performance-bar-track { height: 8px; background: linear-gradient(90deg, #e2e8f0, #f1f5f9); border-radius: 4px; overflow: hidden; }
+        .performance-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        /* Leaderboard */
-        .leaderboard-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-bottom: 1px solid #f1f5f9; }
+        /* Leaderboard - Verdi + Aire */
+        .leaderboard-item { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: all 0.2s; }
+        .leaderboard-item:hover { background: linear-gradient(90deg, #f0fdf4, transparent); }
         .leaderboard-item:last-child { border-bottom: none; }
         .leaderboard-rank { width: 32px; height: 32px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 0.875rem; font-weight: 700; color: #64748b; }
-        .leaderboard-item:nth-child(1) .leaderboard-rank { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: white; }
+        .leaderboard-item:nth-child(1) .leaderboard-rank { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: white; box-shadow: 0 2px 8px rgba(251, 191, 36, 0.4); }
         .leaderboard-item:nth-child(2) .leaderboard-rank { background: linear-gradient(135deg, #94a3b8, #64748b); color: white; }
         .leaderboard-item:nth-child(3) .leaderboard-rank { background: linear-gradient(135deg, #fb923c, #ea580c); color: white; }
-        .leaderboard-avatar { width: 40px; height: 40px; border-radius: 50%; background: #02735E; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.875rem; font-weight: 600; }
+        .leaderboard-avatar { width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, var(--verdi-dark), var(--verdi-accent)); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.875rem; font-weight: 600; }
         .leaderboard-info { flex: 1; }
-        .leaderboard-info strong { font-size: 0.9rem; display: block; margin-bottom: 0.125rem; }
+        .leaderboard-info strong { font-size: 0.9rem; display: block; margin-bottom: 0.125rem; color: var(--verdi-dark); }
         .leaderboard-info span { font-size: 0.75rem; color: #64748b; }
-        .leaderboard-score { font-size: 1.125rem; font-weight: 700; color: #02735E; }
+        .leaderboard-score { font-size: 1.25rem; font-weight: 700; color: var(--verdi-light); }
 
         .chart-container { height: 250px; }
+
+        /* Filter Bar */
+        .filter-bar { display: flex; align-items: center; justify-content: flex-end; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .filter-bar .form-control { padding: 0.5rem 1rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.85rem; background: white; cursor: pointer; }
+        .filter-bar .form-control:focus { outline: none; border-color: var(--verdi-light); }
+        .filter-bar .btn { padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .filter-bar .btn-secondary { background: white; border: 1px solid #e2e8f0; color: #64748b; }
+        .filter-bar .btn-secondary:hover { border-color: var(--verdi-light); color: var(--verdi-light); }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/superadmin/css/superadmin.css?v=12">
+    <link rel="stylesheet" href="/superadmin/css/superadmin.css?v=13">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -73,49 +92,79 @@
                     <h1 class="page-title">Desempeño del Equipo</h1>
                     <p class="page-subtitle">Métricas de productividad y rendimiento</p>
                 </div>
-                <div class="header-actions">
-                    <select class="form-control" style="width: auto;" onchange="updatePeriod()">
-                        <option>Esta semana</option>
-                        <option selected>Este mes</option>
-                        <option>Este trimestre</option>
-                    </select>
-                    <button class="btn btn-secondary" onclick="exportReport()"><i class="fas fa-download"></i> Exportar</button>
-                    <a href="index.html" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Volver</a>
-                </div>
             </header>
 
             <div class="page-content">
-                <!-- Stats -->
-                <div class="stats-grid" style="margin-bottom: 1.5rem;">
-                    <div class="stat-card">
-                        <div class="stat-icon success"><i class="fas fa-ticket-alt"></i></div>
-                        <div class="stat-content">
-                            <div class="stat-value">156</div>
-                            <div class="stat-label">Tickets Resueltos</div>
+                <!-- Filter Bar -->
+                <div class="filter-bar">
+                    <select class="form-control" id="periodFilter" onchange="updatePeriod()">
+                        <option value="week">Esta semana</option>
+                        <option value="month" selected>Este mes</option>
+                        <option value="quarter">Este trimestre</option>
+                        <option value="year">Este año</option>
+                    </select>
+                    <button class="btn btn-secondary" onclick="exportReport()">
+                        <i class="fas fa-download"></i> Exportar
+                    </button>
+                </div>
+
+                <!-- Stats - Verdi + Aire Filled Cards -->
+                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                    <!-- Stat 1: Tickets Resueltos -->
+                    <div style="flex: 1; min-width: 180px; background: linear-gradient(135deg, #022326 0%, #034040 100%); border-radius: 14px; padding: 1.25rem; color: white; position: relative; overflow: hidden;">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-ticket-alt" style="font-size: 1.1rem;"></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 1.75rem; font-weight: 700; line-height: 1;">156</div>
+                                <div style="font-size: 0.7rem; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.03em;">Tickets Resueltos</div>
+                            </div>
                         </div>
-                        <span class="stat-trend up"><i class="fas fa-arrow-up"></i> +12%</span>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon info"><i class="fas fa-clock"></i></div>
-                        <div class="stat-content">
-                            <div class="stat-value">2.4h</div>
-                            <div class="stat-label">Tiempo Promedio</div>
+                        <div style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.7rem; font-weight: 600;">
+                            <i class="fas fa-arrow-up"></i> +12%
                         </div>
-                        <span class="stat-trend up"><i class="fas fa-arrow-down"></i> -18%</span>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon warning"><i class="fas fa-star"></i></div>
-                        <div class="stat-content">
-                            <div class="stat-value">4.8</div>
-                            <div class="stat-label">Satisfacción</div>
+                    <!-- Stat 2: Tiempo Promedio -->
+                    <div style="flex: 1; min-width: 180px; background: linear-gradient(135deg, #034040 0%, #035951 100%); border-radius: 14px; padding: 1.25rem; color: white; position: relative; overflow: hidden;">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-clock" style="font-size: 1.1rem;"></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 1.75rem; font-weight: 700; line-height: 1;">2.4h</div>
+                                <div style="font-size: 0.7rem; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.03em;">Tiempo Promedio</div>
+                            </div>
                         </div>
-                        <span class="stat-trend up"><i class="fas fa-arrow-up"></i> +5%</span>
+                        <div style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.7rem; font-weight: 600;">
+                            <i class="fas fa-arrow-down"></i> -18%
+                        </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fas fa-users"></i></div>
-                        <div class="stat-content">
-                            <div class="stat-value">45</div>
-                            <div class="stat-label">Clientes Gestionados</div>
+                    <!-- Stat 3: Satisfacción -->
+                    <div style="flex: 1; min-width: 180px; background: linear-gradient(135deg, #035951 0%, #02735E 100%); border-radius: 14px; padding: 1.25rem; color: white; position: relative; overflow: hidden;">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-star" style="font-size: 1.1rem;"></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 1.75rem; font-weight: 700; line-height: 1;">4.8</div>
+                                <div style="font-size: 0.7rem; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.03em;">Satisfacción</div>
+                            </div>
+                        </div>
+                        <div style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.7rem; font-weight: 600;">
+                            <i class="fas fa-arrow-up"></i> +5%
+                        </div>
+                    </div>
+                    <!-- Stat 4: Clientes Gestionados -->
+                    <div style="flex: 1; min-width: 180px; background: linear-gradient(135deg, #02735E 0%, #10b981 100%); border-radius: 14px; padding: 1.25rem; color: white; position: relative; overflow: hidden;">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-users" style="font-size: 1.1rem;"></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 1.75rem; font-weight: 700; line-height: 1;">45</div>
+                                <div style="font-size: 0.7rem; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.03em;">Clientes Gestionados</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -155,19 +204,19 @@
                         <div class="card-body">
                             <div class="performance-bar">
                                 <div class="performance-bar-label"><span>Tickets resueltos</span><span>156 / 200</span></div>
-                                <div class="performance-bar-track"><div class="performance-bar-fill" style="width: 78%; background: #10b981;"></div></div>
+                                <div class="performance-bar-track"><div class="performance-bar-fill" style="width: 78%; background: linear-gradient(90deg, #022326, #02735E);"></div></div>
                             </div>
                             <div class="performance-bar">
                                 <div class="performance-bar-label"><span>Tiempo respuesta < 2h</span><span>85%</span></div>
-                                <div class="performance-bar-track"><div class="performance-bar-fill" style="width: 85%; background: #3b82f6;"></div></div>
+                                <div class="performance-bar-track"><div class="performance-bar-fill" style="width: 85%; background: linear-gradient(90deg, #034040, #10b981);"></div></div>
                             </div>
                             <div class="performance-bar">
                                 <div class="performance-bar-label"><span>Satisfacción > 4.5</span><span>4.8 ⭐</span></div>
-                                <div class="performance-bar-track"><div class="performance-bar-fill" style="width: 96%; background: #f59e0b;"></div></div>
+                                <div class="performance-bar-track"><div class="performance-bar-fill" style="width: 96%; background: linear-gradient(90deg, #035951, #10b981);"></div></div>
                             </div>
                             <div class="performance-bar">
                                 <div class="performance-bar-label"><span>Clientes activos</span><span>45 / 50</span></div>
-                                <div class="performance-bar-track"><div class="performance-bar-fill" style="width: 90%; background: #8b5cf6;"></div></div>
+                                <div class="performance-bar-track"><div class="performance-bar-fill" style="width: 90%; background: linear-gradient(90deg, #02735E, #10b981);"></div></div>
                             </div>
                         </div>
                     </div>
@@ -223,6 +272,8 @@
             grid.innerHTML = performanceData.map(m => {
                 const rankClass = m.rank === 1 ? 'gold' : m.rank === 2 ? 'silver' : m.rank === 3 ? 'bronze' : '';
                 const responseClass = parseFloat(m.responseTime) <= 2 ? 'positive' : parseFloat(m.responseTime) <= 3 ? 'warning' : 'negative';
+                const progressPercent = Math.min((m.tickets/40)*100, 100);
+                const progressGradient = m.tickets >= 40 ? 'linear-gradient(90deg, #02735E, #10b981)' : 'linear-gradient(90deg, #034040, #02735E)';
                 return `
                     <div class="performance-card">
                         <div class="performance-card-header">
@@ -238,7 +289,7 @@
                             </div>
                             <div class="performance-bar">
                                 <div class="performance-bar-label"><span>Meta mensual</span><span>${m.tickets}/40 tickets</span></div>
-                                <div class="performance-bar-track"><div class="performance-bar-fill" style="width: ${Math.min((m.tickets/40)*100, 100)}%; background: ${m.tickets >= 40 ? '#10b981' : '#3b82f6'};"></div></div>
+                                <div class="performance-bar-track"><div class="performance-bar-fill" style="width: ${progressPercent}%; background: ${progressGradient};"></div></div>
                             </div>
                         </div>
                     </div>
@@ -247,20 +298,40 @@
         }
 
         function initCharts() {
+            // Chart 1: Tickets por Semana - Verdi palette
             new Chart(document.getElementById('ticketsChart').getContext('2d'), {
                 type: 'line',
                 data: {
                     labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
-                    datasets: [{ label: 'Tickets', data: [32, 45, 38, 41], borderColor: '#02735E', backgroundColor: 'rgba(2, 115, 94, 0.1)', borderWidth: 3, fill: true, tension: 0.4 }]
+                    datasets: [{ 
+                        label: 'Tickets', 
+                        data: [32, 45, 38, 41], 
+                        borderColor: '#02735E', 
+                        backgroundColor: 'rgba(2, 115, 94, 0.15)', 
+                        borderWidth: 3, 
+                        fill: true, 
+                        tension: 0.4,
+                        pointBackgroundColor: '#022326',
+                        pointBorderColor: '#10b981',
+                        pointBorderWidth: 2,
+                        pointRadius: 5
+                    }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
             });
 
+            // Chart 2: Tickets por Miembro - Verdi gradient palette
             new Chart(document.getElementById('memberChart').getContext('2d'), {
                 type: 'bar',
                 data: {
                     labels: performanceData.map(m => m.name.split(' ')[0]),
-                    datasets: [{ label: 'Tickets', data: performanceData.map(m => m.tickets), backgroundColor: ['#fbbf24', '#94a3b8', '#fb923c', '#02735E', '#3b82f6'], borderRadius: 6 }]
+                    datasets: [{ 
+                        label: 'Tickets', 
+                        data: performanceData.map(m => m.tickets), 
+                        backgroundColor: ['#022326', '#034040', '#035951', '#02735E', '#10b981'], 
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
             });
@@ -272,7 +343,8 @@
         function showNotification(msg, type = 'info') {
             const n = document.createElement('div');
             n.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i> ${msg}`;
-            n.style.cssText = `position: fixed; top: 20px; right: 20px; padding: 1rem 1.5rem; background: ${type === 'success' ? '#10b981' : '#3b82f6'}; color: white; border-radius: 8px; display: flex; align-items: center; gap: 0.75rem; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999;`;
+            const bgColor = type === 'success' ? 'linear-gradient(135deg, #02735E, #10b981)' : 'linear-gradient(135deg, #034040, #035951)';
+            n.style.cssText = `position: fixed; top: 20px; right: 20px; padding: 1rem 1.5rem; background: ${bgColor}; color: white; border-radius: 10px; display: flex; align-items: center; gap: 0.75rem; font-weight: 500; box-shadow: 0 4px 12px rgba(2, 115, 94, 0.25); z-index: 9999; transition: opacity 0.3s;`;
             document.body.appendChild(n);
             setTimeout(() => { n.style.opacity = '0'; setTimeout(() => n.remove(), 300); }, 3000);
         }

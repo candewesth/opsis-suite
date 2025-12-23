@@ -21,10 +21,10 @@ const SuperAdminSidebar = {
         equipo: [
             { id: 'team', label: 'Equipo', icon: 'fas fa-users', href: '/superadmin/team/index.html' },
             { id: 'onboarding-team', label: 'Onboarding', icon: 'fas fa-user-plus', href: '/superadmin/team/onboarding.html' },
-            { id: 'performance', label: 'Desempeño', icon: 'fas fa-chart-line', href: '/superadmin/team/performance.html' }
+            { id: 'performance', label: 'Desempeño', icon: 'fas fa-chart-line', href: '/superadmin/team/performance.html?v=2' }
         ],
         soporte: [
-            { id: 'tickets', label: 'Tickets', icon: 'fas fa-ticket-alt', href: '/superadmin/support/tickets.html', badge: '3' },
+            { id: 'tickets', label: 'Tickets', icon: 'fas fa-ticket-alt', href: '/superadmin/support/tickets.html', badge: '' },
             { id: 'knowledge', label: 'Base de Conocimiento', icon: 'fas fa-book', href: '/superadmin/support/knowledge.html' }
         ],
         configuracion: [
