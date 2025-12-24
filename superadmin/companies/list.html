@@ -383,25 +383,8 @@
                     </div>
                     <div class="filter-group">
                         <span class="filter-group-label">Industria:</span>
-                        <div class="filter-pills scrollable">
-                            <button class="filter-pill active" data-industry="all" onclick="setIndustryFilter('all', this)">
-                                <i class="fas fa-globe"></i> Todas
-                            </button>
-                            <button class="filter-pill" data-industry="construccion" onclick="setIndustryFilter('construccion', this)">
-                                <i class="fas fa-hard-hat"></i> Construcción
-                            </button>
-                            <button class="filter-pill" data-industry="medica" onclick="setIndustryFilter('medica', this)">
-                                <i class="fas fa-hospital"></i> Médica
-                            </button>
-                            <button class="filter-pill" data-industry="transporte" onclick="setIndustryFilter('transporte', this)">
-                                <i class="fas fa-truck"></i> Transporte
-                            </button>
-                            <button class="filter-pill" data-industry="retail" onclick="setIndustryFilter('retail', this)">
-                                <i class="fas fa-shopping-cart"></i> Retail
-                            </button>
-                            <button class="filter-pill" data-industry="jardineria" onclick="setIndustryFilter('jardineria', this)">
-                                <i class="fas fa-leaf"></i> Jardinería
-                            </button>
+                        <div class="filter-pills scrollable" id="industryFilters">
+                            <!-- Generated dynamically from SuperAdminData.industries -->
                         </div>
                     </div>
                 </div>
@@ -465,14 +448,8 @@
                         <span id="selectedCount">0</span> compañías seleccionadas
                     </div>
                     <div class="bulk-buttons">
-                        <button class="btn btn-sm btn-secondary" onclick="bulkExport()">
-                            <i class="fas fa-download"></i> Exportar
-                        </button>
                         <button class="btn btn-sm btn-warning" onclick="bulkSuspend()">
                             <i class="fas fa-pause"></i> Suspender
-                        </button>
-                        <button class="btn btn-sm btn-danger" onclick="bulkDelete()">
-                            <i class="fas fa-trash"></i> Eliminar
                         </button>
                     </div>
                 </div>
@@ -538,6 +515,7 @@
         let isGridView = false;
 
         document.addEventListener('DOMContentLoaded', () => {
+            renderIndustryFilters();
             loadStats();
             loadCompaniesTable();
             updateCounts();
@@ -550,6 +528,23 @@
                 }
             });
         });
+
+        // Generate industry filters from SuperAdminData.industries catalog
+        function renderIndustryFilters() {
+            const container = document.getElementById('industryFilters');
+            let html = `<button class="filter-pill active" data-industry="all" onclick="setIndustryFilter('all', this)">
+                <i class="fas fa-globe"></i> Todas
+            </button>`;
+            
+            Object.entries(SuperAdminData.industries).forEach(([key, ind]) => {
+                const iconClass = ind.icon && ind.icon.includes('fa-') ? ind.icon : 'fas fa-building';
+                html += `<button class="filter-pill" data-industry="${key}" onclick="setIndustryFilter('${key}', this)">
+                    <i class="${iconClass}"></i> ${ind.name}
+                </button>`;
+            });
+            
+            container.innerHTML = html;
+        }
 
         function loadStats() {
             const companies = SuperAdminData.companies;
@@ -748,27 +743,22 @@
         }
 
         function getAvatarColor(industry) {
-            // Paleta Verdi - diferentes tonalidades
-            const colors = {
-                construccion: 'linear-gradient(135deg, #035951 0%, #022326 100%)',
-                medica: 'linear-gradient(135deg, #02735E 0%, #034040 100%)',
-                transporte: 'linear-gradient(135deg, #034040 0%, #022326 100%)',
-                retail: 'linear-gradient(135deg, #035951 0%, #034040 100%)',
-                jardineria: 'linear-gradient(135deg, #02735E 0%, #035951 100%)'
-            };
-            return colors[industry] || 'linear-gradient(135deg, #02735E 0%, #022326 100%)';
+            // Get color from industries catalog
+            const ind = SuperAdminData.industries[industry];
+            if (ind && ind.color) {
+                // Create gradient with the industry color
+                return `linear-gradient(135deg, ${ind.color} 0%, #022326 100%)`;
+            }
+            return 'linear-gradient(135deg, #02735E 0%, #022326 100%)';
         }
 
         function getIndustryIcon(industry) {
-            // Iconos por industria
-            const icons = {
-                construccion: 'fas fa-hard-hat',
-                medica: 'fas fa-hospital',
-                transporte: 'fas fa-truck',
-                retail: 'fas fa-shopping-cart',
-                jardineria: 'fas fa-leaf'
-            };
-            return icons[industry] || 'fas fa-building';
+            // Get icon from industries catalog
+            const ind = SuperAdminData.industries[industry];
+            if (ind && ind.icon) {
+                return ind.icon.includes('fa-') ? ind.icon : 'fas fa-' + ind.icon;
+            }
+            return 'fas fa-building';
         }
 
         function sortCompaniesArray(companies, sortBy) {

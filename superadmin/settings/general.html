@@ -3,322 +3,381 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configuración - SuperAdmin | Opsis Suite</title>
+    <title>Configuración General - SuperAdmin | Opsis Suite</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/superadmin.css?v=14">
     <style>
-        :root { --verdi-dark: #022326; --sidebar-width: 240px; }
+        :root { --verdi-dark: #022326; --verdi-mid: #034040; --verdi-accent: #035951; --verdi-light: #02735E; --success: #10b981; --sidebar-width: 240px; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { background: #f8fafc; }
+        html, body { background: #f8fafc; font-family: 'Inter', -apple-system, sans-serif; }
         body { opacity: 0; transition: opacity 0.15s ease-in; }
         body.loaded { opacity: 1; }
         .app-shell { min-height: 100vh; background: #f8fafc; }
         .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh; background: var(--verdi-dark); }
         .main-content { margin-left: var(--sidebar-width); min-height: 100vh; background: #f8fafc; }
+        .header { padding: 1.5rem 2rem; background: white; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+        .page-title { font-size: 1.5rem; font-weight: 800; color: #1e293b; }
+        .page-subtitle { font-size: 0.9rem; color: #64748b; margin-top: 0.25rem; }
+        .page-content { padding: 2rem; }
+        
+        /* Settings Navigation - Verdi Pills */
+        .settings-nav { background: white; border-radius: 20px; padding: 0.5rem; margin-bottom: 2rem; display: flex; gap: 0.5rem; flex-wrap: wrap; box-shadow: 0 4px 15px rgba(2, 35, 38, 0.06); border: 1px solid rgba(2, 115, 94, 0.1); }
+        .settings-nav-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.85rem 1.25rem; border-radius: 14px; font-size: 0.9rem; font-weight: 500; color: #64748b; text-decoration: none; transition: all 0.25s ease; background: transparent; }
+        .settings-nav-item:hover { background: #f0fdf4; color: #02735E; }
+        .settings-nav-item.active { background: linear-gradient(135deg, #022326 0%, #02735E 100%); color: white; box-shadow: 0 4px 15px rgba(2, 115, 94, 0.3); }
+        .settings-nav-item.active i { color: white; }
+        .settings-nav-item i { font-size: 1rem; }
+        
+        /* Grid Layout */
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+        @media (max-width: 1024px) { .grid-2 { grid-template-columns: 1fr; } }
+        
+        /* Section Cards - Verdi + Aire */
+        .settings-section { background: white; border-radius: 24px; overflow: hidden; box-shadow: 0 4px 20px rgba(2, 35, 38, 0.06); border: 1px solid rgba(2, 115, 94, 0.1); }
+        .settings-section-header { background: linear-gradient(135deg, #022326 0%, #034040 100%); padding: 1.25rem 1.75rem; display: flex; align-items: center; gap: 0.75rem; }
+        .settings-section-header h3 { color: white; font-size: 1.05rem; font-weight: 600; margin: 0; }
+        .settings-section-header i { color: white; font-size: 1.1rem; }
+        .settings-section-body { padding: 1.75rem; }
+        
+        /* Form Elements - Verdi Style */
+        .form-group-v { margin-bottom: 1.25rem; }
+        .form-group-v:last-child { margin-bottom: 0; }
+        .form-label-v { display: block; font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem; }
+        .form-input-v { width: 100%; padding: 0.875rem 1rem; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 0.9rem; color: #1e293b; background: #f8fafc; transition: all 0.25s ease; font-family: inherit; }
+        .form-input-v:focus { outline: none; border-color: #02735E; background: white; box-shadow: 0 0 0 4px rgba(2, 115, 94, 0.1); }
+        .form-input-v:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+        .form-hint { font-size: 0.75rem; color: #94a3b8; margin-top: 0.35rem; }
+        .form-select-v { width: 100%; padding: 0.875rem 1rem; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 0.9rem; color: #1e293b; background: #f8fafc; -webkit-appearance: none; appearance: none; transition: all 0.25s ease; font-family: inherit; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.25rem; }
+        .form-select-v:focus { outline: none; border-color: #02735E; background-color: white; box-shadow: 0 0 0 4px rgba(2, 115, 94, 0.1); }
+        
+        /* Logo Upload Area */
+        .logo-upload-area { display: flex; align-items: center; gap: 1.25rem; padding: 1.25rem; background: #f8fafc; border-radius: 16px; border: 2px dashed #e2e8f0; }
+        .logo-preview-box { width: 64px; height: 64px; border-radius: 16px; background: linear-gradient(135deg, #022326, #02735E); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; }
+        .logo-upload-btn { display: flex; flex-direction: column; gap: 0.35rem; }
+        
+        /* Color Picker */
+        .color-picker-wrapper { display: flex; align-items: center; gap: 1rem; }
+        .color-preview { width: 48px; height: 48px; border-radius: 12px; position: relative; overflow: hidden; border: 2px solid #e2e8f0; cursor: pointer; }
+        .color-preview input[type="color"] { position: absolute; inset: -10px; width: calc(100% + 20px); height: calc(100% + 20px); cursor: pointer; border: none; }
+        .color-value { font-family: 'SF Mono', monospace; font-size: 0.9rem; color: #64748b; background: #f8fafc; padding: 0.5rem 0.75rem; border-radius: 8px; }
+        
+        /* Toggle Switch */
+        .toggle-item { display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: #f8fafc; border-radius: 14px; margin-bottom: 0.75rem; transition: all 0.2s ease; }
+        .toggle-item:hover { background: #f0fdf4; }
+        .toggle-item:last-child { margin-bottom: 0; }
+        .toggle-info h4 { font-size: 0.9rem; font-weight: 600; color: #1e293b; margin-bottom: 0.15rem; }
+        .toggle-info p { font-size: 0.75rem; color: #64748b; }
+        .toggle-switch { position: relative; width: 52px; height: 28px; cursor: pointer; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; inset: 0; background: #cbd5e1; border-radius: 20px; transition: all 0.3s ease; }
+        .toggle-slider::before { content: ''; position: absolute; left: 3px; top: 3px; width: 22px; height: 22px; background: white; border-radius: 50%; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+        .toggle-switch input:checked + .toggle-slider { background: linear-gradient(135deg, #02735E, #10b981); }
+        .toggle-switch input:checked + .toggle-slider::before { transform: translateX(24px); }
+        
+        /* Buttons - Verdi Style */
+        .btn-verdi { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.875rem 1.5rem; background: linear-gradient(135deg, #022326, #02735E); color: white; border: none; border-radius: 12px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.25s ease; font-family: inherit; }
+        .btn-verdi:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(2, 115, 94, 0.35); }
+        .btn-verdi-outline { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; background: white; color: #02735E; border: 2px solid #02735E; border-radius: 12px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.25s ease; font-family: inherit; }
+        .btn-verdi-outline:hover { background: #f0fdf4; }
+        .btn-verdi-sm { padding: 0.5rem 1rem; font-size: 0.8rem; border-radius: 10px; }
+        
+        /* Danger Zone */
+        .danger-zone-section { background: white; border-radius: 24px; overflow: hidden; border: 2px solid #fecaca; box-shadow: 0 4px 20px rgba(239, 68, 68, 0.08); }
+        .danger-zone-header { background: linear-gradient(135deg, #dc2626, #ef4444); padding: 1.25rem 1.75rem; display: flex; align-items: center; gap: 0.75rem; }
+        .danger-zone-header h3 { color: white; font-size: 1.05rem; font-weight: 600; margin: 0; }
+        .danger-zone-header i { color: #fecaca; font-size: 1.1rem; }
+        .danger-zone-body { padding: 1.5rem; }
+        .danger-item { display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: #fef2f2; border-radius: 14px; margin-bottom: 0.75rem; border: 1px solid #fecaca; }
+        .danger-item:last-child { margin-bottom: 0; }
+        .danger-item h4 { font-size: 0.9rem; font-weight: 600; color: #991b1b; margin-bottom: 0.15rem; }
+        .danger-item p { font-size: 0.75rem; color: #dc2626; }
+        .btn-danger-v { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; background: linear-gradient(135deg, #dc2626, #ef4444); color: white; border: none; border-radius: 12px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.25s ease; font-family: inherit; }
+        .btn-danger-v:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(239, 68, 68, 0.35); }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/superadmin.css?v=12">
 </head>
 <body>
     <div class="app-shell">
-        <!-- Sidebar -->
         <aside class="sidebar" id="sidebar"></aside>
-
-        <!-- Main Content -->
         <main class="main-content">
-            <!-- Header -->
             <header class="header">
                 <div class="header-left">
                     <h1 class="page-title">Configuración del Sistema</h1>
-                    <p class="page-subtitle">Configura los ajustes generales de Opsis Suite</p>
+                    <p class="page-subtitle">Ajustes generales de Opsis Suite</p>
                 </div>
             </header>
-
             <div class="page-content">
-                <!-- Settings Navigation -->
-                <div class="card">
-                    <div class="filter-tags">
-                        <a href="general.html" class="filter-tag active"><i class="fas fa-cog"></i> General</a>
-                        <a href="industries.html" class="filter-tag"><i class="fas fa-industry"></i> Industrias</a>
-                        <a href="products.html" class="filter-tag"><i class="fas fa-box"></i> Productos</a>
-                        <a href="plans.html" class="filter-tag"><i class="fas fa-credit-card"></i> Planes</a>
-                        <a href="integrations.html" class="filter-tag"><i class="fas fa-plug"></i> Integraciones</a>
-                    </div>
-                </div>
-
-                <!-- General Settings -->
+                <nav class="settings-nav">
+                    <a href="general.html" class="settings-nav-item active"><i class="fas fa-cog"></i> General</a>
+                    <a href="industries.html" class="settings-nav-item"><i class="fas fa-industry"></i> Industrias</a>
+                    <a href="products.html" class="settings-nav-item"><i class="fas fa-box"></i> Productos</a>
+                    <a href="plans.html" class="settings-nav-item"><i class="fas fa-credit-card"></i> Planes</a>
+                    <a href="integrations.html" class="settings-nav-item"><i class="fas fa-plug"></i> Integraciones</a>
+                </nav>
+                
                 <div class="grid-2">
-                    <!-- System Info -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title"><i class="fas fa-building"></i> Información del Sistema</h3>
+                    <div class="settings-section">
+                        <div class="settings-section-header">
+                            <i class="fas fa-building"></i>
+                            <h3>Información del Sistema</h3>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Nombre del Sistema</label>
-                            <input type="text" class="form-input" id="systemName" value="Opsis Suite">
+                        <div class="settings-section-body">
+                            <div class="form-group-v">
+                                <label class="form-label-v">Nombre del Sistema</label>
+                                <input type="text" class="form-input-v" id="systemName" value="Opsis Suite">
+                            </div>
+                            <div class="form-group-v">
+                                <label class="form-label-v">Dominio Principal</label>
+                                <input type="text" class="form-input-v" value="opsis-suite.com" disabled>
+                                <p class="form-hint">Contacta soporte para cambiar el dominio</p>
+                            </div>
+                            <div class="form-group-v">
+                                <label class="form-label-v">Email de Contacto</label>
+                                <input type="email" class="form-input-v" id="contactEmail" value="admin@opsis-suite.com">
+                            </div>
+                            <button class="btn-verdi" onclick="saveSystemInfo()">
+                                <i class="fas fa-save"></i> Guardar Cambios
+                            </button>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Dominio Principal</label>
-                            <input type="text" class="form-input" value="opsis-suite.com" disabled>
-                            <small class="text-muted">Contacta soporte para cambiar el dominio</small>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Email de Contacto</label>
-                            <input type="email" class="form-input" id="contactEmail" value="admin@opsis-suite.com">
-                        </div>
-                        <button class="btn btn-primary" onclick="saveSystemInfo()">
-                            <i class="fas fa-save"></i> Guardar Cambios
-                        </button>
                     </div>
-
-                    <!-- Branding -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title"><i class="fas fa-palette"></i> Branding</h3>
+                    
+                    <div class="settings-section">
+                        <div class="settings-section-header">
+                            <i class="fas fa-palette"></i>
+                            <h3>Branding</h3>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Logo del Sistema</label>
-                            <div class="logo-upload">
-                                <div class="logo-preview">
-                                    <i class="fas fa-bolt"></i>
+                        <div class="settings-section-body">
+                            <div class="form-group-v">
+                                <label class="form-label-v">Logo del Sistema</label>
+                                <div class="logo-upload-area">
+                                    <div class="logo-preview-box"><i class="fas fa-bolt"></i></div>
+                                    <div class="logo-upload-btn">
+                                        <button class="btn-verdi-outline btn-verdi-sm"><i class="fas fa-upload"></i> Cambiar Logo</button>
+                                        <p class="form-hint">PNG o SVG, máx 2MB</p>
+                                    </div>
                                 </div>
-                                <button class="btn btn-secondary">
-                                    <i class="fas fa-upload"></i> Cambiar Logo
-                                </button>
                             </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Color Principal</label>
-                            <div class="color-picker-group">
-                                <input type="color" value="#22c55e" id="primaryColor">
-                                <span id="colorValue">#22c55e</span>
+                            <div class="form-group-v">
+                                <label class="form-label-v">Color Principal</label>
+                                <div class="color-picker-wrapper">
+                                    <div class="color-preview" style="background: #02735E;">
+                                        <input type="color" value="#02735E" id="primaryColor">
+                                    </div>
+                                    <span class="color-value" id="colorValue">#02735E</span>
+                                </div>
                             </div>
+                            <div class="form-group-v">
+                                <label class="form-label-v">Tema por Defecto</label>
+                                <select class="form-select-v" id="defaultTheme">
+                                    <option value="light">Claro</option>
+                                    <option value="dark">Oscuro</option>
+                                    <option value="auto">Automático</option>
+                                </select>
+                            </div>
+                            <button class="btn-verdi" onclick="saveBranding()">
+                                <i class="fas fa-save"></i> Guardar Cambios
+                            </button>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Tema por Defecto</label>
-                            <select class="form-select" id="defaultTheme">
-                                <option value="light">Claro</option>
-                                <option value="dark">Oscuro</option>
-                                <option value="auto">Automático (según sistema)</option>
-                            </select>
-                        </div>
-                        <button class="btn btn-primary" onclick="saveBranding()">
-                            <i class="fas fa-save"></i> Guardar Cambios
-                        </button>
                     </div>
                 </div>
-
-                <!-- Limits & Defaults -->
-                <div class="grid-2">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title"><i class="fas fa-sliders-h"></i> Límites y Defaults</h3>
+                
+                <div class="grid-2" style="margin-top: 1.5rem;">
+                    <div class="settings-section">
+                        <div class="settings-section-header">
+                            <i class="fas fa-sliders-h"></i>
+                            <h3>Límites y Defaults</h3>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Período de Trial (días)</label>
-                            <input type="number" class="form-input" id="trialPeriod" value="14" min="7" max="30">
+                        <div class="settings-section-body">
+                            <div class="form-group-v">
+                                <label class="form-label-v">Período de Trial (días)</label>
+                                <input type="number" class="form-input-v" id="trialPeriod" value="14" min="7" max="30">
+                            </div>
+                            <div class="form-group-v">
+                                <label class="form-label-v">Límite de Compañías</label>
+                                <select class="form-select-v" id="companyLimit">
+                                    <option value="50">50 compañías</option>
+                                    <option value="100">100 compañías</option>
+                                    <option value="500" selected>500 compañías</option>
+                                    <option value="unlimited">Ilimitado</option>
+                                </select>
+                            </div>
+                            <div class="form-group-v">
+                                <label class="form-label-v">Almacenamiento por Compañía</label>
+                                <select class="form-select-v" id="storageLimit">
+                                    <option value="10">10 GB</option>
+                                    <option value="50" selected>50 GB</option>
+                                    <option value="100">100 GB</option>
+                                    <option value="500">500 GB</option>
+                                </select>
+                            </div>
+                            <button class="btn-verdi" onclick="saveLimits()">
+                                <i class="fas fa-save"></i> Guardar Cambios
+                            </button>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Límite de Compañías</label>
-                            <select class="form-select" id="companyLimit">
-                                <option value="50">50 compañías</option>
-                                <option value="100">100 compañías</option>
-                                <option value="500" selected>500 compañías</option>
-                                <option value="unlimited">Ilimitado</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Almacenamiento por Compañía</label>
-                            <select class="form-select" id="storageLimit">
-                                <option value="10">10 GB</option>
-                                <option value="50" selected>50 GB</option>
-                                <option value="100">100 GB</option>
-                                <option value="500">500 GB</option>
-                            </select>
-                        </div>
-                        <button class="btn btn-primary" onclick="saveLimits()">
-                            <i class="fas fa-save"></i> Guardar Cambios
-                        </button>
                     </div>
-
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title"><i class="fas fa-bell"></i> Notificaciones</h3>
+                    
+                    <div class="settings-section">
+                        <div class="settings-section-header">
+                            <i class="fas fa-bell"></i>
+                            <h3>Notificaciones</h3>
                         </div>
-                        <div class="form-group checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="emailNotifications" checked>
-                                <span>Notificaciones por Email</span>
-                            </label>
+                        <div class="settings-section-body">
+                            <div class="toggle-item">
+                                <div class="toggle-info">
+                                    <h4>Notificaciones por Email</h4>
+                                    <p>Recibir alertas en tu correo</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="emailNotifications" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="toggle-item">
+                                <div class="toggle-info">
+                                    <h4>Nuevas Compañías</h4>
+                                    <p>Alertar cuando se registran nuevas</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="newCompanyAlert" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="toggle-item">
+                                <div class="toggle-info">
+                                    <h4>Pagos Recibidos</h4>
+                                    <p>Notificar cada pago procesado</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="paymentAlert" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="toggle-item">
+                                <div class="toggle-info">
+                                    <h4>Tickets de Soporte</h4>
+                                    <p>Alertar nuevos tickets</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="ticketAlert" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="toggle-item">
+                                <div class="toggle-info">
+                                    <h4>Reporte Semanal</h4>
+                                    <p>Resumen automático cada lunes</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="weeklyReport" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
                         </div>
-                        <div class="form-group checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="newCompanyAlert" checked>
-                                <span>Alertar nuevas compañías</span>
-                            </label>
-                        </div>
-                        <div class="form-group checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="paymentAlert" checked>
-                                <span>Alertar pagos recibidos</span>
-                            </label>
-                        </div>
-                        <div class="form-group checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="ticketAlert" checked>
-                                <span>Alertar tickets de soporte</span>
-                            </label>
-                        </div>
-                        <div class="form-group checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="weeklyReport" checked>
-                                <span>Reporte semanal automático</span>
-                            </label>
-                        </div>
-                        <button class="btn btn-primary" onclick="saveNotifications()">
-                            <i class="fas fa-save"></i> Guardar Cambios
-                        </button>
                     </div>
                 </div>
-
-                <!-- Danger Zone -->
-                <div class="card danger-zone">
-                    <div class="card-header">
-                        <h3 class="card-title text-danger">
-                            <i class="fas fa-exclamation-triangle"></i> Zona de Peligro
-                        </h3>
+                
+                <div class="danger-zone-section" style="margin-top: 1.5rem;">
+                    <div class="danger-zone-header">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>Zona de Peligro</h3>
                     </div>
-                    <div class="danger-item">
-                        <div>
-                            <h4>Exportar todos los datos</h4>
-                            <p class="text-muted">Descarga una copia de todos los datos del sistema</p>
+                    <div class="danger-zone-body">
+                        <div class="danger-item">
+                            <div>
+                                <h4>Exportar todos los datos</h4>
+                                <p>Descarga una copia de respaldo del sistema</p>
+                            </div>
+                            <button class="btn-verdi-outline btn-verdi-sm"><i class="fas fa-download"></i> Exportar</button>
                         </div>
-                        <button class="btn btn-secondary">
-                            <i class="fas fa-download"></i> Exportar
-                        </button>
-                    </div>
-                    <div class="danger-item">
-                        <div>
-                            <h4>Limpiar datos de prueba</h4>
-                            <p class="text-muted">Elimina todos los datos de demostración</p>
+                        <div class="danger-item">
+                            <div>
+                                <h4>Limpiar datos de prueba</h4>
+                                <p>Elimina todos los datos de demostración</p>
+                            </div>
+                            <button class="btn-danger-v" onclick="clearTestData()"><i class="fas fa-trash"></i> Limpiar</button>
                         </div>
-                        <button class="btn btn-danger" onclick="clearTestData()">
-                            <i class="fas fa-trash"></i> Limpiar
-                        </button>
-                    </div>
-                    <div class="danger-item critical">
-                        <div>
-                            <h4 class="text-danger">Reiniciar sistema</h4>
-                            <p class="text-muted">Elimina TODOS los datos. Esta acción es irreversible.</p>
+                        <div class="danger-item">
+                            <div>
+                                <h4>Reiniciar sistema</h4>
+                                <p>Elimina TODOS los datos. Acción irreversible.</p>
+                            </div>
+                            <button class="btn-danger-v" onclick="resetSystem()"><i class="fas fa-radiation"></i> Reiniciar</button>
                         </div>
-                        <button class="btn btn-danger" onclick="resetSystem()">
-                            <i class="fas fa-radiation"></i> Reiniciar
-                        </button>
                     </div>
                 </div>
             </div>
         </main>
     </div>
-
+    
     <script src="../js/sidebar.js"></script>
     <script src="../js/data.js"></script>
     <script>
+        document.body.classList.add('loaded');
+        
         document.addEventListener('DOMContentLoaded', () => {
             loadSettings();
-            
-            // Color picker preview
             document.getElementById('primaryColor').addEventListener('input', (e) => {
                 document.getElementById('colorValue').textContent = e.target.value;
+                document.querySelector('.color-preview').style.background = e.target.value;
             });
         });
-
+        
         function loadSettings() {
-            // Load saved settings from localStorage
             const systemName = localStorage.getItem('opsis-system-name');
             if (systemName) document.getElementById('systemName').value = systemName;
-            
             const theme = localStorage.getItem('opsis-default-theme');
             if (theme) document.getElementById('defaultTheme').value = theme;
-            
-            const trialPeriod = localStorage.getItem('opsis-trial-period');
-            if (trialPeriod) document.getElementById('trialPeriod').value = trialPeriod;
         }
-
+        
         function saveSystemInfo() {
-            const name = document.getElementById('systemName').value;
-            const email = document.getElementById('contactEmail').value;
-            
-            localStorage.setItem('opsis-system-name', name);
-            localStorage.setItem('opsis-contact-email', email);
-            
-            showToast('Información del sistema guardada', 'success');
+            localStorage.setItem('opsis-system-name', document.getElementById('systemName').value);
+            localStorage.setItem('opsis-contact-email', document.getElementById('contactEmail').value);
+            showToast('Información guardada', 'success');
         }
-
+        
         function saveBranding() {
-            const color = document.getElementById('primaryColor').value;
-            const theme = document.getElementById('defaultTheme').value;
-            
-            localStorage.setItem('opsis-primary-color', color);
-            localStorage.setItem('opsis-default-theme', theme);
-            
-            showToast('Configuración de branding guardada', 'success');
+            localStorage.setItem('opsis-primary-color', document.getElementById('primaryColor').value);
+            localStorage.setItem('opsis-default-theme', document.getElementById('defaultTheme').value);
+            showToast('Branding guardado', 'success');
         }
-
+        
         function saveLimits() {
-            const trial = document.getElementById('trialPeriod').value;
-            const companies = document.getElementById('companyLimit').value;
-            const storage = document.getElementById('storageLimit').value;
-            
-            localStorage.setItem('opsis-trial-period', trial);
-            localStorage.setItem('opsis-company-limit', companies);
-            localStorage.setItem('opsis-storage-limit', storage);
-            
+            localStorage.setItem('opsis-trial-period', document.getElementById('trialPeriod').value);
+            localStorage.setItem('opsis-company-limit', document.getElementById('companyLimit').value);
+            localStorage.setItem('opsis-storage-limit', document.getElementById('storageLimit').value);
             showToast('Límites guardados', 'success');
         }
-
-        function saveNotifications() {
-            const settings = {
-                email: document.getElementById('emailNotifications').checked,
-                newCompany: document.getElementById('newCompanyAlert').checked,
-                payment: document.getElementById('paymentAlert').checked,
-                ticket: document.getElementById('ticketAlert').checked,
-                weeklyReport: document.getElementById('weeklyReport').checked
-            };
-            
-            localStorage.setItem('opsis-notifications', JSON.stringify(settings));
-            showToast('Configuración de notificaciones guardada', 'success');
-        }
-
+        
         function clearTestData() {
-            if (confirm('¿Estás seguro de limpiar todos los datos de prueba?')) {
-                showToast('Datos de prueba eliminados', 'success');
+            if (confirm('¿Limpiar datos de prueba?')) {
+                showToast('Datos eliminados', 'success');
             }
         }
-
+        
         function resetSystem() {
-            if (confirm('ADVERTENCIA: Esta acción eliminará TODOS los datos del sistema. ¿Estás seguro?')) {
-                if (confirm('Esta es tu última oportunidad. ¿Realmente deseas continuar?')) {
+            if (confirm('¿Reiniciar TODO el sistema?')) {
+                if (confirm('Última oportunidad. ¿Continuar?')) {
                     localStorage.clear();
                     showToast('Sistema reiniciado', 'warning');
                     setTimeout(() => location.reload(), 1500);
                 }
             }
         }
-
-        function showToast(message, type = 'success') {
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            const iconMap = { success: 'fa-check-circle', warning: 'fa-exclamation-triangle', error: 'fa-times-circle' };
-            toast.innerHTML = `<i class="fas ${iconMap[type] || iconMap.success}"></i> ${message}`;
-            
-            let container = document.querySelector('.toast-container');
-            if (!container) {
-                container = document.createElement('div');
-                container.className = 'toast-container';
-                document.body.appendChild(container);
-            }
-            container.appendChild(toast);
-            
-            setTimeout(() => toast.remove(), 3000);
+        
+        function showToast(msg, type = 'success') {
+            const t = document.createElement('div');
+            const bg = type === 'success' ? 'linear-gradient(135deg, #02735E, #10b981)' : 
+                       type === 'warning' ? 'linear-gradient(135deg, #f59e0b, #fbbf24)' : 
+                       'linear-gradient(135deg, #dc2626, #ef4444)';
+            const icon = type === 'success' ? 'check-circle' : 'exclamation-triangle';
+            t.innerHTML = '<i class="fas fa-' + icon + '"></i> ' + msg;
+            t.style.cssText = 'position:fixed;top:20px;right:20px;padding:1rem 1.5rem;background:' + bg + ';color:white;border-radius:12px;display:flex;align-items:center;gap:0.75rem;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,0.15);z-index:9999;font-family:Inter,sans-serif;animation:slideIn 0.3s ease;';
+            document.body.appendChild(t);
+            setTimeout(() => {
+                t.style.opacity = '0';
+                t.style.transition = 'opacity 0.3s';
+                setTimeout(() => t.remove(), 300);
+            }, 3000);
         }
     </script>
 </body>

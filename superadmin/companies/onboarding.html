@@ -874,18 +874,13 @@
     <script src="../js/sidebar.js"></script>
     <script src="../js/data.js"></script>
     <script>
-        // Data
-        const INDUSTRIES = [
-            { id: 'construccion', name: 'Construcción', icon: 'fa-hard-hat' },
-            { id: 'medica', name: 'Médica y Salud', icon: 'fa-hospital' },
-            { id: 'transporte', name: 'Transporte', icon: 'fa-truck' },
-            { id: 'retail', name: 'Retail', icon: 'fa-shopping-cart' },
-            { id: 'jardineria', name: 'Jardinería', icon: 'fa-leaf' },
-            { id: 'tecnologia', name: 'Tecnología', icon: 'fa-laptop-code' },
-            { id: 'restaurante', name: 'Restaurantes', icon: 'fa-utensils' },
-            { id: 'inmobiliaria', name: 'Bienes Raíces', icon: 'fa-home' },
-            { id: 'otros', name: 'Otras', icon: 'fa-cog' }
-        ];
+        // Data - Load industries from SuperAdminData (Settings > Industries)
+        const INDUSTRIES = Object.entries(SuperAdminData.industries).map(([id, ind]) => ({
+            id,
+            name: ind.name,
+            icon: ind.icon && ind.icon.includes('fa-') ? ind.icon.replace('fas ', '').replace('fa-', 'fa-') : 'fa-building',
+            color: ind.color || '#02735E'
+        }));
 
         const PRODUCTS = Object.entries(SuperAdminData.products)
             .filter(([id, p]) => p.type === 'premium' && p.status === 'active')
@@ -923,14 +918,17 @@
         });
 
         function renderIndustries() {
-            document.getElementById('industryGrid').innerHTML = INDUSTRIES.map(ind => `
-                <label class="industry-option" data-id="${ind.id}">
-                    <input type="radio" name="industry" value="${ind.id}">
-                    <span class="industry-icon"><i class="fas ${ind.icon}"></i></span>
-                    <span class="name">${ind.name}</span>
-                    <span class="check"><i class="fas fa-check"></i></span>
-                </label>
-            `).join('');
+            document.getElementById('industryGrid').innerHTML = INDUSTRIES.map(ind => {
+                const iconClass = ind.icon.includes('fa-') ? ind.icon : 'fas fa-' + ind.icon;
+                return `
+                    <label class="industry-option" data-id="${ind.id}" style="--ind-color: ${ind.color}">
+                        <input type="radio" name="industry" value="${ind.id}">
+                        <span class="industry-icon" style="background: ${ind.color}"><i class="${iconClass}"></i></span>
+                        <span class="name">${ind.name}</span>
+                        <span class="check"><i class="fas fa-check"></i></span>
+                    </label>
+                `;
+            }).join('');
 
             document.querySelectorAll('.industry-option').forEach(opt => {
                 opt.addEventListener('click', function(e) {

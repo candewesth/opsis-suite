@@ -186,17 +186,17 @@ const SuperAdminData = {
     
     // Static catalogs
     industries: {
-        'construccion': { name: 'Construcción y Obras', icon: 'fas fa-hard-hat', color: '#f59e0b' },
-        'medica': { name: 'Médica y Salud', icon: 'fas fa-hospital', color: '#ef4444' },
-        'transporte': { name: 'Transporte y Logística', icon: 'fas fa-truck', color: '#3b82f6' },
-        'retail': { name: 'Retail y Comercio', icon: 'fas fa-shopping-cart', color: '#8b5cf6' },
-        'jardineria': { name: 'Jardinería y Paisajismo', icon: 'fas fa-leaf', color: '#22c55e' },
-        'tecnologia': { name: 'Tecnología', icon: 'fas fa-laptop-code', color: '#06b6d4' },
-        'educacion': { name: 'Educación', icon: 'fas fa-graduation-cap', color: '#ec4899' },
-        'restaurante': { name: 'Restaurantes y Hoteles', icon: 'fas fa-utensils', color: '#f97316' },
-        'inmobiliaria': { name: 'Bienes Raíces', icon: 'fas fa-home', color: '#14b8a6' },
-        'automotriz': { name: 'Automotriz', icon: 'fas fa-car', color: '#6366f1' },
-        'otros': { name: 'Otras Industrias', icon: 'fas fa-cog', color: '#64748b' }
+        'construccion': { name: 'Construcción y Obras', icon: 'fas fa-hard-hat', color: '#022326' },
+        'medica': { name: 'Médica y Salud', icon: 'fas fa-hospital', color: '#034040' },
+        'transporte': { name: 'Transporte y Logística', icon: 'fas fa-truck', color: '#035951' },
+        'retail': { name: 'Retail y Comercio', icon: 'fas fa-shopping-cart', color: '#02735E' },
+        'jardineria': { name: 'Jardinería y Paisajismo', icon: 'fas fa-leaf', color: '#10b981' },
+        'tecnologia': { name: 'Tecnología', icon: 'fas fa-laptop-code', color: '#022326' },
+        'educacion': { name: 'Educación', icon: 'fas fa-graduation-cap', color: '#034040' },
+        'restaurante': { name: 'Restaurantes y Hoteles', icon: 'fas fa-utensils', color: '#035951' },
+        'inmobiliaria': { name: 'Bienes Raíces', icon: 'fas fa-home', color: '#02735E' },
+        'automotriz': { name: 'Automotriz', icon: 'fas fa-car', color: '#10b981' },
+        'otros': { name: 'Otras Industrias', icon: 'fas fa-cog', color: '#034040' }
     },
     
     // MÓDULOS DEL SISTEMA
