@@ -4,301 +4,172 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Integraciones - SuperAdmin | Opsis Suite</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/superadmin.css?v=13">
+    <link rel="stylesheet" href="../css/settings.css?v=1">
     <style>
-        :root { --verdi-dark: #022326; --sidebar-width: 240px; }
+        :root { --verdi-dark: #022326; --verdi-mid: #034040; --verdi-accent: #035951; --verdi-light: #02735E; --success: #10b981; --sidebar-width: 240px; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { background: #f8fafc; }
-        body { opacity: 0; transition: opacity 0.15s ease-in; }
+        body { opacity: 0; transition: opacity 0.15s ease-in; font-family: 'Inter', sans-serif; }
         body.loaded { opacity: 1; }
         .app-shell { min-height: 100vh; background: #f8fafc; }
         .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh; background: var(--verdi-dark); }
         .main-content { margin-left: var(--sidebar-width); min-height: 100vh; background: #f8fafc; }
+        .integrations-layout { display: grid; gap: 2rem; }
+        .section-title-v { font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .section-title-v i { color: #10b981; }
+        .integrations-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
+        .integration-card { background: white; border-radius: 20px; padding: 1.5rem; border: 1px solid rgba(2, 115, 94, 0.1); box-shadow: 0 4px 15px rgba(0,0,0,0.04); transition: all 0.3s ease; position: relative; overflow: hidden; }
+        .integration-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--verdi-light), var(--success)); opacity: 0; transition: opacity 0.3s; }
+        .integration-card:hover { transform: translateY(-4px); box-shadow: 0 12px 35px rgba(2, 35, 38, 0.12); }
+        .integration-card:hover::before { opacity: 1; }
+        .integration-card.active { border-color: #10b981; }
+        .integration-card.active::before { opacity: 1; }
+        .integration-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+        .integration-logo { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
+        .integration-logo.stripe { background: linear-gradient(135deg, #635bff, #7a73ff); color: white; }
+        .integration-logo.sendgrid { background: linear-gradient(135deg, #1a82e2, #4da6ff); color: white; }
+        .integration-logo.supabase { background: linear-gradient(135deg, #3ecf8e, #10b981); color: white; }
+        .integration-logo.slack { background: linear-gradient(135deg, #e01e5a, #ff4785); color: white; }
+        .integration-logo.quickbooks { background: linear-gradient(135deg, #2ca01c, #4fbf26); color: white; }
+        .integration-logo.zapier { background: linear-gradient(135deg, #ff4a00, #ff6b2b); color: white; }
+        .integration-logo.twilio { background: linear-gradient(135deg, #f22f46, #ff5470); color: white; }
+        .integration-logo.google { background: linear-gradient(135deg, #ea4335, #4285f4); color: white; }
+        .integration-logo.default { background: linear-gradient(135deg, #64748b, #94a3b8); color: white; }
+        .integration-info h4 { font-size: 1rem; font-weight: 700; color: #1e293b; margin-bottom: 0.25rem; }
+        .integration-info p { font-size: 0.8rem; color: #64748b; line-height: 1.4; }
+        .integration-status { display: flex; align-items: center; justify-content: space-between; padding-top: 1rem; border-top: 1px solid #f1f5f9; margin-top: 1rem; }
+        .status-badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .status-badge.active { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .status-badge.inactive { background: rgba(100, 116, 139, 0.1); color: #64748b; }
+        .api-section { background: white; border-radius: 20px; border: 1px solid rgba(2, 115, 94, 0.1); box-shadow: 0 4px 15px rgba(0,0,0,0.04); overflow: hidden; }
+        .api-header { background: linear-gradient(135deg, #022326, #02735E); color: white; padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .api-header h3 { font-size: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .api-header h3 i { color: #10b981; }
+        .api-body { padding: 1.5rem; }
+        .api-table { width: 100%; border-collapse: collapse; }
+        .api-table th, .api-table td { padding: 1rem; text-align: left; border-bottom: 1px solid #f1f5f9; }
+        .api-table th { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; background: #f8fafc; }
+        .api-table td { font-size: 0.9rem; color: #1e293b; }
+        .api-key-cell { font-family: 'SF Mono', monospace; font-size: 0.85rem; color: #64748b; background: #f1f5f9; padding: 0.5rem 0.75rem; border-radius: 8px; display: inline-block; }
+        .api-table .actions { display: flex; gap: 0.5rem; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(2, 35, 38, 0.6); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; visibility: hidden; backdrop-filter: blur(4px); transition: all 0.3s; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-v { background: white; border-radius: 20px; width: 90%; max-width: 480px; overflow: hidden; transform: scale(0.95); transition: transform 0.3s; }
+        .modal-overlay.active .modal-v { transform: scale(1); }
+        .modal-header-v { background: linear-gradient(135deg, #022326, #02735E); color: white; padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header-v h3 { font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .modal-header-v h3 i { color: #10b981; }
+        .modal-close-v { background: rgba(255,255,255,0.15); border: none; color: white; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 1.25rem; }
+        .modal-body-v { padding: 1.5rem; }
+        .modal-footer-v { padding: 1rem 1.5rem; background: #f8fafc; border-top: 1px solid #f1f5f9; display: flex; gap: 0.75rem; justify-content: flex-end; }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/superadmin.css?v=12">
 </head>
 <body>
     <div class="app-shell">
-        <!-- Sidebar -->
         <aside class="sidebar" id="sidebar"></aside>
-
-        <!-- Main Content -->
         <main class="main-content">
-            <!-- Header -->
             <header class="header">
                 <div class="header-left">
                     <h1 class="page-title">Integraciones</h1>
-                    <p class="page-subtitle">Conecta Opsis Suite con servicios externos</p>
+                    <p class="page-subtitle">Conecta servicios externos a la plataforma</p>
                 </div>
                 <div class="header-actions">
-                    <button class="btn btn-secondary">
-                        <i class="fas fa-book"></i> Documentación API
-                    </button>
-                    <button class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Nueva Integración
-                    </button>
+                    <button class="btn-verdi" onclick="openModal()"><i class="fas fa-plus"></i> Nueva API Key</button>
                 </div>
             </header>
-
             <div class="page-content">
-                <!-- Settings Navigation -->
-                <div class="card">
-                    <div class="filter-tags">
-                        <a href="general.html" class="filter-tag"><i class="fas fa-cog"></i> General</a>
-                        <a href="industries.html" class="filter-tag"><i class="fas fa-industry"></i> Industrias</a>
-                        <a href="products.html" class="filter-tag"><i class="fas fa-box"></i> Productos</a>
-                        <a href="plans.html" class="filter-tag"><i class="fas fa-credit-card"></i> Planes</a>
-                        <a href="integrations.html" class="filter-tag active"><i class="fas fa-plug"></i> Integraciones</a>
+                <nav class="settings-nav">
+                    <a href="general.html" class="settings-nav-item"><i class="fas fa-cog"></i> General</a>
+                    <a href="industries.html" class="settings-nav-item"><i class="fas fa-industry"></i> Industrias</a>
+                    <a href="products.html" class="settings-nav-item"><i class="fas fa-box"></i> Productos</a>
+                    <a href="plans.html" class="settings-nav-item"><i class="fas fa-credit-card"></i> Planes</a>
+                    <a href="integrations.html" class="settings-nav-item active"><i class="fas fa-plug"></i> Integraciones</a>
+                </nav>
+                <div class="integrations-layout">
+                    <div>
+                        <h3 class="section-title-v"><i class="fas fa-check-circle"></i> Integraciones Activas</h3>
+                        <div class="integrations-grid" id="activeIntegrations"></div>
                     </div>
-                </div>
-
-                <!-- Active Integrations -->
-                <h3 style="margin: 1.5rem 0 1rem; color: var(--text-primary);">
-                    <i class="fas fa-check-circle" style="color: var(--success);"></i> Integraciones Activas
-                </h3>
-                <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
-                    <!-- Stripe -->
-                    <div class="card">
-                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                            <div style="width: 56px; height: 56px; background: #635bff; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fab fa-stripe-s" style="color: white; font-size: 1.5rem;"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <h4 style="margin: 0;">Stripe</h4>
-                                <span style="font-size: 0.75rem; color: var(--text-secondary);">Pagos y facturación</span>
-                            </div>
-                            <span class="status status-active">Conectado</span>
-                        </div>
-                        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
-                            Procesa pagos, gestiona suscripciones y genera facturas automáticamente.
-                        </p>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <button class="btn btn-sm btn-secondary" style="flex: 1;"><i class="fas fa-cog"></i> Configurar</button>
-                            <button class="btn btn-sm btn-ghost"><i class="fas fa-external-link-alt"></i></button>
-                        </div>
+                    <div>
+                        <h3 class="section-title-v"><i class="fas fa-puzzle-piece"></i> Disponibles</h3>
+                        <div class="integrations-grid" id="availableIntegrations"></div>
                     </div>
-
-                    <!-- SendGrid -->
-                    <div class="card">
-                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                            <div style="width: 56px; height: 56px; background: #1a82e2; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-envelope" style="color: white; font-size: 1.5rem;"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <h4 style="margin: 0;">SendGrid</h4>
-                                <span style="font-size: 0.75rem; color: var(--text-secondary);">Email transaccional</span>
-                            </div>
-                            <span class="status status-active">Conectado</span>
+                    <div class="api-section">
+                        <div class="api-header"><h3><i class="fas fa-key"></i> API Keys</h3></div>
+                        <div class="api-body">
+                            <table class="api-table">
+                                <thead><tr><th>Nombre</th><th>Key</th><th>Creada</th><th>Acciones</th></tr></thead>
+                                <tbody id="apiKeysTable"></tbody>
+                            </table>
                         </div>
-                        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
-                            Envía emails de notificaciones, bienvenida y recuperación de contraseña.
-                        </p>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <button class="btn btn-sm btn-secondary" style="flex: 1;"><i class="fas fa-cog"></i> Configurar</button>
-                            <button class="btn btn-sm btn-ghost"><i class="fas fa-external-link-alt"></i></button>
-                        </div>
-                    </div>
-
-                    <!-- Supabase -->
-                    <div class="card">
-                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                            <div style="width: 56px; height: 56px; background: #3ecf8e; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-database" style="color: white; font-size: 1.5rem;"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <h4 style="margin: 0;">Supabase</h4>
-                                <span style="font-size: 0.75rem; color: var(--text-secondary);">Base de datos y Auth</span>
-                            </div>
-                            <span class="status status-active">Conectado</span>
-                        </div>
-                        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
-                            Backend as a Service para autenticación y almacenamiento de datos.
-                        </p>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <button class="btn btn-sm btn-secondary" style="flex: 1;"><i class="fas fa-cog"></i> Configurar</button>
-                            <button class="btn btn-sm btn-ghost"><i class="fas fa-external-link-alt"></i></button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Available Integrations -->
-                <h3 style="margin: 2rem 0 1rem; color: var(--text-primary);">
-                    <i class="fas fa-puzzle-piece" style="color: var(--text-secondary);"></i> Integraciones Disponibles
-                </h3>
-                <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
-                    <!-- Slack -->
-                    <div class="card" style="opacity: 0.85;">
-                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                            <div style="width: 56px; height: 56px; background: #4a154b; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fab fa-slack" style="color: white; font-size: 1.5rem;"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <h4 style="margin: 0;">Slack</h4>
-                                <span style="font-size: 0.75rem; color: var(--text-secondary);">Notificaciones de equipo</span>
-                            </div>
-                            <span class="status status-trial">Disponible</span>
-                        </div>
-                        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
-                            Recibe alertas y notificaciones importantes directamente en Slack.
-                        </p>
-                        <button class="btn btn-sm btn-primary" style="width: 100%;"><i class="fas fa-plug"></i> Conectar</button>
-                    </div>
-
-                    <!-- QuickBooks -->
-                    <div class="card" style="opacity: 0.85;">
-                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                            <div style="width: 56px; height: 56px; background: #2ca01c; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-calculator" style="color: white; font-size: 1.5rem;"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <h4 style="margin: 0;">QuickBooks</h4>
-                                <span style="font-size: 0.75rem; color: var(--text-secondary);">Contabilidad</span>
-                            </div>
-                            <span class="status status-trial">Disponible</span>
-                        </div>
-                        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
-                            Sincroniza facturas y pagos con tu software de contabilidad.
-                        </p>
-                        <button class="btn btn-sm btn-primary" style="width: 100%;"><i class="fas fa-plug"></i> Conectar</button>
-                    </div>
-
-                    <!-- Zapier -->
-                    <div class="card" style="opacity: 0.85;">
-                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                            <div style="width: 56px; height: 56px; background: #ff4a00; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-bolt" style="color: white; font-size: 1.5rem;"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <h4 style="margin: 0;">Zapier</h4>
-                                <span style="font-size: 0.75rem; color: var(--text-secondary);">Automatización</span>
-                            </div>
-                            <span class="status status-trial">Disponible</span>
-                        </div>
-                        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
-                            Conecta con 5,000+ apps para automatizar flujos de trabajo.
-                        </p>
-                        <button class="btn btn-sm btn-primary" style="width: 100%;"><i class="fas fa-plug"></i> Conectar</button>
-                    </div>
-
-                    <!-- Google Calendar -->
-                    <div class="card" style="opacity: 0.85;">
-                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                            <div style="width: 56px; height: 56px; background: #4285f4; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fab fa-google" style="color: white; font-size: 1.5rem;"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <h4 style="margin: 0;">Google Calendar</h4>
-                                <span style="font-size: 0.75rem; color: var(--text-secondary);">Calendario</span>
-                            </div>
-                            <span class="status status-trial">Disponible</span>
-                        </div>
-                        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
-                            Sincroniza citas y eventos con Google Calendar.
-                        </p>
-                        <button class="btn btn-sm btn-primary" style="width: 100%;"><i class="fas fa-plug"></i> Conectar</button>
-                    </div>
-
-                    <!-- Twilio -->
-                    <div class="card" style="opacity: 0.85;">
-                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                            <div style="width: 56px; height: 56px; background: #f22f46; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-sms" style="color: white; font-size: 1.5rem;"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <h4 style="margin: 0;">Twilio</h4>
-                                <span style="font-size: 0.75rem; color: var(--text-secondary);">SMS y WhatsApp</span>
-                            </div>
-                            <span class="status status-trial">Disponible</span>
-                        </div>
-                        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
-                            Envía SMS y mensajes de WhatsApp a tus clientes.
-                        </p>
-                        <button class="btn btn-sm btn-primary" style="width: 100%;"><i class="fas fa-plug"></i> Conectar</button>
-                    </div>
-
-                    <!-- Webhooks -->
-                    <div class="card" style="opacity: 0.85;">
-                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                            <div style="width: 56px; height: 56px; background: var(--verdi-dark); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-code" style="color: white; font-size: 1.5rem;"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <h4 style="margin: 0;">Webhooks</h4>
-                                <span style="font-size: 0.75rem; color: var(--text-secondary);">Personalizado</span>
-                            </div>
-                            <span class="status status-trial">Disponible</span>
-                        </div>
-                        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
-                            Configura webhooks personalizados para integraciones custom.
-                        </p>
-                        <button class="btn btn-sm btn-primary" style="width: 100%;"><i class="fas fa-plug"></i> Configurar</button>
-                    </div>
-                </div>
-
-                <!-- API Keys Section -->
-                <div class="card" style="margin-top: 2rem;">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <i class="fas fa-key"></i> API Keys
-                        </h3>
-                        <button class="btn btn-sm btn-primary"><i class="fas fa-plus"></i> Nueva Key</button>
-                    </div>
-                    <div class="card-body" style="padding: 0;">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Nombre</th>
-                                    <th>Key</th>
-                                    <th>Permisos</th>
-                                    <th>Último uso</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><strong>Production API</strong></td>
-                                    <td><code style="background: var(--bg-tertiary); padding: 0.25rem 0.5rem; border-radius: 4px;">sk_live_****7f8a</code></td>
-                                    <td><span class="badge">Full Access</span></td>
-                                    <td>Hace 2 horas</td>
-                                    <td><span class="status status-active">Activa</span></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-ghost"><i class="fas fa-eye"></i></button>
-                                        <button class="btn btn-sm btn-ghost"><i class="fas fa-trash"></i></button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Webhook Handler</strong></td>
-                                    <td><code style="background: var(--bg-tertiary); padding: 0.25rem 0.5rem; border-radius: 4px;">sk_live_****3b2c</code></td>
-                                    <td><span class="badge">Read Only</span></td>
-                                    <td>Hace 1 día</td>
-                                    <td><span class="status status-active">Activa</span></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-ghost"><i class="fas fa-eye"></i></button>
-                                        <button class="btn btn-sm btn-ghost"><i class="fas fa-trash"></i></button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Test Environment</strong></td>
-                                    <td><code style="background: var(--bg-tertiary); padding: 0.25rem 0.5rem; border-radius: 4px;">sk_test_****9d1e</code></td>
-                                    <td><span class="badge">Full Access</span></td>
-                                    <td>Hace 5 días</td>
-                                    <td><span class="status status-trial">Test</span></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-ghost"><i class="fas fa-eye"></i></button>
-                                        <button class="btn btn-sm btn-ghost"><i class="fas fa-trash"></i></button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </div>
         </main>
     </div>
-
+    <div class="modal-overlay" id="addModal">
+        <div class="modal-v">
+            <div class="modal-header-v"><h3><i class="fas fa-key"></i> Nueva API Key</h3><button class="modal-close-v" onclick="closeModal()">&times;</button></div>
+            <div class="modal-body-v">
+                <div class="form-group-v"><label class="form-label-v">Nombre de la Key *</label><input type="text" class="form-input-v" id="keyName" placeholder="Ej: Producción"></div>
+                <div class="form-group-v"><label class="form-label-v">Permisos</label><select class="form-select-v" id="keyPermissions"><option value="full">Acceso completo</option><option value="read">Solo lectura</option><option value="write">Solo escritura</option></select></div>
+            </div>
+            <div class="modal-footer-v">
+                <button class="btn-verdi-outline" onclick="closeModal()">Cancelar</button>
+                <button class="btn-verdi" onclick="createApiKey()"><i class="fas fa-plus"></i> Generar Key</button>
+            </div>
+        </div>
+    </div>
     <script src="../js/sidebar.js"></script>
     <script src="../js/data.js"></script>
+    <script>
+        document.body.classList.add('loaded');
+        const activeIntegrations = [
+            { id: 'stripe', name: 'Stripe', desc: 'Procesamiento de pagos', logo: 'stripe', icon: 'fa-credit-card' },
+            { id: 'sendgrid', name: 'SendGrid', desc: 'Emails transaccionales', logo: 'sendgrid', icon: 'fa-envelope' },
+            { id: 'supabase', name: 'Supabase', desc: 'Base de datos y auth', logo: 'supabase', icon: 'fa-database' }
+        ];
+        const availableIntegrations = [
+            { id: 'slack', name: 'Slack', desc: 'Notificaciones en tiempo real', logo: 'slack', icon: 'fa-hashtag' },
+            { id: 'quickbooks', name: 'QuickBooks', desc: 'Contabilidad y facturación', logo: 'quickbooks', icon: 'fa-file-invoice' },
+            { id: 'zapier', name: 'Zapier', desc: 'Automatizaciones', logo: 'zapier', icon: 'fa-bolt' },
+            { id: 'twilio', name: 'Twilio', desc: 'SMS y llamadas', logo: 'twilio', icon: 'fa-phone' },
+            { id: 'google', name: 'Google Workspace', desc: 'Calendar, Drive, Meet', logo: 'google', icon: 'fa-google' }
+        ];
+        const apiKeys = [
+            { name: 'Producción', key: 'sk_live_••••••••••••4f2a', created: '15 Ene 2025' },
+            { name: 'Desarrollo', key: 'sk_test_••••••••••••8b3c', created: '10 Ene 2025' },
+            { name: 'Mobile App', key: 'sk_mob_••••••••••••1d9e', created: '5 Ene 2025' }
+        ];
+        document.addEventListener('DOMContentLoaded', loadAll);
+        function loadAll() {
+            document.getElementById('activeIntegrations').innerHTML = activeIntegrations.map(i => renderCard(i, true)).join('');
+            document.getElementById('availableIntegrations').innerHTML = availableIntegrations.map(i => renderCard(i, false)).join('');
+            document.getElementById('apiKeysTable').innerHTML = apiKeys.map(k =>
+                '<tr><td><strong>' + k.name + '</strong></td><td><span class="api-key-cell">' + k.key + '</span></td><td>' + k.created + '</td><td class="actions"><button class="btn-verdi-outline btn-verdi-sm" onclick="copyKey(\'' + k.key + '\')"><i class="fas fa-copy"></i></button><button class="btn-danger-v btn-verdi-sm"><i class="fas fa-trash"></i></button></td></tr>'
+            ).join('');
+        }
+        function renderCard(i, active) {
+            return '<div class="integration-card' + (active ? ' active' : '') + '">' +
+                '<div class="integration-header">' +
+                    '<div class="integration-logo ' + i.logo + '"><i class="fas ' + i.icon + '"></i></div>' +
+                    '<div class="integration-info"><h4>' + i.name + '</h4><p>' + i.desc + '</p></div>' +
+                '</div>' +
+                '<div class="integration-status">' +
+                    '<span class="status-badge ' + (active ? 'active' : 'inactive') + '"><i class="fas fa-' + (active ? 'check-circle' : 'circle') + '"></i> ' + (active ? 'Conectado' : 'Disponible') + '</span>' +
+                    '<button class="' + (active ? 'btn-verdi-outline' : 'btn-verdi') + ' btn-verdi-sm">' + (active ? '<i class="fas fa-cog"></i> Config' : '<i class="fas fa-plug"></i> Conectar') + '</button>' +
+                '</div>' +
+            '</div>';
+        }
+        function openModal() { document.getElementById('addModal').classList.add('active'); }
+        function closeModal() { document.getElementById('addModal').classList.remove('active'); }
+        function createApiKey() { showToast('API Key generada', 'success'); closeModal(); }
+        function copyKey(key) { navigator.clipboard.writeText(key); showToast('Key copiada', 'success'); }
+        function showToast(msg, type = 'success') { const t = document.createElement('div'); const bg = type === 'success' ? 'linear-gradient(135deg, #02735E, #10b981)' : 'linear-gradient(135deg, #034040, #035951)'; t.innerHTML = '<i class="fas fa-check-circle"></i> ' + msg; t.style.cssText = 'position:fixed;top:20px;right:20px;padding:1rem 1.5rem;background:' + bg + ';color:white;border-radius:12px;display:flex;align-items:center;gap:0.75rem;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,0.15);z-index:99999;font-family:Inter,sans-serif;'; document.body.appendChild(t); setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; setTimeout(() => t.remove(), 300); }, 3000); }
+        document.getElementById('addModal').addEventListener('click', e => { if (e.target.id === 'addModal') closeModal(); });
+    </script>
 </body>
 </html>

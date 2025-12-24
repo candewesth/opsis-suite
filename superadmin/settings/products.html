@@ -4,365 +4,679 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Productos - SuperAdmin | Opsis Suite</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/superadmin.css?v=13">
+    <link rel="stylesheet" href="../css/settings.css?v=1">
     <style>
-        :root { --verdi-dark: #022326; --sidebar-width: 240px; }
+        :root { --verdi-dark: #022326; --verdi-mid: #034040; --verdi-accent: #035951; --verdi-light: #02735E; --success: #10b981; --sidebar-width: 240px; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { background: #f8fafc; }
-        body { opacity: 0; transition: opacity 0.15s ease-in; }
+        body { opacity: 0; transition: opacity 0.15s ease-in; font-family: 'Inter', sans-serif; }
         body.loaded { opacity: 1; }
         .app-shell { min-height: 100vh; background: #f8fafc; }
         .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh; background: var(--verdi-dark); }
         .main-content { margin-left: var(--sidebar-width); min-height: 100vh; background: #f8fafc; }
+        .settings-grid { display: grid; grid-template-columns: 1fr 360px; gap: 1.5rem; }
+        @media (max-width: 1100px) { .settings-grid { grid-template-columns: 1fr; } }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.25rem; }
+        .product-card { background: white; border-radius: 20px; padding: 1.5rem; border: 1px solid rgba(2, 115, 94, 0.1); box-shadow: 0 4px 15px rgba(0,0,0,0.04); transition: all 0.3s ease; position: relative; overflow: hidden; }
+        .product-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--verdi-light), var(--success)); opacity: 0; transition: opacity 0.3s; }
+        .product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 35px rgba(2, 35, 38, 0.12); }
+        .product-card:hover::before { opacity: 1; }
+        .product-header { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
+        .product-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
+        .product-icon.motorsync { background: linear-gradient(135deg, #034040, #02735E); color: white; }
+        .product-icon.timesync { background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; }
+        .product-icon.warehouse { background: linear-gradient(135deg, #0ea5e9, #38bdf8); color: white; }
+        .product-icon.estimator { background: linear-gradient(135deg, #f59e0b, #fbbf24); color: white; }
+        .product-info h4 { font-size: 1rem; font-weight: 700; color: #1e293b; margin-bottom: 0.25rem; }
+        .product-info p { font-size: 0.8rem; color: #64748b; line-height: 1.4; }
+        .product-stats { display: flex; gap: 1rem; margin-bottom: 1rem; padding: 0.75rem 0; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; }
+        .product-stat { font-size: 0.75rem; color: #64748b; }
+        .product-stat strong { display: block; font-size: 1rem; color: #1e293b; font-weight: 700; }
+        .product-actions { display: flex; gap: 0.5rem; }
+        .roadmap-panel { background: white; border-radius: 20px; border: 1px solid rgba(2, 115, 94, 0.1); box-shadow: 0 4px 15px rgba(0,0,0,0.04); overflow: hidden; }
+        .roadmap-header { background: linear-gradient(135deg, #022326, #02735E); color: white; padding: 1.25rem 1.5rem; }
+        .roadmap-header h3 { font-size: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .roadmap-header h3 i { color: white; }
+        .roadmap-body { padding: 1.5rem; max-height: 600px; overflow-y: auto; }
+        .roadmap-item { position: relative; padding-left: 1.5rem; padding-bottom: 1.5rem; border-left: 2px solid #e2e8f0; margin-left: 0.5rem; }
+        .roadmap-item:last-child { border-left-color: transparent; padding-bottom: 0; }
+        .roadmap-item::before { content: ''; position: absolute; left: -7px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: #e2e8f0; border: 2px solid white; }
+        .roadmap-item.done::before { background: #10b981; }
+        .roadmap-item.progress::before { background: #f59e0b; }
+        .roadmap-item.next::before { background: #0ea5e9; }
+        .roadmap-item .title { font-weight: 600; color: #1e293b; font-size: 0.9rem; margin-bottom: 0.25rem; }
+        .roadmap-item .date { font-size: 0.75rem; color: #64748b; }
+        .roadmap-item .status-badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.65rem; font-weight: 600; margin-left: 0.5rem; }
+        .roadmap-item.done .status-badge { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .roadmap-item.progress .status-badge { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+        .roadmap-item.next .status-badge { background: rgba(14, 165, 233, 0.1); color: #0ea5e9; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(2, 35, 38, 0.6); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; visibility: hidden; backdrop-filter: blur(4px); transition: all 0.3s; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-v { background: white; border-radius: 20px; width: 90%; max-width: 500px; overflow: hidden; transform: scale(0.95); transition: transform 0.3s; }
+        .modal-overlay.active .modal-v { transform: scale(1); }
+        .modal-header-v { background: linear-gradient(135deg, #022326, #02735E); color: white; padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header-v h3 { font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .modal-header-v h3 i { color: white; }
+        .modal-close-v { background: rgba(255,255,255,0.15); border: none; color: white; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 1.25rem; }
+        .modal-body-v { padding: 1.5rem; }
+        /* Nav activo con Verdi gradient */
+        .settings-nav-item.active { background: linear-gradient(135deg, #022326 0%, #02735E 100%); color: white !important; }
+        .settings-nav-item.active i { color: white !important; }
+        .modal-footer-v { padding: 1rem 1.5rem; background: #f8fafc; border-top: 1px solid #f1f5f9; display: flex; gap: 0.75rem; justify-content: flex-end; }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/superadmin.css?v=12">
 </head>
 <body>
     <div class="app-shell">
-        <!-- Sidebar -->
         <aside class="sidebar" id="sidebar"></aside>
-
-        <!-- Main Content -->
         <main class="main-content">
-            <!-- Header -->
             <header class="header">
                 <div class="header-left">
-                    <h1 class="page-title">Catálogo de Productos</h1>
-                    <p class="page-subtitle">Gestiona los módulos disponibles de Opsis Suite</p>
+                    <h1 class="page-title">MotorSync & Módulos</h1>
+                    <p class="page-subtitle">MotorSync es el núcleo - los módulos premium lo robustecen</p>
                 </div>
                 <div class="header-actions">
-                    <button class="btn btn-primary" onclick="openAddProductModal()">
-                        <i class="fas fa-plus"></i> Nuevo Producto
-                    </button>
+                    <button class="btn-verdi" onclick="openModal()"><i class="fas fa-plus"></i> Nuevo Módulo</button>
                 </div>
             </header>
-
             <div class="page-content">
-                <!-- Settings Navigation -->
-                <div class="card">
-                    <div class="filter-tags">
-                        <a href="general.html" class="filter-tag"><i class="fas fa-cog"></i> General</a>
-                        <a href="industries.html" class="filter-tag"><i class="fas fa-industry"></i> Industrias</a>
-                        <a href="products.html" class="filter-tag active"><i class="fas fa-box"></i> Productos</a>
-                        <a href="plans.html" class="filter-tag"><i class="fas fa-credit-card"></i> Planes</a>
-                        <a href="integrations.html" class="filter-tag"><i class="fas fa-plug"></i> Integraciones</a>
-                    </div>
+                <nav class="settings-nav">
+                    <a href="general.html" class="settings-nav-item"><i class="fas fa-cog"></i> General</a>
+                    <a href="industries.html" class="settings-nav-item"><i class="fas fa-industry"></i> Industrias</a>
+                    <a href="products.html" class="settings-nav-item active"><i class="fas fa-box"></i> Productos</a>
+                    <a href="plans.html" class="settings-nav-item"><i class="fas fa-credit-card"></i> Planes</a>
+                    <a href="integrations.html" class="settings-nav-item"><i class="fas fa-plug"></i> Integraciones</a>
+                </nav>
+                <div class="settings-grid">
+                    <!-- MotorSync Hero Card -->
+                    <div style="grid-column: 1 / -1;" id="motorsyncHero"></div>
                 </div>
-
-                <!-- Products Grid -->
-                <div class="grid-2" id="productsGrid">
-                    <!-- Populated by JS -->
-                </div>
-
-                <!-- Roadmap Section -->
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title"><i class="fas fa-road"></i> Roadmap de Productos</h3>
-                    </div>
-                    <div class="roadmap">
-                        <div class="roadmap-item completed">
-                            <div class="roadmap-icon"><i class="fas fa-check"></i></div>
-                            <h4>MotorSync</h4>
-                            <p class="text-success">Completado</p>
-                        </div>
-                        <div class="roadmap-item in-progress">
-                            <div class="roadmap-icon"><i class="fas fa-spinner fa-spin"></i></div>
-                            <h4>TimeSync</h4>
-                            <p class="text-warning">En desarrollo</p>
-                        </div>
-                        <div class="roadmap-item planned">
-                            <div class="roadmap-icon"><i class="fas fa-clipboard-list"></i></div>
-                            <h4>ToolSync</h4>
-                            <p class="text-muted">Planificado Q1 2025</p>
-                        </div>
-                        <div class="roadmap-item planned">
-                            <div class="roadmap-icon"><i class="fas fa-clipboard-list"></i></div>
-                            <h4>HumanSync</h4>
-                            <p class="text-muted">Planificado Q2 2025</p>
-                        </div>
-                        <div class="roadmap-item planned">
-                            <div class="roadmap-icon"><i class="fas fa-clipboard-list"></i></div>
-                            <h4>FleetSync</h4>
-                            <p class="text-muted">Planificado Q3 2025</p>
-                        </div>
-                    </div>
+                <div style="margin-top:1.5rem;">
+                    <h3 style="font-size:1rem;font-weight:700;color:#1e293b;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;">
+                        <i class="fas fa-puzzle-piece" style="color:#02735E;"></i> Módulos Premium
+                        <span style="font-size:0.75rem;font-weight:500;color:#64748b;margin-left:0.5rem;">Se agregan a MotorSync</span>
+                    </h3>
+                    <div class="product-grid" id="modulesGrid"></div>
                 </div>
             </div>
         </main>
     </div>
-
-    <!-- Add Product Modal -->
-    <div class="modal" id="addProductModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title"><i class="fas fa-plus-circle"></i> Nuevo Producto</h3>
-                <button class="modal-close" onclick="closeAddProductModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Nombre del Producto *</label>
-                    <input type="text" class="form-input" id="productName" placeholder="Ej: DataSync">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Icono (clase Font Awesome) *</label>
-                    <input type="text" class="form-input" id="productIcon" placeholder="Ej: fas fa-chart-bar">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Descripción *</label>
-                    <input type="text" class="form-input" id="productDescription" placeholder="Breve descripción del producto">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Precio Base (USD/mes) *</label>
-                    <input type="number" class="form-input" id="productPrice" placeholder="99" min="0">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Estado</label>
-                    <select class="form-select" id="productStatus">
-                        <option value="active">Activo</option>
-                        <option value="coming-soon" selected>Próximamente</option>
-                        <option value="beta">Beta</option>
-                        <option value="deprecated">Deprecado</option>
-                    </select>
+    <div class="modal-overlay" id="addModal">
+        <div class="modal-v">
+            <div class="modal-header-v"><h3><i class="fas fa-puzzle-piece"></i> Nuevo Módulo Premium</h3><button class="modal-close-v" onclick="closeModal()">&times;</button></div>
+            <div class="modal-body-v">
+                <div class="form-group-v"><label class="form-label-v">Nombre del Módulo *</label><input type="text" class="form-input-v" id="productName" placeholder="Ej: FinanceSync"></div>
+                <div class="form-group-v"><label class="form-label-v">Descripción</label><input type="text" class="form-input-v" id="productDesc" placeholder="Qué funcionalidad agrega a MotorSync"></div>
+                <div class="form-group-v"><label class="form-label-v">Precio mensual ($)</label><input type="number" class="form-input-v" id="productPrice" placeholder="79" min="0"></div>
+                <div class="form-group-v">
+                    <label class="form-label-v">Icono</label>
+                    <input type="hidden" id="productIcon" value="fas fa-puzzle-piece">
+                    <div id="iconGrid" style="display:grid;grid-template-columns:repeat(8,1fr);gap:0.5rem;max-height:200px;overflow-y:auto;padding:0.5rem;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;"></div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeAddProductModal()">Cancelar</button>
-                <button class="btn btn-primary" onclick="addProduct()"><i class="fas fa-plus"></i> Agregar Producto</button>
+            <div class="modal-footer-v">
+                <button class="btn-verdi-outline" onclick="closeModal()">Cancelar</button>
+                <button class="btn-verdi" onclick="saveModule()"><i class="fas fa-save"></i> Guardar</button>
             </div>
         </div>
     </div>
-    
-    <!-- Edit Product Modal -->
-    <div class="modal" id="editProductModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title"><i class="fas fa-edit"></i> Editar Producto</h3>
-                <button class="modal-close" onclick="closeEditProductModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="editProductKey">
-                <div class="form-group">
-                    <label class="form-label">Nombre del Producto *</label>
-                    <input type="text" class="form-input" id="editProductName" placeholder="Ej: DataSync">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Icono (clase Font Awesome) *</label>
-                    <input type="text" class="form-input" id="editProductIcon" placeholder="Ej: fas fa-chart-bar">
-                    <small style="color: var(--text-secondary); font-size: 0.75rem;">Ver <a href="https://fontawesome.com/icons" target="_blank">FontAwesome Icons</a></small>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Descripción *</label>
-                    <input type="text" class="form-input" id="editProductDescription" placeholder="Breve descripción del producto">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Precio Base (USD/mes) *</label>
-                    <input type="number" class="form-input" id="editProductPrice" placeholder="99" min="0">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Estado</label>
-                    <select class="form-select" id="editProductStatus">
-                        <option value="active">Activo</option>
-                        <option value="coming-soon">Próximamente</option>
-                        <option value="beta">Beta</option>
-                        <option value="deprecated">Deprecado</option>
-                    </select>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeEditProductModal()">Cancelar</button>
-                <button class="btn btn-primary" onclick="updateProduct()"><i class="fas fa-save"></i> Guardar Cambios</button>
-            </div>
-        </div>
-    </div>
-
     <script src="../js/sidebar.js"></script>
     <script src="../js/data.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            loadProductsGrid();
-        });
-
-        function loadProductsGrid() {
-            const grid = document.getElementById('productsGrid');
-            
-            grid.innerHTML = Object.entries(SuperAdminData.products).map(([key, product]) => `
-                <div class="card">
-                    <div style="display: flex; align-items: flex-start; gap: 1rem;">
-                        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary-green), #4ecdc4); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white;">
-                            <i class="${product.icon}"></i>
-                        </div>
-                        <div style="flex: 1;">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                <h4>${product.name}</h4>
-                                <span class="status status-${product.status === 'active' ? 'active' : 'trial'}">
-                                    ${product.status === 'active' ? 'Activo' : 'Próximamente'}
-                                </span>
-                            </div>
-                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin: 0.5rem 0;">${product.description}</p>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
-                                <div>
-                                    <span style="font-size: 1.5rem; font-weight: 700; color: var(--primary-green);">$${product.basePrice}</span>
-                                    <span style="color: var(--text-secondary);">/mes</span>
-                                </div>
-                                <div style="color: var(--text-secondary); font-size: 0.875rem;">
-                                    ${product.companies || 0} compañías activas
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
-                        <button class="btn btn-sm btn-secondary" style="flex: 1;" onclick="editProduct('${key}')"><i class="fas fa-edit"></i> Editar</button>
-                        <button class="btn btn-sm btn-secondary" style="flex: 1;" onclick="viewProductStats('${key}')"><i class="fas fa-chart-bar"></i> Stats</button>
-                    </div>
-                </div>
-            `).join('');
+        document.body.classList.add('loaded');
+        
+        // Iconos disponibles para módulos
+        const MODULE_ICONS = [
+            'fas fa-wrench', 'fas fa-clock', 'fas fa-hammer', 'fas fa-users', 'fas fa-truck',
+            'fas fa-chart-line', 'fas fa-chart-bar', 'fas fa-chart-pie', 'fas fa-dollar-sign', 'fas fa-coins',
+            'fas fa-credit-card', 'fas fa-wallet', 'fas fa-receipt', 'fas fa-file-invoice', 'fas fa-calculator',
+            'fas fa-box', 'fas fa-boxes', 'fas fa-warehouse', 'fas fa-dolly', 'fas fa-pallet',
+            'fas fa-calendar', 'fas fa-calendar-alt', 'fas fa-calendar-check', 'fas fa-bell', 'fas fa-envelope',
+            'fas fa-cog', 'fas fa-cogs', 'fas fa-tools', 'fas fa-screwdriver', 'fas fa-toolbox',
+            'fas fa-building', 'fas fa-industry', 'fas fa-store', 'fas fa-shopping-cart', 'fas fa-tags',
+            'fas fa-clipboard', 'fas fa-clipboard-list', 'fas fa-clipboard-check', 'fas fa-tasks', 'fas fa-check-circle',
+            'fas fa-user-tie', 'fas fa-user-cog', 'fas fa-user-clock', 'fas fa-id-card', 'fas fa-address-book',
+            'fas fa-car', 'fas fa-truck-loading', 'fas fa-shipping-fast', 'fas fa-route', 'fas fa-map-marked-alt',
+            'fas fa-sync', 'fas fa-sync-alt', 'fas fa-puzzle-piece', 'fas fa-plug', 'fas fa-code',
+            'fas fa-database', 'fas fa-server', 'fas fa-cloud', 'fas fa-shield-alt', 'fas fa-lock'
+        ];
+        
+        let selectedIcon = 'fas fa-puzzle-piece';
+        
+        function renderIconGrid() {
+            const grid = document.getElementById('iconGrid');
+            if (!grid) return;
+            grid.innerHTML = MODULE_ICONS.map(icon => {
+                const isSelected = icon === selectedIcon;
+                return '<button type="button" onclick="selectIcon(\'' + icon + '\')" style="' +
+                    'width:40px;height:40px;border-radius:10px;border:2px solid ' + (isSelected ? '#02735E' : '#e2e8f0') + ';' +
+                    'background:' + (isSelected ? 'linear-gradient(135deg,#022326,#02735E)' : 'white') + ';' +
+                    'color:' + (isSelected ? 'white' : '#64748b') + ';cursor:pointer;display:flex;align-items:center;justify-content:center;' +
+                    'transition:all 0.2s;font-size:1rem;' +
+                    '">' +
+                    '<i class="' + icon + '"></i>' +
+                '</button>';
+            }).join('');
         }
-
-        function openAddProductModal() {
-            document.getElementById('addProductModal').classList.add('show');
+        
+        function selectIcon(icon) {
+            selectedIcon = icon;
+            document.getElementById('productIcon').value = icon;
+            renderIconGrid();
         }
-
-        function closeAddProductModal() {
-            document.getElementById('addProductModal').classList.remove('show');
-        }
-
-        function addProduct() {
-            const name = document.getElementById('productName').value;
-            const icon = document.getElementById('productIcon').value;
-            const description = document.getElementById('productDescription').value;
-            const price = parseInt(document.getElementById('productPrice').value);
-            const status = document.getElementById('productStatus').value;
-            
-            if (!name || !icon || !description || isNaN(price)) {
-                showToast('Por favor completa todos los campos', 'error');
-                return;
+        
+        // Obtener módulos del catálogo
+        function getModules() {
+            const stored = localStorage.getItem('opsis_modules');
+            if (stored) {
+                try { return JSON.parse(stored); } catch(e) {}
             }
+            // Convertir del catálogo de data.js
+            return Object.entries(SuperAdminData.products).map(([id, p]) => ({
+                id,
+                name: p.name,
+                description: p.description,
+                icon: p.icon,
+                price: p.price || 0,
+                type: p.type || 'premium',
+                status: p.status || 'active',
+                features: p.features || []
+            }));
+        }
+        
+        function saveModules(modules) {
+            localStorage.setItem('opsis_modules', JSON.stringify(modules));
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => { render(); });
+        
+        function render() {
+            renderMotorSyncHero();
+            renderPremiumModules();
+        }
+        
+        function renderMotorSyncHero() {
+            const modules = getModules();
+            const motorsync = modules.find(m => m.id === 'motorsync') || { name: 'MotorSync', description: 'Núcleo del sistema', icon: 'fas fa-wrench' };
+            const premiumModules = modules.filter(m => m.type === 'premium');
+            const activeModules = premiumModules.filter(m => m.status === 'active').length;
             
-            const key = name.toLowerCase().replace(/\s+/g, '');
+            document.getElementById('motorsyncHero').innerHTML = 
+                '<div style="background:linear-gradient(135deg,#022326 0%,#02735E 100%);border-radius:20px;padding:2rem;color:white;">' +
+                    '<div style="display:grid;grid-template-columns:1fr auto;gap:2rem;align-items:center;margin-bottom:1.5rem;">' +
+                        '<div>' +
+                            '<div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">' +
+                                '<div style="width:64px;height:64px;background:rgba(255,255,255,0.15);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.75rem;">' +
+                                    '<i class="' + motorsync.icon + '"></i>' +
+                                '</div>' +
+                                '<div>' +
+                                    '<h2 style="font-size:1.5rem;font-weight:800;margin-bottom:0.25rem;">' + motorsync.name + '</h2>' +
+                                    '<p style="opacity:0.8;font-size:0.9rem;">Núcleo del Sistema • Incluido en todos los planes</p>' +
+                                '</div>' +
+                            '</div>' +
+                            '<p style="opacity:0.9;font-size:0.95rem;line-height:1.6;max-width:600px;">' +
+                                motorsync.description +
+                            '</p>' +
+                        '</div>' +
+                        '<div style="display:flex;gap:1rem;">' +
+                            '<div style="text-align:center;padding:1rem 1.25rem;background:rgba(255,255,255,0.1);border-radius:12px;">' +
+                                '<div style="font-size:1.75rem;font-weight:800;">' + premiumModules.length + '</div>' +
+                                '<div style="font-size:0.7rem;opacity:0.8;">Módulos</div>' +
+                            '</div>' +
+                            '<div style="text-align:center;padding:1rem 1.25rem;background:rgba(255,255,255,0.1);border-radius:12px;">' +
+                                '<div style="font-size:1.75rem;font-weight:800;">' + activeModules + '</div>' +
+                                '<div style="font-size:0.7rem;opacity:0.8;">Activos</div>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div style="display:flex;gap:0.75rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.15);">' +
+                        '<button onclick="editModule(\'motorsync\')" class="btn-verdi-outline" style="background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.3);color:white;"><i class="fas fa-edit"></i> Editar MotorSync</button>' +
+                        '<button onclick="openDevPanel(\'motorsync\')" class="btn-verdi-outline" style="background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.3);color:white;"><i class="fas fa-code"></i> Desarrollo</button>' +
+                    '</div>' +
+                '</div>' +
+                '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:1rem 1.25rem;margin-top:1rem;display:flex;align-items:center;gap:0.75rem;">' +
+                    '<i class="fas fa-cloud-upload-alt" style="color:#10b981;font-size:1.25rem;"></i>' +
+                    '<div>' +
+                        '<strong style="color:#166534;font-size:0.85rem;">Arquitectura SaaS</strong>' +
+                        '<p style="color:#15803d;font-size:0.8rem;margin:0;">Los cambios en MotorSync y módulos se propagan automáticamente a todas las compañías.</p>' +
+                    '</div>' +
+                '</div>';
+        }
+        
+        function renderPremiumModules() {
+            const modules = getModules().filter(m => m.type === 'premium');
             
-            SuperAdminData.products[key] = {
-                name: name,
-                icon: icon,
-                description: description,
-                basePrice: price,
-                status: status,
-                companies: 0
-            };
-            
-            closeAddProductModal();
-            loadProductsGrid();
-            showToast(`Producto "${name}" agregado`, 'success');
-            
-            // Clear form
+            document.getElementById('modulesGrid').innerHTML = modules.map(m => {
+                const statusBadge = m.status === 'coming-soon' ? 
+                    '<span style="background:rgba(245,158,11,0.15);color:#f59e0b;padding:0.2rem 0.6rem;border-radius:8px;font-size:0.65rem;font-weight:600;">Próximamente</span>' : 
+                    '<span style="background:rgba(16,185,129,0.15);color:#10b981;padding:0.2rem 0.6rem;border-radius:8px;font-size:0.65rem;font-weight:600;">Activo</span>';
+                
+                return '<div class="product-card">' +
+                    '<div class="product-header">' +
+                        '<div class="product-icon" style="background:linear-gradient(135deg,#034040,#02735E);color:white;"><i class="' + m.icon + '"></i></div>' +
+                        '<div class="product-info">' +
+                            '<h4 style="display:flex;align-items:center;gap:0.5rem;">' + m.name + ' ' + statusBadge + '</h4>' +
+                            '<p>' + m.description + '</p>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="product-stats">' +
+                        '<div class="product-stat"><strong>$' + m.price + '</strong>/mes</div>' +
+                    '</div>' +
+                    '<div class="product-actions">' +
+                        '<button class="btn-verdi btn-verdi-sm" onclick="editModule(\'' + m.id + '\')"><i class="fas fa-edit"></i> Editar</button>' +
+                        '<button class="btn-verdi-outline btn-verdi-sm" onclick="openDevPanel(\'' + m.id + '\')"><i class="fas fa-code"></i></button>' +
+                        '<button class="btn-verdi-outline btn-verdi-sm" onclick="toggleModuleStatus(\'' + m.id + '\')" title="' + (m.status === 'active' ? 'Desactivar' : 'Activar') + '"><i class="fas fa-power-off"></i></button>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        }
+        
+        let editingModule = null;
+        
+        function openModal() { 
+            editingModule = null;
             document.getElementById('productName').value = '';
-            document.getElementById('productIcon').value = '';
-            document.getElementById('productDescription').value = '';
+            document.getElementById('productDesc').value = '';
             document.getElementById('productPrice').value = '';
-        }
-
-        function editProduct(key) {
-            const product = SuperAdminData.products[key];
-            if (!product) return;
-            
-            // Populate edit modal
-            document.getElementById('editProductKey').value = key;
-            document.getElementById('editProductName').value = product.name;
-            document.getElementById('editProductIcon').value = product.icon;
-            document.getElementById('editProductDescription').value = product.description;
-            document.getElementById('editProductPrice').value = product.basePrice;
-            document.getElementById('editProductStatus').value = product.status;
-            
-            document.getElementById('editProductModal').classList.add('show');
+            selectedIcon = 'fas fa-puzzle-piece';
+            document.getElementById('productIcon').value = selectedIcon;
+            renderIconGrid();
+            document.querySelector('#addModal .modal-header-v h3').innerHTML = '<i class="fas fa-puzzle-piece"></i> Nuevo Módulo Premium';
+            document.getElementById('addModal').classList.add('active'); 
         }
         
-        function closeEditProductModal() {
-            document.getElementById('editProductModal').classList.remove('show');
+        function editModule(id) {
+            const modules = getModules();
+            const m = modules.find(x => x.id === id);
+            if (!m) return;
+            editingModule = id;
+            document.getElementById('productName').value = m.name;
+            document.getElementById('productDesc').value = m.description;
+            document.getElementById('productPrice').value = m.price || '';
+            selectedIcon = m.icon || 'fas fa-puzzle-piece';
+            document.getElementById('productIcon').value = selectedIcon;
+            renderIconGrid();
+            document.querySelector('#addModal .modal-header-v h3').innerHTML = '<i class="fas fa-edit"></i> Editar Módulo';
+            document.getElementById('addModal').classList.add('active');
         }
         
-        function updateProduct() {
-            const key = document.getElementById('editProductKey').value;
-            const name = document.getElementById('editProductName').value;
-            const icon = document.getElementById('editProductIcon').value;
-            const description = document.getElementById('editProductDescription').value;
-            const price = parseInt(document.getElementById('editProductPrice').value);
-            const status = document.getElementById('editProductStatus').value;
+        function closeModal() { 
+            document.getElementById('addModal').classList.remove('active'); 
+            editingModule = null; 
+        }
+        
+        function saveModule() { 
+            const name = document.getElementById('productName').value.trim();
+            const desc = document.getElementById('productDesc').value.trim();
+            const price = parseInt(document.getElementById('productPrice').value) || 0;
+            const icon = document.getElementById('productIcon').value.trim() || 'fas fa-puzzle-piece';
             
-            if (!name || !icon || !description || isNaN(price)) {
-                showToast('Por favor completa todos los campos', 'error');
-                return;
+            if (!name) { showToast('Nombre requerido', 'error'); return; }
+            
+            let modules = getModules();
+            
+            if (editingModule) {
+                const idx = modules.findIndex(m => m.id === editingModule);
+                if (idx >= 0) {
+                    modules[idx].name = name;
+                    modules[idx].description = desc;
+                    modules[idx].price = price;
+                    modules[idx].icon = icon;
+                    showToast('Módulo actualizado', 'success');
+                }
+            } else {
+                const id = name.toLowerCase().replace(/\s+/g, '').replace('sync', 'sync');
+                if (modules.find(m => m.id === id)) {
+                    showToast('Ya existe un módulo con ese nombre', 'error');
+                    return;
+                }
+                modules.push({
+                    id,
+                    name,
+                    description: desc,
+                    icon,
+                    price,
+                    type: 'premium',
+                    status: 'coming-soon',
+                    features: []
+                });
+                showToast('Módulo agregado', 'success');
             }
             
-            SuperAdminData.products[key] = {
-                ...SuperAdminData.products[key],
-                name: name,
-                icon: icon,
-                description: description,
-                basePrice: price,
-                status: status
+            saveModules(modules);
+            closeModal();
+            render();
+        }
+        
+        function toggleModuleStatus(id) {
+            let modules = getModules();
+            const idx = modules.findIndex(m => m.id === id);
+            if (idx >= 0) {
+                modules[idx].status = modules[idx].status === 'active' ? 'coming-soon' : 'active';
+                saveModules(modules);
+                render();
+                showToast('Estado actualizado', 'success');
+            }
+        }
+        
+        function openDevPanel(moduleId) {
+            const modules = getModules();
+            const m = modules.find(x => x.id === moduleId);
+            if (!m) return;
+            
+            // Inicializar datos de desarrollo si no existen
+            if (!m.dev) {
+                m.dev = {
+                    publishedVersion: '1.0.0',
+                    devVersion: '1.0.1',
+                    devStatus: 'development', // development, review, ready
+                    publishedFeatures: m.features || [],
+                    devFeatures: [...(m.features || [])],
+                    changelog: [],
+                    lastPublish: null
+                };
+                saveModules(modules);
+            }
+            
+            currentDevModule = moduleId;
+            
+            const isBase = m.type === 'base';
+            const statusColors = {
+                'development': { bg: '#fef3c7', color: '#d97706', label: 'En Desarrollo' },
+                'review': { bg: '#dbeafe', color: '#2563eb', label: 'En Revisión' },
+                'ready': { bg: '#d1fae5', color: '#059669', label: 'Listo para Publicar' }
             };
+            const devStatus = statusColors[m.dev.devStatus] || statusColors.development;
             
-            closeEditProductModal();
-            loadProductsGrid();
-            showToast(`Producto "${name}" actualizado`, 'success');
+            const publishedList = m.dev.publishedFeatures.map(f => 
+                '<li style="padding:0.4rem 0;font-size:0.8rem;display:flex;align-items:center;gap:0.5rem;"><i class="fas fa-check" style="color:#10b981;"></i> ' + f + '</li>'
+            ).join('') || '<li style="color:#94a3b8;font-size:0.8rem;">Sin funcionalidades</li>';
+            
+            const devList = m.dev.devFeatures.map((f, i) => 
+                '<li style="padding:0.4rem 0;font-size:0.8rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f1f5f9;">' +
+                    '<span style="display:flex;align-items:center;gap:0.5rem;">' +
+                        '<i class="fas fa-code" style="color:#f59e0b;"></i> ' + f + 
+                        (!m.dev.publishedFeatures.includes(f) ? ' <span style="background:#fef3c7;color:#d97706;padding:0.1rem 0.4rem;border-radius:4px;font-size:0.65rem;font-weight:600;">NUEVO</span>' : '') +
+                    '</span>' +
+                    '<button onclick="removeDevFeature(' + i + ')" style="background:none;border:none;color:#ef4444;cursor:pointer;padding:0.25rem;"><i class="fas fa-times"></i></button>' +
+                '</li>'
+            ).join('') || '<li style="color:#94a3b8;font-size:0.8rem;">Sin funcionalidades en desarrollo</li>';
+            
+            const devModal = document.createElement('div');
+            devModal.className = 'modal-overlay active';
+            devModal.id = 'devModal';
+            devModal.innerHTML = 
+                '<div class="modal-v" style="max-width:800px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;">' +
+                    '<div class="modal-header-v">' +
+                        '<h3><i class="fas fa-code-branch"></i> Desarrollo: ' + m.name + '</h3>' +
+                        '<button class="modal-close-v" onclick="closeDevPanel()">&times;</button>' +
+                    '</div>' +
+                    '<div class="modal-body-v" style="overflow-y:auto;flex:1;">' +
+                        
+                        // Banner SaaS
+                        '<div style="background:linear-gradient(135deg,#022326,#02735E);border-radius:10px;padding:1rem;margin-bottom:1.25rem;color:white;display:flex;align-items:center;gap:0.75rem;">' +
+                            '<i class="fas fa-cloud" style="font-size:1.25rem;"></i>' +
+                            '<div>' +
+                                '<strong style="font-size:0.85rem;">Arquitectura SaaS</strong>' +
+                                '<p style="font-size:0.75rem;opacity:0.9;margin:0;">Al publicar una versión, se despliega automáticamente a TODAS las compañías.</p>' +
+                            '</div>' +
+                        '</div>' +
+                        
+                        // Grid de versiones
+                        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem;">' +
+                            
+                            // Versión Publicada
+                            '<div style="background:#f8fafc;border-radius:12px;padding:1rem;border:2px solid #10b981;">' +
+                                '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">' +
+                                    '<span style="font-size:0.75rem;font-weight:600;color:#64748b;text-transform:uppercase;">Versión Publicada</span>' +
+                                    '<span style="background:#d1fae5;color:#059669;padding:0.2rem 0.5rem;border-radius:6px;font-size:0.7rem;font-weight:600;">EN PRODUCCIÓN</span>' +
+                                '</div>' +
+                                '<div style="font-size:1.75rem;font-weight:800;color:#1e293b;margin-bottom:0.5rem;">v' + m.dev.publishedVersion + '</div>' +
+                                '<div style="font-size:0.75rem;color:#64748b;margin-bottom:0.75rem;">' + (m.dev.lastPublish ? 'Publicado: ' + m.dev.lastPublish : 'Versión inicial') + '</div>' +
+                                '<div style="font-size:0.75rem;font-weight:600;color:#64748b;margin-bottom:0.5rem;">Funcionalidades (' + m.dev.publishedFeatures.length + ')</div>' +
+                                '<ul style="list-style:none;max-height:120px;overflow-y:auto;">' + publishedList + '</ul>' +
+                            '</div>' +
+                            
+                            // Versión en Desarrollo
+                            '<div style="background:white;border-radius:12px;padding:1rem;border:2px dashed #f59e0b;">' +
+                                '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">' +
+                                    '<span style="font-size:0.75rem;font-weight:600;color:#64748b;text-transform:uppercase;">Versión en Desarrollo</span>' +
+                                    '<span style="background:' + devStatus.bg + ';color:' + devStatus.color + ';padding:0.2rem 0.5rem;border-radius:6px;font-size:0.7rem;font-weight:600;">' + devStatus.label.toUpperCase() + '</span>' +
+                                '</div>' +
+                                '<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">' +
+                                    '<span style="font-size:1.75rem;font-weight:800;color:#1e293b;">v' + m.dev.devVersion + '</span>' +
+                                    '<button onclick="editDevVersion()" style="background:#f1f5f9;border:none;padding:0.25rem 0.5rem;border-radius:4px;cursor:pointer;font-size:0.7rem;"><i class="fas fa-edit"></i></button>' +
+                                '</div>' +
+                                '<div style="font-size:0.75rem;font-weight:600;color:#64748b;margin-bottom:0.5rem;">Funcionalidades (' + m.dev.devFeatures.length + ')</div>' +
+                                '<ul style="list-style:none;max-height:100px;overflow-y:auto;margin-bottom:0.75rem;" id="devFeaturesList">' + devList + '</ul>' +
+                                '<div style="display:flex;gap:0.5rem;">' +
+                                    '<input type="text" id="newFeatureInput" placeholder="Nueva funcionalidad..." style="flex:1;padding:0.5rem;border:1px solid #e2e8f0;border-radius:6px;font-size:0.8rem;">' +
+                                    '<button onclick="addDevFeature()" style="background:#02735E;color:white;border:none;padding:0.5rem 0.75rem;border-radius:6px;cursor:pointer;font-size:0.8rem;"><i class="fas fa-plus"></i></button>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' +
+                        
+                        // Estado del desarrollo
+                        '<div style="margin-bottom:1.25rem;">' +
+                            '<label style="font-size:0.8rem;font-weight:600;color:#1e293b;display:block;margin-bottom:0.5rem;">Estado del Desarrollo</label>' +
+                            '<div style="display:flex;gap:0.5rem;">' +
+                                '<button onclick="setDevStatus(\'development\')" class="status-btn" style="flex:1;padding:0.6rem;border-radius:8px;font-size:0.8rem;font-weight:500;cursor:pointer;border:2px solid ' + (m.dev.devStatus === 'development' ? '#d97706' : '#e2e8f0') + ';background:' + (m.dev.devStatus === 'development' ? '#fef3c7' : 'white') + ';color:' + (m.dev.devStatus === 'development' ? '#d97706' : '#64748b') + ';"><i class="fas fa-code"></i> En Desarrollo</button>' +
+                                '<button onclick="setDevStatus(\'review\')" class="status-btn" style="flex:1;padding:0.6rem;border-radius:8px;font-size:0.8rem;font-weight:500;cursor:pointer;border:2px solid ' + (m.dev.devStatus === 'review' ? '#2563eb' : '#e2e8f0') + ';background:' + (m.dev.devStatus === 'review' ? '#dbeafe' : 'white') + ';color:' + (m.dev.devStatus === 'review' ? '#2563eb' : '#64748b') + ';"><i class="fas fa-search"></i> En Revisión</button>' +
+                                '<button onclick="setDevStatus(\'ready\')" class="status-btn" style="flex:1;padding:0.6rem;border-radius:8px;font-size:0.8rem;font-weight:500;cursor:pointer;border:2px solid ' + (m.dev.devStatus === 'ready' ? '#059669' : '#e2e8f0') + ';background:' + (m.dev.devStatus === 'ready' ? '#d1fae5' : 'white') + ';color:' + (m.dev.devStatus === 'ready' ? '#059669' : '#64748b') + ';"><i class="fas fa-check-circle"></i> Listo</button>' +
+                            '</div>' +
+                        '</div>' +
+                        
+                        // Notas de la versión
+                        '<div style="margin-bottom:1rem;">' +
+                            '<label style="font-size:0.8rem;font-weight:600;color:#1e293b;display:block;margin-bottom:0.5rem;">Notas de Versión (Changelog)</label>' +
+                            '<textarea id="changelogInput" placeholder="Describe los cambios de esta versión..." style="width:100%;padding:0.75rem;border:1px solid #e2e8f0;border-radius:8px;font-size:0.8rem;min-height:60px;resize:none;font-family:inherit;">' + (m.dev.changelogDraft || '') + '</textarea>' +
+                        '</div>' +
+                        
+                        // Acceso al código
+                        '<div style="background:#1e293b;border-radius:12px;padding:1rem;margin-bottom:1rem;">' +
+                            '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">' +
+                                '<span style="font-size:0.8rem;font-weight:600;color:white;display:flex;align-items:center;gap:0.5rem;"><i class="fas fa-folder-open"></i> Código del Módulo</span>' +
+                                '<span style="font-size:0.7rem;color:#94a3b8;">/' + moduleId + '/</span>' +
+                            '</div>' +
+                            '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;">' +
+                                '<button onclick="openInVSCode(\'' + moduleId + '\')" style="background:#0078d4;color:white;border:none;padding:0.5rem 0.75rem;border-radius:6px;cursor:pointer;font-size:0.75rem;display:flex;align-items:center;gap:0.4rem;"><i class="fas fa-code"></i> Abrir en VS Code</button>' +
+                                '<button onclick="openInGitHub(\'' + moduleId + '\')" style="background:#24292e;color:white;border:none;padding:0.5rem 0.75rem;border-radius:6px;cursor:pointer;font-size:0.75rem;display:flex;align-items:center;gap:0.4rem;"><i class="fab fa-github"></i> Ver en GitHub</button>' +
+                                '<button onclick="openInBrowser(\'' + moduleId + '\')" style="background:#02735E;color:white;border:none;padding:0.5rem 0.75rem;border-radius:6px;cursor:pointer;font-size:0.75rem;display:flex;align-items:center;gap:0.4rem;"><i class="fas fa-external-link-alt"></i> Preview</button>' +
+                            '</div>' +
+                        '</div>' +
+                        
+                    '</div>' +
+                    '<div class="modal-footer-v" style="display:flex;justify-content:space-between;align-items:center;">' +
+                        '<div style="font-size:0.75rem;color:#64748b;">' +
+                            '<i class="fas fa-info-circle"></i> ' + (m.dev.devFeatures.length - m.dev.publishedFeatures.length) + ' nuevas funcionalidades pendientes' +
+                        '</div>' +
+                        '<div style="display:flex;gap:0.5rem;">' +
+                            '<button class="btn-verdi-outline" onclick="closeDevPanel()">Cerrar</button>' +
+                            '<button class="btn-verdi" onclick="publishVersion()" ' + (m.dev.devStatus !== 'ready' ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : '') + '><i class="fas fa-rocket"></i> Publicar v' + m.dev.devVersion + '</button>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            document.body.appendChild(devModal);
+            devModal.addEventListener('click', e => { if (e.target.id === 'devModal') closeDevPanel(); });
+            
+            // Enter para agregar feature
+            document.getElementById('newFeatureInput').addEventListener('keypress', e => { if (e.key === 'Enter') addDevFeature(); });
         }
         
-        function deleteProduct(key) {
-            const product = SuperAdminData.products[key];
-            if (product.companies > 0) {
-                showToast(`No se puede eliminar: ${product.companies} compañías usan este producto`, 'error');
+        let currentDevModule = null;
+        
+        function addDevFeature() {
+            const input = document.getElementById('newFeatureInput');
+            const feature = input.value.trim();
+            if (!feature) return;
+            
+            const modules = getModules();
+            const m = modules.find(x => x.id === currentDevModule);
+            if (!m || !m.dev) return;
+            
+            m.dev.devFeatures.push(feature);
+            saveModules(modules);
+            closeDevPanel();
+            openDevPanel(currentDevModule);
+            showToast('Funcionalidad agregada', 'success');
+        }
+        
+        function removeDevFeature(index) {
+            const modules = getModules();
+            const m = modules.find(x => x.id === currentDevModule);
+            if (!m || !m.dev) return;
+            
+            const feature = m.dev.devFeatures[index];
+            // No permitir eliminar si está en producción
+            if (m.dev.publishedFeatures.includes(feature)) {
+                showToast('No puedes eliminar funcionalidades en producción', 'error');
                 return;
             }
             
-            if (confirm(`¿Eliminar el producto "${product.name}"?`)) {
-                delete SuperAdminData.products[key];
-                loadProductsGrid();
-                showToast(`Producto "${product.name}" eliminado`, 'success');
-            }
+            m.dev.devFeatures.splice(index, 1);
+            saveModules(modules);
+            closeDevPanel();
+            openDevPanel(currentDevModule);
+            showToast('Funcionalidad eliminada', 'success');
         }
-
-        function viewProductStats(key) {
-            const product = SuperAdminData.products[key];
-            const monthlyRevenue = product.basePrice * (product.companies || 0);
-            const annualRevenue = monthlyRevenue * 12;
-            
-            alert(`Estadísticas: ${product.name}\n\n` +
-                  `• Compañías activas: ${product.companies || 0}\n` +
-                  `• Precio base: $${product.basePrice}/mes\n` +
-                  `• Ingreso mensual: $${monthlyRevenue.toLocaleString()}\n` +
-                  `• Ingreso anual: $${annualRevenue.toLocaleString()}\n` +
-                  `• Estado: ${product.status === 'active' ? 'Activo' : 'Próximamente'}`);
-        }
-
-        function showToast(message, type = 'success') {
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            const iconClass = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-times-circle' : 'fa-info-circle';
-            toast.innerHTML = `<i class="fas ${iconClass}"></i> ${message}`;
-            
-            let container = document.querySelector('.toast-container');
-            if (!container) {
-                container = document.createElement('div');
-                container.className = 'toast-container';
-                document.body.appendChild(container);
-            }
-            container.appendChild(toast);
-            
-            setTimeout(() => toast.remove(), 3000);
-        }
-
-        // Close modal on backdrop click
-        document.getElementById('addProductModal').addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal')) {
-                closeAddProductModal();
-            }
-        });
         
-        document.getElementById('editProductModal').addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal')) {
-                closeEditProductModal();
+        function setDevStatus(status) {
+            const modules = getModules();
+            const m = modules.find(x => x.id === currentDevModule);
+            if (!m || !m.dev) return;
+            
+            // Guardar changelog draft
+            const changelog = document.getElementById('changelogInput');
+            if (changelog) m.dev.changelogDraft = changelog.value;
+            
+            m.dev.devStatus = status;
+            saveModules(modules);
+            closeDevPanel();
+            openDevPanel(currentDevModule);
+            
+            const statusLabels = { development: 'En Desarrollo', review: 'En Revisión', ready: 'Listo para Publicar' };
+            showToast('Estado: ' + statusLabels[status], 'success');
+        }
+        
+        function editDevVersion() {
+            const modules = getModules();
+            const m = modules.find(x => x.id === currentDevModule);
+            if (!m || !m.dev) return;
+            
+            const newVersion = prompt('Nueva versión:', m.dev.devVersion);
+            if (newVersion && /^\d+\.\d+\.\d+$/.test(newVersion)) {
+                m.dev.devVersion = newVersion;
+                saveModules(modules);
+                closeDevPanel();
+                openDevPanel(currentDevModule);
+            } else if (newVersion) {
+                showToast('Formato inválido. Usa: X.Y.Z', 'error');
             }
-        });
+        }
+        
+        function publishVersion() {
+            const modules = getModules();
+            const m = modules.find(x => x.id === currentDevModule);
+            if (!m || !m.dev) return;
+            
+            if (m.dev.devStatus !== 'ready') {
+                showToast('Marca como "Listo" antes de publicar', 'error');
+                return;
+            }
+            
+            const changelog = document.getElementById('changelogInput');
+            const changelogText = changelog ? changelog.value.trim() : '';
+            
+            if (!confirm('¿Publicar v' + m.dev.devVersion + '?\n\nEsto desplegará los cambios a TODAS las compañías que usan ' + m.name + '.')) {
+                return;
+            }
+            
+            // Registrar en changelog
+            m.dev.changelog = m.dev.changelog || [];
+            m.dev.changelog.unshift({
+                version: m.dev.devVersion,
+                date: new Date().toLocaleDateString('es-MX'),
+                notes: changelogText,
+                features: m.dev.devFeatures.filter(f => !m.dev.publishedFeatures.includes(f))
+            });
+            
+            // Actualizar versiones
+            m.dev.publishedVersion = m.dev.devVersion;
+            m.dev.publishedFeatures = [...m.dev.devFeatures];
+            m.dev.lastPublish = new Date().toLocaleDateString('es-MX');
+            
+            // Preparar siguiente versión
+            const parts = m.dev.devVersion.split('.').map(Number);
+            parts[2]++;
+            m.dev.devVersion = parts.join('.');
+            m.dev.devStatus = 'development';
+            m.dev.changelogDraft = '';
+            
+            // Actualizar features del módulo principal
+            m.features = [...m.dev.publishedFeatures];
+            
+            saveModules(modules);
+            closeDevPanel();
+            render();
+            showToast('🚀 v' + m.dev.publishedVersion + ' publicada exitosamente!', 'success');
+        }
+        
+        // Mapeo de rutas de módulos
+        const MODULE_PATHS = {
+            'motorsync': 'motorsync',
+            'timesync': 'timesync',
+            'toolsync': 'toolsync',
+            'humansync': 'humansync',
+            'fleetsync': 'fleetsync'
+        };
+        
+        // Ruta base del proyecto (ajustar según tu sistema)
+        const PROJECT_PATH = '/Users/candewesth/Documents/GitHub/opsis-suite';
+        
+        function openInVSCode(moduleId) {
+            const folder = MODULE_PATHS[moduleId] || moduleId;
+            const fullPath = PROJECT_PATH + '/' + folder;
+            // Crear enlace temporal para abrir VS Code sin navegar
+            const link = document.createElement('a');
+            link.href = 'vscode://file' + fullPath;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('Abriendo ' + folder + ' en VS Code...', 'success');
+        }
+        
+        function openInGitHub(moduleId) {
+            const folder = MODULE_PATHS[moduleId] || moduleId;
+            const githubUrl = 'https://github.com/candewesth/opsis-suite/tree/main/' + folder;
+            window.open(githubUrl, '_blank');
+        }
+        
+        function openInBrowser(moduleId) {
+            const folder = MODULE_PATHS[moduleId] || moduleId;
+            // Abrir preview del módulo
+            const previewUrl = window.location.origin + '/' + folder + '/index.html';
+            window.open(previewUrl, '_blank');
+        }
+        
+        function closeDevPanel() {
+            const modal = document.getElementById('devModal');
+            if (modal) modal.remove();
+        }
+        
+        function showToast(msg, type = 'success') { 
+            const t = document.createElement('div'); 
+            const bg = type === 'success' ? 'linear-gradient(135deg, #02735E, #10b981)' : 'linear-gradient(135deg, #ef4444, #f87171)'; 
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            t.innerHTML = '<i class="fas ' + icon + '"></i> ' + msg; 
+            t.style.cssText = 'position:fixed;top:20px;right:20px;padding:1rem 1.5rem;background:' + bg + ';color:white;border-radius:12px;display:flex;align-items:center;gap:0.75rem;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,0.15);z-index:99999;font-family:Inter,sans-serif;'; 
+            document.body.appendChild(t); 
+            setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; setTimeout(() => t.remove(), 300); }, 3000); 
+        }
+        
+        document.getElementById('addModal').addEventListener('click', e => { if (e.target.id === 'addModal') closeModal(); });
     </script>
 </body>
 </html>

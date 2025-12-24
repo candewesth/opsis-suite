@@ -4,470 +4,614 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Planes - SuperAdmin | Opsis Suite</title>
-    <style>
-        :root { --verdi-dark: #022326; --sidebar-width: 240px; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { background: #f8fafc; }
-        body { opacity: 0; transition: opacity 0.15s ease-in; }
-        body.loaded { opacity: 1; }
-        .app-shell { min-height: 100vh; background: #f8fafc; }
-        .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-width); height: 100vh; background: var(--verdi-dark); }
-        .main-content { margin-left: var(--sidebar-width); min-height: 100vh; background: #f8fafc; }
-    </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/superadmin.css?v=12">
+    <link rel="stylesheet" href="../css/superadmin.css?v=16">
+    <style>
+        /* Settings Navigation - Verdi Pills */
+        .settings-nav { background: white; border-radius: 20px; padding: 0.5rem; margin-bottom: 2rem; display: flex; gap: 0.5rem; flex-wrap: wrap; box-shadow: 0 4px 15px rgba(2, 35, 38, 0.06); border: 1px solid rgba(2, 115, 94, 0.1); }
+        .settings-nav-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.85rem 1.25rem; border-radius: 14px; font-size: 0.9rem; font-weight: 500; color: #64748b; text-decoration: none; transition: all 0.25s ease; background: transparent; }
+        .settings-nav-item:hover { background: #f0fdf4; color: #02735E; }
+        .settings-nav-item.active { background: linear-gradient(135deg, #022326 0%, #02735E 100%); color: white; box-shadow: 0 4px 15px rgba(2, 115, 94, 0.3); }
+        .settings-nav-item.active i { color: white; }
+        
+        /* Stats Bar - Verdi (fondo oscuro, iconos y texto blancos) */
+        .stats-bar { display: flex; gap: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+        .stat-card { background: linear-gradient(135deg, #022326 0%, #02735E 100%); border-radius: 16px; padding: 1.25rem 1.5rem; border: none; box-shadow: 0 4px 20px rgba(2, 35, 38, 0.15); display: flex; align-items: center; gap: 1rem; }
+        .stat-icon { width: 48px; height: 48px; background: rgba(255, 255, 255, 0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem; }
+        .stat-icon i { color: white; }
+        .stat-info h4 { font-size: 1.5rem; font-weight: 700; color: white; }
+        .stat-info p { font-size: 0.85rem; color: rgba(255, 255, 255, 0.7); }
+        
+        /* Pricing Info Banner */
+        .pricing-banner { background: linear-gradient(135deg, rgba(2, 115, 94, 0.08), rgba(16, 185, 129, 0.05)); border: 1px solid rgba(2, 115, 94, 0.15); border-radius: 16px; padding: 1.25rem 1.5rem; margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+        .pricing-banner-icon { width: 40px; height: 40px; background: linear-gradient(135deg, #02735E, #10b981); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1rem; flex-shrink: 0; }
+        .pricing-banner-icon i { color: white; }
+        .pricing-banner-text { flex: 1; }
+        .pricing-banner-text strong { color: #022326; font-size: 0.95rem; }
+        .pricing-banner-text p { color: #64748b; font-size: 0.85rem; margin-top: 0.15rem; }
+        
+        /* Plans Grid */
+        .plans-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        
+        /* Add Card */
+        .add-card { background: linear-gradient(135deg, rgba(2, 115, 94, 0.05), rgba(16, 185, 129, 0.08)); border: 2px dashed #02735E; border-radius: 24px; padding: 2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 320px; cursor: pointer; transition: all 0.3s ease; }
+        .add-card:hover { background: linear-gradient(135deg, rgba(2, 115, 94, 0.1), rgba(16, 185, 129, 0.15)); transform: translateY(-4px); box-shadow: 0 15px 40px rgba(2, 115, 94, 0.15); }
+        .add-card-icon { width: 72px; height: 72px; background: linear-gradient(135deg, #02735E, #10b981); border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; color: white; margin-bottom: 1rem; }
+        .add-card-icon i { color: white; }
+        .add-card h4 { font-size: 1.05rem; font-weight: 700; color: #02735E; margin-bottom: 0.25rem; }
+        .add-card p { font-size: 0.8rem; color: #64748b; text-align: center; }
+        
+        /* Plan Card */
+        .plan-card { background: white; border-radius: 24px; overflow: hidden; border: 1px solid rgba(2, 115, 94, 0.1); box-shadow: 0 4px 20px rgba(2, 35, 38, 0.06); transition: all 0.3s ease; position: relative; }
+        .plan-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #022326, #02735E); opacity: 0; transition: opacity 0.3s; }
+        .plan-card:hover { transform: translateY(-6px); box-shadow: 0 20px 50px rgba(2, 35, 38, 0.12); }
+        .plan-card:hover::before { opacity: 1; }
+        .plan-card.featured { border: 2px solid #10b981; }
+        .plan-card.featured::after { content: 'Recomendado'; position: absolute; top: 12px; right: -32px; background: linear-gradient(135deg, #02735E, #10b981); color: white; padding: 0.3rem 2.5rem; font-size: 0.65rem; font-weight: 700; transform: rotate(45deg); text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .plan-header { padding: 1.5rem; text-align: center; border-bottom: 1px solid #f1f5f9; }
+        .plan-icon { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 1rem; color: white; background: linear-gradient(135deg, #022326, #02735E); }
+        .plan-icon i { color: white; }
+        .plan-name { font-size: 1.15rem; font-weight: 800; color: #1e293b; margin-bottom: 0.25rem; }
+        .plan-price { font-size: 2rem; font-weight: 800; color: #022326; line-height: 1; }
+        .plan-price span { font-size: 0.9rem; font-weight: 500; color: #64748b; }
+        .plan-desc { font-size: 0.8rem; color: #64748b; margin-top: 0.5rem; }
+        
+        .plan-body { padding: 1.25rem; }
+        
+        .plan-includes { background: linear-gradient(135deg, rgba(2, 115, 94, 0.08), rgba(16, 185, 129, 0.05)); border: 1px solid rgba(2, 115, 94, 0.15); border-radius: 12px; padding: 0.75rem 1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem; }
+        .plan-includes-icon { width: 28px; height: 28px; background: linear-gradient(135deg, #02735E, #10b981); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.75rem; }
+        .plan-includes-icon i { color: white; }
+        .plan-includes-text { font-size: 0.8rem; font-weight: 600; color: #02735E; }
+        
+        .plan-features { list-style: none; margin-bottom: 1rem; padding: 0; }
+        .plan-features li { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0; font-size: 0.85rem; color: #475569; border-bottom: 1px solid #f8fafc; }
+        .plan-features li:last-child { border-bottom: none; }
+        .plan-features li i { color: #10b981; font-size: 0.8rem; width: 16px; }
+        
+        .plan-modules { background: #f8fafc; border-radius: 10px; padding: 0.65rem 1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .plan-modules i { color: #02735E; font-size: 0.85rem; }
+        .plan-modules span { font-size: 0.8rem; color: #475569; }
+        .plan-modules strong { color: #022326; }
+        
+        .plan-actions { display: flex; gap: 0.5rem; padding-top: 1rem; border-top: 1px solid #f1f5f9; }
+        .btn-action { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.65rem 0.75rem; border-radius: 10px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; font-family: inherit; border: none; }
+        .btn-action.edit { background: #f0fdf4; color: #02735E; }
+        .btn-action.edit:hover { background: #dcfce7; }
+        .btn-action.delete { background: #fef2f2; color: #dc2626; }
+        .btn-action.delete:hover { background: #fee2e2; }
+        
+        /* Modal */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(2, 35, 38, 0.7); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; visibility: hidden; backdrop-filter: blur(8px); transition: all 0.3s; padding: 1rem; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        
+        .modal-v { background: white; border-radius: 28px; width: 100%; max-width: 560px; overflow: hidden; transform: scale(0.95) translateY(20px); transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 30px 100px rgba(2, 35, 38, 0.35); max-height: 90vh; display: flex; flex-direction: column; }
+        .modal-overlay.active .modal-v { transform: scale(1) translateY(0); }
+        
+        .modal-header-v { background: linear-gradient(135deg, #022326 0%, #035951 50%, #02735E 100%); color: white; padding: 1.75rem 2rem; display: flex; justify-content: space-between; align-items: flex-start; position: relative; overflow: hidden; }
+        .modal-header-v::before { content: ''; position: absolute; top: -50%; right: -20%; width: 200px; height: 200px; background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%); border-radius: 50%; }
+        .modal-header-v h3 { font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 0.75rem; color: white; position: relative; z-index: 1; }
+        .modal-header-v h3 i { color: white; font-size: 1.1rem; }
+        .modal-header-v p { font-size: 0.85rem; color: rgba(255,255,255,0.7); margin-top: 0.35rem; position: relative; z-index: 1; }
+        .modal-close-v { background: rgba(255,255,255,0.15); border: none; color: white; width: 40px; height: 40px; border-radius: 12px; cursor: pointer; font-size: 1.35rem; transition: all 0.2s; position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; }
+        .modal-close-v:hover { background: rgba(255,255,255,0.25); transform: rotate(90deg); }
+        
+        .modal-body-v { padding: 2rem; overflow-y: auto; flex: 1; }
+        
+        /* Preview Section */
+        .preview-section { background: linear-gradient(135deg, #f8fafc, #f0fdf4); border-radius: 20px; padding: 1.5rem; margin-bottom: 1.75rem; display: flex; align-items: center; gap: 1.25rem; border: 1px solid rgba(2, 115, 94, 0.1); }
+        .preview-icon { width: 64px; height: 64px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all 0.3s ease; color: white; background: linear-gradient(135deg, #022326, #02735E); }
+        .preview-icon i { color: white; }
+        .preview-info h4 { font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 0.25rem; }
+        .preview-info .price { font-size: 1.5rem; font-weight: 800; color: #02735E; }
+        .preview-info .price span { font-size: 0.85rem; color: #64748b; font-weight: 500; }
+        .preview-badge { margin-left: auto; background: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; color: #02735E; border: 1px solid rgba(2, 115, 94, 0.2); }
+        
+        /* Form Elements */
+        .form-group-v { margin-bottom: 1.5rem; }
+        .form-label-v { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.65rem; }
+        .form-label-v .required { color: #ef4444; }
+        .form-input-v { width: 100%; padding: 1rem 1.15rem; border: 2px solid #e2e8f0; border-radius: 14px; font-size: 0.95rem; color: #1e293b; background: white; transition: all 0.25s ease; font-family: inherit; }
+        .form-input-v:focus { outline: none; border-color: #02735E; box-shadow: 0 0 0 4px rgba(2, 115, 94, 0.1); }
+        .form-input-v::placeholder { color: #94a3b8; }
+        
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        
+        /* Section Title */
+        .section-title { font-size: 0.8rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+        .section-title i { color: #02735E; font-size: 0.75rem; }
+        
+        /* Features Editor */
+        .features-editor { border: 2px solid #e2e8f0; border-radius: 14px; overflow: hidden; }
+        .features-list { max-height: 180px; overflow-y: auto; }
+        .feature-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9; }
+        .feature-item:last-child { border-bottom: none; }
+        .feature-item i.fa-check { color: #10b981; font-size: 0.85rem; }
+        .feature-item span { flex: 1; font-size: 0.9rem; color: #475569; }
+        .feature-item button { background: none; border: none; color: #ef4444; cursor: pointer; padding: 0.25rem; opacity: 0.6; }
+        .feature-item button:hover { opacity: 1; }
+        .feature-add { display: flex; gap: 0.5rem; padding: 0.75rem 1rem; background: #f8fafc; }
+        .feature-add input { flex: 1; padding: 0.6rem 0.85rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.85rem; }
+        .feature-add button { padding: 0.6rem 1rem; background: #02735E; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+        .feature-add button i { color: white; }
+        
+        .modal-footer-v { padding: 1.5rem 2rem; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; gap: 0.75rem; justify-content: flex-end; }
+        .btn-verdi { display: inline-flex; align-items: center; gap: 0.5rem; padding: 1rem 1.75rem; background: linear-gradient(135deg, #022326, #02735E); color: white; border: none; border-radius: 14px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.25s ease; font-family: inherit; }
+        .btn-verdi:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(2, 115, 94, 0.35); }
+        .btn-verdi i { color: white; }
+        .btn-verdi-outline { display: inline-flex; align-items: center; gap: 0.5rem; padding: 1rem 1.5rem; background: white; color: #64748b; border: 2px solid #e2e8f0; border-radius: 14px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.25s ease; font-family: inherit; }
+        .btn-verdi-outline:hover { background: #f8fafc; border-color: #cbd5e1; color: #1e293b; }
+        
+        /* Delete Modal */
+        .delete-modal .modal-v { max-width: 420px; }
+        .delete-modal .modal-header-v { background: linear-gradient(135deg, #dc2626, #ef4444); }
+        .delete-icon { width: 80px; height: 80px; margin: 0 auto 1.5rem; background: #fef2f2; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .delete-icon i { font-size: 2rem; color: #dc2626; }
+        .delete-content { text-align: center; }
+        .delete-content h4 { font-size: 1.15rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem; }
+        .delete-content p { font-size: 0.9rem; color: #64748b; }
+        .delete-content .name { color: #dc2626; font-weight: 700; }
+        .btn-danger { display: inline-flex; align-items: center; gap: 0.5rem; padding: 1rem 1.5rem; background: linear-gradient(135deg, #dc2626, #ef4444); color: white; border: none; border-radius: 14px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.25s ease; font-family: inherit; }
+        .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(239, 68, 68, 0.35); }
+        .btn-danger i { color: white; }
+    </style>
 </head>
 <body>
     <div class="app-shell">
-        <!-- Sidebar -->
         <aside class="sidebar" id="sidebar"></aside>
-
-        <!-- Main Content -->
         <main class="main-content">
-            <!-- Header -->
-            <header class="header">
-                <div class="header-left">
-                    <h1 class="page-title">Planes y Precios</h1>
-                    <p class="page-subtitle">Gestiona los planes de suscripción disponibles</p>
-                </div>
-                <div class="header-actions">
-                    <button class="btn btn-primary" onclick="openAddPlanModal()">
-                        <i class="fas fa-plus"></i> Nuevo Plan
-                    </button>
+            <header class="page-header">
+                <div class="page-header-content">
+                    <h1 class="page-title">Planes de Suscripción</h1>
+                    <p class="page-subtitle">Configura los planes disponibles para las compañías</p>
                 </div>
             </header>
-
             <div class="page-content">
-                <!-- Settings Navigation -->
-                <div class="card">
-                    <div class="filter-tags">
-                        <a href="general.html" class="filter-tag"><i class="fas fa-cog"></i> General</a>
-                        <a href="industries.html" class="filter-tag"><i class="fas fa-industry"></i> Industrias</a>
-                        <a href="products.html" class="filter-tag"><i class="fas fa-box"></i> Productos</a>
-                        <a href="plans.html" class="filter-tag active"><i class="fas fa-credit-card"></i> Planes</a>
-                        <a href="integrations.html" class="filter-tag"><i class="fas fa-plug"></i> Integraciones</a>
-                    </div>
-                </div>
-
-                <!-- Plans Grid -->
-                <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
-                    <!-- Starter Plan -->
-                    <div class="card">
-                        <div class="card-header" style="border-bottom: none; padding-bottom: 0;">
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #10b981, #6ee7b7); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-seedling" style="color: white; font-size: 1.25rem;"></i>
-                                </div>
-                                <div>
-                                    <h4 style="margin: 0;">Starter</h4>
-                                    <span class="status status-active">Activo</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div style="text-align: center; padding: 1rem 0; border-bottom: 1px solid var(--border-color); margin-bottom: 1rem;">
-                                <span style="font-size: 2.5rem; font-weight: 800; color: var(--text-primary);">$49</span>
-                                <span style="color: var(--text-secondary);">/mes</span>
-                            </div>
-                            <ul style="list-style: none; font-size: 0.875rem; color: var(--text-secondary);">
-                                <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fas fa-check" style="color: var(--success);"></i> 1 producto incluido
-                                </li>
-                                <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fas fa-check" style="color: var(--success);"></i> Hasta 5 usuarios
-                                </li>
-                                <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fas fa-check" style="color: var(--success);"></i> 10GB almacenamiento
-                                </li>
-                                <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fas fa-check" style="color: var(--success);"></i> Soporte por email
-                                </li>
-                            </ul>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
-                                <span style="font-size: 0.875rem; color: var(--text-secondary);">
-                                    <i class="fas fa-building"></i> 5 clientes
-                                </span>
-                                <button class="btn btn-sm btn-ghost" onclick="editPlan('starter')"><i class="fas fa-edit"></i></button>
-                            </div>
+                <nav class="settings-nav">
+                    <a href="general.html" class="settings-nav-item"><i class="fas fa-cog"></i> General</a>
+                    <a href="industries.html" class="settings-nav-item"><i class="fas fa-industry"></i> Industrias</a>
+                    <a href="products.html" class="settings-nav-item"><i class="fas fa-box"></i> Productos</a>
+                    <a href="plans.html" class="settings-nav-item active"><i class="fas fa-credit-card"></i> Planes</a>
+                    <a href="integrations.html" class="settings-nav-item"><i class="fas fa-plug"></i> Integraciones</a>
+                </nav>
+                
+                <div class="stats-bar">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-credit-card"></i></div>
+                        <div class="stat-info">
+                            <h4 id="totalPlans">0</h4>
+                            <p>Total planes</p>
                         </div>
                     </div>
-
-                    <!-- Professional Plan -->
-                    <div class="card" style="border: 2px solid var(--primary-color);">
-                        <div style="background: var(--primary-color); color: white; text-align: center; padding: 0.25rem; font-size: 0.75rem; font-weight: 600;">
-                            MÁS POPULAR
-                        </div>
-                        <div class="card-header" style="border-bottom: none; padding-bottom: 0;">
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary-color), #4ecdc4); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-bolt" style="color: white; font-size: 1.25rem;"></i>
-                                </div>
-                                <div>
-                                    <h4 style="margin: 0;">Professional</h4>
-                                    <span class="status status-active">Activo</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div style="text-align: center; padding: 1rem 0; border-bottom: 1px solid var(--border-color); margin-bottom: 1rem;">
-                                <span style="font-size: 2.5rem; font-weight: 800; color: var(--primary-color);">$99</span>
-                                <span style="color: var(--text-secondary);">/mes</span>
-                            </div>
-                            <ul style="list-style: none; font-size: 0.875rem; color: var(--text-secondary);">
-                                <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fas fa-check" style="color: var(--success);"></i> Hasta 3 productos
-                                </li>
-                                <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fas fa-check" style="color: var(--success);"></i> Hasta 25 usuarios
-                                </li>
-                                <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fas fa-check" style="color: var(--success);"></i> 50GB almacenamiento
-                                </li>
-                                <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fas fa-check" style="color: var(--success);"></i> Soporte prioritario
-                                </li>
-                                <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fas fa-check" style="color: var(--success);"></i> Reportes avanzados
-                                </li>
-                            </ul>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
-                                <span style="font-size: 0.875rem; color: var(--text-secondary);">
-                                    <i class="fas fa-building"></i> 8 clientes
-                                </span>
-                                <button class="btn btn-sm btn-ghost" onclick="editPlan('professional')"><i class="fas fa-edit"></i></button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Enterprise Plan -->
-                    <div class="card">
-                        <div class="card-header" style="border-bottom: none; padding-bottom: 0;">
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #8b5cf6, #a78bfa); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-building" style="color: white; font-size: 1.25rem;"></i>
-                                </div>
-                                <div>
-                                    <h4 style="margin: 0;">Enterprise</h4>
-                                    <span class="status status-active">Activo</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div style="text-align: center; padding: 1rem 0; border-bottom: 1px solid var(--border-color); margin-bottom: 1rem;">
-                                <span style="font-size: 2.5rem; font-weight: 800; color: var(--text-primary);">$249</span>
-                                <span style="color: var(--text-secondary);">/mes</span>
-                            </div>
-                            <ul style="list-style: none; font-size: 0.875rem; color: var(--text-secondary);">
-                                <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fas fa-check" style="color: var(--success);"></i> Productos ilimitados
-                                </li>
-                                <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fas fa-check" style="color: var(--success);"></i> Usuarios ilimitados
-                                </li>
-                                <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fas fa-check" style="color: var(--success);"></i> 500GB almacenamiento
-                                </li>
-                                <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fas fa-check" style="color: var(--success);"></i> Soporte 24/7 dedicado
-                                </li>
-                                <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fas fa-check" style="color: var(--success);"></i> API completa
-                                </li>
-                                <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fas fa-check" style="color: var(--success);"></i> White-label disponible
-                                </li>
-                            </ul>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
-                                <span style="font-size: 0.875rem; color: var(--text-secondary);">
-                                    <i class="fas fa-building"></i> 5 clientes
-                                </span>
-                                <button class="btn btn-sm btn-ghost" onclick="editPlan('enterprise')"><i class="fas fa-edit"></i></button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Trial Plan -->
-                    <div class="card" style="border-style: dashed;">
-                        <div class="card-header" style="border-bottom: none; padding-bottom: 0;">
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #f59e0b, #fcd34d); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-flask" style="color: white; font-size: 1.25rem;"></i>
-                                </div>
-                                <div>
-                                    <h4 style="margin: 0;">Trial</h4>
-                                    <span class="status status-trial">Gratuito</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div style="text-align: center; padding: 1rem 0; border-bottom: 1px solid var(--border-color); margin-bottom: 1rem;">
-                                <span style="font-size: 2.5rem; font-weight: 800; color: var(--text-primary);">$0</span>
-                                <span style="color: var(--text-secondary);">/14 días</span>
-                            </div>
-                            <ul style="list-style: none; font-size: 0.875rem; color: var(--text-secondary);">
-                                <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fas fa-check" style="color: var(--success);"></i> 1 producto a elegir
-                                </li>
-                                <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fas fa-check" style="color: var(--success);"></i> Hasta 3 usuarios
-                                </li>
-                                <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fas fa-check" style="color: var(--success);"></i> 5GB almacenamiento
-                                </li>
-                                <li style="padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fas fa-check" style="color: var(--success);"></i> Soporte por email
-                                </li>
-                            </ul>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
-                                <span style="font-size: 0.875rem; color: var(--text-secondary);">
-                                    <i class="fas fa-building"></i> 3 en trial
-                                </span>
-                                <button class="btn btn-sm btn-ghost" onclick="editPlan('trial')"><i class="fas fa-edit"></i></button>
-                            </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-car"></i></div>
+                        <div class="stat-info">
+                            <h4>MotorSync</h4>
+                            <p>Incluido en todos</p>
                         </div>
                     </div>
                 </div>
-
-                <!-- Pricing Stats -->
-                <div class="card" style="margin-top: 2rem;">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <i class="fas fa-chart-pie"></i> Distribución por Plan
-                        </h3>
+                
+                <div class="pricing-banner">
+                    <div class="pricing-banner-icon"><i class="fas fa-info-circle"></i></div>
+                    <div class="pricing-banner-text">
+                        <strong>Modelo de Precios</strong>
+                        <p>Cada plan incluye MotorSync (núcleo). Los módulos premium (TimeSync, ToolSync, etc.) se agregan al precio base.</p>
                     </div>
-                    <div class="card-body">
-                        <div class="stats-grid">
-                            <div class="stat-card">
-                                <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #6ee7b7);">
-                                    <i class="fas fa-seedling"></i>
-                                </div>
-                                <div class="stat-content">
-                                    <div class="stat-value">5</div>
-                                    <div class="stat-label">Starter</div>
-                                </div>
-                                <span style="font-size: 0.875rem; color: var(--text-secondary);">$245/mes</span>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-icon" style="background: linear-gradient(135deg, var(--primary-color), #4ecdc4);">
-                                    <i class="fas fa-bolt"></i>
-                                </div>
-                                <div class="stat-content">
-                                    <div class="stat-value">8</div>
-                                    <div class="stat-label">Professional</div>
-                                </div>
-                                <span style="font-size: 0.875rem; color: var(--text-secondary);">$792/mes</span>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-icon" style="background: linear-gradient(135deg, #8b5cf6, #a78bfa);">
-                                    <i class="fas fa-building"></i>
-                                </div>
-                                <div class="stat-content">
-                                    <div class="stat-value">5</div>
-                                    <div class="stat-label">Enterprise</div>
-                                </div>
-                                <span style="font-size: 0.875rem; color: var(--text-secondary);">$1,245/mes</span>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b, #fcd34d);">
-                                    <i class="fas fa-flask"></i>
-                                </div>
-                                <div class="stat-content">
-                                    <div class="stat-value">3</div>
-                                    <div class="stat-label">Trial</div>
-                                </div>
-                                <span style="font-size: 0.875rem; color: var(--text-secondary);">$0/mes</span>
-                            </div>
+                </div>
+                
+                <div class="plans-grid" id="plansGrid"></div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Add/Edit Plan Modal -->
+    <div class="modal-overlay" id="planModal">
+        <div class="modal-v">
+            <div class="modal-header-v">
+                <div>
+                    <h3 id="modalTitle"><i class="fas fa-plus-circle"></i> Nuevo Plan</h3>
+                    <p id="modalSubtitle">Crea un nuevo plan de suscripción</p>
+                </div>
+                <button class="modal-close-v" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body-v">
+                <input type="hidden" id="editingId">
+                
+                <!-- Live Preview -->
+                <div class="preview-section">
+                    <div class="preview-icon" id="previewIcon" style="background: linear-gradient(135deg, #3b82f6, #60a5fa);">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <div class="preview-info">
+                        <h4 id="previewName">Nombre del plan</h4>
+                        <div class="price" id="previewPrice">$0<span>/mes</span></div>
+                    </div>
+                    <span class="preview-badge">Preview</span>
+                </div>
+                
+                <!-- Name & Price -->
+                <div class="form-row">
+                    <div class="form-group-v">
+                        <label class="form-label-v">
+                            <i class="fas fa-tag"></i> Nombre <span class="required">*</span>
+                        </label>
+                        <input type="text" class="form-input-v" id="planName" placeholder="Ej: Professional" oninput="updatePreview()">
+                    </div>
+                    <div class="form-group-v">
+                        <label class="form-label-v">
+                            <i class="fas fa-dollar-sign"></i> Precio/mes <span class="required">*</span>
+                        </label>
+                        <input type="number" class="form-input-v" id="planPrice" placeholder="249" min="0" oninput="updatePreview()">
+                    </div>
+                </div>
+                
+                <div class="form-group-v">
+                    <label class="form-label-v">
+                        <i class="fas fa-align-left"></i> Descripción
+                    </label>
+                    <input type="text" class="form-input-v" id="planDesc" placeholder="Para empresas en crecimiento">
+                </div>
+                
+                <!-- Users & Storage -->
+                <div class="form-row">
+                    <div class="form-group-v">
+                        <label class="form-label-v">
+                            <i class="fas fa-users"></i> Máx. usuarios
+                        </label>
+                        <input type="number" class="form-input-v" id="planUsers" placeholder="25 (-1 = ilimitados)">
+                    </div>
+                    <div class="form-group-v">
+                        <label class="form-label-v">
+                            <i class="fas fa-database"></i> Almacenamiento
+                        </label>
+                        <input type="text" class="form-input-v" id="planStorage" placeholder="50GB">
+                    </div>
+                </div>
+                
+                <div class="form-group-v">
+                    <label class="form-label-v">
+                        <i class="fas fa-puzzle-piece"></i> Máx. módulos premium
+                    </label>
+                    <input type="number" class="form-input-v" id="planMaxModules" placeholder="3 (-1 = todos)">
+                </div>
+                
+                <!-- Features -->
+                <div class="form-group-v">
+                    <div class="section-title"><i class="fas fa-list-check"></i> Características incluidas</div>
+                    <div class="features-editor">
+                        <div class="features-list" id="featuresList"></div>
+                        <div class="feature-add">
+                            <input type="text" id="newFeature" placeholder="Nueva característica..." onkeypress="if(event.key==='Enter')addFeature()">
+                            <button onclick="addFeature()"><i class="fas fa-plus"></i></button>
                         </div>
                     </div>
                 </div>
             </div>
-        </main>
+            <div class="modal-footer-v">
+                <button class="btn-verdi-outline" onclick="closeModal()">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button class="btn-verdi" onclick="savePlan()">
+                    <i class="fas fa-check"></i> Guardar Plan
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay delete-modal" id="deleteModal">
+        <div class="modal-v">
+            <div class="modal-header-v">
+                <div>
+                    <h3><i class="fas fa-exclamation-triangle"></i> Eliminar Plan</h3>
+                    <p>Esta acción no se puede deshacer</p>
+                </div>
+                <button class="modal-close-v" onclick="closeDeleteModal()">×</button>
+            </div>
+            <div class="modal-body-v">
+                <div class="delete-icon"><i class="fas fa-trash-alt"></i></div>
+                <div class="delete-content">
+                    <h4>¿Eliminar este plan?</h4>
+                    <p>Estás a punto de eliminar <span class="name" id="deletePlanName"></span></p>
+                </div>
+            </div>
+            <div class="modal-footer-v">
+                <button class="btn-verdi-outline" onclick="closeDeleteModal()">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button class="btn-danger" onclick="confirmDelete()">
+                    <i class="fas fa-trash"></i> Eliminar
+                </button>
+            </div>
+        </div>
     </div>
 
     <script src="../js/sidebar.js"></script>
     <script src="../js/data.js"></script>
     <script>
-        // Plan editing modal functionality
-        function openAddPlanModal() {
-            document.getElementById('addPlanModal').classList.add('show');
+        // Default plans - usando colores Verdi del sistema
+        const DEFAULT_PLANS = [
+            { id: 'trial', name: 'Trial', price: 0, duration: '14 días', users: 3, storage: '5GB', maxPremiumModules: 1, features: ['MotorSync incluido', 'Hasta 3 usuarios', '5GB almacenamiento', '1 módulo premium de prueba'], description: 'Prueba gratuita de 14 días' },
+            { id: 'starter', name: 'Starter', price: 149, duration: 'mensual', users: 5, storage: '10GB', maxPremiumModules: 1, features: ['MotorSync incluido', 'Hasta 5 usuarios', '10GB almacenamiento', '1 módulo premium'], description: 'Ideal para pequeños negocios' },
+            { id: 'professional', name: 'Professional', price: 249, duration: 'mensual', users: 25, storage: '50GB', maxPremiumModules: 3, features: ['MotorSync incluido', 'Hasta 25 usuarios', '50GB almacenamiento', 'Hasta 3 módulos premium'], description: 'Para empresas en crecimiento', featured: true },
+            { id: 'enterprise', name: 'Enterprise', price: 499, duration: 'mensual', users: -1, storage: '500GB', maxPremiumModules: -1, features: ['MotorSync incluido', 'Usuarios ilimitados', '500GB almacenamiento', 'Todos los módulos premium', 'Soporte prioritario', 'API access'], description: 'Solución completa para grandes empresas' }
+        ];
+        
+        let currentFeatures = [];
+        let deleteId = null;
+        
+        // ========================================================================
+        // CRUD
+        // ========================================================================
+        
+        function getPlans() {
+            const stored = localStorage.getItem('opsis_plans');
+            if (stored) {
+                try { return JSON.parse(stored); } catch(e) {}
+            }
+            savePlans(DEFAULT_PLANS);
+            return DEFAULT_PLANS;
         }
         
-        function closeAddPlanModal() {
-            document.getElementById('addPlanModal').classList.remove('show');
+        function savePlans(plans) {
+            localStorage.setItem('opsis_plans', JSON.stringify(plans));
         }
-
+        
+        // ========================================================================
+        // RENDER
+        // ========================================================================
+        
+        function renderPlans() {
+            const plans = getPlans();
+            const grid = document.getElementById('plansGrid');
+            document.getElementById('totalPlans').textContent = plans.length;
+            
+            // Sort by price
+            plans.sort((a, b) => a.price - b.price);
+            
+            let html = `
+                <div class="add-card" onclick="openAddModal()">
+                    <div class="add-card-icon"><i class="fas fa-plus"></i></div>
+                    <h4>Agregar Plan</h4>
+                    <p>Crea un nuevo plan de suscripción</p>
+                </div>
+            `;
+            
+            html += plans.map(plan => {
+                const isFeatured = plan.featured || plan.id === 'professional';
+                const modulesText = plan.maxPremiumModules === -1 ? 'Todos los módulos' : 
+                                    plan.maxPremiumModules === 1 ? '1 módulo premium' : 
+                                    `Hasta ${plan.maxPremiumModules} módulos`;
+                
+                return `
+                <div class="plan-card${isFeatured ? ' featured' : ''}">
+                    <div class="plan-header">
+                        <div class="plan-icon">
+                            <i class="fas fa-${getPlanIcon(plan.id)}"></i>
+                        </div>
+                        <div class="plan-name">${plan.name}</div>
+                        <div class="plan-price">$${plan.price}<span>/${plan.duration || 'mes'}</span></div>
+                        <div class="plan-desc">${plan.description || ''}</div>
+                    </div>
+                    <div class="plan-body">
+                        <div class="plan-includes">
+                            <div class="plan-includes-icon"><i class="fas fa-car"></i></div>
+                            <span class="plan-includes-text">MotorSync Incluido</span>
+                        </div>
+                        
+                        <div class="plan-modules">
+                            <i class="fas fa-puzzle-piece"></i>
+                            <span><strong>${modulesText}</strong> adicionales</span>
+                        </div>
+                        
+                        <ul class="plan-features">
+                            ${(plan.features || []).slice(1, 5).map(f => 
+                                `<li><i class="fas fa-check"></i> ${f}</li>`
+                            ).join('')}
+                        </ul>
+                        
+                        <div class="plan-actions">
+                            <button class="btn-action edit" onclick="editPlan('${plan.id}')">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            ${plan.id !== 'trial' ? `
+                            <button class="btn-action delete" onclick="openDeleteModal('${plan.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+            
+            grid.innerHTML = html;
+        }
+        
+        function getPlanIcon(planId) {
+            const icons = { 'trial': 'gift', 'starter': 'rocket', 'professional': 'briefcase', 'enterprise': 'building' };
+            return icons[planId] || 'credit-card';
+        }
+        
+        // ========================================================================
+        // FEATURES EDITOR
+        // ========================================================================
+        
+        function renderFeatures() {
+            const container = document.getElementById('featuresList');
+            container.innerHTML = currentFeatures.map((f, i) => `
+                <div class="feature-item">
+                    <i class="fas fa-check"></i>
+                    <span>${f}</span>
+                    <button onclick="removeFeature(${i})"><i class="fas fa-times"></i></button>
+                </div>
+            `).join('');
+        }
+        
+        function addFeature() {
+            const input = document.getElementById('newFeature');
+            const value = input.value.trim();
+            if (value) {
+                currentFeatures.push(value);
+                input.value = '';
+                renderFeatures();
+            }
+        }
+        
+        function removeFeature(index) {
+            currentFeatures.splice(index, 1);
+            renderFeatures();
+        }
+        
+        // ========================================================================
+        // PREVIEW
+        // ========================================================================
+        
+        function updatePreview() {
+            const name = document.getElementById('planName').value || 'Nombre del plan';
+            const price = document.getElementById('planPrice').value || '0';
+            
+            document.getElementById('previewName').textContent = name;
+            document.getElementById('previewPrice').innerHTML = `$${price}<span>/mes</span>`;
+        }
+        
+        // ========================================================================
+        // MODAL
+        // ========================================================================
+        
+        function openAddModal() {
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus-circle"></i> Nuevo Plan';
+            document.getElementById('modalSubtitle').textContent = 'Crea un nuevo plan de suscripción';
+            document.getElementById('editingId').value = '';
+            document.getElementById('planName').value = '';
+            document.getElementById('planPrice').value = '';
+            document.getElementById('planDesc').value = '';
+            document.getElementById('planUsers').value = '';
+            document.getElementById('planStorage').value = '';
+            document.getElementById('planMaxModules').value = '';
+            currentFeatures = ['MotorSync incluido'];
+            renderFeatures();
+            updatePreview();
+            document.getElementById('planModal').classList.add('active');
+        }
+        
         function editPlan(planId) {
-            const plan = SuperAdminData.plans[planId];
+            const plans = getPlans();
+            const plan = plans.find(p => p.id === planId);
             if (!plan) return;
             
-            document.getElementById('editPlanKey').value = planId;
-            document.getElementById('editPlanName').value = plan.name;
-            document.getElementById('editPlanPrice').value = plan.price;
-            document.getElementById('editPlanDuration').value = plan.duration || 'mensual';
-            document.getElementById('editPlanFeatures').value = (plan.features || []).join('\n');
-            document.getElementById('editPlanColor').value = plan.color;
-            
-            document.getElementById('editPlanModal').classList.add('show');
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit"></i> Editar Plan';
+            document.getElementById('modalSubtitle').textContent = 'Modifica la configuración del plan';
+            document.getElementById('editingId').value = planId;
+            document.getElementById('planName').value = plan.name;
+            document.getElementById('planPrice').value = plan.price;
+            document.getElementById('planDesc').value = plan.description || '';
+            document.getElementById('planUsers').value = plan.users;
+            document.getElementById('planStorage').value = plan.storage || '';
+            document.getElementById('planMaxModules').value = plan.maxPremiumModules;
+            currentFeatures = [...(plan.features || [])];
+            renderFeatures();
+            updatePreview();
+            document.getElementById('planModal').classList.add('active');
         }
         
-        function closeEditPlanModal() {
-            document.getElementById('editPlanModal').classList.remove('show');
+        function closeModal() {
+            document.getElementById('planModal').classList.remove('active');
         }
         
-        function updatePlan() {
-            const key = document.getElementById('editPlanKey').value;
-            const name = document.getElementById('editPlanName').value;
-            const price = parseInt(document.getElementById('editPlanPrice').value);
-            const duration = document.getElementById('editPlanDuration').value;
-            const features = document.getElementById('editPlanFeatures').value.split('\n').filter(f => f.trim());
-            const color = document.getElementById('editPlanColor').value;
+        function savePlan() {
+            const editingId = document.getElementById('editingId').value;
+            const name = document.getElementById('planName').value.trim();
+            const price = parseInt(document.getElementById('planPrice').value) || 0;
+            const description = document.getElementById('planDesc').value.trim();
+            const users = parseInt(document.getElementById('planUsers').value) || 5;
+            const storage = document.getElementById('planStorage').value.trim() || '10GB';
+            const maxPremiumModules = parseInt(document.getElementById('planMaxModules').value) || 1;
             
             if (!name) {
                 showToast('El nombre es requerido', 'error');
                 return;
             }
             
-            SuperAdminData.plans[key] = {
-                ...SuperAdminData.plans[key],
-                name: name,
-                price: price,
-                duration: duration,
-                features: features,
-                color: color
-            };
+            const plans = getPlans();
             
-            closeEditPlanModal();
-            showToast(`Plan "${name}" actualizado`, 'success');
-            
-            // Reload page to reflect changes
-            setTimeout(() => location.reload(), 500);
-        }
-        
-        function addNewPlan() {
-            const name = document.getElementById('newPlanName').value;
-            const price = parseInt(document.getElementById('newPlanPrice').value);
-            const features = document.getElementById('newPlanFeatures').value.split('\n').filter(f => f.trim());
-            const color = document.getElementById('newPlanColor').value;
-            
-            if (!name) {
-                showToast('El nombre es requerido', 'error');
-                return;
+            if (editingId) {
+                const index = plans.findIndex(p => p.id === editingId);
+                if (index !== -1) {
+                    plans[index] = { ...plans[index], name, price, description, users, storage, maxPremiumModules, features: currentFeatures };
+                    showToast('Plan actualizado correctamente', 'success');
+                }
+            } else {
+                const id = name.toLowerCase().replace(/\s+/g, '-');
+                if (plans.some(p => p.id === id)) {
+                    showToast('Ya existe un plan con ese nombre', 'error');
+                    return;
+                }
+                plans.push({ id, name, price, duration: 'mensual', description, users, storage, maxPremiumModules, features: currentFeatures });
+                showToast('Plan creado correctamente', 'success');
             }
             
-            const key = name.toLowerCase().replace(/\s+/g, '-');
-            
-            SuperAdminData.plans[key] = {
-                name: name,
-                price: price || 0,
-                features: features,
-                color: color || '#64748b'
-            };
-            
-            closeAddPlanModal();
-            showToast(`Plan "${name}" creado`, 'success');
-            
-            setTimeout(() => location.reload(), 500);
+            savePlans(plans);
+            renderPlans();
+            closeModal();
         }
         
-        function showToast(message, type = 'success') {
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            const iconClass = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-times-circle' : 'fa-info-circle';
-            toast.innerHTML = `<i class="fas ${iconClass}"></i> ${message}`;
+        // ========================================================================
+        // DELETE
+        // ========================================================================
+        
+        function openDeleteModal(planId) {
+            const plans = getPlans();
+            const plan = plans.find(p => p.id === planId);
+            if (!plan) return;
             
-            let container = document.querySelector('.toast-container');
-            if (!container) {
-                container = document.createElement('div');
-                container.className = 'toast-container';
-                document.body.appendChild(container);
-            }
-            container.appendChild(toast);
-            
-            setTimeout(() => toast.remove(), 3000);
+            deleteId = planId;
+            document.getElementById('deletePlanName').textContent = plan.name;
+            document.getElementById('deleteModal').classList.add('active');
         }
+        
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('active');
+            deleteId = null;
+        }
+        
+        function confirmDelete() {
+            if (!deleteId) return;
+            let plans = getPlans();
+            plans = plans.filter(p => p.id !== deleteId);
+            savePlans(plans);
+            renderPlans();
+            closeDeleteModal();
+            showToast('Plan eliminado', 'success');
+        }
+        
+        // ========================================================================
+        // TOAST
+        // ========================================================================
+        
+        function showToast(msg, type = 'success') {
+            const t = document.createElement('div');
+            const bg = type === 'success' ? 'linear-gradient(135deg, #02735E, #10b981)' : 'linear-gradient(135deg, #ef4444, #f87171)';
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            t.innerHTML = '<i class="fas ' + icon + '"></i> ' + msg;
+            t.style.cssText = 'position:fixed;top:20px;right:20px;padding:1rem 1.5rem;background:' + bg + ';color:white;border-radius:12px;display:flex;align-items:center;gap:0.75rem;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,0.15);z-index:99999;font-family:Inter,sans-serif;';
+            document.body.appendChild(t);
+            setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; setTimeout(() => t.remove(), 300); }, 3000);
+        }
+        
+        // ========================================================================
+        // INIT
+        // ========================================================================
+        
+        // Clear old data and render
+        localStorage.removeItem('opsis_plans');
+        document.addEventListener('DOMContentLoaded', renderPlans);
         
         // Close modals on backdrop click
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', (e) => {
-                if (e.target.classList.contains('modal')) {
-                    modal.classList.remove('show');
-                }
-            });
-        });
+        document.getElementById('planModal').addEventListener('click', e => { if (e.target.id === 'planModal') closeModal(); });
+        document.getElementById('deleteModal').addEventListener('click', e => { if (e.target.id === 'deleteModal') closeDeleteModal(); });
     </script>
-    
-    <!-- Edit Plan Modal -->
-    <div class="modal" id="editPlanModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title"><i class="fas fa-edit"></i> Editar Plan</h3>
-                <button class="modal-close" onclick="closeEditPlanModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="editPlanKey">
-                <div class="form-group">
-                    <label class="form-label">Nombre del Plan *</label>
-                    <input type="text" class="form-input" id="editPlanName" placeholder="Ej: Professional">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Precio (USD/mes)</label>
-                    <input type="number" class="form-input" id="editPlanPrice" placeholder="99" min="0">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Duración</label>
-                    <select class="form-select" id="editPlanDuration">
-                        <option value="mensual">Mensual</option>
-                        <option value="14 días">14 días (Trial)</option>
-                        <option value="anual">Anual</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Características (una por línea)</label>
-                    <textarea class="form-textarea" id="editPlanFeatures" rows="5" placeholder="1 producto&#10;5 usuarios&#10;10GB almacenamiento"></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Color del Plan</label>
-                    <input type="color" class="form-input" id="editPlanColor" style="height: 40px; padding: 4px;">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeEditPlanModal()">Cancelar</button>
-                <button class="btn btn-primary" onclick="updatePlan()"><i class="fas fa-save"></i> Guardar Cambios</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Add Plan Modal -->
-    <div class="modal" id="addPlanModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title"><i class="fas fa-plus-circle"></i> Nuevo Plan</h3>
-                <button class="modal-close" onclick="closeAddPlanModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Nombre del Plan *</label>
-                    <input type="text" class="form-input" id="newPlanName" placeholder="Ej: Business">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Precio (USD/mes)</label>
-                    <input type="number" class="form-input" id="newPlanPrice" placeholder="149" min="0">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Características (una por línea)</label>
-                    <textarea class="form-textarea" id="newPlanFeatures" rows="5" placeholder="2 productos&#10;15 usuarios&#10;25GB almacenamiento"></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Color del Plan</label>
-                    <input type="color" class="form-input" id="newPlanColor" value="#3b82f6" style="height: 40px; padding: 4px;">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeAddPlanModal()">Cancelar</button>
-                <button class="btn btn-primary" onclick="addNewPlan()"><i class="fas fa-plus"></i> Crear Plan</button>
-            </div>
-        </div>
-    </div>
 </body>
 </html>
