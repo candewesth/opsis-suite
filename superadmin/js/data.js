@@ -13,58 +13,237 @@
 //
 // Example migration:
 //   BEFORE: getCompany(id) { return this.companies.find(c => c.id === id); }
-//   AFTER:  async getCompany(id) { 
+//   AFTER:  getCompany(id) { 
 //             const { data } = await supabase.from('companies').select().eq('id', id).single();
 //             return data;
 //           }
 // ============================================================================
+
+// ---------------------------------------------------------------------------
+// Storage configuration (toggle between local and Supabase later)
+// Change SUPERADMIN_STORAGE_MODE to 'supabase' once credentials are ready
+// and the Supabase client is available globally (window.supabase or supabase).
+// ---------------------------------------------------------------------------
+const SUPERADMIN_STORAGE_MODE = (typeof window !== 'undefined' && window.OPSIS_SUPERADMIN_STORAGE_MODE) || 'local';
+const SUPERADMIN_SUPABASE_CONFIG = (typeof window !== 'undefined' && window.OPSIS_SUPABASE_CONFIG) || {
+    url: '',
+    key: ''
+};
+
+// Local storage driver (async interface for compatibility with Supabase)
+const LocalStorageDriver = {
+    type: 'local',
+    keyMap: {
+        companies: 'opsis_companies',
+        team: 'opsis_team',
+        tickets: 'opsis_tickets',
+        products: 'opsis_products',
+        plans: 'opsis_plans',
+        industries: 'opsis_industries',
+        invoices: 'opsis_invoices'
+    },
+    get(collection) {
+        const key = this.keyMap[collection] || collection;
+        try {
+            const data = localStorage.getItem(key);
+            return data ? JSON.parse(data) : [];
+        } catch (e) {
+            console.warn('[LocalStorageDriver] get error:', e);
+            return [];
+        }
+    },
+    set(collection, value) {
+        const key = this.keyMap[collection] || collection;
+        try {
+            localStorage.setItem(key, JSON.stringify(value));
+            return true;
+        } catch (e) {
+            console.warn('[LocalStorageDriver] set error:', e);
+            return false;
+        }
+    },
+    insert(collection, record) {
+        const data = this.get(collection);
+        data.push(record);
+        this.set(collection, data);
+        return record;
+    },
+    update(collection, id, updates) {
+        const data = this.get(collection);
+        const index = data.findIndex(item => item.id == id);
+        if (index === -1) return null;
+        data[index] = { ...data[index], ...updates };
+        this.set(collection, data);
+        return data[index];
+    },
+    remove(collection, id) {
+        const data = this.get(collection);
+        const index = data.findIndex(item => item.id == id);
+        if (index === -1) return false;
+        data.splice(index, 1);
+        this.set(collection, data);
+        return true;
+    }
+};
+
+// Supabase demo driver (behaves async but stores locally)
+const SupabaseDemoDriver = {
+    type: 'supabase',
+    enabled: true,
+    async get(collection, filters = {}) {
+        const data = LocalStorageDriver.get(collection) || [];
+        if (!filters || Object.keys(filters).length === 0) return data;
+        return data.filter(item => Object.entries(filters).every(([k, v]) => item[k] == v));
+    },
+    async insert(collection, record) {
+        const inserted = LocalStorageDriver.insert(collection, record);
+        return Promise.resolve(inserted);
+    },
+    async update(collection, id, updates) {
+        const updated = LocalStorageDriver.update(collection, id, updates);
+        return Promise.resolve(updated);
+    },
+    async remove(collection, id) {
+        const removed = LocalStorageDriver.remove(collection, id);
+        return Promise.resolve(removed);
+    },
+    async set(collection, records) {
+        const ok = LocalStorageDriver.set(collection, records);
+        return Promise.resolve(ok);
+    }
+};
+
+// Supabase driver placeholder (disabled until config + client are present)
+const SupabaseDriver = {
+    type: 'supabase',
+    enabled: false,
+    client: null,
+    tableMap: {
+        companies: 'companies',
+        team: 'team_members',
+        tickets: 'tickets',
+        products: 'products',
+        plans: 'plans',
+        industries: 'industries',
+        invoices: 'invoices'
+    },
+    init(config) {
+        if (!config || !config.url || !config.key) return false;
+        const supabaseGlobal = (typeof supabase !== 'undefined' && supabase.createClient)
+            ? supabase
+            : (typeof window !== 'undefined' && window.supabase && window.supabase.createClient ? window.supabase : null);
+        if (!supabaseGlobal || typeof supabaseGlobal.createClient !== 'function') {
+            console.warn('[SupabaseDriver] Supabase client not loaded. Include @supabase/supabase-js before enabling this mode.');
+            return false;
+        }
+        this.client = supabaseGlobal.createClient(config.url, config.key);
+        this.enabled = true;
+        return true;
+    },
+    resolveTable(collection) {
+        return this.tableMap[collection] || collection;
+    },
+    async get(collection, filters = {}) {
+        if (!this.enabled || !this.client) throw new Error('Supabase driver not initialized');
+        const table = this.resolveTable(collection);
+        let query = this.client.from(table).select('*');
+        Object.entries(filters || {}).forEach(([key, value]) => {
+            query = query.eq(key, value);
+        });
+        const { data, error } = await query;
+        if (error) throw error;
+        return data || [];
+    },
+    async insert(collection, record) {
+        if (!this.enabled || !this.client) throw new Error('Supabase driver not initialized');
+        const table = this.resolveTable(collection);
+        const { data, error } = await this.client.from(table).insert(record).select().single();
+        if (error) throw error;
+        return data;
+    },
+    async update(collection, id, updates) {
+        if (!this.enabled || !this.client) throw new Error('Supabase driver not initialized');
+        const table = this.resolveTable(collection);
+        const { data, error } = await this.client.from(table).update(updates).eq('id', id).select().single();
+        if (error) throw error;
+        return data;
+    },
+    async remove(collection, id) {
+        if (!this.enabled || !this.client) throw new Error('Supabase driver not initialized');
+        const table = this.resolveTable(collection);
+        const { error } = await this.client.from(table).delete().eq('id', id);
+        if (error) throw error;
+        return true;
+    },
+    async set(collection, records) {
+        if (!this.enabled || !this.client) throw new Error('Supabase driver not initialized');
+        const table = this.resolveTable(collection);
+        const { error } = await this.client.from(table).upsert(records);
+        if (error) throw error;
+        return true;
+    }
+};
 
 const SuperAdminData = {
     // ========================================================================
     // STORAGE LAYER (Replace with Supabase)
     // ========================================================================
     _storage: {
-        // Storage keys
-        KEYS: {
-            COMPANIES: 'opsis_companies',
-            TEAM: 'opsis_team',
-            TICKETS: 'opsis_tickets',
-            PRODUCTS: 'opsis_products',
-            PLANS: 'opsis_plans',
-            INDUSTRIES: 'opsis_industries',
-            INVOICES: 'opsis_invoices'
-        },
-        
-        // Get from storage
-        get(key) {
-            try {
-                const data = localStorage.getItem(key);
-                return data ? JSON.parse(data) : null;
-            } catch (e) {
-                console.warn('Storage get error:', e);
-                return null;
+        MODE: SUPERADMIN_STORAGE_MODE,
+        supabaseConfig: SUPERADMIN_SUPABASE_CONFIG,
+        driver: LocalStorageDriver,
+        initDriver() {
+            if (this.MODE === 'supabase-demo') {
+                this.driver = SupabaseDemoDriver;
+            } else if (this.MODE === 'supabase' && SupabaseDriver.init(this.supabaseConfig)) {
+                this.driver = SupabaseDriver;
+            } else {
+                this.driver = LocalStorageDriver;
             }
+            return this.driver;
         },
-        
-        // Set to storage
-        set(key, value) {
-            try {
-                localStorage.setItem(key, JSON.stringify(value));
-                return true;
-            } catch (e) {
-                console.warn('Storage set error:', e);
-                return false;
-            }
+        get(collection, filters = {}) {
+            return this.driver.get(collection, filters);
         },
-        
-        // Remove from storage
-        remove(key) {
-            try {
-                localStorage.removeItem(key);
-                return true;
-            } catch (e) {
-                return false;
+        set(collection, value) {
+            if (typeof this.driver.set === 'function') {
+                return this.driver.set(collection, value);
             }
+            return LocalStorageDriver.set(collection, value);
+        },
+        insert(collection, record) {
+            if (typeof this.driver.insert === 'function') {
+                return this.driver.insert(collection, record);
+            }
+            const existing = this.get(collection);
+            existing.push(record);
+            this.set(collection, existing);
+            return record;
+        },
+        update(collection, id, updates) {
+            if (typeof this.driver.update === 'function') {
+                return this.driver.update(collection, id, updates);
+            }
+            const existing = this.get(collection);
+            const index = existing.findIndex(item => item.id == id);
+            if (index === -1) return null;
+            existing[index] = { ...existing[index], ...updates };
+            this.set(collection, existing);
+            return existing[index];
+        },
+        remove(collection, id) {
+            if (typeof this.driver.remove === 'function') {
+                return this.driver.remove(collection, id);
+            }
+            const existing = this.get(collection);
+            const index = existing.findIndex(item => item.id == id);
+            if (index === -1) return false;
+            existing.splice(index, 1);
+            this.set(collection, existing);
+            return true;
+        },
+        isSupabase() {
+            return this.driver && this.driver.type === 'supabase' && this.driver.enabled;
         }
     },
 
@@ -368,6 +547,9 @@ const SuperAdminData = {
     
     // Get all companies (with optional filters)
     getCompanies(filters = {}) {
+        if (this._storage.isSupabase()) {
+            return this._storage.get('companies', filters);
+        }
         let result = [...this.companies];
         
         if (filters.status) {
@@ -393,11 +575,17 @@ const SuperAdminData = {
     
     // Get single company by ID
     getCompany(id) {
+        if (this._storage.isSupabase()) {
+            return this._storage.get('companies', { id }).then(rows => (rows || []).find(c => c.id == id) || null);
+        }
         return this.companies.find(c => c.id == id) || null;
     },
     
     // Get company by domain
     getCompanyByDomain(domain) {
+        if (this._storage.isSupabase()) {
+            return this._storage.get('companies', { domain }).then(rows => (rows || []).find(c => c.domain === domain) || null);
+        }
         return this.companies.find(c => c.domain === domain) || null;
     },
     
@@ -408,6 +596,9 @@ const SuperAdminData = {
     
     // Create new company
     createCompany(data) {
+        if (this._storage.isSupabase()) {
+            return this._storage.insert('companies', data);
+        }
         const newId = Math.max(0, ...this.companies.map(c => c.id)) + 1;
         const company = {
             id: newId,
@@ -433,6 +624,9 @@ const SuperAdminData = {
     
     // Update company
     updateCompany(id, updates) {
+        if (this._storage.isSupabase()) {
+            return this._storage.update('companies', id, updates);
+        }
         const index = this.companies.findIndex(c => c.id == id);
         if (index === -1) return null;
         
@@ -443,6 +637,9 @@ const SuperAdminData = {
     
     // Delete company
     deleteCompany(id) {
+        if (this._storage.isSupabase()) {
+            return this._storage.remove('companies', id);
+        }
         const index = this.companies.findIndex(c => c.id == id);
         if (index === -1) return false;
         
@@ -453,6 +650,9 @@ const SuperAdminData = {
     
     // Get active companies
     getActiveCompanies() {
+        if (this._storage.isSupabase()) {
+            return this._storage.get('companies', { status: 'active' });
+        }
         return this.companies.filter(c => c.status === 'active' || c.status === 'trial');
     },
 
@@ -461,6 +661,9 @@ const SuperAdminData = {
     // ========================================================================
     
     getTeamMembers(filters = {}) {
+        if (this._storage.isSupabase()) {
+            return this._storage.get('team', filters);
+        }
         let result = [...this.team];
         if (filters.role) {
             result = result.filter(t => t.role === filters.role);
@@ -472,10 +675,16 @@ const SuperAdminData = {
     },
     
     getTeamMember(id) {
+        if (this._storage.isSupabase()) {
+            return this._storage.get('team', { id }).then(rows => (rows || []).find(t => t.id == id) || null);
+        }
         return this.team.find(t => t.id == id) || null;
     },
     
     createTeamMember(data) {
+        if (this._storage.isSupabase()) {
+            return this._storage.insert('team', data);
+        }
         const newId = Math.max(0, ...this.team.map(t => t.id)) + 1;
         const member = {
             id: newId,
@@ -496,6 +705,9 @@ const SuperAdminData = {
     },
     
     updateTeamMember(id, updates) {
+        if (this._storage.isSupabase()) {
+            return this._storage.update('team', id, updates);
+        }
         const index = this.team.findIndex(t => t.id == id);
         if (index === -1) return null;
         
@@ -505,6 +717,9 @@ const SuperAdminData = {
     },
     
     deleteTeamMember(id) {
+        if (this._storage.isSupabase()) {
+            return this._storage.remove('team', id);
+        }
         const index = this.team.findIndex(t => t.id == id);
         if (index === -1) return false;
         
@@ -518,6 +733,9 @@ const SuperAdminData = {
     // ========================================================================
     
     getTickets(filters = {}) {
+        if (this._storage.isSupabase()) {
+            return this._storage.get('tickets', filters);
+        }
         let result = [...this.tickets];
         if (filters.status) {
             result = result.filter(t => t.status === filters.status);
@@ -532,10 +750,16 @@ const SuperAdminData = {
     },
     
     getTicket(id) {
+        if (this._storage.isSupabase()) {
+            return this._storage.get('tickets', { id }).then(rows => (rows || []).find(t => t.id == id) || null);
+        }
         return this.tickets.find(t => t.id == id) || null;
     },
     
     createTicket(data) {
+        if (this._storage.isSupabase()) {
+            return this._storage.insert('tickets', data);
+        }
         const newId = Math.max(0, ...this.tickets.map(t => t.id)) + 1;
         const ticket = {
             id: newId,
@@ -555,6 +779,9 @@ const SuperAdminData = {
     },
     
     updateTicket(id, updates) {
+        if (this._storage.isSupabase()) {
+            return this._storage.update('tickets', id, updates);
+        }
         const index = this.tickets.findIndex(t => t.id == id);
         if (index === -1) return null;
         
@@ -564,6 +791,9 @@ const SuperAdminData = {
     },
     
     deleteTicket(id) {
+        if (this._storage.isSupabase()) {
+            return this._storage.remove('tickets', id);
+        }
         const index = this.tickets.findIndex(t => t.id == id);
         if (index === -1) return false;
         
@@ -577,6 +807,9 @@ const SuperAdminData = {
     // ========================================================================
     
     getInvoices(filters = {}) {
+        if (this._storage.isSupabase()) {
+            return this._storage.get('invoices', filters);
+        }
         let result = [...this.invoices];
         if (filters.status) {
             result = result.filter(i => i.status === filters.status);
@@ -588,10 +821,16 @@ const SuperAdminData = {
     },
     
     getInvoice(id) {
+        if (this._storage.isSupabase()) {
+            return this._storage.get('invoices', { id }).then(rows => (rows || []).find(i => i.id == id) || null);
+        }
         return this.invoices.find(i => i.id == id) || null;
     },
     
     createInvoice(data) {
+        if (this._storage.isSupabase()) {
+            return this._storage.insert('invoices', data);
+        }
         const newId = Math.max(0, ...this.invoices.map(i => i.id)) + 1;
         const invoice = {
             id: newId,
@@ -611,6 +850,9 @@ const SuperAdminData = {
     },
     
     updateInvoice(id, updates) {
+        if (this._storage.isSupabase()) {
+            return this._storage.update('invoices', id, updates);
+        }
         const index = this.invoices.findIndex(i => i.id == id);
         if (index === -1) return null;
         
@@ -737,19 +979,19 @@ const SuperAdminData = {
     // ========================================================================
     
     persistCompanies() {
-        this._storage.set(this._storage.KEYS.COMPANIES, this.companies);
+        this._storage.set('companies', this.companies);
     },
     
     persistTeam() {
-        this._storage.set(this._storage.KEYS.TEAM, this.team);
+        this._storage.set('team', this.team);
     },
     
     persistTickets() {
-        this._storage.set(this._storage.KEYS.TICKETS, this.tickets);
+        this._storage.set('tickets', this.tickets);
     },
     
     persistInvoices() {
-        this._storage.set(this._storage.KEYS.INVOICES, this.invoices);
+        this._storage.set('invoices', this.invoices);
     },
     
     persistAll() {
@@ -757,6 +999,7 @@ const SuperAdminData = {
         this.persistTeam();
         this.persistTickets();
         this.persistInvoices();
+        return true;
     },
 
     // ========================================================================
@@ -782,26 +1025,58 @@ const SuperAdminData = {
     // ========================================================================
     
     init() {
-        // Load from storage or use defaults
-        const storedCompanies = this._storage.get(this._storage.KEYS.COMPANIES);
-        const storedTeam = this._storage.get(this._storage.KEYS.TEAM);
-        const storedTickets = this._storage.get(this._storage.KEYS.TICKETS);
-        const storedInvoices = this._storage.get(this._storage.KEYS.INVOICES);
+        this._storage.initDriver();
+
+        if (this._storage.isSupabase()) {
+            this.ready = this._loadFromSupabase();
+            return this.ready;
+        }
+
+        const storedCompanies = this._storage.get('companies');
+        const storedTeam = this._storage.get('team');
+        const storedTickets = this._storage.get('tickets');
+        const storedInvoices = this._storage.get('invoices');
         
-        this.companies = storedCompanies || [...this._defaults.companies];
-        this.team = storedTeam || [...this._defaults.team];
-        this.tickets = storedTickets || [...this._defaults.tickets];
-        this.invoices = storedInvoices || [...this._defaults.invoices];
+        this.companies = storedCompanies && storedCompanies.length ? storedCompanies : [...this._defaults.companies];
+        this.team = storedTeam && storedTeam.length ? storedTeam : [...this._defaults.team];
+        this.tickets = storedTickets && storedTickets.length ? storedTickets : [...this._defaults.tickets];
+        this.invoices = storedInvoices && storedInvoices.length ? storedInvoices : [...this._defaults.invoices];
         
         // Calculate product usage counts
         this._updateProductCounts();
         
         console.log('SuperAdminData initialized:', {
+            storage: this._storage.isSupabase() ? 'supabase' : 'local',
             companies: this.companies.length,
             team: this.team.length,
             tickets: this.tickets.length,
             invoices: this.invoices.length
         });
+        this.ready = Promise.resolve(true);
+        return this.ready;
+    },
+
+    async _loadFromSupabase() {
+        const [storedCompanies, storedTeam, storedTickets, storedInvoices] = await Promise.all([
+            this._storage.get('companies'),
+            this._storage.get('team'),
+            this._storage.get('tickets'),
+            this._storage.get('invoices')
+        ]);
+
+        this.companies = storedCompanies && storedCompanies.length ? storedCompanies : [...this._defaults.companies];
+        this.team = storedTeam && storedTeam.length ? storedTeam : [...this._defaults.team];
+        this.tickets = storedTickets && storedTickets.length ? storedTickets : [...this._defaults.tickets];
+        this.invoices = storedInvoices && storedInvoices.length ? storedInvoices : [...this._defaults.invoices];
+
+        this._updateProductCounts();
+        console.log('SuperAdminData initialized (supabase):', {
+            companies: this.companies.length,
+            team: this.team.length,
+            tickets: this.tickets.length,
+            invoices: this.invoices.length
+        });
+        return true;
     },
     
     _updateProductCounts() {
@@ -822,16 +1097,20 @@ const SuperAdminData = {
     },
     
     // Reset to defaults (useful for testing)
-    reset() {
-        Object.values(this._storage.KEYS).forEach(key => {
-            this._storage.remove(key);
-        });
-        this.init();
+    async reset() {
+        await Promise.all([
+            this._storage.remove('companies'),
+            this._storage.remove('team'),
+            this._storage.remove('tickets'),
+            this._storage.remove('invoices')
+        ]);
+        this.ready = this.init();
+        return this.ready;
     }
 };
 
 // Auto-initialize
-SuperAdminData.init();
+SuperAdminData.ready = SuperAdminData.init();
 
 // Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {

@@ -414,16 +414,23 @@
             { id: 2, type: 'success', title: 'Pago recibido', message: 'Constructora ABC realizó pago de $299', time: 'Hace 2 horas', read: false },
             { id: 3, type: 'warning', title: 'Trial por expirar', message: 'Supermercados La Familia - 3 días restantes', time: 'Hace 4 horas', read: true }
         ];
+        let cachedCompanies = [];
+        let cachedTeam = [];
+        let cachedTickets = [];
 
         // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', () => {
-            loadDashboardData();
+        document.addEventListener('DOMContentLoaded', async () => {
+            await SuperAdminData.ready;
+            await loadDashboardData();
             initSearch();
             initChart('6months');
         });
 
-        function loadDashboardData() {
-            const totals = SuperAdminData.getTotals();
+        async function loadDashboardData() {
+            cachedCompanies = await SuperAdminData.getCompanies();
+            cachedTeam = await SuperAdminData.getTeamMembers();
+            cachedTickets = await SuperAdminData.getTickets();
+            const totals = await SuperAdminData.getTotals();
             
             // Update stats with animation
             animateNumber('totalCompanies', totals.companies);
@@ -458,7 +465,7 @@
         }
 
         function loadRecentCompanies() {
-            const recentCompanies = SuperAdminData.companies.slice(0, 5);
+            const recentCompanies = cachedCompanies.slice(0, 5);
             document.getElementById('recentCompanies').innerHTML = recentCompanies.map(company => `
                 <tr onclick="viewCompany(${company.id})" style="cursor: pointer;" class="table-row-clickable">
                     <td>
@@ -508,7 +515,7 @@
         }
 
         function loadTickets() {
-            const openTickets = SuperAdminData.tickets.filter(t => t.status !== 'closed').slice(0, 3);
+            const openTickets = cachedTickets.filter(t => t.status !== 'closed').slice(0, 3);
             document.getElementById('ticketsList').innerHTML = openTickets.map(ticket => `
                 <div class="activity-item" style="padding: 16px; cursor: pointer;" onclick="viewTicket(${ticket.id})">
                     <div class="activity-icon ${ticket.priority === 'high' ? 'danger' : ticket.priority === 'medium' ? 'warning' : 'success'}">
@@ -539,12 +546,12 @@
                     return;
                 }
                 
-                const companyResults = SuperAdminData.companies.filter(c => 
+                const companyResults = cachedCompanies.filter(c => 
                     c.name.toLowerCase().includes(query) || 
                     c.email.toLowerCase().includes(query)
                 );
                 
-                const teamResults = SuperAdminData.team.filter(t => 
+                const teamResults = cachedTeam.filter(t => 
                     t.name.toLowerCase().includes(query) || 
                     t.email.toLowerCase().includes(query)
                 );
@@ -664,8 +671,8 @@
         }
 
         // View company modal
-        function viewCompany(id) {
-            const company = SuperAdminData.getCompany(id);
+        async function viewCompany(id) {
+            const company = cachedCompanies.find(c => c.id == id) || await SuperAdminData.getCompany(id);
             if (!company) return;
             
             document.getElementById('companyModalContent').innerHTML = `
@@ -719,7 +726,7 @@
 
         // View ticket
         function viewTicket(id) {
-            const ticket = SuperAdminData.tickets.find(t => t.id === id);
+            const ticket = cachedTickets.find(t => t.id === id);
             if (!ticket) return;
             showToast(`Abriendo ticket #${id}: ${ticket.subject}`, 'info');
             setTimeout(() => location.href = 'support/tickets.html', 500);

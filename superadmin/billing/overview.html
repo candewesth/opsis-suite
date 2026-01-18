@@ -253,6 +253,8 @@
         
         let trendChart = null;
         const mrrHistory = generateMRRHistory();
+        let cachedCompanies = [];
+        let cachedTotals = null;
         
         function generateMRRHistory() {
             const history = [];
@@ -270,8 +272,11 @@
             return history;
         }
         
-        document.addEventListener('DOMContentLoaded', () => {
-            loadBillingData();
+        document.addEventListener('DOMContentLoaded', async () => {
+            await SuperAdminData.ready;
+            cachedCompanies = await SuperAdminData.getCompanies();
+            cachedTotals = await SuperAdminData.getTotals();
+            await loadBillingData();
             initTrendChart();
         });
         
@@ -325,8 +330,9 @@
             trendChart.update();
         }
 
-        function loadBillingData() {
-            const totals = SuperAdminData.getTotals();
+        async function loadBillingData() {
+            const totals = cachedTotals || await SuperAdminData.getTotals();
+            const companies = cachedCompanies.length ? cachedCompanies : await SuperAdminData.getCompanies();
             
             // Update stats
             document.getElementById('mrr').textContent = totals.mrr.toLocaleString();
@@ -341,7 +347,7 @@
             // Plan breakdown
             const planCounts = {};
             const planRevenue = {};
-            SuperAdminData.companies.forEach(company => {
+            companies.forEach(company => {
                 const plan = company.plan.toLowerCase();
                 planCounts[plan] = (planCounts[plan] || 0) + 1;
                 planRevenue[plan] = (planRevenue[plan] || 0) + company.mrr;
@@ -390,7 +396,7 @@
             
             // Industry revenue
             const industryRevenue = {};
-            SuperAdminData.companies.forEach(company => {
+            companies.forEach(company => {
                 industryRevenue[company.industry] = (industryRevenue[company.industry] || 0) + company.mrr;
             });
             
@@ -420,12 +426,12 @@
         }
 
         // Generate and download revenue report as PDF
-        function generateReport() {
+        async function generateReport() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
-            const totals = SuperAdminData.getTotals();
-            const companies = SuperAdminData.getCompanies();
+            const totals = cachedTotals || await SuperAdminData.getTotals();
+            const companies = cachedCompanies.length ? cachedCompanies : await SuperAdminData.getCompanies();
             const now = new Date();
             const reportDate = now.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
             

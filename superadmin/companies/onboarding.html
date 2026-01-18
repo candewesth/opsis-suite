@@ -874,32 +874,10 @@
     <script src="../js/sidebar.js"></script>
     <script src="../js/data.js"></script>
     <script>
-        // Data - Load industries from SuperAdminData (Settings > Industries)
-        const INDUSTRIES = Object.entries(SuperAdminData.industries).map(([id, ind]) => ({
-            id,
-            name: ind.name,
-            icon: ind.icon && ind.icon.includes('fa-') ? ind.icon.replace('fas ', '').replace('fa-', 'fa-') : 'fa-building',
-            color: ind.color || '#02735E'
-        }));
-
-        const PRODUCTS = Object.entries(SuperAdminData.products)
-            .filter(([id, p]) => p.type === 'premium' && p.status === 'active')
-            .map(([id, p]) => ({
-                id, name: p.name, icon: p.icon, price: p.price, desc: p.description
-            }));
-
-        // Plans from SuperAdminData (new pricing model)
-        const PLANS = Object.entries(SuperAdminData.plans)
-            .filter(([id]) => id !== 'trial')
-            .map(([id, p]) => ({
-                id, 
-                name: p.name, 
-                price: p.price, 
-                desc: p.description,
-                users: p.users === -1 ? 'Ilimitados' : `${p.users} usuarios`,
-                features: p.features,
-                recommended: id === 'professional'
-            }));
+        // Data caches (populated after SuperAdminData is ready)
+        let INDUSTRIES = [];
+        let PRODUCTS = [];
+        let PLANS = [];
 
         let currentStep = 1;
         const totalSteps = 5;
@@ -908,7 +886,33 @@
         let selectedPlan = null;
 
         // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            await SuperAdminData.ready;
+            INDUSTRIES = Object.entries(SuperAdminData.industries).map(([id, ind]) => ({
+                id,
+                name: ind.name,
+                icon: ind.icon && ind.icon.includes('fa-') ? ind.icon.replace('fas ', '').replace('fa-', 'fa-') : 'fa-building',
+                color: ind.color || '#02735E'
+            }));
+
+            PRODUCTS = Object.entries(SuperAdminData.products)
+                .filter(([id, p]) => p.type === 'premium' && p.status === 'active')
+                .map(([id, p]) => ({
+                    id, name: p.name, icon: p.icon, price: p.price, desc: p.description
+                }));
+
+            PLANS = Object.entries(SuperAdminData.plans)
+                .filter(([id]) => id !== 'trial')
+                .map(([id, p]) => ({
+                    id, 
+                    name: p.name, 
+                    price: p.price, 
+                    desc: p.description,
+                    users: p.users === -1 ? 'Ilimitados' : `${p.users} usuarios`,
+                    features: p.features,
+                    recommended: id === 'professional'
+                }));
+
             document.body.classList.add('loaded');
             renderIndustries();
             renderProducts();
@@ -1137,7 +1141,7 @@
             }
         }
 
-        function createCompany() {
+        async function createCompany() {
             const btn = document.getElementById('btnNext');
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando...';
@@ -1156,7 +1160,7 @@
             const premiumModules = selectedProducts.map(p => p.name);
             const mrr = SuperAdminData.calculateMRR(selectedPlan.id, selectedProducts.map(p => p.id));
             
-            const company = SuperAdminData.createCompany({
+            const company = await SuperAdminData.createCompany({
                 name: document.getElementById('companyName').value.trim(),
                 email: document.getElementById('companyEmail').value.trim(),
                 phone: document.getElementById('companyPhone').value.trim(),

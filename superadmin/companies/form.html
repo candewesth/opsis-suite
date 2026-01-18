@@ -995,9 +995,11 @@
     <script>
         let companyId = null;
         let originalData = null;
+        let companiesCache = [];
 
         // Wait for everything to load
-        window.addEventListener('load', () => {
+        window.addEventListener('load', async () => {
+            await SuperAdminData.ready;
             document.body.classList.add('loaded');
             
             // Get company ID from URL
@@ -1010,6 +1012,7 @@
             console.log('ID param:', idParam);
             console.log('Parsed companyId:', companyId);
             console.log('SuperAdminData available:', typeof SuperAdminData !== 'undefined');
+            companiesCache = await SuperAdminData.getCompanies();
             
             // Load products first
             loadProducts();
@@ -1019,7 +1022,7 @@
             
             if (companyId && !isNaN(companyId)) {
                 console.log('Loading company data for ID:', companyId);
-                loadCompanyData(companyId);
+                await loadCompanyData(companyId);
             } else {
                 console.log('New company mode - no valid ID');
                 // New company mode
@@ -1054,21 +1057,21 @@
             });
         }
 
-        function loadCompanyData(id) {
+        async function loadCompanyData(id) {
             console.log('loadCompanyData called with:', id, typeof id);
             
             // Ensure id is a number
             id = parseInt(id);
             
-            if (!SuperAdminData || !SuperAdminData.companies) {
+            if (!SuperAdminData) {
                 console.error('SuperAdminData not loaded!');
                 showToast('Error cargando datos', 'error');
                 return;
             }
             
-            console.log('Looking in companies:', SuperAdminData.companies.map(c => c.id));
+            console.log('Looking in companies:', companiesCache.map(c => c.id));
             
-            const company = SuperAdminData.companies.find(c => c.id === id);
+            const company = companiesCache.find(c => c.id === id) || await SuperAdminData.getCompany(id);
             console.log('Found company:', company);
             
             if (!company) {
@@ -1268,7 +1271,7 @@
             });
         }
 
-        function saveCompany(event) {
+        async function saveCompany(event) {
             event.preventDefault();
             
             // Get premium module names from keys
@@ -1310,7 +1313,8 @@
             
             // Update company in SuperAdminData
             if (companyId && SuperAdminData.updateCompany) {
-                SuperAdminData.updateCompany(companyId, formData);
+                await SuperAdminData.updateCompany(companyId, formData);
+                companiesCache = await SuperAdminData.getCompanies();
             }
             
             showToast('Cambios guardados correctamente', 'success');

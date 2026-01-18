@@ -513,8 +513,11 @@
         let companyToDelete = null;
         let selectedCompanies = new Set();
         let isGridView = false;
+        let cachedCompanies = [];
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            await SuperAdminData.ready;
+            cachedCompanies = await SuperAdminData.getCompanies();
             renderIndustryFilters();
             loadStats();
             loadCompaniesTable();
@@ -547,7 +550,7 @@
         }
 
         function loadStats() {
-            const companies = SuperAdminData.companies;
+            const companies = cachedCompanies;
             const totalMRR = companies.reduce((sum, c) => sum + c.mrr, 0);
             
             // Animate counters
@@ -578,12 +581,12 @@
         }
 
         function updateCounts() {
-            document.getElementById('countAll').textContent = SuperAdminData.companies.length;
+            document.getElementById('countAll').textContent = cachedCompanies.length;
         }
 
         function loadCompaniesTable() {
             const searchTerm = document.getElementById('headerSearchInput')?.value.toLowerCase() || '';
-            let companies = [...SuperAdminData.companies];
+            let companies = [...cachedCompanies];
             
             // Apply status filter
             if (currentFilter !== 'all') {
@@ -841,19 +844,22 @@
             }
         }
 
-        function refreshCompanies() {
+        async function refreshCompanies() {
             const icon = document.getElementById('refreshIcon');
             icon.style.animation = 'spin 1s linear infinite';
             
-            setTimeout(() => {
+            setTimeout(async () => {
+                cachedCompanies = await SuperAdminData.getCompanies();
+                loadStats();
                 loadCompaniesTable();
+                updateCounts();
                 icon.style.animation = 'none';
                 showToast('Datos actualizados', 'success');
             }, 800);
         }
 
         function impersonateCompany(id) {
-            const company = SuperAdminData.getCompany(id);
+            const company = cachedCompanies.find(c => c.id == id);
             if (!company) {
                 showToast('Compañía no encontrada', 'error');
                 return;
@@ -887,29 +893,24 @@
             }, 500);
         }
 
-        function suspendCompany(id) {
-            const company = SuperAdminData.getCompany(id);
+        async function suspendCompany(id) {
+            const company = cachedCompanies.find(c => c.id == id);
             if (!company) return;
             
-            if (company.status === 'inactive') {
-                // Reactivar
-                SuperAdminData.updateCompany(id, { status: 'active' });
-                showToast(`Compañía ${company.name} reactivada`, 'success');
-            } else {
-                // Suspender
-                SuperAdminData.updateCompany(id, { status: 'inactive' });
-                showToast(`Compañía ${company.name} suspendida`, 'warning');
-            }
+            const nextStatus = company.status === 'inactive' ? 'active' : 'inactive';
+            await SuperAdminData.updateCompany(id, { status: nextStatus });
+            cachedCompanies = await SuperAdminData.getCompanies();
+            showToast(`Compañía ${company.name} ${nextStatus === 'active' ? 'reactivada' : 'suspendida'}`, nextStatus === 'active' ? 'success' : 'warning');
             loadStats();
             loadCompaniesTable();
         }
 
-        function duplicateCompany(id) {
-            const company = SuperAdminData.getCompany(id);
+        async function duplicateCompany(id) {
+            const company = cachedCompanies.find(c => c.id == id);
             if (!company) return;
             
             // Use the new API createCompany method
-            const newCompany = SuperAdminData.createCompany({
+            const newCompany = await SuperAdminData.createCompany({
                 ...company,
                 name: company.name + ' (Copia)',
                 domain: company.domain + '-copy-' + Date.now().toString(36),
@@ -917,6 +918,7 @@
                 mrr: 0
             });
             
+            cachedCompanies = await SuperAdminData.getCompanies();
             loadStats();
             loadCompaniesTable();
             updateCounts();
@@ -924,7 +926,7 @@
         }
 
         function exportCompanyData(id) {
-            const company = SuperAdminData.getCompany(id);
+            const company = cachedCompanies.find(c => c.id == id);
             if (!company) return;
             
             // Crear JSON de la compañía
@@ -961,8 +963,8 @@
             loadCompaniesTable();
         }
 
-        function viewCompany(id) {
-            const company = SuperAdminData.getCompany(id);
+        async function viewCompany(id) {
+            const company = cachedCompanies.find(c => c.id == id) || await SuperAdminData.getCompany(id);
             if (!company) return;
             
             document.getElementById('viewCompanyTitle').textContent = company.name;
@@ -1007,7 +1009,7 @@
         }
 
         function confirmDeleteCompany(id) {
-            const company = SuperAdminData.getCompany(id);
+            const company = cachedCompanies.find(c => c.id == id);
             if (!company) return;
             
             companyToDelete = id;
@@ -1030,18 +1032,19 @@
             companyToDelete = null;
         }
 
-        function deleteCompany(id) {
-            if (SuperAdminData.deleteCompany(id)) {
-                loadStats();
-                loadCompaniesTable();
-                updateCounts();
-                closeDeleteModal();
-                showToast('Compañía eliminada exitosamente', 'success');
-            }
+        async function deleteCompany(id) {
+            const deleted = await SuperAdminData.deleteCompany(id);
+            if (!deleted) return;
+            cachedCompanies = await SuperAdminData.getCompanies();
+            loadStats();
+            loadCompaniesTable();
+            updateCounts();
+            closeDeleteModal();
+            showToast('Compañía eliminada exitosamente', 'success');
         }
 
         function exportCompanies() {
-            const companies = SuperAdminData.companies;
+            const companies = cachedCompanies;
             
             // Crear CSV
             const headers = ['ID', 'Nombre', 'Dominio', 'Email', 'Industria', 'Plan', 'Productos', 'Estado', 'Usuarios', 'MRR', 'Fecha Registro'];
@@ -1084,7 +1087,7 @@
                 return;
             }
             
-            const companies = SuperAdminData.companies.filter(c => selectedCompanies.has(c.id));
+            const companies = cachedCompanies.filter(c => selectedCompanies.has(c.id));
             
             const headers = ['ID', 'Nombre', 'Dominio', 'Email', 'Industria', 'Plan', 'Productos', 'Estado', 'Usuarios', 'MRR', 'Fecha Registro'];
             const rows = companies.map(c => [
@@ -1121,7 +1124,7 @@
             clearSelection();
         }
         
-        function bulkSuspend() {
+        async function bulkSuspend() {
             if (selectedCompanies.size === 0) {
                 showToast('Selecciona al menos una compañía', 'error');
                 return;
@@ -1132,13 +1135,14 @@
             }
             
             let suspended = 0;
-            selectedCompanies.forEach(id => {
-                const company = SuperAdminData.getCompany(id);
+            for (const id of selectedCompanies) {
+                const company = cachedCompanies.find(c => c.id == id);
                 if (company && company.status !== 'inactive') {
-                    SuperAdminData.updateCompany(id, { status: 'inactive' });
+                    await SuperAdminData.updateCompany(id, { status: 'inactive' });
                     suspended++;
                 }
-            });
+            }
+            cachedCompanies = await SuperAdminData.getCompanies();
             
             loadStats();
             loadCompaniesTable();
@@ -1146,7 +1150,7 @@
             showToast(`${suspended} compañías suspendidas`, 'warning');
         }
         
-        function bulkDelete() {
+        async function bulkDelete() {
             if (selectedCompanies.size === 0) {
                 showToast('Selecciona al menos una compañía', 'error');
                 return;
@@ -1157,11 +1161,12 @@
             }
             
             let deleted = 0;
-            selectedCompanies.forEach(id => {
-                if (SuperAdminData.deleteCompany(id)) {
+            for (const id of Array.from(selectedCompanies)) {
+                if (await SuperAdminData.deleteCompany(id)) {
                     deleted++;
                 }
-            });
+            }
+            cachedCompanies = await SuperAdminData.getCompanies();
             
             loadStats();
             loadCompaniesTable();

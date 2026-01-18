@@ -234,19 +234,22 @@
         document.body.classList.add('loaded');
         
         let allInvoices = [];
+        let cachedCompanies = [];
         let invoiceChart = null;
         let statusChart = null;
         
-        document.addEventListener('DOMContentLoaded', () => {
-            loadInvoices();
-            populateCompanySelect();
+        document.addEventListener('DOMContentLoaded', async () => {
+            await SuperAdminData.ready;
+            cachedCompanies = await SuperAdminData.getCompanies();
+            await loadInvoices();
+            await populateCompanySelect();
             setDefaultDueDate();
             initCharts();
             renderAgingReport();
         });
 
-        function loadInvoices() {
-            allInvoices = SuperAdminData.getInvoices();
+        async function loadInvoices() {
+            allInvoices = await SuperAdminData.getInvoices();
             updateStats();
             renderInvoices(allInvoices);
         }
@@ -465,9 +468,9 @@
             renderInvoices(filtered);
         }
 
-        function populateCompanySelect() {
+        async function populateCompanySelect() {
             const select = document.getElementById('invoiceCompany');
-            const companies = SuperAdminData.getCompanies();
+            const companies = cachedCompanies.length ? cachedCompanies : await SuperAdminData.getCompanies();
             select.innerHTML = '<option value="">Seleccionar cliente...</option>' +
                 companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
         }
@@ -489,7 +492,7 @@
             document.getElementById(modalId).classList.remove('active');
         }
 
-        function createInvoice() {
+        async function createInvoice() {
             const companyId = document.getElementById('invoiceCompany').value;
             const concept = document.getElementById('invoiceConcept').value;
             const amount = parseFloat(document.getElementById('invoiceAmount').value);
@@ -500,9 +503,9 @@
                 return;
             }
             
-            const company = SuperAdminData.getCompany(companyId);
+            const company = cachedCompanies.find(c => c.id == companyId) || await SuperAdminData.getCompany(companyId);
             
-            const invoice = SuperAdminData.createInvoice({
+            const invoice = await SuperAdminData.createInvoice({
                 companyId: parseInt(companyId),
                 company: company.name,
                 concept: concept,
@@ -513,7 +516,7 @@
             });
             
             closeModal('newInvoiceModal');
-            loadInvoices();
+            await loadInvoices();
             showNotification(`Factura INV-${String(invoice.id).padStart(4, '0')} creada exitosamente`, 'success');
         }
 
@@ -568,9 +571,9 @@
             document.getElementById('invoiceDetailModal').classList.add('active');
         }
 
-        function markAsPaid(id) {
-            SuperAdminData.updateInvoice(id, { status: 'paid' });
-            loadInvoices();
+        async function markAsPaid(id) {
+            await SuperAdminData.updateInvoice(id, { status: 'paid' });
+            await loadInvoices();
             showNotification('Factura marcada como pagada', 'success');
         }
 

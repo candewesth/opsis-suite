@@ -780,18 +780,19 @@
         const companyId = urlParams.get('id');
         let companyData = null;
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            await SuperAdminData.ready;
             document.body.classList.add('loaded');
-            loadCompanyData();
+            await loadCompanyData();
         });
 
-        function loadCompanyData() {
+        async function loadCompanyData() {
             const storedCompany = localStorage.getItem('opsis_last_created_company');
             
             if (storedCompany) {
                 companyData = JSON.parse(storedCompany);
             } else if (companyId && typeof SuperAdminData !== 'undefined') {
-                companyData = SuperAdminData.getCompanyById(companyId);
+                companyData = await SuperAdminData.getCompanyById(companyId);
             }
 
             if (companyData) {

@@ -230,6 +230,10 @@ const _storage = {
 };
 ```
 
+> Estado actual: `superadmin/js/data.js` ya incluye un driver dual (`local` por defecto, `supabase` opcional). Para seguir en localStorage deja `SUPERADMIN_STORAGE_MODE = 'local'`. Cuando actives Supabase, define `SUPERADMIN_SUPABASE_CONFIG` (url/key) o setea `window.OPSIS_SUPERADMIN_STORAGE_MODE = 'supabase'` antes de cargar el script; en ese modo las funciones de datos devolverán Promises.
+
+Modo demo (sin Supabase real): incluye `superadmin/js/supabase-demo.js` antes de `js/data.js` para forzar `supabase-demo`, que usa localStorage pero con API async/mode supabase para validar la UI sin Pro ni credenciales.
+
 ### Paso 4: Actualizar Métodos CRUD
 
 Los métodos públicos se vuelven async:
