@@ -234,6 +234,24 @@ const _storage = {
 
 Modo demo (sin Supabase real): incluye `superadmin/js/supabase-demo.js` antes de `js/data.js` para forzar `supabase-demo`, que usa localStorage pero con API async/mode supabase para validar la UI sin Pro ni credenciales.
 
+### Activar Supabase en un proyecto nuevo (vía CDN)
+
+1. Crea un nuevo proyecto en Supabase y consigue `SUPABASE_URL` y `SUPABASE_ANON_KEY`.
+2. Define las claves en el navegador (solo para desarrollo) ejecutando en consola:
+   ```js
+   localStorage.setItem('opsis_supabase_url', 'https://<project>.supabase.co');
+   localStorage.setItem('opsis_supabase_key', '<anon-key>');
+   ```
+   o define en HTML antes de cargar los scripts:
+   ```html
+   <script>
+     window.OPSIS_SUPABASE_URL = 'https://<project>.supabase.co';
+     window.OPSIS_SUPABASE_KEY = '<anon-key>';
+   </script>
+   ```
+3. `superadmin/js/supabase-loader.js` (ya incluido antes de `js/data.js` en todas las páginas) cargará `@supabase/supabase-js` desde CDN, seteará `window.OPSIS_SUPERADMIN_STORAGE_MODE = 'supabase'` y `window.OPSIS_SUPABASE_CONFIG` automáticamente.
+4. Cambia las claves por variables seguras (por ejemplo, inyectadas por el host) antes de producción; evita dejar `localStorage` con claves reales en entornos públicos.
+
 ### Paso 4: Actualizar Métodos CRUD
 
 Los métodos públicos se vuelven async:
