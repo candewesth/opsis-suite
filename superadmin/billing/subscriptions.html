@@ -361,15 +361,15 @@
             };
         }
         
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             try {
+                await SuperAdminData.ready;
                 // Reset data para asegurar estructura correcta
                 if (!localStorage.getItem('opsis_data_v2')) {
-                    SuperAdminData.reset();
+                    await SuperAdminData.reset();
                     localStorage.setItem('opsis_data_v2', 'true');
                 }
-                
-                loadSubscriptions();
+                await loadSubscriptions();
                 renderPricingModel();
                 renderRevenueBreakdown();
                 populateIndustryFilter();
@@ -383,8 +383,8 @@
             }
         });
 
-        function loadSubscriptions() {
-            allCompanies = SuperAdminData.getCompanies();
+        async function loadSubscriptions() {
+            allCompanies = SuperAdminData.getCompanies ? await SuperAdminData.getCompanies() : (SuperAdminData.companies || []);
             console.log('Companies loaded:', allCompanies);
             updateStats();
             renderSubscriptions(allCompanies);

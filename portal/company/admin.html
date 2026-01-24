@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Compañía | Opsis Suite</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --verdi-dark: #022326;
+            --verdi-mid: #034040;
+            --verdi-accent: #035951;
+            --verdi-light: #02735E;
+            --aire-white: #ffffff;
+            --aire-cloud: #f8fafc;
+            --aire-mist: #f1f5f9;
+            --aire-fog: #e2e8f0;
+            --aire-slate: #94a3b8;
+            --aire-night: #0f172a;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(circle at 10% 10%, #f0fdf4, #f8fafc 30%), #f8fafc;
+            color: var(--aire-night);
+        }
+        .shell { max-width: 1200px; margin: 0 auto; padding: 32px 20px 48px; }
+        header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .logo { width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, var(--verdi-dark), var(--verdi-light)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 18px; }
+        .company-meta { display: flex; flex-direction: column; }
+        .company-meta h1 { font-size: 22px; margin: 0; }
+        .company-meta span { color: var(--verdi-light); font-weight: 600; font-size: 13px; }
+        .pill {
+            display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px;
+            background: var(--aire-white); border: 1px solid var(--aire-fog); border-radius: 999px;
+            color: var(--aire-slate); font-size: 12px; font-weight: 600;
+        }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 16px; }
+        .card {
+            background: var(--aire-white); border-radius: 14px; border: 1px solid var(--aire-fog);
+            padding: 16px; box-shadow: 0 10px 35px rgba(2, 35, 38, 0.06); position: relative;
+        }
+        .card h3 { margin: 0 0 4px; font-size: 15px; }
+        .card p { margin: 0; color: var(--aire-slate); font-size: 13px; }
+        .cta { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 10px; border: none; cursor: pointer; font-weight: 600; }
+        .cta.primary { background: linear-gradient(135deg, var(--verdi-light), var(--verdi-accent)); color: white; box-shadow: 0 10px 25px rgba(2, 115, 94, 0.3); }
+        .cta.ghost { background: var(--aire-mist); color: var(--verdi-dark); }
+        .module-chip {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px; border: 1px solid var(--aire-fog); border-radius: 12px; background: #fff;
+        }
+        .module-chip strong { color: var(--verdi-dark); }
+        .status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 10px; font-size: 12px; font-weight: 600; }
+        .status.active { background: rgba(2,115,94,0.1); color: var(--verdi-light); }
+        .status.trial { background: rgba(3,89,81,0.12); color: var(--verdi-accent); }
+        .modules-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 12px; }
+        .module-card {
+            border: 1px solid var(--aire-fog); border-radius: 12px; padding: 14px;
+            background: linear-gradient(145deg, #ffffff, #f8fafc); cursor: pointer; transition: transform 0.15s ease, box-shadow 0.2s ease;
+        }
+        .module-card:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(2,35,38,0.08); }
+        .module-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(2,115,94,0.1); display: flex; align-items: center; justify-content: center; color: var(--verdi-light); }
+        .flex { display: flex; align-items: center; gap: 10px; }
+        .stack { display: flex; gap: 8px; flex-wrap: wrap; }
+        .stat { background: var(--aire-white); border: 1px solid var(--aire-fog); border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .stat-value { font-weight: 700; font-size: 18px; color: var(--verdi-dark); }
+        .footer { margin-top: 32px; color: var(--aire-slate); font-size: 12px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="shell">
+        <header>
+            <div class="brand">
+                <div class="logo" id="companyInitials">OP</div>
+                <div class="company-meta">
+                    <h1 id="companyName">Compañía</h1>
+                    <span id="companyDomain">demo.opsis-suite.com</span>
+                </div>
+            </div>
+            <div class="stack">
+                <span class="pill" id="planPill"><i class="fas fa-crown"></i> Plan</span>
+                <span class="pill" id="modulesPill"><i class="fas fa-box"></i> Módulos</span>
+                <button class="cta primary" id="openMotorSync"><i class="fas fa-wrench"></i> Ir a MotorSync</button>
+            </div>
+        </header>
+
+        <div class="grid">
+            <div class="card">
+                <h3>Resumen</h3>
+                <p id="summaryText">Cargando datos de la compañía...</p>
+                <div class="stack" style="margin-top: 12px;">
+                    <div class="stat"><span>Usuarios</span><span class="stat-value" id="usersCount">-</span></div>
+                    <div class="stat"><span>MRR</span><span class="stat-value" id="mrrValue">$-</span></div>
+                    <div class="stat"><span>Estado</span><span class="status active" id="statusBadge">Activo</span></div>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Módulos habilitados</h3>
+                <div class="modules-grid" id="modulesGrid"></div>
+            </div>
+            <div class="card">
+                <h3>Accesos rápidos</h3>
+                <div class="modules-grid">
+                    <div class="module-card" id="openPortal"><div class="flex"><div class="module-icon"><i class="fas fa-globe"></i></div><div><strong>Portal</strong><p style="color: var(--aire-slate);">Ver sitio de la compañía</p></div></div></div>
+                    <div class="module-card" id="openSettings"><div class="flex"><div class="module-icon"><i class="fas fa-cog"></i></div><div><strong>Configuración</strong><p style="color: var(--aire-slate);">Dominios, branding y usuarios</p></div></div></div>
+                    <div class="module-card" id="openSupport"><div class="flex"><div class="module-icon"><i class="fas fa-life-ring"></i></div><div><strong>Soporte</strong><p style="color: var(--aire-slate);">Tickets y helpdesk</p></div></div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">Panel de compañía • Opsis Suite</div>
+    </div>
+
+    <script>
+        function getSession() {
+            const raw = localStorage.getItem('opsis_admin_session');
+            if (!raw) return null;
+            try { return JSON.parse(raw); } catch (_) { return null; }
+        }
+        function seedSession() {
+            const demo = {
+                companyId: 1,
+                companyName: 'Demo Construction',
+                domain: 'demo-construction',
+                plan: 'Professional',
+                status: 'active',
+                users: 12,
+                mrr: 399,
+                products: ['MotorSync', 'TimeSync'],
+                premiumModules: ['TimeSync']
+            };
+            localStorage.setItem('opsis_admin_session', JSON.stringify(demo));
+            return demo;
+        }
+
+        const session = getSession() || seedSession();
+        const modules = Array.from(new Set([...(session.products || ['MotorSync']), ...(session.premiumModules || [])]));
+
+        document.getElementById('companyName').textContent = session.companyName || 'Compañía';
+        document.getElementById('companyDomain').textContent = `${session.domain || 'demo'}.opsis-suite.com`;
+        document.getElementById('companyInitials').textContent = (session.companyName || 'OP').split(' ').map(p => p[0]).join('').substring(0,2).toUpperCase();
+        document.getElementById('usersCount').textContent = session.users || '-';
+        document.getElementById('mrrValue').textContent = session.mrr ? `$${session.mrr}` : '$-';
+        document.getElementById('statusBadge').textContent = session.status === 'trial' ? 'Trial' : 'Activo';
+        document.getElementById('statusBadge').className = `status ${session.status === 'trial' ? 'trial' : 'active'}`;
+        document.getElementById('planPill').innerHTML = `<i class="fas fa-crown"></i> ${session.plan || 'Plan'}`;
+        document.getElementById('modulesPill').innerHTML = `<i class="fas fa-box"></i> ${modules.length} módulo${modules.length !== 1 ? 's' : ''}`;
+        document.getElementById('summaryText').textContent = `Administrar usuarios, configuración y módulos activos de ${session.companyName || 'la compañía'}.`;
+
+        const modulesGrid = document.getElementById('modulesGrid');
+        modulesGrid.innerHTML = modules.map(mod => {
+            const href = mod.toLowerCase().includes('motor') ? '/motorsync/motorsync.html' :
+                         mod.toLowerCase().includes('time') ? '/timesync/' :
+                         '/portal/';
+            return `
+                <div class="module-card" onclick="window.location.href='${href}'">
+                    <div class="flex">
+                        <div class="module-icon"><i class="fas fa-box"></i></div>
+                        <div>
+                            <strong>${mod}</strong>
+                            <p style="color: var(--aire-slate); margin-top: 4px;">Abrir módulo</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        document.getElementById('openMotorSync').onclick = () => window.location.href = '/motorsync/motorsync.html';
+        document.getElementById('openPortal').onclick = () => window.location.href = `/portal/company/?domain=${session.domain || ''}`;
+        document.getElementById('openSettings').onclick = () => alert('Config de compañía próximamente');
+        document.getElementById('openSupport').onclick = () => window.location.href = '/support.html';
+    </script>
+</body>
+</html>

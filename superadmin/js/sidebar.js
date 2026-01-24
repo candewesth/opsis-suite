@@ -3,6 +3,58 @@
 // Navigation and sidebar management - Verdi + Aire Design
 // ============================================================================
 
+const SuperAdminAuth = {
+    SESSION_KEY: 'opsis_superadmin_session',
+    getSession() {
+        const sources = [
+            localStorage.getItem(this.SESSION_KEY),
+            localStorage.getItem('opsis_admin_session'),
+            localStorage.getItem('opsis_auth')
+        ];
+        for (const raw of sources) {
+            if (!raw) continue;
+            try {
+                const parsed = JSON.parse(raw);
+                if (parsed) return parsed;
+            } catch (e) {
+                continue;
+            }
+        }
+        return null;
+    },
+    isSuperAdmin(session) {
+        if (!session) return false;
+        const roles = []
+            .concat(session.role || [])
+            .concat(session.roles || [])
+            .map(r => (typeof r === 'string' ? r.toLowerCase() : ''));
+        return roles.some(r => r.includes('superadmin') || r.includes('super_admin') || r === 'super');
+    },
+    ensure() {
+        let session = this.getSession();
+        const allowDemo = window.OPSIS_SUPERADMIN_DEMO !== false;
+        if (!this.isSuperAdmin(session)) {
+            if (allowDemo) {
+                session = {
+                    id: 'superadmin-demo',
+                    name: 'Super Admin',
+                    email: 'demo@opsis-suite.com',
+                    role: 'superadmin',
+                    mode: 'demo'
+                };
+                localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
+                console.warn('[SuperAdminAuth] Sesión demo creada (sin credenciales reales).');
+            } else {
+                const redirect = encodeURIComponent(window.location.href);
+                window.location.href = `/login.html?redirect=${redirect}`;
+                return null;
+            }
+        }
+        window.currentSuperAdminSession = session;
+        return session;
+    }
+};
+
 const SuperAdminSidebar = {
     // Navigation structure with Font Awesome icons
     navigation: {
@@ -62,6 +114,7 @@ const SuperAdminSidebar = {
     // Render sidebar HTML with Verdi + Aire design
     render() {
         const currentPage = this.getCurrentPageId();
+        const session = window.currentSuperAdminSession || SuperAdminAuth.getSession() || {};
         
         const renderLinks = (links) => {
             return links.map(link => `
@@ -122,8 +175,8 @@ const SuperAdminSidebar = {
                         <i class="fas fa-user"></i>
                     </div>
                     <div class="sidebar-user-info">
-                        <span class="sidebar-user-name">Admin</span>
-                        <span class="sidebar-user-role">Super Administrador</span>
+                        <span class="sidebar-user-name">${session.name || 'Admin'}</span>
+                        <span class="sidebar-user-role">${session.role || 'Super Administrador'}</span>
                     </div>
                 </div>
             </div>
@@ -165,6 +218,7 @@ const SuperAdminSidebar = {
 
 // Auto-initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
+    SuperAdminAuth.ensure();
     SuperAdminSidebar.init();
     // Reveal page after sidebar is loaded (prevents flash)
     document.body.classList.add('loaded');

@@ -668,14 +668,19 @@
         let currentFilter = '';
         let viewingMemberId = null;
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             document.body.classList.add('loaded');
-            loadMembers();
+            await SuperAdminData.ready;
+            await loadMembers();
             loadActivityLog();
         });
 
-        function loadMembers() {
-            allMembers = SuperAdminData.team || [];
+        async function loadMembers() {
+            if (SuperAdminData.getTeamMembers) {
+                allMembers = await SuperAdminData.getTeamMembers();
+            } else {
+                allMembers = SuperAdminData.team || [];
+            }
             filteredMembers = [...allMembers];
             renderMembers();
             updateStats();
@@ -879,7 +884,7 @@
             document.getElementById('avatarPreview').textContent = getInitials(name) || '?';
         }
 
-        function saveMember() {
+        async function saveMember() {
             const id = document.getElementById('editMemberId').value;
             const name = document.getElementById('memberName').value.trim();
             const email = document.getElementById('memberEmail').value.trim();
@@ -893,15 +898,15 @@
             
             if (id) {
                 // Edit existing
-                const member = SuperAdminData.team.find(m => m.id === parseInt(id));
-                if (member) {
-                    member.name = name;
-                    member.email = email;
-                    member.role = role;
-                    member.phone = phone;
-                    member.avatar = getInitials(name);
-                    showToast(`Miembro "${name}" actualizado exitosamente`);
+                if (SuperAdminData.updateTeamMember) {
+                    await SuperAdminData.updateTeamMember(parseInt(id), { name, email, role, phone, avatar: getInitials(name) });
+                } else {
+                    const member = allMembers.find(m => m.id === parseInt(id));
+                    if (member) {
+                        Object.assign(member, { name, email, role, phone, avatar: getInitials(name) });
+                    }
                 }
+                showToast(`Miembro "${name}" actualizado exitosamente`);
             } else {
                 // Add new
                 const newMember = {
@@ -915,12 +920,16 @@
                     lastLogin: 'Invitación pendiente',
                     permissions: getPermissionsForRole(role)
                 };
-                SuperAdminData.team.push(newMember);
+                if (SuperAdminData.createTeamMember) {
+                    await SuperAdminData.createTeamMember(newMember);
+                } else {
+                    allMembers.push(newMember);
+                }
                 showToast(`Miembro "${name}" agregado exitosamente`);
             }
             
             closeMemberModal();
-            loadMembers();
+            await loadMembers();
         }
 
         // Helper functions

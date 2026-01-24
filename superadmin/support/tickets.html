@@ -604,6 +604,10 @@
         let currentFilter = 'all';
         let currentPriorityFilter = 'all';
 
+        let cachedTickets = [];
+        let cachedCompanies = [];
+        let cachedTeam = [];
+
         // Combinar tickets de SuperAdminData con los del widget de soporte
         function getAllTickets() {
             // Tickets del widget (localStorage)
@@ -626,12 +630,16 @@
             }));
             
             // Combinar con tickets existentes de SuperAdminData
-            const existingTickets = SuperAdminData.tickets || [];
+            const existingTickets = cachedTickets || [];
             
             return [...convertedWidgetTickets, ...existingTickets];
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            await SuperAdminData.ready;
+            cachedTickets = SuperAdminData.getTickets ? await SuperAdminData.getTickets() : (SuperAdminData.tickets || []);
+            cachedCompanies = SuperAdminData.getCompanies ? await SuperAdminData.getCompanies() : (SuperAdminData.companies || []);
+            cachedTeam = SuperAdminData.getTeamMembers ? await SuperAdminData.getTeamMembers() : (SuperAdminData.team || []);
             loadStats();
             loadTicketsTable();
             loadCompanyOptions();
@@ -723,12 +731,12 @@
         function loadCompanyOptions() {
             const select = document.getElementById('ticketCompany');
             select.innerHTML = '<option value="">Seleccionar compañía...</option>' + 
-                SuperAdminData.companies.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+                (cachedCompanies || []).map(c => `<option value="${c.name}">${c.name}</option>`).join('');
         }
 
         function loadAssigneeOptions() {
             const select = document.getElementById('ticketAssignee');
-            const supportTeam = SuperAdminData.team.filter(m => m.role === 'support_admin' || m.role === 'super_admin');
+            const supportTeam = (cachedTeam || []).filter(m => m.role === 'support_admin' || m.role === 'super_admin');
             select.innerHTML = '<option value="">Sin asignar</option>' + 
                 supportTeam.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
         }
@@ -789,7 +797,7 @@
         }
 
         function viewTicket(id) {
-            const ticket = SuperAdminData.tickets.find(t => t.id === id);
+            const ticket = getAllTickets().find(t => t.id == id);
             if (!ticket) return;
             
             document.getElementById('viewTicketTitle').textContent = `Ticket #${ticket.id}`;
@@ -822,7 +830,7 @@
                     </div>
                     <select class="form-select" style="width: auto;" onchange="assignTicket(${ticket.id}, this.value)">
                         <option value="">Reasignar...</option>
-                        ${SuperAdminData.team.filter(m => m.role === 'support_admin' || m.role === 'super_admin').map(m => `
+                        ${(cachedTeam || []).filter(m => m.role === 'support_admin' || m.role === 'super_admin').map(m => `
                             <option value="${m.name}" ${m.name === ticket.assignee ? 'selected' : ''}>${m.name}</option>
                         `).join('')}
                     </select>
@@ -843,7 +851,7 @@
             document.getElementById('newTicketModal').classList.remove('show');
         }
 
-        function createTicket() {
+        async function createTicket() {
             const company = document.getElementById('ticketCompany').value;
             const subject = document.getElementById('ticketSubject').value;
             const priority = document.getElementById('ticketPriority').value;
@@ -855,7 +863,7 @@
             }
             
             const newTicket = {
-                id: SuperAdminData.tickets.length + 1,
+                id: (cachedTickets[cachedTickets.length - 1]?.id || 0) + 1,
                 company: company,
                 subject: subject,
                 priority: priority,
@@ -864,7 +872,12 @@
                 assignee: assignee || null
             };
             
-            SuperAdminData.tickets.push(newTicket);
+            if (SuperAdminData.createTicket) {
+                await SuperAdminData.createTicket(newTicket);
+                cachedTickets = await SuperAdminData.getTickets();
+            } else {
+                cachedTickets.push(newTicket);
+            }
             
             closeNewTicketModal();
             loadStats();
@@ -882,22 +895,30 @@
             // TODO: Implement response panel
         }
 
-        function closeTicket(id) {
-            const ticket = SuperAdminData.tickets.find(t => t.id === id);
+        async function closeTicket(id) {
+            const ticket = getAllTickets().find(t => t.id == id);
             if (ticket && confirm(`¿Cerrar el ticket "${ticket.subject}"?`)) {
                 ticket.status = 'closed';
+                if (SuperAdminData.updateTicket) {
+                    await SuperAdminData.updateTicket(id, { status: 'closed' });
+                    cachedTickets = await SuperAdminData.getTickets();
+                }
                 loadStats();
                 loadTicketsTable();
                 showToast('Ticket cerrado', 'success');
             }
         }
 
-        function assignTicket(id, assignee) {
-            const ticket = SuperAdminData.tickets.find(t => t.id === id);
+        async function assignTicket(id, assignee) {
+            const ticket = getAllTickets().find(t => t.id == id);
             if (ticket) {
                 ticket.assignee = assignee;
+                if (SuperAdminData.updateTicket) {
+                    await SuperAdminData.updateTicket(id, { assignee });
+                    cachedTickets = await SuperAdminData.getTickets();
+                }
                 loadTicketsTable();
-                showToast(`Ticket asignado a ${assignee}`, 'success');
+                showToast(`Ticket asignado a ${assignee || 'Nadie'}`, 'success');
             }
         }
 
